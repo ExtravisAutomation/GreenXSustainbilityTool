@@ -1,8 +1,5 @@
 {
   "dependencies": {
-    "@ant-design/charts": "^2.0.1",
-    "@antv/g2": "^5.1.9",
-    "echarts": "^5.4.3",
-    "echarts-for-react": "^3.0.2"
+    "react-calendar-heatmap": "^1.9.0"
   }
 }
