@@ -26,30 +26,28 @@ echarts.use([
   SVGRenderer,
 ]);
 
-const   PowercostGraph = () => {
+const PowercostGraph = () => {
   const chartRef = useRef(null);
 
   useEffect(() => {
     const chartDom = chartRef.current;
     const myChart = echarts.init(chartDom);
 
-    let base = +new Date(2016, 9, 3);
-    let oneDay = 24 * 3600 * 1000;
-    let valueBase = Math.random() * 300;
-    let valueBase2 = Math.random() * 50;
-    let data = [];
-    let data2 = [];
+    const rawData = [
+      { time: 0, renewable: 1200, non_renewable: 400 },
+      { time: 1, renewable: 1200, non_renewable: 400 },
+      { time: 2, renewable: 1200, non_renewable: 400 },
+      { time: 3, renewable: 1200, non_renewable: 400 },
+      { time: 4, renewable: 1150, non_renewable: 400 },
+      { time: 5, renewable: 1100, non_renewable: 100 },
+      { time: 6, renewable: 1112, non_renewable: 250 },
+      { time: 7, renewable: 1000, non_renewable: 100 },
+      { time: 8, renewable: 1200, non_renewable: 400 },
+      { time: 9, renewable: 800, non_renewable: 100 }
+    ];
 
-    for (var i = 1; i < 10; i++) {
-      var now = new Date((base += oneDay));
-      var dayStr = [now.getFullYear(), now.getMonth() + 1, now.getDate()].join('-');
-      valueBase = Math.round((Math.random() - 0.5) * 20 + valueBase);
-      valueBase <= 0 && (valueBase = Math.random() * 300);
-      data.push([dayStr, valueBase]);
-      valueBase2 = Math.round((Math.random() - 0.5) * 20 + valueBase2);
-      valueBase2 <= 0 && (valueBase2 = Math.random() * 50);
-      data2.push([dayStr, valueBase2]);
-    }
+    const data = rawData.map(item => [item.time, item.renewable]);
+    const data2 = rawData.map(item => [item.time, item.non_renewable]);
 
     const option = {
       title: {
@@ -62,21 +60,22 @@ const   PowercostGraph = () => {
       },
       legend: {
         top: 'bottom',
-        data: ['Intention'],
+        data: ['Renewable', 'Non-renewable'],
       },
       tooltip: {
-        triggerOn: 'none',
-        position: function (pt) {
-          return [pt[0], 130];
-        },
+        trigger: 'axis',
+        axisPointer: {
+          animation: false
+        }
       },
       toolbox: {
         show: false,
       },
       xAxis: {
-        type: 'time',
+        type: 'category',
+        data: rawData.map(item => item.time),
         axisPointer: {
-          value: '2016-10-7',
+          value: '1',
           snap: true,
           lineStyle: {
             color: '#7581BD',
@@ -129,7 +128,7 @@ const   PowercostGraph = () => {
       ],
       series: [
         {
-          name: 'Fake Data',
+          name: 'Renewable',
           type: 'line',
           smooth: true,
           symbol: 'circle',
@@ -154,7 +153,7 @@ const   PowercostGraph = () => {
           data: data,
         },
         {
-          name: 'Fake Data',
+          name: 'Non-renewable',
           type: 'line',
           smooth: true,
           stack: 'a',

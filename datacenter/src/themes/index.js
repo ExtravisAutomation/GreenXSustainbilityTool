@@ -147,7 +147,7 @@ export const darkTheme = createTheme({
       profile_picture_background: "#ACACAC",
       primary_text: "#FFFFFF",
       secondary_text: "#ACACAC",
-      border_bottom: "#09120C",
+      border_bottom: "#36424E",
     },
 
     default_card: {
@@ -156,13 +156,13 @@ export const darkTheme = createTheme({
 
     horizontal_menu: {
       primary_text: "#FFFFFF",
-      secondary_text: "#3D9E47",
+      secondary_text: "#0490e7",
     },
 
     default_table: {
-      header_row: "#3A403C",
-      odd_row: "#3A403C",
-      even_row: "#09120C",
+      header_row: "#1D2934",
+      odd_row: "#1D2934",
+      even_row: "#050C17",
       hovered_row: "#5A5A5A",
       selected_row: "#5A5A5A",
       search_icon: "#FFFFFF",
@@ -184,10 +184,10 @@ export const darkTheme = createTheme({
     },
 
     default_button: {
-      delete_background: "#E34444",
-      import_background: "#3D9E47",
+      delete_background: "#0490E7",
+      import_background: "#0490E7",
       onboard_background: "#F1B92A",
-      add_background: "#3D9E47",
+      add_background: "#0490E7",
       cancel_background: "#E34444",
       submit_background: "#3D9E47",
       sync_background: "",
@@ -195,13 +195,13 @@ export const darkTheme = createTheme({
     },
 
     drop_down_button: {
-      add_background: "#3D9E47",
+      add_background: "#0490E7",
       add_text: "#FFFFFF",
 
-      export_background: "#000000",
+      export_background: "#1D2934",
       export_text: "#FFFFFF",
 
-      border: "#EAEAEA",
+      border: "#0490E7",
       options_text: "#FFFFFF",
       options_background: "#000000",
       options_hover_text: "#7F7F7F",

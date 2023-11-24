@@ -2,6 +2,8 @@ import React from "react";
 import UamModule from "../containers/uamModule";
 import Sites from "../containers/uamModule/sites";
 import Racks from "../containers/uamModule/racks";
+import Location from "../containers/uamModule/location"
+import Inventory from "../containers/uamModule/inventory";
 import Devices from "../containers/uamModule/devices";
 import Boards from "../containers/uamModule/boards";
 import SubBoards from "../containers/uamModule/subBoards"
@@ -27,10 +29,14 @@ const routes = {
       path: "racks",
       element: <Racks />,
     },
-    // {
-    //   path: "devices",
-    //   element: <Devices />,
-    // },
+    {
+      path: "location",
+      element: <Location />,
+    },
+   {
+    path:"inventory",
+    element:<Inventory/>,
+   }
     // {
     //   path: "boards",
     //   element: <Boards />,

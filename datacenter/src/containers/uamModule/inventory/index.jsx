@@ -8,9 +8,9 @@ import Modal from "./modal";
 import {
   useFetchRecordsQuery,
   useDeleteRecordsMutation,
-} from "../../../store/features/uamModule/racks/apis";
+} from "../../../store/features/uamModule/inventory/apis";
 import { useSelector } from "react-redux";
-import { selectTableData } from "../../../store/features/uamModule/racks/selectors";
+import { selectTableData } from "../../../store/features/uamModule/inventory/selectors";
 import useWindowDimensions from "../../../hooks/useWindowDimensions";
 import {
   handleSuccessAlert,
@@ -119,10 +119,10 @@ const Index = () => {
   };
 
   const handleExport = (optionType) => {
-    if (optionType === "All Racks") {
-      jsonToExcel(dataSource, "Racks");
+    if (optionType === "All Inventory") {
+      jsonToExcel(dataSource, "Inventory");
     } else if (optionType === "Template") {
-      jsonToExcel([generateObject(dataKeys)], "rack_template");
+      jsonToExcel([generateObject(dataKeys)], "inventory_template");
     }
     handleSuccessAlert("File exported successfully.");
   };
@@ -167,7 +167,7 @@ const Index = () => {
       handleClick: handleExport,
       options: [
         {
-          type: "All Racks",
+          type: "All Inventory",
           icon: <Icon fontSize="16px" icon="icon-park-outline:data-all" />,
         },
         {
@@ -202,7 +202,7 @@ const Index = () => {
         ) : null}
 
         <DefaultCard sx={{ width: `${width - 105}px` }}>
-          <PageHeader pageName="Racks" buttons={buttons} />
+          <PageHeader pageName="Inventory" buttons={buttons} />
           <DefaultTable
             rowClassName={(record, index) => (index % 2 === 0 ? "even" : "odd")}
             size="small"
@@ -211,7 +211,7 @@ const Index = () => {
             rowSelection={rowSelection}
             columns={columns}
             dataSource={dataSource}
-            rowKey="rack_id"
+            rowKey="inventory_id"
             style={{ whiteSpace: "pre" }}
             pagination={{
               defaultPageSize: 9,

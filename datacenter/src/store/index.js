@@ -4,6 +4,8 @@ import atomReducer from "./features/atomModule/atom";
 import passwordGroupReducer from "./features/atomModule/passwordGroup";
 import siteReducer from "./features/uamModule/sites"
 import rackReducer from "./features/uamModule/racks"
+import locationReducer from "./features/uamModule/location";
+import inventoryReducer from "./features/uamModule/inventory";
 import deviceReducer from "./features/uamModule/devices"
 import boardReducer from "./features/uamModule/boards"
 import subBoardReducer from "./features/uamModule/subBoards"
@@ -20,6 +22,8 @@ export const store = configureStore({
     password_group: passwordGroupReducer,
     site:siteReducer,
     rack:rackReducer,
+    location:locationReducer,
+    inventory:inventoryReducer,
     device:deviceReducer,
     board:boardReducer,
     sub_board:subBoardReducer,

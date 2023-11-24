@@ -136,7 +136,7 @@ export default function Index() {
     //   path: "ncm_module",
     // },
     {
-      name: "UAM",
+      name: "Sites",
       inActiveIcon: <img src={uamInactiveIcon} alt="Atom" />,
       activeIcon: <img src={uamActiveIcon} alt="Atom" />,
       path: "uam_module",
