@@ -2,17 +2,30 @@ export const dataKeysArray = [
     "name",
     "status",
     "facility",
-    "Region",
-   
-
-   
+    "Region", 
          
   ];
   
 
 
 
-   // "site_name",
+   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  // "site_name",
     // "status",
     // "region_name",
     // "latitude",

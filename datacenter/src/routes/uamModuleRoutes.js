@@ -10,7 +10,8 @@ import SubBoards from "../containers/uamModule/subBoards"
 import Sfps from "../containers/uamModule/sfps";
 import Licenses from "../containers/uamModule/licences";
 import Aps from "../containers/uamModule/aps";
-import Hwlifecycle from "../containers/uamModule/hwLiveCycle";
+import Hwlifecycle from "../containers/uamModule/hwLiveCycle"
+import SiteDetail from "../containers/uamModule/sites/siteDetail";
 import { Navigate } from "react-router-dom";
 
 const routes = {
@@ -36,31 +37,12 @@ const routes = {
    {
     path:"inventory",
     element:<Inventory/>,
-   }
-    // {
-    //   path: "boards",
-    //   element: <Boards />,
-    // },
-    // {
-    //   path: "sub_boards",
-    //   element: <SubBoards />,
-    // },
-    // {
-    //   path: "sfps",
-    //   element: <Sfps />,
-    // },
-    // {
-    //   path: "licenses",
-    //   element: <Licenses />,
-    // },
-    // {
-    //   path: "aps",
-    //   element: <Aps />,
-    // },
-    // {
-    //   path: "hw_lifecycle",
-    //   element: <Hwlifecycle />,
-    // },
+   },
+   {
+    path:"site/:id",
+    element:<SiteDetail/>,
+   },
+
   ],
 };
 

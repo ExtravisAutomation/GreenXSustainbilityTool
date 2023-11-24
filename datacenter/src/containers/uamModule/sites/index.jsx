@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import DefaultTable from "../../../components/tables";
 import { getTitle } from "../../../utils/helpers";
 import Modal from "./modal";
+import { useNavigate } from "react-router-dom";
 import {
   useFetchRecordsQuery,
   useDeleteRecordsMutation,
@@ -31,6 +32,7 @@ import PageHeader from "../../../components/pageHeader";
 const Index = () => {
   // theme
   const theme = useTheme();
+  const navigate = useNavigate();
 
   // hooks
   const { height, width } = useWindowDimensions();
@@ -190,6 +192,19 @@ const Index = () => {
     },
   ];
 
+
+  const onRowClick = (record) => {
+    navigate(`/uam_module/site/${record.site_id}`);
+  };
+
+  const rowProps = (record) => {
+    return {
+      onClick: () =>
+       onRowClick(record),
+   
+    };
+  };
+
   return (
     <Spin spinning={isFetchRecordsLoading || isDeleteRecordsLoading}>
       <div>
@@ -216,6 +231,8 @@ const Index = () => {
               defaultPageSize: 9,
               pageSizeOptions: [9, 50, 100, 500, 1000],
             }}
+            onRow={rowProps}
+
           />
         </DefaultCard>
       </div>
