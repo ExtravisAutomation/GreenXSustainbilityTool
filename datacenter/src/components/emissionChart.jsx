@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import * as echarts from 'echarts';
+import Typography from "antd/es/typography/Typography";
 
 const EmissionChart = () => {
   useEffect(() => {
@@ -8,24 +9,19 @@ const EmissionChart = () => {
     let app = {};
     let option;
 
+    const monthNames = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+
     const categories = (function () {
-      let now = new Date();
       let res = [];
       let len = 10;
       while (len--) {
-        res.unshift(now.toLocaleTimeString().replace(/^\D*/, ''));
-        now = new Date(+now - 2000);
+        res.unshift(monthNames[len]); // Use month names instead of timestamp
       }
       return res;
     })();
-    const categories2 = (function () {
-      let res = [];
-      let len = 10;
-      while (len--) {
-        res.push(10 - len - 1);
-      }
-      return res;
-    })();
+
     const data = (function () {
       let res = [];
       let len = 10;
@@ -34,6 +30,7 @@ const EmissionChart = () => {
       }
       return res;
     })();
+
     const data2 = (function () {
       let res = [];
       let len = 0;
@@ -43,104 +40,86 @@ const EmissionChart = () => {
       }
       return res;
     })();
-    // ... (previous code)
 
-option = {
-    title: {
-      text: 'CO2 Emission',
-      textStyle: {
-        color: '#e5e5e5' // Set the title font color
-      }
-    },
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'cross',
-        label: {
-          backgroundColor: '#283b56'
+    option = {
+      // title: {
+      //   text: 'CO2 Emission',
+      //   textStyle: {
+      //     color: '#e5e5e5' // Set the title font color
+        
+      //   }
+      // },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'cross',
+          label: {
+            backgroundColor: '#283b56'
+          }
         }
-      }
-    },
-    legend: {},
-    toolbox: {
-      show: true,
-      feature: {
-        dataView: { readOnly: false },
-        restore: {},
-        saveAsImage: {}
-      }
-    },
-    dataZoom: {
-      show: false,
-      start: 0,
-      end: 100
-    },
-    xAxis: [
-      {
+      },
+      legend: {},
+      toolbox: {
+        show: true,
+        feature: {
+          dataView: { readOnly: false },
+          restore: {},
+          saveAsImage: {}
+        }
+      },
+      dataZoom: {
+        show: false,
+        start: 0,
+        end: 100
+      },
+      xAxis: {
         type: 'category',
         boundaryGap: true,
-        data: categories
+        data: categories,
+        axisTick: {
+          show: false
+        },
       },
-      {
-        type: 'category',
-        boundaryGap: true,
-        data: categories2
-      }
-    ],
-    yAxis: [
-      {
-        type: 'value',
-        scale: true,
-        name: 'Price',
-        max: 30,
-        min: 0,
-        boundaryGap: [0.2, 0.2]
-      },
-      {
-        type: 'value',
-        scale: true,
-        name: 'Order',
-        max: 1200,
-        min: 0,
-        boundaryGap: [0.2, 0.2]
-      }
-    ],
-    series: [
-      {
-        name: 'Dynamic Bar',
-        type: 'bar',
-        xAxisIndex: 1,
-        yAxisIndex: 1,
-        data: data
-      },
-      {
-        name: 'Dynamic Line',
-        type: 'line',
-        data: data2
-      }
-    ]
-  };
-  
+      yAxis: [
+        {
+          type: 'value',
+          scale: true,
+          name: 'CO2 Emission (kg)',
+          max: 1200,
+          min: 0,
+          boundaryGap: [0.2, 0.2],
+          axisLabel: {
+            formatter: '{value} kg'
+          }
+        },
+      ],
+      series: [
+        {
+          name: 'Dynamic Bar',
+          type: 'bar',
+          data: data
+        },
+        {
+          name: 'Dynamic Line',
+          type: 'line',
+          data: data2
+        }
+      ]
+    };
+
     app.count = 11;
     setInterval(function () {
-      let axisData = new Date().toLocaleTimeString().replace(/^\D*/, '');
+      let monthIndex = new Date().getMonth();
       data.shift();
       data.push(Math.round(Math.random() * 1000));
       data2.shift();
       data2.push(+(Math.random() * 10 + 5).toFixed(1));
       categories.shift();
-      categories.push(axisData);
-      categories2.shift();
-      categories2.push(app.count++);
+      categories.push(monthNames[monthIndex]);
       myChart.setOption({
-        xAxis: [
-          {
-            data: categories
-          },
-          {
-            data: categories2
-          }
-        ],
+        xAxis: {
+          data: categories
+        },
         series: [
           {
             data: data
@@ -160,7 +139,15 @@ option = {
     };
   }, []);
 
-  return <div id="main" style={{ width: "100%", height: "350px" }} />;
+  return (
+    <>
+      <Typography variant="h6" style={{ color: 'white', marginLeft: 30, marginTop: 15, fontSize:"1.25rem", fontWeight:"500", lineHeight:"20px" }}>
+        Infrastructure Power Cost
+      </Typography>
+  
+      <div id="main" style={{ width: "100%", height: "380px" }} />
+    </>
+  );
 };
 
 export default EmissionChart;

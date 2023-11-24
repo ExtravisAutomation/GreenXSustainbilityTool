@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { LineChart } from '@mui/x-charts/LineChart';
 import Typography from '@mui/material/Typography';
+import "./../../src/index.css"
 
 export default function DifferentLength() {
   let data = [
@@ -10,17 +11,21 @@ export default function DifferentLength() {
     { time: 4, renewable: 150, non_renewable: 250 },
     { time: 5, renewable: 300, non_renewable: 100 },
     { time: 6, renewable: 500, non_renewable: 400 },
-    { time: 7, renewable: 200, non_renewable: 100 }
+    { time: 7, renewable: 200, non_renewable: 100 },
   ];
 
   let timeArray = data.map((item) => item.time);
+  // let timeArray = data.map((item) => {
+    // const formattedTime = item.time < 10 ? `0${item.time}:00` : `${item.time}:00`;
+    // return formattedTime;
+  // });
 
   let renewable = data.map((item) => item.renewable);
   let nonRenewable = data.map((item) => item.non_renewable);
 
   return (
     <div>
-      <Typography variant="h6" gutterBottom style={{ color: "white", padding: "5px 0px 5px 50px" }}>
+      <Typography variant="h6" gutterBottom style={{ color: 'white', padding: '5px 0px 5px 50px' }}>
         Energy Cost Comparison
       </Typography>
       <LineChart
@@ -34,8 +39,8 @@ export default function DifferentLength() {
         ]}
         yAxis={[
           {
-            axisLine: { stroke: '#fff' }, // Y-axis line color
-            tickLine: { stroke: '#fff' }, // Y-axis tick line color
+            axisLine: { stroke: 'white' }, // Y-axis line color
+            tickLine: { stroke: 'white' }, // Y-axis tick line color
             tickText: { fill: 'white' }, // Y-axis tick text color
           },
         ]}
@@ -44,21 +49,22 @@ export default function DifferentLength() {
             data: renewable,
             valueFormatter: (value) => (value == null ? 'NaN' : value.toString()),
             lineStyle: {
-              strokeWidth: 2,
-              stroke: 'lightblue', // Adjust color for dark mode
+              strokeWidth: 0,
+              stroke: '#e4e4e4', // Adjust color for dark mode
               filter: 'url(#lineShadow)',
             },
           },
           {
             data: nonRenewable,
             lineStyle: {
-              strokeWidth: 2,
-              stroke: 'lightgreen', // Adjust color for dark mode
+              strokeWidth: 0,
+              stroke: '#2B8FCA', 
               filter: 'url(#lineShadow)',
+              color:"#2B8FCA"
             },
           },
         ]}
-        height={200}
+        height={240}
         margin={{ top: 10, bottom: 20 }}
       >
         <defs>

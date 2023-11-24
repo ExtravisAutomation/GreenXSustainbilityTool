@@ -1,6 +1,7 @@
 import React from 'react';
 import "./graphTable.css"
 import Typography from 'antd/es/typography/Typography';
+import "./../../src/index.css"
 
 const Table = () => {
   // Sample data for the table
@@ -13,7 +14,7 @@ const Table = () => {
 
   return (
     <>
-        <Typography variant="h6" gutterBottom className="graph-table-heading" style={{ color: '#E5E5E5', padding: '5px 0px 5px 5px' }}>
+        <Typography variant="h6" gutterBottom className="graph-table-heading" style={{ color: '#E5E5E5', padding: '8px 0px 2px 15px' }}>
         Top 5 Racks by space      </Typography>
     <table style={{width:"100%", marginTop:"20px", borderRadius:"7px"}}>
      
@@ -31,12 +32,12 @@ const Table = () => {
             <td>
                 <div style={{display:"flex", alignItems:"center",justifyContent:"space-between",minWidth:"80px", height:"35px", borderRadius:"7px"}}>
               {item.cost}%
-              <div className="percentage-bar cost" style={{ width: `${item.cost}%` }}></div>
+              <div className="percentage-bar cost" style={{ width: `${item.cost}%`, borderRadius:"20px" }}></div>
               </div>
             </td>
             <td style={{display:"flex", alignItems:"center", justifyContent:"space-between",height:"35px"}}>
               {item.power}%
-              <div className="percentage-bar power" style={{ width: `${item.power}%` }}></div>
+              <div className="percentage-bar power" style={{ width: `${item.power}%`, borderRadius:"20px", color:"#4C791B" }}></div>
             </td>
           </tr>
         ))}

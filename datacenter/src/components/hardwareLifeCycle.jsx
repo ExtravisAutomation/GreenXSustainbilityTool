@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import * as echarts from 'echarts';
+import Typography from 'antd/es/typography/Typography';
 
 const HardwareLifeCycle = ({ chartData }) => {
   useEffect(() => {
@@ -7,12 +8,12 @@ const HardwareLifeCycle = ({ chartData }) => {
     const myChart = echarts.init(chartDom);
 
     const option = {
-      title: {
-        text: 'Hardware Life Cycle',
-        textStyle: {
-          color: '#e5e5e5', // Title font color
-        },
-      },
+      // title: {
+      //   text: 'Hardware Life Cycle',
+      //   textStyle: {
+      //     color: '#e5e5e5', // Title font color
+      //   },
+      // },
       tooltip: {
         trigger: 'item',
       },
@@ -29,6 +30,7 @@ const HardwareLifeCycle = ({ chartData }) => {
           type: 'pie',
           radius: '50%',
           data: chartData,
+          color: ['#CC4C24', '#E1931E', '#4C69B5'], // Specify colors here
           emphasis: {
             itemStyle: {
               shadowBlur: 10,
@@ -37,7 +39,7 @@ const HardwareLifeCycle = ({ chartData }) => {
             },
           },
           label: {
-            show: true,
+            show: false,
             formatter: '{b}: {c} ({d}%)',
             textStyle: {
               color: '#e5e5e5', // Label text color
@@ -55,7 +57,15 @@ const HardwareLifeCycle = ({ chartData }) => {
     };
   }, [chartData]);
 
-  return <div id="hardware-life-cycle-chart" style={{ width: '100%', height: '400px' }} />;
+  return (
+    <>
+      <Typography variant="h6" style={{ color: 'white', marginLeft: 10, marginTop: 10, fontSize: "1.25rem", fontWeight: "500", lineHeight: "20px" }}>
+        Infrastructure Power Cost
+      </Typography>
+
+      <div id="hardware-life-cycle-chart" style={{ width: '100%', height: '400px' }} />
+    </>
+  );
 };
 
 export default HardwareLifeCycle;

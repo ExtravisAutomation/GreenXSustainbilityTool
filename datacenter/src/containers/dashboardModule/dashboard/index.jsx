@@ -7,34 +7,39 @@ import HardwareLifeCycle from '../../../components/hardwareLifeCycle.jsx'
 import UnusedPortsCharts from '../../../components/unusedPortGraph.jsx'
 import "./dashboard.css"
 import UsedFspsChart from '../../../components/usedFspsChart.jsx'
+import Grid from '@mui/material/Grid';
+
 
 function index() {
 
     const chartData = [
-        { value: 1048, name: 'Search Engine' },
-        { value: 735, name: 'Direct' },
-        { value: 580, name: 'Email' },
-        { value: 484, name: 'Union Ads' },
-        { value: 300, name: 'Video Ads' },
+        { value: 1048, name: 'End of Sale' },
+        { value: 580, name: 'End of Life' },
+        { value: 484, name: 'End of Support' },
       ];
   return (
     <>
-    <div style={{display:"flex", justifyContent:"space-between", marginTop:"30px"}}>
-
-        <div className='line-chart-wrapper'>
-      <LineChart/>
-      </div>
-
-      <div className='table-chart-wrapper'>
-      <GraphTable/>
-      </div>
+     <Grid container spacing={3} style={{ marginTop: '30px' }}>
+      <Grid item xs={12} sm={6}>
+        <div className='wrapper' style={{padding:"0px 0px 10px 0px"}}>
+        <LineChart />
+        </div>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <div className='wrapper' >
+        <GraphTable />
+        </div>
+      </Grid>
       
-
-    </div>
-
+    </Grid>
+    
+<div>  
 <div className='power-cost-chart-wrapper'>
+  
     <PowercostGraph/>
 </div>
+</div>
+
 <div style={{display:"flex", justifyContent:"space-between", marginTop:"30px"}}>
 
 <div style={{flexBasis:"40%"}}>first </div>

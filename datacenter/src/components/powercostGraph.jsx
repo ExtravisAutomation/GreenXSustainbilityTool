@@ -9,9 +9,12 @@ import {
   GridSimpleComponent,
   LegendComponent,
 } from 'echarts/components';
+import moment from 'moment';
+import Typography from "antd/es/typography/Typography";
 import { LineChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import { SVGRenderer } from 'echarts/renderers';
+
 
 echarts.use([
   TitleComponent,
@@ -34,30 +37,31 @@ const PowercostGraph = () => {
     const myChart = echarts.init(chartDom);
 
     const rawData = [
-      { time: 0, renewable: 1200, non_renewable: 400 },
-      { time: 1, renewable: 1200, non_renewable: 400 },
-      { time: 2, renewable: 1200, non_renewable: 400 },
-      { time: 3, renewable: 1200, non_renewable: 400 },
-      { time: 4, renewable: 1150, non_renewable: 400 },
-      { time: 5, renewable: 1100, non_renewable: 100 },
-      { time: 6, renewable: 1112, non_renewable: 250 },
-      { time: 7, renewable: 1000, non_renewable: 100 },
-      { time: 8, renewable: 1200, non_renewable: 400 },
-      { time: 9, renewable: 800, non_renewable: 100 }
+      { time: '2023-11-25T00:00:00', renewable: 1200 },
+      { time: '2023-11-26T00:00:00', renewable: 1200 },
+      { time: '2023-11-27T00:00:00', renewable: 1200 },
+      { time: '2023-11-28T00:00:00', renewable: 1200 },
+      { time: '2023-11-29T00:00:00', renewable: 1150 },
+      { time: '2023-11-30T00:00:00', renewable: 1100 },
+      { time: '2023-11-31T00:00:00', renewable: 1112 },
+      { time: '2023-12-01T00:00:00', renewable: 1000},
+      { time: '2023-12-02T00:00:00', renewable: 1200 },
+      { time: '2023-1-03T00:00:00', renewable: 800}
     ];
 
     const data = rawData.map(item => [item.time, item.renewable]);
     const data2 = rawData.map(item => [item.time, item.non_renewable]);
 
     const option = {
-      title: {
-        text: 'Infrastructure Power Cost',
-        left: 'left',
-        textStyle: {
-          color: '#E5E5E5',
-          fontSize: 16,
-        },
-      },
+      // // title: {
+      // //   text: 'Infrastructure Power Cost',
+      // //   left: 'left',
+      // //   textStyle: {
+      // //     color: '#E5E5E5',
+      // //     fontSize: 16,
+      // //     padding: [10, 0, 0, 10],
+      // //   },
+      // },
       legend: {
         top: 'bottom',
         data: ['Renewable', 'Non-renewable'],
@@ -73,6 +77,10 @@ const PowercostGraph = () => {
       },
       xAxis: {
         type: 'category',
+        axisLabel: {
+          formatter: function (value) {
+            return moment(value).format('HH:mm');
+          },},
         data: rawData.map(item => item.time),
         axisPointer: {
           value: '1',
@@ -112,10 +120,10 @@ const PowercostGraph = () => {
         z: 10,
       },
       grid: {
-        top: 110,
+        top: 120,
         left: 15,
         right: 15,
-        height: 334,
+        height: 240,
         borderRadius: [7, 7, 0, 0],
         borderColor: '#36424E',
         borderWidth: 1,
@@ -142,11 +150,11 @@ const PowercostGraph = () => {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
               {
                 offset: 0,
-                color: 'rgba(58,77,233,0.8)',
+                color: '#27648a75',
               },
               {
                 offset: 1,
-                color: 'rgba(58,77,233,0.3)',
+                color: '#2c3f4b1d',
               },
             ]),
           },
@@ -189,11 +197,17 @@ const PowercostGraph = () => {
   }, []);
 
   return (
+    <>
+    
+    <Typography variant="h6" style={{ color: 'white', marginLeft: 45, marginTop: 10, fontSize:"1.25rem", fontWeight:"500", lineHeight:"20px" }}>
+        Infrastructure Power Cost
+      </Typography>
     <div
       className=""
       ref={chartRef}
       style={{ width: "100%", height: "100%" }}
     />
+    </>
   );
 };
 

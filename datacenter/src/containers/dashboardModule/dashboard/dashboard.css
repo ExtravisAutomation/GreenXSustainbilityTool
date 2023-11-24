@@ -1,3 +1,10 @@
+.wrapper{
+    border: 1px solid #36424E;
+    border-radius: 7px;
+}
+
+
+
 .line-chart-wrapper{
     max-width: 50%;
     border: 1px solid #36424E;
@@ -20,18 +27,19 @@
     border: 1px solid #36424E;
     border-radius: 7px;
     margin-top: 30px;
-    height: 334px;
+    height: 440px;
+    padding-bottom: 20px;
 
   
 }
 .emission-chart-wrapper{
-    flex-basis: 70%;
+    flex-basis: 75%;
     /* max-width: 50%; */
     border: 1px solid #36424E;
     border-radius: 7px;
     /* border: 2px solid red */
     /* width: 616px; */
-    height: 300px;
+    height: 370px;
 }
 .donut-graph-wrapper{
     flex-basis: 30%;

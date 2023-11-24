@@ -1,41 +1,27 @@
 import React, { useEffect } from 'react';
 import * as echarts from 'echarts';
+import Typography from 'antd/es/typography/Typography';
 
 const UsedFspsChart = () => {
   useEffect(() => {
-    const chartDom = document.getElementById('used-fsps-chart'); // Correct chart ID
+    const chartDom = document.getElementById('used-ports-chart'); // Corrected ID
     const myChart = echarts.init(chartDom);
 
     const option = {
-      title: {
-        text: 'Used FSPs', // Correct title
-        left: '5%',
-        top: '2%',
-        textStyle: {
-          color: '#e5e5e5', // Title text color
-        },
-      },
       tooltip: {
         trigger: 'item',
+        formatter: '{a} <br/>{b}: {c} ({d}%)',
       },
       legend: {
         orient: 'horizontal',
-        bottom: '2%',
-        textStyle: {
-          color: '#e5e5e5', // Legend text color
-        },
+        bottom: 20, // Position at the bottom
       },
       series: [
         {
           name: 'Access From',
           type: 'pie',
-          radius: '50%',
+          radius: ['40%', '70%'],
           avoidLabelOverlap: false,
-          itemStyle: {
-            borderRadius: 10,
-            borderColor: '#fff',
-            borderWidth: 2,
-          },
           label: {
             show: false,
             position: 'center',
@@ -43,7 +29,7 @@ const UsedFspsChart = () => {
           emphasis: {
             label: {
               show: true,
-              fontSize: 14, // Adjusted font size
+              fontSize: 20,
               fontWeight: 'bold',
             },
           },
@@ -51,11 +37,10 @@ const UsedFspsChart = () => {
             show: false,
           },
           data: [
-            { value: 1048, name: 'Search Engine' },
-            { value: 735, name: 'Direct' },
-            { value: 580, name: 'Email' },
-            { value: 484, name: 'Union Ads' },
-            { value: 300, name: 'Video Ads' },
+            { value: 500, name: '1 Gig', itemStyle: { color: '#A02823' } },
+            { value: 2000, name: '10 Gig', itemStyle: { color: '#01A5DE' } },
+            { value: 1580, name: '40 Gig', itemStyle: { color: '#C89902' } },
+            { value: 484, name: '100 Gig', itemStyle: { color: '#5615A2' } },
           ],
         },
       ],
@@ -63,12 +48,20 @@ const UsedFspsChart = () => {
 
     option && myChart.setOption(option);
 
+    // Cleanup the chart on component unmount
     return () => {
       myChart.dispose();
     };
-  }, []);
+  }, []); // Empty dependency array ensures the effect runs only once on mount
 
-  return <div id="used-fsps-chart" style={{ width: '100%', height: '400px' }} />;
+  return (
+    <>
+      <Typography variant="h6" style={{ color: 'white', marginLeft: 10, marginTop: 10, fontSize: '1.25rem', fontWeight: '500', lineHeight: '20px' }}>
+        Used Ports
+      </Typography>
+      <div id="used-ports-chart" style={{ width: '100%', height: '400px' }} />
+    </>
+  );
 };
 
 export default UsedFspsChart;

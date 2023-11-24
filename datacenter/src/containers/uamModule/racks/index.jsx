@@ -47,6 +47,44 @@ const Index = () => {
   // selectors
   const dataSource = useSelector(selectTableData);
 
+
+
+  //dummy data to show
+
+  const rackPageData = [
+    {
+        "name": "Rack A1",
+        "site": "UAE Data Hub 1",
+        "location": "Row 1, Column 3",
+        "height": "42U",
+        "devices": ["Server A1-1", "Server A1-2", "Switch A1-3"],
+        "space": "80% Utilized",
+        "power": "3 kW"
+    },
+    {
+        "name": "Rack B2",
+        "site": "Desert Cloud Center",
+        "location": "Row 2, Column 5",
+        "height": "48U",
+        "devices": ["Server B2-1", "NAS B2-2", "Router B2-3"],
+        "space": "65% Utilized",
+        "power": "4.5 kW"
+    },
+    {
+        "name": "Rack C3",
+        "site": "Emerald Data Services",
+        "location": "Row 3, Column 7",
+        "height": "45U",
+        "devices": ["Server C3-1", "Firewall C3-2", "Switch C3-3"],
+        "space": "75% Utilized",
+        "power": "3.5 kW"
+    },
+    // Additional rack data can be added in a similar format
+];
+
+
+
+
   // apis
   const {
     data: fetchRecordsData,
@@ -210,7 +248,7 @@ const Index = () => {
             onChange={handleChange}
             rowSelection={rowSelection}
             columns={columns}
-            dataSource={dataSource}
+            dataSource={rackPageData}
             rowKey="rack_id"
             style={{ whiteSpace: "pre" }}
             pagination={{

@@ -48,6 +48,44 @@ const Index = () => {
 
   // selectors
   const dataSource = useSelector(selectTableData);
+  console.log("dataaaaaaaa", dataSource)
+
+//dummy data to show 
+const Site_Module_Data = [
+  {
+      "name": "UAE Data Hub 1",
+      "status": "Operational",
+      "facility": "Solar-Powered",
+      "Region": "Abu Dhabi"
+  },
+  {
+      "name": "Desert Cloud Center",
+      "status": "Under Construction",
+      "facility": "Wind-Powered",
+      "Region": "Dubai"
+  },
+  {
+      "name": "Emerald Data Services",
+      "status": "Operational",
+      "facility": "Geothermal Cooling",
+      "Region": "Sharjah"
+  },
+  {
+      "name": "Gulf Digital Node",
+      "status": "Operational",
+      "facility": "Hybrid (Solar & Wind)",
+      "Region": "Ajman"
+  },
+  {
+      "name": "Futuristic Data Vault",
+      "status": "Planning",
+      "facility": "Energy-Efficient Design",
+      "Region": "Fujairah"
+  }
+];
+
+
+
 
   // apis
   const {
@@ -224,7 +262,7 @@ const Index = () => {
             onChange={handleChange}
             rowSelection={rowSelection}
             columns={columns}
-            dataSource={dataSource}
+            dataSource={Site_Module_Data}
             rowKey="site_id"
             style={{ whiteSpace: "pre" }}
             pagination={{

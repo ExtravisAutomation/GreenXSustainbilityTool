@@ -1,75 +1,66 @@
-// UnusedPortsCharts.jsx
 import React, { useEffect } from 'react';
 import * as echarts from 'echarts';
+import Typography from 'antd/es/typography/Typography';
 
-const UnusedPortsCharts = () => {
+const UnusedPortsChart = () => {
   useEffect(() => {
     const chartDom = document.getElementById('unused-ports-chart');
     const myChart = echarts.init(chartDom);
 
     const option = {
-      title: {
-        text: 'Unused Ports',
-        left: '5%',
-        top: '2%',
-        textStyle: {
-          color: '#e5e5e5', // Title text color
-        },
-      },
       tooltip: {
-        trigger: 'item',
+        trigger: 'item'
       },
       legend: {
-        orient: 'horizontal',
-        bottom: '2%',
-        textStyle: {
-          color: '#e5e5e5', // Legend text color
-        },
+        top: '90%',
+        left: 'center'
       },
       series: [
         {
           name: 'Access From',
           type: 'pie',
-          radius: '50%',
+          radius: ['40%', '70%'],
           avoidLabelOverlap: false,
-          itemStyle: {
-            borderRadius: 10,
-            borderColor: '#fff',
-            borderWidth: 2,
-          },
           label: {
             show: false,
-            position: 'center',
+            position: 'center'
           },
           emphasis: {
             label: {
               show: true,
-              fontSize: 14, // Adjusted font size
-              fontWeight: 'bold',
-            },
+              fontSize: 40,
+              fontWeight: 'bold'
+            }
           },
           labelLine: {
-            show: false,
+            show: false
           },
           data: [
-            { value: 1048, name: 'Search Engine' },
-            { value: 735, name: 'Direct' },
-            { value: 580, name: 'Email' },
-            { value: 484, name: 'Union Ads' },
-            { value: 300, name: 'Video Ads' },
-          ],
-        },
-      ],
+            { value: 1048, name: '1 Gig', itemStyle: { color: '#A02823' } },
+            { value: 735, name: '10 Gig', itemStyle: { color: '#01A5DE' } },
+            { value: 580, name: '40 Gig', itemStyle: { color: '#C89902' } },
+            { value: 484, name: '100 Gig', itemStyle: { color: '#5615A2' } },
+          ]
+        }
+      ]
     };
 
     option && myChart.setOption(option);
 
+    // Cleanup the chart on component unmount
     return () => {
       myChart.dispose();
     };
-  }, []);
+  }, []); // Empty dependency array ensures the effect runs only once on mount
 
-  return <div id="unused-ports-chart" style={{ width: '100%', height: '400px' }} />;
+  return (
+    <>
+      <Typography variant="h6" style={{ color: 'white', marginLeft: 10, marginTop: 10, fontSize: "1.25rem", fontWeight: "500", lineHeight: "20px" }}>
+        Unused Ports
+      </Typography>
+      <div id="unused-ports-chart" style={{ width: '100%', height: '400px' }} />
+    </>
+  );
 };
 
-export default UnusedPortsCharts;
+export default UnusedPortsChart;
