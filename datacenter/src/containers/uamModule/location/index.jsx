@@ -123,7 +123,149 @@ const locationPageData = [
 
     },
 
-    // Additional location data can be added in a similar format
+    {
+
+      "name": "Location B",
+
+      "site": "Desert Cloud Center",
+
+      "location": "Section B, Floor 2",
+
+      "height": "Multiple Racks (48U each)",
+
+      "devices": [
+
+          "Rack B1 (Servers, Routers)",
+
+          "Rack B2 (NAS, Firewall)"
+
+      ],
+
+      "space": "70% Utilized",
+
+      "power": "20 kW"
+
+  },
+
+  {
+
+      "name": "Location C",
+
+      "site": "Emerald Data Services",
+
+      "location": "Section C, Floor 3",
+
+      "height": "Multiple Racks (45U each)",
+
+      "devices": [
+
+          "Rack C1 (Application Servers)",
+
+          "Rack C2 (Database Servers, Backup Systems)"
+
+      ],
+
+      "space": "90% Utilized",
+
+      "power": "18 kW"
+
+  },
+  {
+
+    "name": "Location B",
+
+    "site": "Desert Cloud Center",
+
+    "location": "Section B, Floor 2",
+
+    "height": "Multiple Racks (48U each)",
+
+    "devices": [
+
+        "Rack B1 (Servers, Routers)",
+
+        "Rack B2 (NAS, Firewall)"
+
+    ],
+
+    "space": "70% Utilized",
+
+    "power": "20 kW"
+
+},
+
+{
+
+    "name": "Location C",
+
+    "site": "Emerald Data Services",
+
+    "location": "Section C, Floor 3",
+
+    "height": "Multiple Racks (45U each)",
+
+    "devices": [
+
+        "Rack C1 (Application Servers)",
+
+        "Rack C2 (Database Servers, Backup Systems)"
+
+    ],
+
+    "space": "90% Utilized",
+
+    "power": "18 kW"
+
+},
+
+{
+
+  "name": "Location B",
+
+  "site": "Desert Cloud Center",
+
+  "location": "Section B, Floor 2",
+
+  "height": "Multiple Racks (48U each)",
+
+  "devices": [
+
+      "Rack B1 (Servers, Routers)",
+
+      "Rack B2 (NAS, Firewall)"
+
+  ],
+
+  "space": "70% Utilized",
+
+  "power": "20 kW"
+
+},
+
+{
+
+  "name": "Location C",
+
+  "site": "Emerald Data Services",
+
+  "location": "Section C, Floor 3",
+
+  "height": "Multiple Racks (45U each)",
+
+  "devices": [
+
+      "Rack C1 (Application Servers)",
+
+      "Rack C2 (Database Servers, Backup Systems)"
+
+  ],
+
+  "space": "90% Utilized",
+
+  "power": "18 kW"
+
+},
+// Additional location data can be added in a similar format
 
 ];
 

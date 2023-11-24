@@ -81,7 +81,43 @@ const Site_Module_Data = [
       "status": "Planning",
       "facility": "Energy-Efficient Design",
       "Region": "Fujairah"
-  }
+  },
+  {
+    "name": "Gulf Digital Node",
+    "status": "Operational",
+    "facility": "Hybrid (Solar & Wind)",
+    "Region": "Ajman"
+},
+{
+    "name": "Futuristic Data Vault",
+    "status": "Planning",
+    "facility": "Energy-Efficient Design",
+    "Region": "Fujairah"
+},
+{
+  "name": "Gulf Digital Node",
+  "status": "Operational",
+  "facility": "Hybrid (Solar & Wind)",
+  "Region": "Ajman"
+},
+{
+  "name": "Futuristic Data Vault",
+  "status": "Planning",
+  "facility": "Energy-Efficient Design",
+  "Region": "Fujairah"
+},
+{
+  "name": "Gulf Digital Node",
+  "status": "Operational",
+  "facility": "Hybrid (Solar & Wind)",
+  "Region": "Ajman"
+},
+{
+  "name": "Futuristic Data Vault",
+  "status": "Planning",
+  "facility": "Energy-Efficient Design",
+  "Region": "Fujairah"
+}
 ];
 
 

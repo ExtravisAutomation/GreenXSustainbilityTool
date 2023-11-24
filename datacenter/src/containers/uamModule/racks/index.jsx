@@ -79,6 +79,60 @@ const Index = () => {
         "space": "75% Utilized",
         "power": "3.5 kW"
     },
+    {
+      "name": "Rack B2",
+      "site": "Desert Cloud Center",
+      "location": "Row 2, Column 5",
+      "height": "48U",
+      "devices": ["Server B2-1", "NAS B2-2", "Router B2-3"],
+      "space": "65% Utilized",
+      "power": "4.5 kW"
+  },
+  {
+      "name": "Rack C3",
+      "site": "Emerald Data Services",
+      "location": "Row 3, Column 7",
+      "height": "45U",
+      "devices": ["Server C3-1", "Firewall C3-2", "Switch C3-3"],
+      "space": "75% Utilized",
+      "power": "3.5 kW"
+  },
+  {
+    "name": "Rack B2",
+    "site": "Desert Cloud Center",
+    "location": "Row 2, Column 5",
+    "height": "48U",
+    "devices": ["Server B2-1", "NAS B2-2", "Router B2-3"],
+    "space": "65% Utilized",
+    "power": "4.5 kW"
+},
+{
+    "name": "Rack C3",
+    "site": "Emerald Data Services",
+    "location": "Row 3, Column 7",
+    "height": "45U",
+    "devices": ["Server C3-1", "Firewall C3-2", "Switch C3-3"],
+    "space": "75% Utilized",
+    "power": "3.5 kW"
+},
+{
+  "name": "Rack B2",
+  "site": "Desert Cloud Center",
+  "location": "Row 2, Column 5",
+  "height": "48U",
+  "devices": ["Server B2-1", "NAS B2-2", "Router B2-3"],
+  "space": "65% Utilized",
+  "power": "4.5 kW"
+},
+{
+  "name": "Rack C3",
+  "site": "Emerald Data Services",
+  "location": "Row 3, Column 7",
+  "height": "45U",
+  "devices": ["Server C3-1", "Firewall C3-2", "Switch C3-3"],
+  "space": "75% Utilized",
+  "power": "3.5 kW"
+},
     // Additional rack data can be added in a similar format
 ];
 

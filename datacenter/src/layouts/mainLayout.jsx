@@ -105,36 +105,6 @@ export default function Index() {
       activeIcon: <img src={dashboardActiveIcon} alt="Admin" />,
       path: "dashboard_module",
     },
-    // {
-    //   name: "Atom",
-    //   inActiveIcon: <img src={atomInactiveIcon} alt="Atom" />,
-    //   activeIcon: <img src={atomActiveIcon} alt="Atom" />,
-    //   path: "atom_module",
-    // },
-    // {
-    //   name: "Auto Discovery",
-    //   inActiveIcon: <img src={autoDiscoveryInactiveIcon} alt="Atom" />,
-    //   activeIcon: <img src={autoDiscoveryActiveIcon} alt="Atom" />,
-    //   path: "auto_discovery_module",
-    // },
-    // {
-    //   name: "IPAM",
-    //   inActiveIcon: <img src={ipamInactiveIcon} alt="Atom" />,
-    //   activeIcon: <img src={ipamActiveIcon} alt="Atom" />,
-    //   path: "ipam_module",
-    // },
-    // {
-    //   name: "Monitoring",
-    //   inActiveIcon: <img src={monitoringInactiveIcon} alt="Atom" />,
-    //   activeIcon: <img src={monitoringActiveIcon} alt="Atom" />,
-    //   path: "monitoring_module",
-    // },
-    // {
-    //   name: "NCM",
-    //   inActiveIcon: <img src={ncmInactiveIcon} alt="Atom" />,
-    //   activeIcon: <img src={ncmActiveIcon} alt="Atom" />,
-    //   path: "ncm_module",
-    // },
     {
       name: "Sites",
       inActiveIcon: <img src={uamInactiveIcon} alt="Atom" />,

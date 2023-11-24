@@ -78,6 +78,78 @@ const Index = () => {
         "pue": 1.15,
         "power": "30 kW"
     },
+    {
+      "name": "Inventory Set 2",
+      "status": "Maintenance",
+      "site": "Desert Cloud Center",
+      "racks": ["Rack B1", "Rack B2"],
+      "manufacturer": "Hewlett Packard Enterprise",
+      "pue": 1.3,
+      "power": "18 kW"
+  },
+  {
+      "name": "Inventory Set 3",
+      "status": "Active",
+      "site": "Emerald Data Services",
+      "racks": ["Rack C1", "Rack C2", "Rack C3"],
+      "manufacturer": "Cisco Systems",
+      "pue": 1.15,
+      "power": "30 kW"
+  },
+  {
+    "name": "Inventory Set 2",
+    "status": "Maintenance",
+    "site": "Desert Cloud Center",
+    "racks": ["Rack B1", "Rack B2"],
+    "manufacturer": "Hewlett Packard Enterprise",
+    "pue": 1.3,
+    "power": "18 kW"
+},
+{
+    "name": "Inventory Set 3",
+    "status": "Active",
+    "site": "Emerald Data Services",
+    "racks": ["Rack C1", "Rack C2", "Rack C3"],
+    "manufacturer": "Cisco Systems",
+    "pue": 1.15,
+    "power": "30 kW"
+},
+{
+  "name": "Inventory Set 2",
+  "status": "Maintenance",
+  "site": "Desert Cloud Center",
+  "racks": ["Rack B1", "Rack B2"],
+  "manufacturer": "Hewlett Packard Enterprise",
+  "pue": 1.3,
+  "power": "18 kW"
+},
+{
+  "name": "Inventory Set 3",
+  "status": "Active",
+  "site": "Emerald Data Services",
+  "racks": ["Rack C1", "Rack C2", "Rack C3"],
+  "manufacturer": "Cisco Systems",
+  "pue": 1.15,
+  "power": "30 kW"
+},
+{
+  "name": "Inventory Set 2",
+  "status": "Maintenance",
+  "site": "Desert Cloud Center",
+  "racks": ["Rack B1", "Rack B2"],
+  "manufacturer": "Hewlett Packard Enterprise",
+  "pue": 1.3,
+  "power": "18 kW"
+},
+{
+  "name": "Inventory Set 3",
+  "status": "Active",
+  "site": "Emerald Data Services",
+  "racks": ["Rack C1", "Rack C2", "Rack C3"],
+  "manufacturer": "Cisco Systems",
+  "pue": 1.15,
+  "power": "30 kW"
+},
     // Additional inventory data can be added in a similar format
 ];
 
