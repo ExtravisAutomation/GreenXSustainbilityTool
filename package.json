@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "apexcharts": "^3.44.0",
+    "react-apexcharts": "^1.4.1",
     "react-calendar-heatmap": "^1.9.0"
   }
 }
