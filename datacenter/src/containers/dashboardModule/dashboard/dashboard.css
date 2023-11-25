@@ -32,6 +32,17 @@
 
   
 }
+.head-map{
+    flex-basis: 75%;
+    /* max-width: 50%; */
+    border: 1px solid #36424E;
+    border-radius: 7px;
+    /* border: 2px solid red */
+    /* width: 616px; */
+    height: 370px;
+
+
+}
 .emission-chart-wrapper{
     flex-basis: 75%;
     /* max-width: 50%; */
