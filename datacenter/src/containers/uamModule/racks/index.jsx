@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import DefaultTable from "../../../components/tables";
 import { getTitle } from "../../../utils/helpers";
 import Modal from "./modal";
+import { useNavigate } from "react-router-dom";
 import {
   useFetchRecordsQuery,
   useDeleteRecordsMutation,
@@ -28,9 +29,11 @@ import useErrorHandling from "../../../hooks/useErrorHandling";
 import { dataKeysArray } from "./constants";
 import PageHeader from "../../../components/pageHeader";
 
+
 const Index = () => {
   // theme
   const theme = useTheme();
+  const navigate = useNavigate();
 
   // hooks
   const { height, width } = useWindowDimensions();
@@ -279,8 +282,21 @@ const Index = () => {
       type: "Add",
       icon: <Icon fontSize="16px" icon="gridicons:add-outline" />,
       handleClick: handleAdd,
-    },
+    },    
   ];
+  const onRowClick = (record) => {
+    navigate(`/uam_module/rack/${record.rack_id}`);
+  };
+
+  const rowProps = (record) => {
+    return {
+      onClick: () =>
+       onRowClick(record),
+   
+    };
+  };
+
+  
 
   return (
     <Spin spinning={isFetchRecordsLoading || isDeleteRecordsLoading}>
@@ -309,6 +325,7 @@ const Index = () => {
               defaultPageSize: 9,
               pageSizeOptions: [9, 50, 100, 500, 1000],
             }}
+            onRow={rowProps}
           />
         </DefaultCard>
       </div>

@@ -59,17 +59,14 @@ function dailyCostGraph(props) {
       <div
         style={{
           border: "1px solid #36424E",
-          margin: "5px 20px",
+          margin: "0px 20px",
           height: "370px",
           borderRadius: "7px",
           color: "#e5e5e5",
           flexBasis:"70%"
         }}
       >
-       
 <CostInternalChart/>
-         
-     
       </div>
       </div>
     </div>

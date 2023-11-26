@@ -62,13 +62,8 @@ function index() {
 <div className='donut-graph-wrapper' ><UsedFspsChart/></div>
 
 </div>
-<div style={{border:'1px solid #36424E',marginTop:"30px", borderRadius:"7px",height:"500px"}}>
-
-
-
-
-
 {/* 3 x Table Dataaaaa */}
+<div style={{border:'1px solid #36424E',marginTop:"30px", borderRadius:"7px",height:"500px"}}>
 <div style={{display:"flex", justifyContent:"space-evenly", marginTop:"30px"}}>
 <div className='table-data-wrapper' style={{height:"450px"}} ><TopDevicesCost heading="Estimated Cost" headericon={dollar}/></div>
 <div className='table-data-wrapper'  style={{height:"450px"}} > <TopDevicesCost heading="Energy Consumption"headericon={electric}/></div>
@@ -79,13 +74,13 @@ function index() {
 
 
 
-<div style={{border:'1px solid #36424E',marginTop:"30px", borderRadius:"7px",height:"500px"}}>
+{/* <div style={{border:'1px solid #36424E',marginTop:"30px", borderRadius:"7px",height:"500px"}}>
 
 <UaeSiteMap/>
 
 
 
-</div>
+</div> */}
 
 
 
@@ -93,7 +88,7 @@ function index() {
 
 <div style={{display:"flex", justifyContent:"center", marginTop:"0px"}}>
 
-<div className='cost-graph-wrapper'  style={{height:"450px"}} > 
+<div className='cost-graph-wrapper'  style={{height:"400px"}} > 
 <DailyCostGraph heading="Cost"headericon={electric}/>
 </div>
 

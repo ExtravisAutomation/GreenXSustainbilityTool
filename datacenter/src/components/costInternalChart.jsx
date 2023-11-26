@@ -4,15 +4,16 @@ import * as echarts from 'echarts';
 const CostInternalChart = () => {
   useEffect(() => {
     const chartDom = document.getElementById('cost-internal-chart');
-    const myChart = echarts.init(chartDom, );
+    const myChart = echarts.init(chartDom);
 
     const option = {
       legend: {
-        top: 345,
-        left: 'center',
+        orient: 'vertical',
+        right: 10, // Adjust the value to move the legend closer or farther from the right edge
+        top: 'middle', // Adjust the value to move the legend up or down
         textStyle: {
-            color: '#e5e5e5', // Legend text color
-          },
+          color: '#e5e5e5', // Legend text color
+        },
       },
       toolbox: {
         show: true,
@@ -27,7 +28,7 @@ const CostInternalChart = () => {
         {
           name: 'Nightingale Chart',
           type: 'pie',
-          radius: [50, 150],
+          radius: [110, 150],
           center: ['50%', '50%'],
           roseType: 'area',
           itemStyle: {
@@ -35,8 +36,8 @@ const CostInternalChart = () => {
           },
           label: {
             show: true,
-            // position: 'left',
-           
+            position: 'right',
+            bottom: 5,
           },
           data: [
             { value: 40, name: 'rose 1' },
@@ -60,7 +61,7 @@ const CostInternalChart = () => {
     };
   }, []);
 
-  return <div id="cost-internal-chart" style={{ width: '100%', height: '380px' }} />;
+  return <div id="cost-internal-chart" style={{ width: '100%', height: '370px' }} />;
 };
 
 export default CostInternalChart;
