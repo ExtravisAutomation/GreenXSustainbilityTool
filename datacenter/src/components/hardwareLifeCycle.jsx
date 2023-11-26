@@ -19,7 +19,7 @@ const HardwareLifeCycle = ({ chartData }) => {
       },
       legend: {
         orient: 'horizontal', // Change to horizontal orientation
-        bottom: '5%', // Position at the bottom
+        bottom: 5, // Position at the bottom
         textStyle: {
           color: '#e5e5e5', // Legend text color
         },
@@ -28,7 +28,7 @@ const HardwareLifeCycle = ({ chartData }) => {
         {
           name: 'Access From',
           type: 'pie',
-          radius: '50%',
+          radius: '70%',
           data: chartData,
           color: ['#CC4C24', '#E1931E', '#4C69B5'], // Specify colors here
           emphasis: {
@@ -59,11 +59,10 @@ const HardwareLifeCycle = ({ chartData }) => {
 
   return (
     <>
-      <Typography variant="h6" style={{ color: 'white', marginLeft: 10, marginTop: 10, fontSize: "1.25rem", fontWeight: "500", lineHeight: "20px" }}>
-        Infrastructure Power Cost
-      </Typography>
+      <Typography variant="h6" style={{ color: 'white', marginLeft: 10, marginTop: 10, fontSize: "16px", fontWeight: "500", lineHeight: "20px" }}>
+Hardware Lifycycle      </Typography>
 
-      <div id="hardware-life-cycle-chart" style={{ width: '100%', height: '400px' }} />
+      <div id="hardware-life-cycle-chart" style={{ width: '100%', height: '350px' }} />
     </>
   );
 };

@@ -12,8 +12,12 @@ const UnusedPortsChart = () => {
         trigger: 'item'
       },
       legend: {
-        top: '90%',
-        left: 'center'
+        bottom: 5,
+        left: 'center',
+        textStyle: {
+          color: '#e5e5e5', // Legend text color
+        },
+        
       },
       series: [
         {
@@ -23,24 +27,28 @@ const UnusedPortsChart = () => {
           avoidLabelOverlap: false,
           label: {
             show: false,
-            position: 'center'
+            position: 'center',
+           
           },
           emphasis: {
             label: {
               show: true,
               fontSize: 40,
-              fontWeight: 'bold'
+              fontWeight: 'bold',
+             
             }
           },
+         
           labelLine: {
             show: false
           },
           data: [
-            { value: 1048, name: '1 Gig', itemStyle: { color: '#A02823' } },
-            { value: 735, name: '10 Gig', itemStyle: { color: '#01A5DE' } },
-            { value: 580, name: '40 Gig', itemStyle: { color: '#C89902' } },
-            { value: 484, name: '100 Gig', itemStyle: { color: '#5615A2' } },
+            { value: 1048, name: '1 Gig', itemStyle: { color: '#FF6F61' } },   // Coral Red
+            { value: 735, name: '10 Gig', itemStyle: { color: '#00C2E0' } },  // Sky Blue
+            { value: 580, name: '40 Gig', itemStyle: { color: '#FFC300' } },  // Sunflower Yellow
+            { value: 484, name: '100 Gig', itemStyle: { color: '#9754E2' } }, // Royal Purple
           ]
+          
         }
       ]
     };
@@ -55,10 +63,10 @@ const UnusedPortsChart = () => {
 
   return (
     <>
-      <Typography variant="h6" style={{ color: 'white', marginLeft: 10, marginTop: 10, fontSize: "1.25rem", fontWeight: "500", lineHeight: "20px" }}>
+      <Typography variant="h6" style={{ color: 'white', marginLeft: 10, marginTop: 10, fontSize: "16px", fontWeight: "500", lineHeight: "20px" }}>
         Unused Ports
       </Typography>
-      <div id="unused-ports-chart" style={{ width: '100%', height: '400px' }} />
+      <div id="unused-ports-chart" style={{ width: '100%', height: '350px' }} />
     </>
   );
 };

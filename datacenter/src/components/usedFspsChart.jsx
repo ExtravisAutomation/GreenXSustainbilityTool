@@ -14,7 +14,10 @@ const UsedFspsChart = () => {
       },
       legend: {
         orient: 'horizontal',
-        bottom: 20, // Position at the bottom
+        bottom: 5, // Position at the bottom
+        textStyle: {
+          color: '#e5e5e5', // Legend text color
+        },
       },
       series: [
         {
@@ -37,10 +40,10 @@ const UsedFspsChart = () => {
             show: false,
           },
           data: [
-            { value: 500, name: '1 Gig', itemStyle: { color: '#A02823' } },
-            { value: 2000, name: '10 Gig', itemStyle: { color: '#01A5DE' } },
+            { value: 500, name: '1 Gig', itemStyle: { color: '#1A3F4E' } },
+            { value: 2000, name: '10 Gig', itemStyle: { color: '#0490E7' } },
             { value: 1580, name: '40 Gig', itemStyle: { color: '#C89902' } },
-            { value: 484, name: '100 Gig', itemStyle: { color: '#5615A2' } },
+            { value: 484, name: '100 Gig', itemStyle: { color: '#4C791B' } },
           ],
         },
       ],
@@ -56,10 +59,10 @@ const UsedFspsChart = () => {
 
   return (
     <>
-      <Typography variant="h6" style={{ color: 'white', marginLeft: 10, marginTop: 10, fontSize: '1.25rem', fontWeight: '500', lineHeight: '20px' }}>
-        Used Ports
+      <Typography variant="h6" style={{ color: 'white', marginLeft: 10, marginTop: 10, fontSize: '16px', fontWeight: '500', lineHeight: '20px' }}>
+        Unused SFPs
       </Typography>
-      <div id="used-ports-chart" style={{ width: '100%', height: '400px' }} />
+      <div id="used-ports-chart" style={{ width: '100%', height: '350px' }} />
     </>
   );
 };

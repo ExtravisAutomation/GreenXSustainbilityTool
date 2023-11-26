@@ -142,7 +142,7 @@ const EmissionChart = () => {
   return (
     <>
       <Typography variant="h6" style={{ color: 'white', marginLeft: 30, marginTop: 15, fontSize:"1.25rem", fontWeight:"500", lineHeight:"20px" }}>
-        Infrastructure Power Cost
+        CO2 Emission
       </Typography>
   
       <div id="main" style={{ width: "100%", height: "380px" }} />

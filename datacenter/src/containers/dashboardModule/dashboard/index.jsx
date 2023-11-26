@@ -43,7 +43,9 @@ function index() {
 
 <div style={{display:"flex", justifyContent:"space-between", marginTop:"30px"}}>
 
-<div style={{flexBasis:"40%"}} className='heat-map'><HeatmapChart/></div>
+<div style={{flexBasis:"30%"}} className='heat-map'>
+  {/* <HeatmapChart/> */}
+  </div>
 <div className='emission-chart-wrapper'><EmissionChart/></div>
 
 
