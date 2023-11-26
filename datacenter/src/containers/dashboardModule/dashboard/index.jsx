@@ -8,7 +8,12 @@ import UnusedPortsCharts from '../../../components/unusedPortGraph.jsx'
 import "./dashboard.css"
 import UsedFspsChart from '../../../components/usedFspsChart.jsx'
 import Grid from '@mui/material/Grid';
-import HeatmapChart from '../../../components/heatmapChart.jsx'
+import DailyCostGraph from '../../../components/dailyCostGraph.jsx'
+import TopDevicesCost from "../../../components/topDevicesCost.jsx"
+import dollar from "../../../resources/svgs/dollar.png"
+import electric from "../../../resources/svgs/electric.png"
+import leaf from "../../../resources/svgs/leaf.png"
+import UaeSiteMap from '../../../components/uaeSiteMap.jsx'
 
 
 function index() {
@@ -56,6 +61,38 @@ function index() {
 <div className='donut-graph-wrapper' ><UnusedPortsCharts/></div>
 <div className='donut-graph-wrapper' ><UsedFspsChart/></div>
 
+</div>
+<div style={{border:'1px solid #36424E',marginTop:"30px", borderRadius:"7px",height:"500px"}}>
+
+<div style={{display:"flex", justifyContent:"space-evenly", marginTop:"30px"}}>
+<div className='donut-graph-wrapper' style={{height:"450px"}} ><TopDevicesCost heading="Estimated Cost" headericon={dollar}/></div>
+<div className='donut-graph-wrapper'  style={{height:"450px"}} > <TopDevicesCost heading="Energy Consumption"headericon={electric}/></div>
+<div className='donut-graph-wrapper'  style={{height:"450px"}}><TopDevicesCost heading="Estimated GHG Emissions" headericon={leaf}/></div>
+
+</div>
+</div>
+
+
+
+<div style={{border:'1px solid #36424E',marginTop:"30px", borderRadius:"7px",height:"500px"}}>
+
+{/* <UaeSiteMap/> */}
+
+
+
+</div>
+
+
+
+<div style={{border:'1px solid #36424E',marginTop:"30px", borderRadius:"7px",height:"500px"}}>
+
+<div style={{display:"flex", justifyContent:"center", marginTop:"0px"}}>
+
+<div className='cost-graph-wrapper'  style={{height:"450px"}} > 
+<DailyCostGraph heading="Cost"headericon={electric}/>
+</div>
+
+</div>
 </div>
 
     </>
