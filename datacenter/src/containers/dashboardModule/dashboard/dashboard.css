@@ -33,7 +33,7 @@
   
 }
 .head-map{
-    flex-basis: 75%;
+    flex-basis: 50%;
     /* max-width: 50%; */
     border: 1px solid #36424E;
     border-radius: 7px;
@@ -43,8 +43,9 @@
 
 
 }
+
 .emission-chart-wrapper{
-    flex-basis: 75%;
+    flex-basis: 52%;
     /* max-width: 50%; */
     border: 1px solid #36424E;
     border-radius: 7px;
@@ -59,6 +60,13 @@
     border-radius: 7px;
     height: 380px;
 
+}
+.table-data-wrapper{
+
+    flex-basis: 30%;
+    border: 1px solid #36424E;
+    border-radius: 7px;
+    height: 380px;
 }
 .cost-graph-title-wrapper{
     flex-basis: 30%;

@@ -14,7 +14,7 @@ import dollar from "../../../resources/svgs/dollar.png"
 import electric from "../../../resources/svgs/electric.png"
 import leaf from "../../../resources/svgs/leaf.png"
 import UaeSiteMap from '../../../components/uaeSiteMap.jsx'
-
+import  HeatmapChart  from '../../../components/heatmapChart.jsx'
 
 function index() {
 
@@ -48,8 +48,8 @@ function index() {
 
 <div style={{display:"flex", justifyContent:"space-between", marginTop:"30px"}}>
 
-<div style={{flexBasis:"30%"}} className='heat-map'>
-  {/* <HeatmapChart/> */}
+<div style={{flexBasis:"40%"}} className='heat-map'>
+  <HeatmapChart/>
   </div>
 <div className='emission-chart-wrapper'><EmissionChart/></div>
 
@@ -64,10 +64,15 @@ function index() {
 </div>
 <div style={{border:'1px solid #36424E',marginTop:"30px", borderRadius:"7px",height:"500px"}}>
 
+
+
+
+
+{/* 3 x Table Dataaaaa */}
 <div style={{display:"flex", justifyContent:"space-evenly", marginTop:"30px"}}>
-<div className='donut-graph-wrapper' style={{height:"450px"}} ><TopDevicesCost heading="Estimated Cost" headericon={dollar}/></div>
-<div className='donut-graph-wrapper'  style={{height:"450px"}} > <TopDevicesCost heading="Energy Consumption"headericon={electric}/></div>
-<div className='donut-graph-wrapper'  style={{height:"450px"}}><TopDevicesCost heading="Estimated GHG Emissions" headericon={leaf}/></div>
+<div className='table-data-wrapper' style={{height:"450px"}} ><TopDevicesCost heading="Estimated Cost" headericon={dollar}/></div>
+<div className='table-data-wrapper'  style={{height:"450px"}} > <TopDevicesCost heading="Energy Consumption"headericon={electric}/></div>
+<div className='table-data-wrapper'  style={{height:"450px"}}><TopDevicesCost heading="Estimated GHG Emissions" headericon={leaf}/></div>
 
 </div>
 </div>
@@ -76,7 +81,7 @@ function index() {
 
 <div style={{border:'1px solid #36424E',marginTop:"30px", borderRadius:"7px",height:"500px"}}>
 
-{/* <UaeSiteMap/> */}
+<UaeSiteMap/>
 
 
 
