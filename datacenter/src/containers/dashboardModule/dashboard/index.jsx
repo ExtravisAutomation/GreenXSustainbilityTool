@@ -15,6 +15,7 @@ import electric from "../../../resources/svgs/electric.png"
 import leaf from "../../../resources/svgs/leaf.png"
 import UaeSiteMap from '../../../components/uaeSiteMap.jsx'
 import  HeatmapChart  from '../../../components/heatmapChart.jsx'
+import Dropdown from "../../../components/dropdown.jsx"
 
 function index() {
 
@@ -25,7 +26,11 @@ function index() {
       ];
   return (
     <>
-     <Grid container spacing={3} style={{ marginTop: '30px' }}>
+    <div style={{display:"flex", justifyContent:"end", alignItems:"center", padding:"20px 0px 0px 0px"}}>
+     <Dropdown/>
+     </div>
+     <Grid container spacing={3} style={{ marginTop: '0px' }}>
+     
       <Grid item xs={12} sm={6}>
         <div className='wrapper' style={{padding:"0px 0px 10px 0px"}}>
         <LineChart />

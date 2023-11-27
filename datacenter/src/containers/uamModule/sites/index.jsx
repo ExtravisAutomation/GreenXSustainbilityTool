@@ -53,16 +53,16 @@ const Index = () => {
 //dummy data to show 
 const Site_Module_Data = [
   {
-      "name": "UAE Data Hub 1",
-      "status": "Operational",
-      "facility": "Solar-Powered",
-      "Region": "Abu Dhabi"
+      "name": "DXB",
+      "status": "Active",
+      "facility": "DSW",
+      "Region": "Dubai"
   },
   {
-      "name": "Desert Cloud Center",
-      "status": "Under Construction",
-      "facility": "Wind-Powered",
-      "Region": "Dubai"
+      "name": "SHJ",
+      "status": "Active",
+      "facility": "DSW",
+      "Region": "Sharjah+"
   },
   {
       "name": "Emerald Data Services",
