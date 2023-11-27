@@ -134,7 +134,7 @@ const PowercostGraph = () => {
       ],
       series: [
         {
-          name: 'Renewable',
+          // name: 'Renewable',
           type: 'line',
           smooth: true,
           symbol: 'circle',
@@ -159,7 +159,7 @@ const PowercostGraph = () => {
           data: data,
         },
         {
-          name: 'Non-renewable',
+          // name: 'Non-renewable',
           type: 'line',
           smooth: true,
           stack: 'a',
