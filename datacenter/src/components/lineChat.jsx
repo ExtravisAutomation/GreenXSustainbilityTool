@@ -4,15 +4,15 @@ import Typography from '@mui/material/Typography';
 
 export default function DifferentLength() {
   let data = [
-    { time: 1, renewable: 100, non_renewable: 400 },
-    { time: 2, renewable: 400, non_renewable: 500 },
-    { time: 3, renewable: 250, non_renewable: 550 },
-    { time: 4, renewable: 150, non_renewable: 450 },
-    { time: 5, renewable: 300, non_renewable: 600 },
-    { time: 6, renewable: 100, non_renewable: 500 },
-    { time: 7, renewable: 200, non_renewable: 700 },
-    { time: 8, renewable: 450, non_renewable: 650 },
-    { time: 9, renewable: 200, non_renewable: 550 },
+    { time: 1, renewable: 400, non_renewable: 100 },
+    { time: 2, renewable: 500, non_renewable: 400 },
+    { time: 3, renewable: 550, non_renewable: 250 },
+    { time: 4, renewable: 450, non_renewable: 150 },
+    { time: 5, renewable: 600, non_renewable: 300 },
+    { time: 6, renewable: 500, non_renewable: 100 },
+    { time: 7, renewable: 700, non_renewable: 200 },
+    { time: 8, renewable: 650, non_renewable: 450 },
+    { time: 9, renewable: 550, non_renewable: 200 },
     // { time: 10, renewable: 500, non_renewable: 200 },
     // { time: 11, renewable: 300, non_renewable: 100 },
   ];
