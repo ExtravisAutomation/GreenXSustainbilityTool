@@ -1,10 +1,8 @@
 export const dataKeysArray = [
     "name",
     "site",
-    "location",
-    "height ",
+    "racks",
     "devices",
-    "space",
-    "power", 
+    "space_row",
         
   ];

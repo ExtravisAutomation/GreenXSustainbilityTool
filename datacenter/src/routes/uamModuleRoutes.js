@@ -13,6 +13,7 @@ import Aps from "../containers/uamModule/aps";
 import Hwlifecycle from "../containers/uamModule/hwLiveCycle"
 import SiteDetail from "../containers/uamModule/sites/siteDetail";
 import RackDetail from "../containers/uamModule/racks/rackDetail";
+import InventoryDetail from "../containers/uamModule/inventory/inventoryDetail";
 import { Navigate } from "react-router-dom";
 
 const routes = {
@@ -46,6 +47,10 @@ const routes = {
    {
     path:"rack/:id",
     element:<RackDetail/>,
+   },
+   {
+    path:"inventory/:id",
+    element:<InventoryDetail/>,
    },
 
   ],

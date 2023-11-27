@@ -47,231 +47,68 @@ const Index = () => {
   // selectors
   const dataSource = useSelector(selectTableData);
 
-//dummy data 
+  //dummy data
 
-const locationPageData = [
-
+  const locationPageData = [
     {
-
-        "name": "Location A",
-
-        "site": "UAE Data Hub 1",
-
-        "location": "Section A, Floor 1",
-
-        "height": "Multiple Racks (42U each)",
-
-        "devices": [
-
-            "Rack A1 (Servers, Switches)",
-
-            "Rack A2 (Storage, Network Equipment)"
-
-        ],
-
-        "space": "85% Utilized",
-
-        "power": "15 kW"
-
+      name: "Row_1",
+      site: "DXB",
+      racks: "08",
+      devices: "32",
+      space_row: "58% Utilized",
+    },
+    {
+      name: "Row_1",
+      site: "SHJ",
+      racks: "08",
+      devices: "16",
+      space_row: "26% Utilized",
+    },
+    {
+      name: "Row_1",
+      site: "AUH",
+      racks: "08",
+      devices: "18",
+      space_row: "10% Utilized",
+    },
+    {
+      name: "Row_1",
+      site: "FUJ",
+      racks: "08",
+      devices: "24",
+      space_row: "16% Utilized",
+    },
+    {
+      name: "Row_2",
+      site: "RAK",
+      racks: "07",
+      devices: "17",
+      space_row: "17% Utilized",
+    },
+    {
+      name: "Row_2",
+      site: "UAQ",
+      racks: "07",
+      devices: "21",
+      space_row: "46% Utilized",
+    },
+    {
+      name: "Row_2",
+      site: "AJM",
+      racks: "10",
+      devices: "20",
+      space_row: "20% Utilized",
+    },
+    {
+      name: "Row_3",
+      site: "AAN",
+      racks: "10",
+      devices: "15",
+      space_row: "50%",
     },
 
-    {
-
-        "name": "Location B",
-
-        "site": "Desert Cloud Center",
-
-        "location": "Section B, Floor 2",
-
-        "height": "Multiple Racks (48U each)",
-
-        "devices": [
-
-            "Rack B1 (Servers, Routers)",
-
-            "Rack B2 (NAS, Firewall)"
-
-        ],
-
-        "space": "70% Utilized",
-
-        "power": "20 kW"
-
-    },
-
-    {
-
-        "name": "Location C",
-
-        "site": "Emerald Data Services",
-
-        "location": "Section C, Floor 3",
-
-        "height": "Multiple Racks (45U each)",
-
-        "devices": [
-
-            "Rack C1 (Application Servers)",
-
-            "Rack C2 (Database Servers, Backup Systems)"
-
-        ],
-
-        "space": "90% Utilized",
-
-        "power": "18 kW"
-
-    },
-
-    {
-
-      "name": "Location B",
-
-      "site": "Desert Cloud Center",
-
-      "location": "Section B, Floor 2",
-
-      "height": "Multiple Racks (48U each)",
-
-      "devices": [
-
-          "Rack B1 (Servers, Routers)",
-
-          "Rack B2 (NAS, Firewall)"
-
-      ],
-
-      "space": "70% Utilized",
-
-      "power": "20 kW"
-
-  },
-
-  {
-
-      "name": "Location C",
-
-      "site": "Emerald Data Services",
-
-      "location": "Section C, Floor 3",
-
-      "height": "Multiple Racks (45U each)",
-
-      "devices": [
-
-          "Rack C1 (Application Servers)",
-
-          "Rack C2 (Database Servers, Backup Systems)"
-
-      ],
-
-      "space": "90% Utilized",
-
-      "power": "18 kW"
-
-  },
-  {
-
-    "name": "Location B",
-
-    "site": "Desert Cloud Center",
-
-    "location": "Section B, Floor 2",
-
-    "height": "Multiple Racks (48U each)",
-
-    "devices": [
-
-        "Rack B1 (Servers, Routers)",
-
-        "Rack B2 (NAS, Firewall)"
-
-    ],
-
-    "space": "70% Utilized",
-
-    "power": "20 kW"
-
-},
-
-{
-
-    "name": "Location C",
-
-    "site": "Emerald Data Services",
-
-    "location": "Section C, Floor 3",
-
-    "height": "Multiple Racks (45U each)",
-
-    "devices": [
-
-        "Rack C1 (Application Servers)",
-
-        "Rack C2 (Database Servers, Backup Systems)"
-
-    ],
-
-    "space": "90% Utilized",
-
-    "power": "18 kW"
-
-},
-
-{
-
-  "name": "Location B",
-
-  "site": "Desert Cloud Center",
-
-  "location": "Section B, Floor 2",
-
-  "height": "Multiple Racks (48U each)",
-
-  "devices": [
-
-      "Rack B1 (Servers, Routers)",
-
-      "Rack B2 (NAS, Firewall)"
-
-  ],
-
-  "space": "70% Utilized",
-
-  "power": "20 kW"
-
-},
-
-{
-
-  "name": "Location C",
-
-  "site": "Emerald Data Services",
-
-  "location": "Section C, Floor 3",
-
-  "height": "Multiple Racks (45U each)",
-
-  "devices": [
-
-      "Rack C1 (Application Servers)",
-
-      "Rack C2 (Database Servers, Backup Systems)"
-
-  ],
-
-  "space": "90% Utilized",
-
-  "power": "18 kW"
-
-},
-// Additional location data can be added in a similar format
-
-];
-
-
-
-
+  
+  ];
 
   // apis
   const {

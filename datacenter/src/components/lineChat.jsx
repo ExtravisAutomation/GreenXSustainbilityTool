@@ -1,47 +1,47 @@
 import * as React from 'react';
 import { LineChart } from '@mui/x-charts/LineChart';
 import Typography from '@mui/material/Typography';
-import "./../../src/index.css"
 
 export default function DifferentLength() {
   let data = [
-    { time: 1, renewable: 200, non_renewable: 400 },
-    { time: 2, renewable: 400, non_renewable: 150 },
-    { time: 3, renewable: 250, non_renewable: 100 },
-    { time: 4, renewable: 150, non_renewable: 250 },
-    { time: 5, renewable: 300, non_renewable: 100 },
-    { time: 6, renewable: 500, non_renewable: 400 },
-    { time: 7, renewable: 200, non_renewable: 100 },
+    { time: 1, renewable: 100, non_renewable: 400 },
+    { time: 2, renewable: 400, non_renewable: 500 },
+    { time: 3, renewable: 250, non_renewable: 550 },
+    { time: 4, renewable: 150, non_renewable: 450 },
+    { time: 5, renewable: 300, non_renewable: 600 },
+    { time: 6, renewable: 100, non_renewable: 500 },
+    { time: 7, renewable: 200, non_renewable: 700 },
+    { time: 8, renewable: 450, non_renewable: 650 },
+    { time: 9, renewable: 200, non_renewable: 550 },
+    // { time: 10, renewable: 500, non_renewable: 200 },
+    // { time: 11, renewable: 300, non_renewable: 100 },
   ];
 
   let timeArray = data.map((item) => item.time);
-  // let timeArray = data.map((item) => {
-    // const formattedTime = item.time < 10 ? `0${item.time}:00` : `${item.time}:00`;
-    // return formattedTime;
-  // });
-
   let renewable = data.map((item) => item.renewable);
   let nonRenewable = data.map((item) => item.non_renewable);
 
   return (
     <div>
-      <Typography variant="h6" gutterBottom style={{ color: 'white', padding: '5px 0px 5px 50px' }}>
+      <Typography variant="h6" gutterBottom style={{ color: 'white', padding: '5px 0px 5px 20px' }}>
         Energy Cost Comparison
       </Typography>
       <LineChart
         xAxis={[
           {
             data: timeArray,
-            axisLine: { stroke: 'white' }, // X-axis line color
-            tickLine: { stroke: 'white' }, // X-axis tick line color
-            tickText: { fill: 'white' }, // X-axis tick text color
+            axisLine: { stroke: 'white' },
+            tickLine: { stroke: 'white' },
+            tickText: { fill: 'white' },
+            valueFormatter: (value) => `${value}:00`, // Format time labels
           },
         ]}
         yAxis={[
           {
-            axisLine: { stroke: 'white' }, // Y-axis line color
-            tickLine: { stroke: 'white' }, // Y-axis tick line color
-            tickText: { fill: 'white' }, // Y-axis tick text color
+            axisLine: { stroke: 'white' },
+            tickLine: { stroke: 'white' },
+            tickText: { fill: 'white' },
+            yAxisFormatter: (value) => `AED ${value}`, // Format currency labels
           },
         ]}
         series={[
@@ -50,7 +50,7 @@ export default function DifferentLength() {
             valueFormatter: (value) => (value == null ? 'NaN' : value.toString()),
             lineStyle: {
               strokeWidth: 0,
-              stroke: '#e4e4e4', // Adjust color for dark mode
+              stroke: '#e4e4e4',
               filter: 'url(#lineShadow)',
             },
           },
@@ -58,9 +58,8 @@ export default function DifferentLength() {
             data: nonRenewable,
             lineStyle: {
               strokeWidth: 0,
-              stroke: '#2B8FCA', 
+              stroke: '#2B8FCA',
               filter: 'url(#lineShadow)',
-              color:"#2B8FCA"
             },
           },
         ]}

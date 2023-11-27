@@ -173,139 +173,223 @@
 
 // export default HeatmapChart;
 
-
-import React from 'react'
-import GraphBox from './graphBox'
-import Typography from 'antd/es/typography/Typography'
+import React from "react";
+import GraphBox from "./graphBox";
+import Typography from "antd/es/typography/Typography";
 
 function heatmapChart() {
   return (
-    <div style={{ border: '1px solid #36424E', borderRadius: '7px', minWidth:"40%" , color:"#e5e5e5"}}>
-      <Typography variant="h6" style={{ color: 'white', marginLeft: 15, marginTop: 15, fontSize:"1.25rem", fontWeight:"500", lineHeight:"20px" }}>
-Heat Map of Racks      </Typography>
-     <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"15px 20px 0px 20px"}}>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      
-
-
+    <div
+      style={{
+        border: "1px solid #36424E",
+        borderRadius: "7px",
+        minWidth: "40%",
+        color: "#e5e5e5",
+      }}
+    >
+      <Typography
+        variant="h6"
+        style={{
+          color: "white",
+          marginLeft: 15,
+          marginTop: 15,
+          fontSize: "1.25rem",
+          fontWeight: "500",
+          lineHeight: "20px",
+        }}
+      >
+        Heat Map of Racks{" "}
+      </Typography>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "15px 20px 0px 20px",
+        }}
+      >
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
       </div>
-      <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"15px 20px 0px 20px"}}>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#02A0FC"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#02A0FC"/>
-      <GraphBox backgroundColor="#02A0FC"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#D3B144"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      
-
-
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "15px 20px 0px 20px",
+        }}
+      >
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#02A0FC" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#02A0FC" />
+        <GraphBox backgroundColor="#02A0FC" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#D3B144" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
       </div>
-      <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"15px 20px 0px 20px"}}>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#D21E16"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#02A0FC"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#D3B144"/>
-      <GraphBox backgroundColor="#D3B144"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#02A0FC"/>
-      
-
-
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "15px 20px 0px 20px",
+        }}
+      >
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#D21E16" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#02A0FC" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#D3B144" />
+        <GraphBox backgroundColor="#D3B144" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#02A0FC" />
       </div>
-      <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"15px 20px 0px 20px"}}>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#D21E16"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#D3B144"/>
-      <GraphBox backgroundColor="#02A0FC"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      
-
-
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "15px 20px 0px 20px",
+        }}
+      >
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#D21E16" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#D3B144" />
+        <GraphBox backgroundColor="#02A0FC" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
       </div>
-      <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"15px 20px 0px 20px"}}>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#D3B144"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#D3B144"/>
-      <GraphBox backgroundColor="#02A0FC"/>
-      <GraphBox backgroundColor="#02A0FC"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#02A0FC"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      
-
-
-      </div>
-  
-      
-      <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"15px 20px 0px 20px"}}>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#D3B144"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#D3B144"/>
-      <GraphBox backgroundColor="#02A0FC"/>
-      <GraphBox backgroundColor="#02A0FC"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      <GraphBox backgroundColor="#02A0FC"/>
-      <GraphBox backgroundColor="#1A3F4E"/>
-      
-
-
-      </div>
-
-      
-    
-      <div style={{padding:"15px"}}>
-    
-     
-<div style={{display:"flex", alignItems:"center", justifyContent:"space-between"}}>
-<Typography variant="h6" style={{ color: 'white', marginLeft: 5, marginTop: 15, fontSize:"15px", fontWeight:"500", lineHeight:"20px" }}>
-Racks by Strength      </Typography>
-<div style={{display:"flex", alignItems:"center", justifyContent:"space-evenly", width:"150px"}}>
-   <div style={{ background:" #D21E16", height: "15px", width: "15px", borderRadius:"3px" }}>
-</div>
-<div style={{ background:" #1A3F4E", height: "15px", width: "15px", borderRadius:"3px" }}>
-</div>
-<div style={{ background:" #D3B144", height: "15px", width: "15px", borderRadius:"3px" }}>
-</div>
-<div style={{ background:" #02A0FC", height: "15px", width: "15px", borderRadius:"3px" }}>
-</div>
-      </div>
-      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "15px 20px 0px 20px",
+        }}
+      >
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#D3B144" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#D3B144" />
+        <GraphBox backgroundColor="#02A0FC" />
+        <GraphBox backgroundColor="#02A0FC" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#02A0FC" />
+        <GraphBox backgroundColor="#1A3F4E" />
       </div>
 
-      
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "15px 20px 0px 20px",
+        }}
+      >
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#D3B144" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#D3B144" />
+        <GraphBox backgroundColor="#02A0FC" />
+        <GraphBox backgroundColor="#02A0FC" />
+        <GraphBox backgroundColor="#1A3F4E" />
+        <GraphBox backgroundColor="#02A0FC" />
+        <GraphBox backgroundColor="#1A3F4E" />
+      </div>
 
-      
+      <div style={{ padding: "11.7px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography
+            variant="h6"
+            style={{
+              color: "white",
+              marginLeft: 5,
+              marginTop: 15,
+              fontSize: "15px",
+              fontWeight: "500",
+              lineHeight: "20px",
+            }}
+          >
+            Racks by Strength{" "}
+          </Typography>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-evenly",
+              width: "350px",
+              paddingTop:"15px"
+            }}
+          >
+            <label>Critical</label>
+            <div
+              style={{
+                background: " #D21E16",
+                height: "15px",
+                width: "15px",
+                borderRadius: "3px",
+              }}
+            ></div>
+                        <label>Normal </label>
 
-    
-      
+            <div
+              style={{
+                background: " #1A3F4E",
+                height: "15px",
+                width: "15px",
+                borderRadius: "3px",
+              }}
+            ></div>
+                        <label>Warning </label>
+
+            <div
+              style={{
+                background: " #D3B144",
+                height: "15px",
+                width: "15px",
+                borderRadius: "3px",
+              }}
+            ></div>
+                        <label>Cool </label>
+
+            <div
+              style={{
+                background: " #02A0FC",
+                height: "15px",
+                width: "15px",
+                borderRadius: "3px",
+              }}
+            ></div>
+          </div>
+        </div>
+      </div>
     </div>
-  )
+  );
 }
 
-export default heatmapChart
-
+export default heatmapChart;

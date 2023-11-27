@@ -15,7 +15,8 @@ function dailyCostGraph(props) {
           alignItems: "center",
           color: "#e5e5e5",
           padding:"0px 10px",
-        //   height:"450px"
+        //   height:"450px",
+      
         }}
       >
         <img src={props.headericon} height={35} width={35} />
@@ -33,7 +34,8 @@ function dailyCostGraph(props) {
           borderRadius: "7px",
           color: "#e5e5e5",
         //   border:"3px solid red",
-          flexBasis:"30%"
+          flexBasis:"30%",
+          height:"450px"
         }}
       >
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
@@ -45,7 +47,8 @@ function dailyCostGraph(props) {
           alignItems: "start",
           color: "#e5e5e5",
           padding:"0px 10px",
-        //   height:"450px"
+          
+         
         }}
       >
         <p style={{padding:"0px", margin:"0px", fontWeight:"bold"}}>Est. Daily Cost this Month </p>
@@ -63,7 +66,8 @@ function dailyCostGraph(props) {
           height: "370px",
           borderRadius: "7px",
           color: "#e5e5e5",
-          flexBasis:"70%"
+          flexBasis:"70%",
+          height:"450px"
         }}
       >
 <CostInternalChart/>

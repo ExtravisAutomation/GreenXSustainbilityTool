@@ -89,11 +89,11 @@ function index() {
 
 
 
-<div style={{border:'1px solid #36424E',marginTop:"30px", borderRadius:"7px",height:"500px"}}>
+<div style={{border:'1px solid #36424E',marginTop:"30px", borderRadius:"7px",height:"570px"}}>
 
 <div style={{display:"flex", justifyContent:"center", marginTop:"0px"}}>
 
-<div className='cost-graph-wrapper'  style={{height:"400px"}} > 
+<div className='cost-graph-wrapper'  style={{height:"470px"}} > 
 <DailyCostGraph heading="Cost"headericon={electric}/>
 </div>
 

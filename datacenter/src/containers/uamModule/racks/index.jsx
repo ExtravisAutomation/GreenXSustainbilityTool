@@ -56,87 +56,117 @@ const Index = () => {
 
   const rackPageData = [
     {
-        "name": "Rack A1",
-        "site": "UAE Data Hub 1",
-        "location": "Row 1, Column 3",
-        "height": "42U",
-        "devices": ["Server A1-1", "Server A1-2", "Switch A1-3"],
-        "space": "80% Utilized",
-        "power": "3 kW"
+        "name": "Rack AA",
+        "site": "DXB",
+        "location": "Row_1",
+        "height": "RU42",
+        "devices": "03",
+        "space": "23% Utilized",
+        "power": "5 kW"
     },
     {
-        "name": "Rack B2",
-        "site": "Desert Cloud Center",
-        "location": "Row 2, Column 5",
-        "height": "48U",
-        "devices": ["Server B2-1", "NAS B2-2", "Router B2-3"],
-        "space": "65% Utilized",
-        "power": "4.5 kW"
-    },
-    {
-        "name": "Rack C3",
-        "site": "Emerald Data Services",
-        "location": "Row 3, Column 7",
-        "height": "45U",
-        "devices": ["Server C3-1", "Firewall C3-2", "Switch C3-3"],
-        "space": "75% Utilized",
-        "power": "3.5 kW"
-    },
-    {
-      "name": "Rack B2",
-      "site": "Desert Cloud Center",
-      "location": "Row 2, Column 5",
-      "height": "48U",
-      "devices": ["Server B2-1", "NAS B2-2", "Router B2-3"],
-      "space": "65% Utilized",
-      "power": "4.5 kW"
+      "name": "Rack AB",
+      "site": "DXB",
+      "location": "Row_1",
+      "height": "RU42",
+      "devices": "04",
+      "space": "26% Utilized",
+      "power": "15 kW"
   },
   {
-      "name": "Rack C3",
-      "site": "Emerald Data Services",
-      "location": "Row 3, Column 7",
-      "height": "45U",
-      "devices": ["Server C3-1", "Firewall C3-2", "Switch C3-3"],
-      "space": "75% Utilized",
-      "power": "3.5 kW"
-  },
-  {
-    "name": "Rack B2",
-    "site": "Desert Cloud Center",
-    "location": "Row 2, Column 5",
-    "height": "48U",
-    "devices": ["Server B2-1", "NAS B2-2", "Router B2-3"],
-    "space": "65% Utilized",
-    "power": "4.5 kW"
+    "name": "Rack AC",
+    "site": "DXB",
+    "location": "Row_1",
+    "height": "RU42",
+    "devices": "01",
+    "space": "16% Utilized",
+    "power": "40 kW"
 },
 {
-    "name": "Rack C3",
-    "site": "Emerald Data Services",
-    "location": "Row 3, Column 7",
-    "height": "45U",
-    "devices": ["Server C3-1", "Firewall C3-2", "Switch C3-3"],
-    "space": "75% Utilized",
-    "power": "3.5 kW"
+  "name": "Rack AD",
+  "site": "DXB",
+  "location": "Row_1",
+  "height": "RU42",
+  "devices": "03",
+  "space": "16% Utilized",
+  "power": "15 kW"
+},
+
+{
+  "name": "Rack BA",
+  "site": "DXB",
+  "location": "Row_2",
+  "height": "RU42",
+  "devices": "03",
+  "space": "18% Utilized",
+  "power": "65 kW"
 },
 {
-  "name": "Rack B2",
-  "site": "Desert Cloud Center",
-  "location": "Row 2, Column 5",
-  "height": "48U",
-  "devices": ["Server B2-1", "NAS B2-2", "Router B2-3"],
-  "space": "65% Utilized",
-  "power": "4.5 kW"
+  "name": "Rack BB",
+  "site": "DXB",
+  "location": "Row_2",
+  "height": "RU42",
+  "devices": "05",
+  "space": "45% Utilized",
+  "power": "80 kW"
+},
+
+{
+  "name": "Rack BC",
+  "site": "DXB",
+  "location": "Row_2",
+  "height": "RU42",
+  "devices": "02",
+  "space": "20% Utilized",
+  "power": "30 kW"
 },
 {
-  "name": "Rack C3",
-  "site": "Emerald Data Services",
-  "location": "Row 3, Column 7",
-  "height": "45U",
-  "devices": ["Server C3-1", "Firewall C3-2", "Switch C3-3"],
-  "space": "75% Utilized",
-  "power": "3.5 kW"
+  "name": "Rack BD",
+  "site": "DXB",
+  "location": "Row_2",
+  "height": "RU42",
+  "devices": "03",
+  "space": "50% Utilized",
+  "power": "50 kW"
 },
-    // Additional rack data can be added in a similar format
+{
+  "name": "Rack CA",
+  "site": "DXB",
+  "location": "Row_3",
+  "height": "RU42",
+  "devices": "01",
+  "space": "50% Utilized",
+  "power": "20 kW"
+},
+
+{
+  "name": "Rack CB",
+  "site": "DXB",
+  "location": "Row_3",
+  "height": "RU42",
+  "devices": "01",
+  "space": "46% Utilized",
+  "power": "20 kW"
+},
+{
+  "name": "Rack CC",
+  "site": "DXB",
+  "location": "Row_3",
+  "height": "RU42",
+  "devices": "04",
+  "space": "20% Utilized",
+  "power": "75 kW"
+},
+{
+  "name": "Rack CD",
+  "site": "DXB",
+  "location": "Row_3",
+  "height": "RU42",
+  "devices": "03",
+  "space": "50% Utilized",
+  "power": "50 kW"
+},
+
 ];
 
 

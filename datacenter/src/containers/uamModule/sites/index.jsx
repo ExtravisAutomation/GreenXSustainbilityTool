@@ -62,62 +62,45 @@ const Site_Module_Data = [
       "name": "SHJ",
       "status": "Active",
       "facility": "DSW",
-      "Region": "Sharjah+"
-  },
-  {
-      "name": "Emerald Data Services",
-      "status": "Operational",
-      "facility": "Geothermal Cooling",
       "Region": "Sharjah"
   },
   {
-      "name": "Gulf Digital Node",
-      "status": "Operational",
-      "facility": "Hybrid (Solar & Wind)",
-      "Region": "Ajman"
+      "name": "AUH",
+      "status": "Active",
+      "facility": "DSW",
+      "Region": "Abu Dubai"
   },
   {
-      "name": "Futuristic Data Vault",
-      "status": "Planning",
-      "facility": "Energy-Efficient Design",
+      "name": "FUJ",
+      "status": "Active",
+      "facility": " DSW",
       "Region": "Fujairah"
   },
   {
-    "name": "Gulf Digital Node",
-    "status": "Operational",
-    "facility": "Hybrid (Solar & Wind)",
+      "name": "RAK",
+      "status": "Active",
+      "facility": "DSW",
+      "Region": "Ras Al-Khema"
+  },
+  {
+    "name": "UAQ",
+    "status": "Active",
+    "facility": "DSW",
+    "Region": "Umm Al Quwain"
+},
+{
+    "name": "AJM",
+    "status": "Active",
+    "facility": "DSW",
     "Region": "Ajman"
 },
 {
-    "name": "Futuristic Data Vault",
-    "status": "Planning",
-    "facility": "Energy-Efficient Design",
-    "Region": "Fujairah"
-},
-{
-  "name": "Gulf Digital Node",
-  "status": "Operational",
-  "facility": "Hybrid (Solar & Wind)",
+  "name": "AAN",
+  "status": "Active",
+  "facility": "DSW",
   "Region": "Ajman"
 },
-{
-  "name": "Futuristic Data Vault",
-  "status": "Planning",
-  "facility": "Energy-Efficient Design",
-  "Region": "Fujairah"
-},
-{
-  "name": "Gulf Digital Node",
-  "status": "Operational",
-  "facility": "Hybrid (Solar & Wind)",
-  "Region": "Ajman"
-},
-{
-  "name": "Futuristic Data Vault",
-  "status": "Planning",
-  "facility": "Energy-Efficient Design",
-  "Region": "Fujairah"
-}
+
 ];
 
 

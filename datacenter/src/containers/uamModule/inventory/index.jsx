@@ -4,6 +4,7 @@ import DefaultCard from "../../../components/cards";
 import { Icon } from "@iconify/react";
 import DefaultTable from "../../../components/tables";
 import { getTitle } from "../../../utils/helpers";
+import { useNavigate } from "react-router-dom";
 import Modal from "./modal";
 import {
   useFetchRecordsQuery,
@@ -31,6 +32,7 @@ import PageHeader from "../../../components/pageHeader";
 const Index = () => {
   // theme
   const theme = useTheme();
+  const navigate = useNavigate();
 
   // hooks
   const { height, width } = useWindowDimensions();
@@ -52,105 +54,98 @@ const Index = () => {
 
   const inventoryPageData = [
     {
-        "name": "Inventory Set 1",
+        "name": "Spine 101",
         "status": "Active",
-        "site": "UAE Data Hub 1",
-        "racks": ["Rack A1", "Rack A2", "Rack A3"],
-        "manufacturer": "Dell Technologies",
-        "pue": 1.2,  // Power Usage Effectiveness
-        "power": "25 kW"
+        "site": "DXB",
+        "racks": "Rack AA",
+        "manufacturer": "Cisco",
+        "pue":" 75%",
+        "power": "75%",
+        "input_power":"10kwh",
+        "device_type":"N9K-C9504",
+        "traffic":"450.0Gb/s",
+        "emission":"50.5g",
+        "bandwidth":"30%",
+        "pcr":"1.3 W/Gbps",
+        "cost":"90AED"
     },
+   
     {
-        "name": "Inventory Set 2",
-        "status": "Maintenance",
-        "site": "Desert Cloud Center",
-        "racks": ["Rack B1", "Rack B2"],
-        "manufacturer": "Hewlett Packard Enterprise",
-        "pue": 1.3,
-        "power": "18 kW"
-    },
-    {
-        "name": "Inventory Set 3",
-        "status": "Active",
-        "site": "Emerald Data Services",
-        "racks": ["Rack C1", "Rack C2", "Rack C3"],
-        "manufacturer": "Cisco Systems",
-        "pue": 1.15,
-        "power": "30 kW"
-    },
-    {
-      "name": "Inventory Set 2",
-      "status": "Maintenance",
-      "site": "Desert Cloud Center",
-      "racks": ["Rack B1", "Rack B2"],
-      "manufacturer": "Hewlett Packard Enterprise",
-      "pue": 1.3,
-      "power": "18 kW"
-  },
-  {
-      "name": "Inventory Set 3",
+      "name": "Spine 102",
       "status": "Active",
-      "site": "Emerald Data Services",
-      "racks": ["Rack C1", "Rack C2", "Rack C3"],
-      "manufacturer": "Cisco Systems",
-      "pue": 1.15,
-      "power": "30 kW"
+      "site": "DXB",
+      "racks": "Rack AB",
+      "manufacturer": "Cisco",
+      "pue":" 45%",
+      "power": "85%",
+      "input_power":"10kwh",
+      "device_type":"N9K-C9504",
+      "traffic":"2.0 Kb/s",
+      "emission":"40.4g",
+      "bandwidth":"20%",
+      "pcr":"1.3 W/Gbps",
+      "cost":"100AED"
   },
   {
-    "name": "Inventory Set 2",
-    "status": "Maintenance",
-    "site": "Desert Cloud Center",
-    "racks": ["Rack B1", "Rack B2"],
-    "manufacturer": "Hewlett Packard Enterprise",
-    "pue": 1.3,
-    "power": "18 kW"
-},
-{
-    "name": "Inventory Set 3",
+    "name": "Spine 101",
     "status": "Active",
-    "site": "Emerald Data Services",
-    "racks": ["Rack C1", "Rack C2", "Rack C3"],
-    "manufacturer": "Cisco Systems",
-    "pue": 1.15,
-    "power": "30 kW"
+    "site": "DXB",
+    "racks": "Rack AC",
+    "manufacturer": "Cisco",
+    "pue":" 80%",
+    "power": "80%",
+    "input_power":"10kwh",
+    "device_typ":"2.5Kb/s",
+    "emission":"30.5g",
+    "bandwidth":"10.0%",
+    "pcr":"643.26 W/Gbps",
+    "cost":"90AED"
 },
 {
-  "name": "Inventory Set 2",
-  "status": "Maintenance",
-  "site": "Desert Cloud Center",
-  "racks": ["Rack B1", "Rack B2"],
-  "manufacturer": "Hewlett Packard Enterprise",
-  "pue": 1.3,
-  "power": "18 kW"
-},
-{
-  "name": "Inventory Set 3",
+  "name": "Spine 101",
   "status": "Active",
-  "site": "Emerald Data Services",
-  "racks": ["Rack C1", "Rack C2", "Rack C3"],
-  "manufacturer": "Cisco Systems",
-  "pue": 1.15,
-  "power": "30 kW"
+  "site": "DXB",
+  "racks": "Rack AC",
+  "manufacturer": "Cisco",
+  "pue":" 80%",
+  "power": "80%",
+  "input_power":"10kwh",
+  "device_typ":"2.5Kb/s",
+  "emission":"30.5g",
+  "bandwidth":"10.0%",
+  "pcr":"643.26 W/Gbps",
+  "cost":"90AED"
 },
 {
-  "name": "Inventory Set 2",
-  "status": "Maintenance",
-  "site": "Desert Cloud Center",
-  "racks": ["Rack B1", "Rack B2"],
-  "manufacturer": "Hewlett Packard Enterprise",
-  "pue": 1.3,
-  "power": "18 kW"
-},
-{
-  "name": "Inventory Set 3",
+  "name": "Spine 101",
   "status": "Active",
-  "site": "Emerald Data Services",
-  "racks": ["Rack C1", "Rack C2", "Rack C3"],
-  "manufacturer": "Cisco Systems",
-  "pue": 1.15,
-  "power": "30 kW"
+  "site": "DXB",
+  "racks": "Rack AC",
+  "manufacturer": "Cisco",
+  "pue":" 80%",
+  "power": "80%",
+  "input_power":"10kwh",
+  "device_typ":"2.5Kb/s",
+  "emission":"30.5g",
+  "bandwidth":"10.0%",
+  "pcr":"643.26 W/Gbps",
+  "cost":"90AED"
 },
-    // Additional inventory data can be added in a similar format
+{
+  "name": "Spine 101",
+  "status": "Active",
+  "site": "DXB",
+  "racks": "Rack AC",
+  "manufacturer": "Cisco",
+  "pue":" 80%",
+  "power": "80%",
+  "input_power":"10kwh",
+  "device_typ":"2.5Kb/s",
+  "emission":"30.5g",
+  "bandwidth":"10.0%",
+  "pcr":"643.26 W/Gbps",
+  "cost":"90AED"
+},
 ];
 
   // apis
@@ -295,6 +290,17 @@ const Index = () => {
       handleClick: handleAdd,
     },
   ];
+  const onRowClick = (record) => {
+    navigate(`/uam_module/inventory/${record.inventory_id}`);
+  };
+
+  const rowProps = (record) => {
+    return {
+      onClick: () =>
+       onRowClick(record),
+    
+    };
+  };
 
   return (
     <Spin spinning={isFetchRecordsLoading || isDeleteRecordsLoading}>
@@ -312,7 +318,7 @@ const Index = () => {
           <DefaultTable
             rowClassName={(record, index) => (index % 2 === 0 ? "even" : "odd")}
             size="small"
-            scroll={{ x: 1000 }}
+            scroll={{ x: 2000 }}
             onChange={handleChange}
             rowSelection={rowSelection}
             columns={columns}
@@ -323,6 +329,7 @@ const Index = () => {
               defaultPageSize: 9,
               pageSizeOptions: [9, 50, 100, 500, 1000],
             }}
+            onRow={rowProps}
           />
         </DefaultCard>
       </div>

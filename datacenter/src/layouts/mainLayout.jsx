@@ -31,7 +31,7 @@ import ncmActiveIcon from "../resources/svgs/ncmActiveIcon.svg";
 import logo from "../resources/svgs/logo.svg";
 import dayModeIcon from "../resources/svgs/dayModeIcon.svg";
 import nightModeIcon from "../resources/svgs/nightModeIcon.svg";
-
+import profileimage from "../resources/svgs/profileimage.png"
 const drawerWidth = 240;
 
 const openedMixin = (theme) => ({
@@ -92,13 +92,19 @@ export default function Index() {
   const theme = useTheme();
   const { isDarkMode, setDarkMode } = useContext(AppContext);
   const [open, setOpen] = useState(false);
-  const [selectedModule, setSelectedModule] = useState("Atom");
+  const [selectedModule, setSelectedModule] = useState("Data Center Sustainability");
 
   const toggleTheme = () => {
     setDarkMode(!isDarkMode);
   };
 
   const drawerMenuItems = [
+    // {
+    //   name: "Login",
+    //   inActiveIcon: <img src={dashboardInactiveIcon} alt="Admin" />,
+    //   activeIcon: <img src={dashboardActiveIcon} alt="Admin" />,
+    //   path: "/",
+    // },
     {
       name: "Data Center Sustainability",
       inActiveIcon: <img src={dashboardInactiveIcon} alt="Admin" />,
@@ -194,6 +200,7 @@ export default function Index() {
             &nbsp; &nbsp;
             <ProfileContainer></ProfileContainer>
             &nbsp; &nbsp;
+          
             <div>
               <div
                 style={{
@@ -228,4 +235,5 @@ const ProfileContainer = styled("div")(({ theme }) => ({
   width: "35px",
   height: "35px",
   backgroundColor: theme?.palette?.main_layout?.profile_picture_background,
+  
 }));

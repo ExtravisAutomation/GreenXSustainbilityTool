@@ -6,8 +6,6 @@ const EmissionChart = () => {
   useEffect(() => {
     const chartDom = document.getElementById('main');
     const myChart = echarts.init(chartDom);
-    let app = {};
-    let option;
 
     const monthNames = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
@@ -31,24 +29,7 @@ const EmissionChart = () => {
       return res;
     })();
 
-    const data2 = (function () {
-      let res = [];
-      let len = 0;
-      while (len < 10) {
-        res.push(+(Math.random() * 10 + 5).toFixed(1));
-        len++;
-      }
-      return res;
-    })();
-
-    option = {
-      // title: {
-      //   text: 'CO2 Emission',
-      //   textStyle: {
-      //     color: '#e5e5e5' // Set the title font color
-        
-      //   }
-      // },
+    const option = {
       tooltip: {
         trigger: 'axis',
         axisPointer: {
@@ -65,7 +46,15 @@ const EmissionChart = () => {
           dataView: { readOnly: false },
           restore: {},
           saveAsImage: {}
-        }
+        },
+        iconStyle: {
+          borderColor: '#e5e5e5', // Set toolbox icon border color
+        },
+        emphasis: {
+          iconStyle: {
+            color: '#e5e5e5', // Set toolbox icon color on hover
+          },
+        },
       },
       dataZoom: {
         show: false,
@@ -79,6 +68,9 @@ const EmissionChart = () => {
         axisTick: {
           show: false
         },
+        axisLabel: {
+          color: '#e5e5e5', // Set x-axis label color
+        },
       },
       yAxis: [
         {
@@ -89,51 +81,45 @@ const EmissionChart = () => {
           min: 0,
           boundaryGap: [0.2, 0.2],
           axisLabel: {
-            formatter: '{value} kg'
-          }
+            formatter: '{value} kg',
+            color: '#e5e5e5', // Set y-axis label color
+          },
         },
       ],
       series: [
         {
-          name: 'Dynamic Bar',
+          name: 'Sustainable Operations Emissions',
           type: 'bar',
           data: data
         },
-        {
-          name: 'Dynamic Line',
-          type: 'line',
-          data: data2
-        }
       ]
     };
 
-    app.count = 11;
     setInterval(function () {
       let monthIndex = new Date().getMonth();
-      data.shift();
-      data.push(Math.round(Math.random() * 1000));
-      data2.shift();
-      data2.push(+(Math.random() * 10 + 5).toFixed(1));
-      categories.shift();
-      categories.push(monthNames[monthIndex]);
-      myChart.setOption({
-        xAxis: {
-          data: categories
-        },
-        series: [
-          {
-            data: data
+      let newMonthName = monthNames[monthIndex];
+
+      if (!categories.includes(newMonthName)) {
+        data.shift();
+        data.push(Math.round(Math.random() * 1000));
+        categories.shift();
+        categories.push(newMonthName);
+
+        myChart.setOption({
+          xAxis: {
+            data: categories
           },
-          {
-            data: data2
-          }
-        ]
-      });
+          series: [
+            {
+              data: data
+            },
+          ]
+        });
+      }
     }, 2100);
 
     option && myChart.setOption(option);
 
-    // Cleanup the chart on component unmount
     return () => {
       myChart.dispose();
     };
@@ -141,10 +127,10 @@ const EmissionChart = () => {
 
   return (
     <>
-      <Typography variant="h6" style={{ color: 'white', marginLeft: 30, marginTop: 15, fontSize:"1.25rem", fontWeight:"500", lineHeight:"20px" }}>
+      <Typography variant="h6" style={{ color: 'white', marginLeft: 10, marginTop: 15, fontSize: "1.25rem", fontWeight: "500", lineHeight: "20px" }}>
         CO2 Emission
       </Typography>
-  
+
       <div id="main" style={{ width: "100%", height: "380px" }} />
     </>
   );

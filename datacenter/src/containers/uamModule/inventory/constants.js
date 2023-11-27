@@ -2,9 +2,16 @@ export const dataKeysArray = [
     "name",
     "status",
     "site",
-    "racks ",
+    "racks",
     "manufacturer",
     "pue",
-    "power", 
-        
+    "power",
+    "input_power",
+    "device_type",
+    "traffic",
+    "emission" ,
+    "bandwidth",
+    "pcr",
+    "cost"    
   ];
+ 

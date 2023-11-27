@@ -8,11 +8,11 @@ const CostInternalChart = () => {
 
     const option = {
       legend: {
-        orient: 'vertical',
-        right: 10, // Adjust the value to move the legend closer or farther from the right edge
-        top: 'middle', // Adjust the value to move the legend up or down
+        orient: 'horizontal',
+        right: 30,
+        top: 'bottom',
         textStyle: {
-          color: '#e5e5e5', // Legend text color
+          color: '#e5e5e5',
         },
       },
       toolbox: {
@@ -32,22 +32,23 @@ const CostInternalChart = () => {
           center: ['50%', '50%'],
           roseType: 'area',
           itemStyle: {
-            borderRadius: 8,
+            borderRadius: 0,
           },
           label: {
             show: true,
             position: 'right',
             bottom: 5,
+            color: '#e5e5e5', // Set label color to #e5e5e5
           },
           data: [
-            { value: 40, name: 'rose 1' },
-            { value: 38, name: 'rose 2' },
-            { value: 32, name: 'rose 3' },
-            { value: 30, name: 'rose 4' },
-            { value: 28, name: 'rose 5' },
-            { value: 26, name: 'rose 6' },
-            { value: 22, name: 'rose 7' },
-            { value: 18, name: 'rose 8' },
+            { value: 40, name: 'Cooling Efficiency' },
+            { value: 38, name: 'Renewable Energy Usage' },
+            { value: 32, name: 'Carbon Footprint' },
+            { value: 30, name: ' Power Utilization Effectiveness' },
+            { value: 28, name: 'Water Usage Effectiveness' },
+            { value: 26, name: 'Server Utilization' },
+            { value: 22, name: 'Waste Recycling Rate' },
+            { value: 18, name: ' Energy Conservation' },
           ],
         },
       ],
@@ -61,7 +62,7 @@ const CostInternalChart = () => {
     };
   }, []);
 
-  return <div id="cost-internal-chart" style={{ width: '100%', height: '370px' }} />;
+  return <div id="cost-internal-chart" style={{ width: '100%', height: '430px' }} />;
 };
 
 export default CostInternalChart;
