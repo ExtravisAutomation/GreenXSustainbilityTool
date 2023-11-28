@@ -1,96 +1,284 @@
-import React from 'react'
-import LineChart from "./../../../components/lineChat.jsx"
-import GraphTable from "./../../../components/graphTable.jsx"
-import PowercostGraph from '../../../components/powercostGraph.jsx'
-import EmissionChart from '../../../components/emissionChart.jsx'
-import HardwareLifeCycle from '../../../components/hardwareLifeCycle.jsx'
-import UnusedPortsCharts from '../../../components/unusedPortGraph.jsx'
-import "./dashboard.css"
-import UsedFspsChart from '../../../components/usedFspsChart.jsx'
-import Grid from '@mui/material/Grid';
-import DailyCostGraph from '../../../components/dailyCostGraph.jsx'
-import TopDevicesCost from "../../../components/topDevicesCost.jsx"
-import dollar from "../../../resources/svgs/dollar.png"
-import electric from "../../../resources/svgs/electric.png"
-import leaf from "../../../resources/svgs/leaf.png"
-import UaeSiteMap from '../../../components/uaeSiteMap.jsx'
-import  HeatmapChart  from '../../../components/heatmapChart.jsx'
-import Dropdown from "../../../components/dropdown.jsx"
+import React from "react";
+import LineChart from "./../../../components/lineChat.jsx";
+import GraphTable from "./../../../components/graphTable.jsx";
+import PowercostGraph from "../../../components/powercostGraph.jsx";
+import EmissionChart from "../../../components/emissionChart.jsx";
+import HardwareLifeCycle from "../../../components/hardwareLifeCycle.jsx";
+import UnusedPortsCharts from "../../../components/unusedPortGraph.jsx";
+import "./dashboard.css";
+import UsedFspsChart from "../../../components/usedFspsChart.jsx";
+import Grid from "@mui/material/Grid";
+import DailyCostGraph from "../../../components/dailyCostGraph.jsx";
+import TopDevicesCost from "../../../components/topDevicesCost.jsx";
+import dollar from "../../../resources/svgs/dollar.png";
+import electric from "../../../resources/svgs/electric.png";
+import leaf from "../../../resources/svgs/leaf.png";
+import UaeSiteMap from "../../../components/uaeSiteMap.jsx";
+import HeatmapChart from "../../../components/heatmapChart.jsx";
+import Dropdown from "../../../components/dropdown.jsx";
+import MonthlyCostGraph from "../../../components/monthlyCostGraph.jsx";
 
 function index() {
+  const gridStyle = {
+    display: "grid",
+    gridTemplateColumns: "repeat(5, 1fr)", // 5 columns
+    gridTemplateRows: "repeat(2, 1fr)", // 2 rows
+    gap: "8px", // Adjust the gap between cells
+  };
 
-    const chartData = [
-        { value: 1048, name: 'End of Sale' },
-        { value: 580, name: 'End of Life' },
-        { value: 484, name: 'End of Support' },
-      ];
+  const itemStyle = {
+    border: "1px solid #000", // Border style
+    padding: "8px", // Adjust the padding inside cells
+    textAlign: "center", // Center text within cells
+  };
+  const chartData = [
+    { value: 1048, name: "End of Sale" },
+    { value: 580, name: "End of Life" },
+    { value: 484, name: "End of Support" },
+  ];
   return (
     <>
-    <div style={{display:"flex", justifyContent:"end", alignItems:"center", padding:"20px 0px 0px 0px"}}>
-     <Dropdown/>
-     </div>
-     <Grid container spacing={3} style={{ marginTop: '0px' }}>
-     
-      <Grid item xs={12} sm={6}>
-        <div className='wrapper' style={{padding:"0px 0px 10px 0px"}}>
-        <LineChart />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "end",
+          alignItems: "center",
+          padding: "20px 0px 0px 0px",
+        }}
+      >
+        <Dropdown />
+      </div>
+      <div
+        style={{
+          border: "1px solid #36424E",
+          marginTop: "30px",
+          borderRadius: "7px",
+          height: "570px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "0px",
+          }}
+        >
+          <div className="cost-graph-wrapper" style={{ height: "470px" }}>
+            <DailyCostGraph heading="Cost" headericon={electric} />
+          </div>
         </div>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <div className='wrapper' >
-        <GraphTable />
+      </div>
+      <div
+        style={{
+          border: "1px solid #36424E",
+          marginTop: "30px",
+          borderRadius: "7px",
+          height: "570px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "0px",
+          }}
+        >
+          <div className="cost-graph-wrapper" style={{ height: "470px" }}>
+            <MonthlyCostGraph heading="Energy" headericon={electric} />
+          </div>
         </div>
+      </div>
+      <div
+        style={{
+          border: "1px solid #36424E",
+          marginTop: "30px",
+          borderRadius: "7px",
+          // height: "570px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            color: "#e5e5e5",
+            padding: "30px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              flexDirection: "column",
+              border: "1px solid #36424E",
+              flexBasis: "48%",
+              borderRadius: "7px",
+            }}
+          >
+            <p style={{fontWeight:"bold", padding:"0px 20px"}}>Top 5 Devices by Co2 Emission</p>
+            <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"bold", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>Name </div>
+              <div style={{ display:"flex", fontWeight:"bold",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>CO2-eq emission/h [gco2 eq/hr] </div>
+              
+            </div>
+             <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Leaf 202</div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#7A2731", padding:"3px 8px", borderRadius:"7px"}}>70.5g </span> </div>
+              
+            </div>
+            <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Leaf 203</div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#7A2731", padding:"3px 8px", borderRadius:"7px"}}>80.2g </span> </div>
+              
+            </div>
+            <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Ucs 01</div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#7A2731", padding:"3px 8px", borderRadius:"7px"}}>30.0g </span> </div>
+              
+            </div>
+            <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Juniper</div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#7A2731", padding:"3px 8px", borderRadius:"7px"}}>40.4g </span> </div>
+              
+            </div>
+            <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Cisco</div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#7A2731", padding:"3px 8px", borderRadius:"7px"}}>50.5g </span> </div>
+              
+            </div>
+
+            <div></div>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              flexDirection: "column",
+              border: "1px solid #36424E",
+              flexBasis: "48%",
+              borderRadius: "7px",
+            }}
+          >
+            <p style={{fontWeight:"bold", padding:"0px 20px"}}>Top 5 Devices Energy Cost from last Month</p>
+            <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"bold", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>Name </div>
+              <div style={{ display:"flex", fontWeight:"bold",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>Cost Increse From Last Month</div>
+              
+            </div>
+             <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Cisco UCS C480 M5 </div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>45% </span> </div>
+              
+            </div>
+            <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Dell PowerEdge R740</div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>35% </span> </div>
+              
+            </div>
+            <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>HP ProLiant DL380</div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>40% </span> </div>
+              
+            </div>
+            <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>ThinkSystem SR650</div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>30% </span> </div>
+              
+            </div>
+            <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>IBM Power Systems E950</div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>20%</span> </div>
+              
+            </div>
+
+            <div></div>
+          </div>
+        </div>
+      </div>
+      <Grid container spacing={3} style={{ marginTop: "0px" }}>
+        <Grid item xs={12} sm={6}>
+          <div className="wrapper" style={{ padding: "0px 0px 10px 0px" }}>
+            <LineChart />
+          </div>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <div className="wrapper">
+            <GraphTable />
+          </div>
+        </Grid>
       </Grid>
-      
-    </Grid>
-    
-<div>  
-<div className='power-cost-chart-wrapper'>
-  
-    <PowercostGraph/>
-</div>
-</div>
-
-<div style={{display:"flex", justifyContent:"space-between", marginTop:"30px"}}>
-
-<div style={{flexBasis:"40%"}} className='heat-map'>
-  <HeatmapChart/>
-  </div>
-<div className='emission-chart-wrapper'><EmissionChart/></div>
-
-
-</div>
-
-<div style={{display:"flex", justifyContent:"space-between", marginTop:"30px"}}>
-<div className='donut-graph-wrapper' ><HardwareLifeCycle chartData={chartData}/></div>
-<div className='donut-graph-wrapper' ><UnusedPortsCharts/></div>
-<div className='donut-graph-wrapper' ><UsedFspsChart/></div>
-
-</div>
-{/* 3 x Table Dataaaaa */}
-<div style={{border:'1px solid #36424E',marginTop:"30px", borderRadius:"7px",height:"500px"}}>
-<div style={{display:"flex", justifyContent:"space-evenly", marginTop:"30px"}}>
-<div className='table-data-wrapper' style={{height:"450px"}} ><TopDevicesCost heading="Estimated Cost" headericon={dollar}/></div>
-<div className='table-data-wrapper'  style={{height:"450px"}} > <TopDevicesCost heading="Energy Consumption"headericon={electric}/></div>
-<div className='table-data-wrapper'  style={{height:"450px"}}><TopDevicesCost heading="Estimated GHG Emissions" headericon={leaf}/></div>
-
-</div>
-</div>
-
-
-<div style={{border:'1px solid #36424E',marginTop:"30px", borderRadius:"7px",height:"570px"}}>
-
-<div style={{display:"flex", justifyContent:"center", marginTop:"0px"}}>
-
-<div className='cost-graph-wrapper'  style={{height:"470px"}} > 
-<DailyCostGraph heading="Cost"headericon={electric}/>
-</div>
-
-</div>
-</div>
-
+      <div>
+        <div className="power-cost-chart-wrapper">
+          <PowercostGraph />
+        </div>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: "30px",
+        }}
+      >
+        <div style={{ flexBasis: "40%" }} className="heat-map">
+          <HeatmapChart />
+        </div>
+        <div className="emission-chart-wrapper">
+          <EmissionChart />
+        </div>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: "30px",
+        }}
+      >
+        <div className="donut-graph-wrapper">
+          <HardwareLifeCycle chartData={chartData} />
+        </div>
+        <div className="donut-graph-wrapper">
+          <UnusedPortsCharts />
+        </div>
+        <div className="donut-graph-wrapper">
+          <UsedFspsChart />
+        </div>
+      </div>
+      {/* 3 x Table Dataaaaa */}
+      <div
+        style={{
+          border: "1px solid #36424E",
+          marginTop: "30px",
+          borderRadius: "7px",
+          height: "500px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-evenly",
+            marginTop: "30px",
+          }}
+        >
+          <div className="table-data-wrapper" style={{ height: "450px" }}>
+            <TopDevicesCost heading="Estimated Cost" headericon={dollar} />
+          </div>
+          <div className="table-data-wrapper" style={{ height: "450px" }}>
+            {" "}
+            <TopDevicesCost
+              heading="Energy Consumption"
+              headericon={electric}
+            />
+          </div>
+          <div className="table-data-wrapper" style={{ height: "450px" }}>
+            <TopDevicesCost
+              heading="Estimated GHG Emissions"
+              headericon={leaf}
+            />
+          </div>
+        </div>
+      </div>
+      monthlyCostGraph
     </>
-  )
+  );
 }
 
-export default index
+export default index;
