@@ -7,6 +7,7 @@ import { Provider } from "react-redux";
 import { lightTheme, darkTheme } from "./themes";
 import router from "./routes";
 import { AppContext } from "./context/appContext";
+import Login from "../src/containers/login/index"
 import "./index.css";
 
 
@@ -15,11 +16,13 @@ function App() {
   const { isDarkMode } = useContext(AppContext);
   const theme = isDarkMode ? darkTheme : lightTheme;
   return (
-    <div className="relative"   style={{
+    <div 
+    className="relative"   style={{
       backgroundColor: theme.palette.background.default,
       height: "auto",
       width: "100%",
-    }}>
+    }}
+    >
       <Provider store={store}>
 <ThemeProvider theme={theme}>
   <RouterProvider router={router}/>
@@ -28,6 +31,8 @@ function App() {
 
 
       </Provider>
+      
+      {/* <Login/> */}
     </div>
   );
 }
