@@ -3,7 +3,7 @@ import headericon from "../resources/svgs/logo.svg";
 import Seprater from "../components/seprater.jsx";
 import arrow from "../../src/resources/svgs/arrow.png";
 
-function topDevicesCost(props) {
+function topDevicesEnergy(props) {
     
   return (
     <div >
@@ -33,24 +33,7 @@ function topDevicesCost(props) {
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
           <h4 style={{ margin: "0px", padding: "0px" }}>SJ-Switch-1a</h4>
-          <p style={{ margin: "0px", padding: "0px" }}>AED 202.40 estimated</p>
-          </div>
-          <img src={arrow} width={20} height={20} />
-        </div>
-        <Seprater/>
-        <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
-            <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>SJ-Switch-1b</h4>
-          <p style={{ margin: "0px", padding: "0px" }}>AED 147.20 estimated</p>
-          </div>
-          <img src={arrow} width={20} height={20} />
-        </div>
-        <Seprater/>
-        <div>
-        <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
-            <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>SJ-Switch-1c</h4>
-          <p style={{ margin: "0px", padding: "0px" }}>AED 138.00 estimated</p>
+          <p style={{ margin: "0px", padding: "0px" }}>2.2 kWh enery Consumed</p>
           </div>
           <img src={arrow} width={20} height={20} />
         </div>
@@ -58,15 +41,32 @@ function topDevicesCost(props) {
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
           <h4 style={{ margin: "0px", padding: "0px" }}>Leaf-202</h4>
-          <p style={{ margin: "0px", padding: "0px" }}>AED 126.00 estimated</p>
+          <p style={{ margin: "0px", padding: "0px" }}>2.1 kWh enery Consumed</p>
+          </div>
+          <img src={arrow} width={20} height={20} />
+        </div>
+        <Seprater/>
+        <div>
+        <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
+            <div>
+          <h4 style={{ margin: "0px", padding: "0px" }}>Leaf-101</h4>
+          <p style={{ margin: "0px", padding: "0px" }}>1.8 kWh enery Consumed</p>
+          </div>
+          <img src={arrow} width={20} height={20} />
+        </div>
+        <Seprater/>
+        <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
+            <div>
+          <h4 style={{ margin: "0px", padding: "0px" }}>SJ-Switch-1b</h4>
+          <p style={{ margin: "0px", padding: "0px" }}>1.0 kWh enery Consumed</p>
           </div>
           <img src={arrow}  width={20} height={20}/>
         </div>
         <Seprater/>
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>Leaf-101</h4>
-          <p style={{ margin: "0px", padding: "0px" }}>AED 108.00 estimated</p>
+          <h4 style={{ margin: "0px", padding: "0px" }}>SJ-Switch-1c</h4>
+          <p style={{ margin: "0px", padding: "0px" }}>2.2 kWh enery Consumed</p>
           </div>
           <img src={arrow} width={20} height={20}/>
         </div>
@@ -77,4 +77,4 @@ function topDevicesCost(props) {
   );
 }
 
-export default topDevicesCost;
+export default topDevicesEnergy;

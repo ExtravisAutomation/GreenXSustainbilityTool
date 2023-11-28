@@ -11,6 +11,9 @@ import UsedFspsChart from "../../../components/usedFspsChart.jsx";
 import Grid from "@mui/material/Grid";
 import DailyCostGraph from "../../../components/dailyCostGraph.jsx";
 import TopDevicesCost from "../../../components/topDevicesCost.jsx";
+import TopDevicesEnergy from "../../../components/topDevicesEnergy.jsx";
+import TopDevicesGhg from "../../../components/topDeviceGhg.jsx"
+
 import dollar from "../../../resources/svgs/dollar.png";
 import electric from "../../../resources/svgs/electric.png";
 import leaf from "../../../resources/svgs/leaf.png";
@@ -172,7 +175,7 @@ function index() {
             </div>
             <div style={{display:"flex"}}>
               <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Dell PowerEdge R740</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#bd0f09", padding:"3px 8px", borderRadius:"7px"}}>50% </span> </div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"rgb(122, 39, 49)", padding:"3px 8px", borderRadius:"7px"}}>50% </span> </div>
               
             </div>
             <div style={{display:"flex"}}>
@@ -182,7 +185,7 @@ function index() {
             </div>
             <div style={{display:"flex"}}>
               <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>ThinkSystem SR650</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#bd0f09", padding:"3px 8px", borderRadius:"7px"}}>55% </span> </div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"rgb(122, 39, 49)", padding:"3px 8px", borderRadius:"7px"}}>55% </span> </div>
               
             </div>
             <div style={{display:"flex"}}>
@@ -264,13 +267,13 @@ function index() {
           </div>
           <div className="table-data-wrapper" style={{ height: "450px" }}>
             {" "}
-            <TopDevicesCost
+            <TopDevicesEnergy
               heading="Energy Consumption"
               headericon={electric}
             />
           </div>
           <div className="table-data-wrapper" style={{ height: "450px" }}>
-            <TopDevicesCost
+            <TopDevicesGhg
               heading="Estimated GHG Emissions"
               headericon={leaf}
             />

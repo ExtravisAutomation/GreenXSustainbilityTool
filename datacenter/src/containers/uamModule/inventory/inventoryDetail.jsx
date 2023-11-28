@@ -163,7 +163,7 @@ function InventoryDetail() {
     
     <div style={{paddingRight:"50px",position: "relative", paddingRight: "150px" }}>
     <img src={device} width={250} height={550}/>
-    <img src={devicedetail} />
+    
     </div>
     </div>
 //     <div style={{ color: '#e5e5e5' }}>

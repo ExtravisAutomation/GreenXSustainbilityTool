@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Input from "antd/es/input/Input";
 import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
+import cisco from "../../resources/svgs/cisco.svg"
 
 function Index() {
   const navigate = useNavigate();
@@ -46,9 +47,12 @@ function Index() {
             flexDirection: "column",
           }}
         >
-          <h2 style={{ padding: "25px 0px 0px 0px", margin: "0px" }}>
+          <div style={{paddingTop:"10px"}}>
+          <img src={cisco} width={50} height={50}/>
+          </div>
+          <h3 style={{ padding: "5px 0px 0px 0px", margin: "0px" }}>
             Welcome to Datacenter Sustainability
-          </h2>
+          </h3>
           <p style={{ padding: "0px", margin: "0px" }}>Login your account</p>
           <div style={{ flexBasis: "40%", paddingTop: "40px" }}>
             <label>User Name</label>
@@ -61,7 +65,7 @@ function Index() {
                 backgroundColor: "#050C17",
                 border: "1px solid #5A5A5A",
                 color: "white",
-                width: "250px",
+                width: "350px",
                 marginTop: "10px",
               }}
             />
@@ -78,14 +82,14 @@ function Index() {
                 backgroundColor: "#050C17",
                 border: "1px solid #5A5A5A",
                 color: "#e5e5e5",
-                width: "250px",
+                width: "350px",
                 marginTop: "10px",
               }}
             />
           </div>
           <div style={{ flexBasis: "40%", paddingTop: "40px" }}>
             <Button
-              style={{ width: "16rem", color: "#e5e5e5" }}
+              style={{ width: "22rem", color: "#e5e5e5" }}
               type="primary submit"
               onClick={handleSubmit}
             >

@@ -79,7 +79,7 @@ function HeatmapChart() {
         <GraphBox backgroundColor="#7a0802" />
         <GraphBox backgroundColor="#249b38" />
         <GraphBox backgroundColor="#249b38" />
-        <GraphBox backgroundColor="#36393b" />
+        <GraphBox backgroundColor="#02A0FC" />
         <GraphBox backgroundColor="#7a0802" />
       </div>
       <div
