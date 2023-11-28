@@ -4,21 +4,20 @@ import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
 
 function Index() {
+  const navigate = useNavigate();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
     if (username === "sami" && password === "sami@123") {
-      // Use navigate to navigate to the specified route
-      navigate("/dashboard_module/dashboard");
+      navigate("/main_layout");
     } else {
-      console.log("Incorrect username or password");
+      alert("Incorrect username or password");
     }
   };
-
 
   return (
     <div
@@ -53,6 +52,7 @@ function Index() {
           <p style={{ padding: "0px", margin: "0px" }}>Login your account</p>
           <div style={{ flexBasis: "40%", paddingTop: "40px" }}>
             <label>User Name</label>
+            <br />
             <Input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -60,11 +60,15 @@ function Index() {
               style={{
                 backgroundColor: "#050C17",
                 border: "1px solid #5A5A5A",
+                color: "white",
+                width: "250px",
+                marginTop: "10px",
               }}
             />
           </div>
           <div style={{ flexBasis: "40%", paddingTop: "20px" }}>
             <label>Password</label>
+            <br />
             <Input
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -74,6 +78,8 @@ function Index() {
                 backgroundColor: "#050C17",
                 border: "1px solid #5A5A5A",
                 color: "#e5e5e5",
+                width: "250px",
+                marginTop: "10px",
               }}
             />
           </div>

@@ -1,18 +1,21 @@
 import React from "react";
 import DashboardModule from "../containers/dashboardModule";
 import Dashboard from "../containers/dashboardModule/dashboard";
-import Other from "../containers/dashboardModule/other";
 import { Navigate } from "react-router-dom";
 
-const routes = [
-  {
-    path: "", // Set the default path to "atom"
-    element: <Navigate to="" replace />,
-  },
-  {
-    path: "",
-    element: <Dashboard />,
-  },
-];
+const routes = {
+  path: "dashboard_module",
+  element: <DashboardModule />,
+  children: [
+    {
+      path: "",
+      element: <Navigate to="dashboard" replace />,
+    },
+    {
+      path: "dashboard",
+      element: <Dashboard />,
+    },
+  ],
+};
 
 export default routes;

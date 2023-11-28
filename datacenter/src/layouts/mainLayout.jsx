@@ -31,7 +31,9 @@ import ncmActiveIcon from "../resources/svgs/ncmActiveIcon.svg";
 import logo from "../resources/svgs/logo.svg";
 import dayModeIcon from "../resources/svgs/dayModeIcon.svg";
 import nightModeIcon from "../resources/svgs/nightModeIcon.svg";
-import profileimage from "../resources/svgs/profileimage.png"
+import profileimage from "../resources/svgs/profileimage.png";
+import { useNavigate } from "react-router-dom";
+
 const drawerWidth = 240;
 
 const openedMixin = (theme) => ({
@@ -90,9 +92,13 @@ const Drawer = styled(MuiDrawer, {
 
 export default function Index() {
   const theme = useTheme();
+  const navigate = useNavigate();
+
   const { isDarkMode, setDarkMode } = useContext(AppContext);
   const [open, setOpen] = useState(false);
-  const [selectedModule, setSelectedModule] = useState("Data Center Sustainability");
+  const [selectedModule, setSelectedModule] = useState(
+    "Data Center Sustainability"
+  );
 
   const toggleTheme = () => {
     setDarkMode(!isDarkMode);
@@ -198,9 +204,13 @@ export default function Index() {
               )}
             </div> */}
             &nbsp; &nbsp;
-            <ProfileContainer></ProfileContainer>
+            <ProfileContainer
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                navigate("/");
+              }}
+            ></ProfileContainer>
             &nbsp; &nbsp;
-          
             <div>
               <div
                 style={{
@@ -235,5 +245,4 @@ const ProfileContainer = styled("div")(({ theme }) => ({
   width: "35px",
   height: "35px",
   backgroundColor: theme?.palette?.main_layout?.profile_picture_background,
-  
 }));
