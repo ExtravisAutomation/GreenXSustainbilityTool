@@ -51,9 +51,12 @@ function dailyCostGraph(props) {
          
         }}
       >
-        <p style={{padding:"0px", margin:"0px", fontWeight:"bold"}}>Est. Daily Cost this Month </p>
-        <p style={{padding:"10px 0px", margin:"0px", fontWeight:"bold", fontSize:"40px", color:"#ac1717"}}>AED 783.45 </p>
+        <p style={{padding:"0px", margin:"0px", fontWeight:"bold"}}>Est Cost of this Month </p>
+        <p style={{padding:"10px 0px", margin:"0px", fontWeight:"bold", fontSize:"30px", color:"#ac1717"}}>AED 170830.45 </p>
         <p>Estimated daily Cost so far this month, based on your sites energy and the average energy cost in each sites region</p>
+        <p style={{padding:"0px", margin:"0px", fontWeight:"bold"}}>Predictive Analysis  </p>
+        <p>From March to October Estimated Cost will be more than 40% for this month</p>
+
       </div>
         </div>
        

@@ -48,10 +48,10 @@ function Index() {
           }}
         >
           <div style={{paddingTop:"10px"}}>
-          <img src={cisco} width={50} height={50}/>
+          <img src={cisco} width={100} height={60}/>
           </div>
           <h3 style={{ padding: "5px 0px 0px 0px", margin: "0px" }}>
-            Welcome to Datacenter Sustainability
+            Welcome to Datacenter Sustainability!
           </h3>
           <p style={{ padding: "0px", margin: "0px" }}>Login your account</p>
           <div style={{ flexBasis: "40%", paddingTop: "40px" }}>
@@ -89,8 +89,8 @@ function Index() {
           </div>
           <div style={{ flexBasis: "40%", paddingTop: "40px" }}>
             <Button
-              style={{ width: "22rem", color: "#e5e5e5" }}
-              type="primary submit"
+              style={{ width: "22rem", color: "#e5e5e5" , backgroundColor:"#1871A8"}}
+              type="submit"
               onClick={handleSubmit}
             >
               Login

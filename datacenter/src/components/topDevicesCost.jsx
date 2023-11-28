@@ -32,7 +32,7 @@ function topDevicesCost(props) {
       >
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>SJ-Switch-1a</h4>
+          <h4 style={{ margin: "0px", padding: "0px" }}>Huawei Switch 2</h4>
           <p style={{ margin: "0px", padding: "0px" }}>AED 202.40 estimated</p>
           </div>
           <img src={arrow} width={20} height={20} />
@@ -40,7 +40,7 @@ function topDevicesCost(props) {
         <Seprater/>
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>SJ-Switch-1b</h4>
+          <h4 style={{ margin: "0px", padding: "0px" }}>ThinkSystem SR650</h4>
           <p style={{ margin: "0px", padding: "0px" }}>AED 147.20 estimated</p>
           </div>
           <img src={arrow} width={20} height={20} />
@@ -49,7 +49,7 @@ function topDevicesCost(props) {
         <div>
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>SJ-Switch-1c</h4>
+          <h4 style={{ margin: "0px", padding: "0px" }}>Spine 101</h4>
           <p style={{ margin: "0px", padding: "0px" }}>AED 138.00 estimated</p>
           </div>
           <img src={arrow} width={20} height={20} />
@@ -57,7 +57,7 @@ function topDevicesCost(props) {
         <Seprater/>
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>Leaf-202</h4>
+          <h4 style={{ margin: "0px", padding: "0px" }}>ThinkSystem SR650</h4>
           <p style={{ margin: "0px", padding: "0px" }}>AED 126.00 estimated</p>
           </div>
           <img src={arrow}  width={20} height={20}/>

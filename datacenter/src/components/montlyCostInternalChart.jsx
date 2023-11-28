@@ -31,16 +31,8 @@ const MonthlyCostInternalChart = () => {
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
 
-    let data1 = [];
-    let data2 = [];
-    let data3 = [];
-    let data4 = [];
-    for (let i = 0; i < 12; i++) {
-      data1.push(+(Math.random() * -2).toFixed(2)); // Make some bars downward
-      data2.push(+(Math.random() * -5).toFixed(2)); // Make some bars downward
-      data3.push(+(Math.random() + 0.3).toFixed(2));
-      data4.push(+Math.random().toFixed(2));
-    }
+    let data1 = [10, 5,15, 15,-10, 30, 10, 20,10,15,20,25,30,35];
+    let data2 = [-30, -10,-5,-8,-5, -15,-8,-5,-5,-10,-15,-20,-25,-30];
 
     const emphasisStyle = {
       itemStyle: {
@@ -50,36 +42,34 @@ const MonthlyCostInternalChart = () => {
     };
 
     option = {
-     title: {
-//   text: 'Monthly Graph',
-  textStyle: {
-    color: '#e5e5e5',
-    fontSize: 14,
-    fontWeight: 'bold',
-    
-  },
-},
+      title: {
+        textStyle: {
+          color: '#e5e5e5',
+          fontSize: 14,
+          fontWeight: 'bold',
+        },
+      },
       legend: {
-        show: false, // Remove legend
+        show: false,
       },
       brush: {
         toolbox: ['rect', 'polygon', 'lineX', 'lineY', 'keep', 'clear'],
         xAxisIndex: 0,
       },
       toolbox: {
-        show: false, // Remove toolbox
+        show: false,
       },
       tooltip: {},
       xAxis: {
         data: monthNames,
         name: 'Month',
         axisLine: { onZero: true },
-        splitLine: { show: false }, // Remove dotted line
+        splitLine: { show: false },
         splitArea: { show: false },
       },
       yAxis: [
         {
-          name: 'Avg Usage Last Month',
+          name: 'Avg Usage 2022-2023',
           type: 'value',
           position: 'left',
           axisLine: {
@@ -97,7 +87,8 @@ const MonthlyCostInternalChart = () => {
               else return `${value}% Higher`;
             },
           },
-          splitLine: { show: false }, // Remove dotted line
+          splitLine: { show: false },
+          max: 100, // Set maximum limit for y-axis
         },
         {
           name: 'Count',
@@ -122,6 +113,11 @@ const MonthlyCostInternalChart = () => {
           type: 'bar',
           stack: 'one',
           emphasis: emphasisStyle,
+          itemStyle: {
+            color: function (params) {
+              return params.data >= 0 ? 'blue' : 'green'; // Set color based on value
+            },
+          },
           data: data1,
         },
         {
@@ -129,21 +125,12 @@ const MonthlyCostInternalChart = () => {
           type: 'bar',
           stack: 'one',
           emphasis: emphasisStyle,
+          itemStyle: {
+            color: function (params) {
+              return params.data >= 0 ? 'blue' : 'green'; // Set color based on value
+            },
+          },
           data: data2,
-        },
-        {
-          name: 'bar3',
-          type: 'bar',
-          stack: 'two',
-          emphasis: emphasisStyle,
-          data: data3,
-        },
-        {
-          name: 'bar4',
-          type: 'bar',
-          stack: 'two',
-          emphasis: emphasisStyle,
-          data: data4,
         },
       ],
     };

@@ -141,7 +141,7 @@ function HeatmapChart() {
               lineHeight: "20px",
             }}
           >
-            Racks by Strength{" "}
+            Racks by Space {" "}
           </Typography>
           <div
             style={{
@@ -152,7 +152,7 @@ function HeatmapChart() {
               paddingTop: "15px",
             }}
           >
-            <label>Ru42</label>
+            <label>Higher</label>
             <div
               style={{
                 background: " #7a0802",
@@ -161,7 +161,7 @@ function HeatmapChart() {
                 borderRadius: "3px",
               }}
             ></div>
-            <label>Ru42 </label>
+            <label>Lower </label>
 
             <div
               style={{
@@ -172,7 +172,7 @@ function HeatmapChart() {
               }}
             ></div>
 
-            <label>Ru42 </label>
+            <label>Medium </label>
 
             <div
               style={{

@@ -21,6 +21,7 @@ import UaeSiteMap from "../../../components/uaeSiteMap.jsx";
 import HeatmapChart from "../../../components/heatmapChart.jsx";
 import Dropdown from "../../../components/dropdown.jsx";
 import MonthlyCostGraph from "../../../components/monthlyCostGraph.jsx";
+import Vendor from "../../../components/Vendor.jsx";
 
 function index() {
   const gridStyle = {
@@ -140,12 +141,12 @@ function index() {
               
             </div>
             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Juniper</div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Juniper Switch 2</div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#7A2731", padding:"3px 8px", borderRadius:"7px"}}>40.4g </span> </div>
               
             </div>
             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Cisco</div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Huawei Switch 2</div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#7A2731", padding:"3px 8px", borderRadius:"7px"}}>50.5g </span> </div>
               
             </div>
@@ -162,24 +163,24 @@ function index() {
               borderRadius: "7px",
             }}
           >
-            <p style={{fontWeight:"bold", padding:"0px 20px"}}>Top 5 Devices Energy Cost from last Month</p>
+            <p style={{fontWeight:"bold", padding:"0px 20px"}}>Top 5 Devices with higher energy consumption from last Month</p>
             <div style={{display:"flex"}}>
               <div style={{ display:"flex",fontWeight:"bold", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>Name </div>
-              <div style={{ display:"flex", fontWeight:"bold",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>Cost Increse From Last Month</div>
+              <div style={{ display:"flex", fontWeight:"bold",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>Cost Increase From Last Month</div>
               
             </div>
              <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Cisco UCS C480 M5 </div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>45% </span> </div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Huawei Switch 2 </div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>45KWh </span> </div>
               
             </div>
             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Dell PowerEdge R740</div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Spine 101</div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"rgb(122, 39, 49)", padding:"3px 8px", borderRadius:"7px"}}>50% </span> </div>
               
             </div>
             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>HP ProLiant DL380</div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Juniper SRX </div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>40% </span> </div>
               
             </div>
@@ -201,7 +202,52 @@ function index() {
       <Grid container spacing={3} style={{ marginTop: "0px" }}>
         <Grid item xs={12} sm={6}>
           <div className="wrapper" style={{ padding: "0px 0px 10px 0px" }}>
-            <LineChart />
+            {/* <LineChart /> */}
+            <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              flexDirection: "column",
+              border: "1px solid #36424E",
+              flexBasis: "48%",
+              borderRadius: "7px",
+              color:"#e5e5e5"
+            }}
+          >
+            <p style={{fontWeight:"bold", padding:"0px 20px"}}>Comparision of energy consumption on different Compute devices</p>
+            <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"bold", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>Name </div>
+              <div style={{ display:"flex", fontWeight:"bold",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>kW/h</div>
+              
+            </div>
+             <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Cisco UCS C480 M5 </div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>45kWh </span> </div>
+              
+            </div>
+            <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Dell PowerEdge R740</div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"rgb(122, 39, 49)", padding:"3px 8px", borderRadius:"7px"}}>50kWh </span> </div>
+              
+            </div>
+            <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>HPE ProLiant DL380 </div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>40kWh </span> </div>
+              
+            </div>
+            <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>ThinkSystem SR650</div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"rgb(122, 39, 49)", padding:"3px 8px", borderRadius:"7px"}}>55kWh </span> </div>
+              
+            </div>
+            <div style={{display:"flex"}}>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>IBM Power Systems E950</div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>20kWh</span> </div>
+              
+            </div>
+
+            <div></div>
+          </div>
           </div>
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -281,6 +327,9 @@ function index() {
         </div>
       </div>
       monthlyCostGraph
+      {/* <div>
+        <Vendor/>
+      </div> */}
 
       {/* <div
         style={{
