@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  react:
+    container_name: React_Container
+    restart: always
+    build: ./datacenter
+    ports:
+      - "3010:3000"
+    volumes:
+      - ./datacenter:/frontend-app
+      - node_modules:/frontend-app/node_modules
+    command: ["npm", "start"]
+
+volumes:
+  node_modules:
