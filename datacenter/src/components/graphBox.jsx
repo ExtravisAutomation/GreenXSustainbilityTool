@@ -1,12 +1,16 @@
 import React from 'react';
 
-function graphBox({ backgroundColor }) {
+function graphBox({ backgroundColor, onClick }) {
   return (
-    <div>
-      <div style={{ background: backgroundColor, height: "37px", width: "40px", borderRadius:"3px" }}>
-        
-      </div>
-    </div>
+    <div
+    style={{
+      width: "50px",
+      height: "50px",
+      backgroundColor: backgroundColor,
+      cursor: "pointer", // Add this to show that it's clickable
+    }}
+    onClick={onClick}
+  ></div>
   );
 }
 

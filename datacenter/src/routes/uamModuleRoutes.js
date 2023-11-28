@@ -41,15 +41,15 @@ const routes = {
       element: <Inventory />,
     },
     {
-      path: "site/:id",
+      path: "sites/sitedetail",
       element: <SiteDetail />,
     },
     {
-      path: "rack/:id",
+      path: "racks/rackdetail",
       element: <RackDetail />,
     },
     {
-      path: "inventory/:id",
+      path: "inventory/inventorydetail",
       element: <InventoryDetail />,
     },
   ],

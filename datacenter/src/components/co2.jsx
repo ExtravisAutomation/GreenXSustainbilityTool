@@ -2,7 +2,7 @@
 // import * as echarts from 'echarts';
 // import Typography from "antd/es/typography/Typography";
 
-// const EmissionChart = () => {
+// const Co2 = () => {
 //   useEffect(() => {
 //     const chartDom = document.getElementById('main');
 //     const myChart = echarts.init(chartDom);
@@ -136,89 +136,4 @@
 //   );
 // };
 
-// export default EmissionChart;
-
-import React from "react";
-import GraphBox from "./graphBox";
-import Typography from "antd/es/typography/Typography";
-import { useNavigate } from "react-router-dom";
-
-function emissionChart() {
- 
-
-
-  return (
-    <div
-      style={{
-        border: "1px solid #36424E",
-        borderRadius: "7px",
-        minWidth: "50%",
-        color: "#e5e5e5",
-        height:"430px"
-      }}
-    >
-      <Typography
-        variant="h6"
-        style={{
-          color: "white",
-          marginLeft: 15,
-          marginTop: 15,
-          fontSize: "1.25rem",
-          fontWeight: "500",
-          lineHeight: "20px",
-        }}
-      >
-        Detail of Heat Map of Racks{" "}
-      </Typography>
-
-      <div
-        style={{
-          border: "1px solid #36424E",
-          margin: "5px 20px",
-          height: "370px",
-          borderRadius: "7px",
-          color: "#e5e5e5",
-        //   border:"3px solid red",
-          flexBasis:"30%",
-          // height:"450px"
-        }}
-      >
-        <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
-        <div
-        style={{
-          display: "flex",
-          justifyContent: "start",
-          flexDirection:"column",
-          alignItems: "start",
-          color: "#e5e5e5",
-          padding:"20px 20px",
-          
-         
-        }}
-      >
-        <p style={{padding:"0px", margin:"0px", fontWeight:"bold"}}>Est. Daily Cost this Month </p>
-        <p style={{padding:"10px 0px", margin:"0px", fontWeight:"bold", fontSize:"40px", color:"#ac1717"}}>AED 783.45 </p>
-        <p>Estimated daily Cost so far this month, based on your sites energy and the average energy cost in each sites region</p>
-      </div>
-        </div>
-       
-      </div>
-     
-     
-     
-   
-
-  
-
-    
-    </div>
-  );
-}
-
-export default emissionChart;
-
-
-
-
-
-
+// export default Co2;

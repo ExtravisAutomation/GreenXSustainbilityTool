@@ -6,6 +6,7 @@ import EmissionChart from "../../../components/emissionChart.jsx";
 import HardwareLifeCycle from "../../../components/hardwareLifeCycle.jsx";
 import UnusedPortsCharts from "../../../components/unusedPortGraph.jsx";
 import "./dashboard.css";
+import Dailyco from "../../../components/dailyco.jsx"
 import UsedFspsChart from "../../../components/usedFspsChart.jsx";
 import Grid from "@mui/material/Grid";
 import DailyCostGraph from "../../../components/dailyCostGraph.jsx";
@@ -277,6 +278,27 @@ function index() {
         </div>
       </div>
       monthlyCostGraph
+
+      <div
+        style={{
+          border: "1px solid #36424E",
+          marginTop: "30px",
+          borderRadius: "7px",
+          height: "570px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "0px",
+          }}
+        >
+          <div className="cost-graph-wrapper" style={{ height: "470px" }}>
+            <Dailyco heading="Co2 Emission" headericon={electric} />
+          </div>
+        </div>
+      </div>
     </>
   );
 }

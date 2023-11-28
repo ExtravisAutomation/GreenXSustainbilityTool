@@ -7,8 +7,7 @@ function HeatmapChart() {
   const navigate = useNavigate();
 
   const handleGraphBoxClick = (rackId) => {
-   
-    navigate(`dashboard_module/dashboard/rackDetail/${rackId}`);
+    navigate(`inventorydetail`);
   };
   return (
     <div

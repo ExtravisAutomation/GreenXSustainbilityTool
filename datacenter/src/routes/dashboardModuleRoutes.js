@@ -2,6 +2,7 @@ import React from "react";
 import DashboardModule from "../containers/dashboardModule";
 import Dashboard from "../containers/dashboardModule/dashboard";
 import { Navigate } from "react-router-dom";
+import InventoryDetail from "../containers/uamModule/inventory/inventoryDetail"
 
 const routes = {
   path: "dashboard_module",
@@ -14,6 +15,10 @@ const routes = {
     {
       path: "dashboard",
       element: <Dashboard />,
+    },
+    {
+      path: "dashboard/inventorydetail",
+      element: <InventoryDetail />,
     },
   ],
 };

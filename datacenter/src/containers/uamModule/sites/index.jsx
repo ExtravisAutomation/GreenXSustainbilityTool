@@ -251,7 +251,7 @@ const Site_Module_Data = [
 
 
   const onRowClick = (record) => {
-    navigate(`/uam_module/site/${record.site_id}`);
+    navigate(`sitedetail`);
   };
 
   const rowProps = (record) => {

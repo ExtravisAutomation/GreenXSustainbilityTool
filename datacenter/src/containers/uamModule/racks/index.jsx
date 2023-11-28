@@ -315,7 +315,7 @@ const Index = () => {
     },    
   ];
   const onRowClick = (record) => {
-    navigate(`/uam_module/rack/${record.rack_id}`);
+    navigate(`rackdetail`);
   };
 
   const rowProps = (record) => {

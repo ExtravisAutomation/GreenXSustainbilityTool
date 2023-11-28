@@ -291,7 +291,7 @@ const Index = () => {
     },
   ];
   const onRowClick = (record) => {
-    navigate(`/uam_module/inventory/${record.inventory_id}`);
+    navigate(`inventorydetail`);
   };
 
   const rowProps = (record) => {
