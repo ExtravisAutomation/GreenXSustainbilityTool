@@ -172,7 +172,7 @@ function index() {
             </div>
             <div style={{display:"flex"}}>
               <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Dell PowerEdge R740</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>35% </span> </div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#bd0f09", padding:"3px 8px", borderRadius:"7px"}}>50% </span> </div>
               
             </div>
             <div style={{display:"flex"}}>
@@ -182,7 +182,7 @@ function index() {
             </div>
             <div style={{display:"flex"}}>
               <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>ThinkSystem SR650</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>30% </span> </div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#bd0f09", padding:"3px 8px", borderRadius:"7px"}}>55% </span> </div>
               
             </div>
             <div style={{display:"flex"}}>
@@ -279,7 +279,7 @@ function index() {
       </div>
       monthlyCostGraph
 
-      <div
+      {/* <div
         style={{
           border: "1px solid #36424E",
           marginTop: "30px",
@@ -298,7 +298,7 @@ function index() {
             <Dailyco heading="Co2 Emission" headericon={electric} />
           </div>
         </div>
-      </div>
+      </div> */}
     </>
   );
 }

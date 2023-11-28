@@ -54,7 +54,7 @@ function monthlyCostGraph(props) {
       >
         <p style={{padding:"0px", margin:"0px", fontWeight:"bold"}}>Usage this Month </p>
         <p style={{padding:"10px 0px", margin:"0px", fontWeight:"bold", fontSize:"40px", color:"#ac1717"}}>Higher </p>
-        <p>Total Usage from August 1-31, when compared to your usage for the prior month (Oct 2023)</p>
+        <p>Total Usage from August 1-31, when compared to your usage for the prior month (November 2023)</p>
       </div>
         </div>
        

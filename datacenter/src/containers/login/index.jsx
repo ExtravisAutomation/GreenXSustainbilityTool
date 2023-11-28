@@ -32,7 +32,7 @@ function Index() {
       <div
         style={{
           border: "1px solid #5A5A5A",
-          width: "432px",
+          width: "532px",
           height: "416px",
           borderRadius: "16px",
           boxShadow: " 28px rgba(241, 233, 233, 0.1)",
@@ -47,7 +47,7 @@ function Index() {
           }}
         >
           <h2 style={{ padding: "25px 0px 0px 0px", margin: "0px" }}>
-            Welcome Login
+            Welcome to Datacenter Sustainability
           </h2>
           <p style={{ padding: "0px", margin: "0px" }}>Login your account</p>
           <div style={{ flexBasis: "40%", paddingTop: "40px" }}>
