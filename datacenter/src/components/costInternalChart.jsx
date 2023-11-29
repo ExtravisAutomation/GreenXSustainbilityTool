@@ -29,59 +29,50 @@ const CostInternalChart = () => {
         trigger: 'item',
       },
       legend: {
-        top: '95%', // Increase the gap by setting a larger value
+        top: '95%',
         left: 'center',
         textStyle: {
-          color: '#e5e5e5', // Set the color of the legend text
+          color: '#e5e5e5',
         },
       },
       series: [
         {
-          name: 'Access From',
+          name: '',
           type: 'pie',
           radius: ['40%', '80%'],
           avoidLabelOverlap: false,
           itemStyle: {
             borderRadius: 10,
-            borderColor: 'transparent', // Set border color to transparent
-            borderWidth: 0, // Set border width to 0
+            borderColor: 'transparent',
+            borderWidth: 0,
           },
           label: {
             show: true,
-            position: 'outside', // Set label position to outside
-            color: '#e5e5e5', // Set label color to #e5e5e5
-            formatter: '{b}: {d}%', // Display percentage in the label
+            position: 'outside',
+            color: '#e5e5e5',
+            formatter: '{b}: {d}%',
             emphasis: {
               show: true,
-              fontSize: 40,
+              fontSize: 14, // Set the font size for emphasis (hover)
               fontWeight: 'bold',
             },
           },
           labelLine: {
             show: true,
-            length: 5, // Set the length of the label line
+            length: 5,
           },
-          data: data, // Use the dynamic data here
+          data: data,
         },
       ],
     };
 
     myChart.setOption(option);
 
-    // Handle click event on the label
-    // myChart.on('click', function (params) {
-    //   // Check if the clicked item is a label
-    //   if (params.componentType === 'series' && params.seriesType === 'pie' && params.dataIndex !== undefined) {
-    //     // Navigate to the desired page
-    //     window.location.href = '/dashboard';
-    //   }
-    // });
-
     // Cleanup the chart on component unmount
     return () => {
       myChart.dispose();
     };
-  }, [data]); // Include 'data' in the dependency array to update the chart when data changes
+  }, [data]);
 
   return <div id="cost-internal-chart" style={{ width: '100%', height: '400px', marginTop: '20px' }} />;
 };

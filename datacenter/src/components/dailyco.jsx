@@ -65,7 +65,7 @@ function dailyco(props) {
          
         }}
       >
-        <p style={{padding:"0px", margin:"0px", fontWeight:"bold"}}>Total GHG Emissions  (Per Site) </p>
+        <p style={{padding:"0px", margin:"0px", fontWeight:"bold"}}>Total C02 Emissions  (Per Site) </p>
         {/* <p style={{padding:"10px 0px", margin:"0px", fontWeight:"bold", fontSize:"40px", color:"#ac1717"}}>AED  </p> */}
         <p>Two of your sites have higher emissions than your fabric's average</p>
       </div>
