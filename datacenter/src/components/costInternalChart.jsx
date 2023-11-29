@@ -69,13 +69,13 @@ const CostInternalChart = () => {
     myChart.setOption(option);
 
     // Handle click event on the label
-    myChart.on('click', function (params) {
-      // Check if the clicked item is a label
-      if (params.componentType === 'series' && params.seriesType === 'pie' && params.dataIndex !== undefined) {
-        // Navigate to the desired page
-        window.location.href = '/dashboard';
-      }
-    });
+    // myChart.on('click', function (params) {
+    //   // Check if the clicked item is a label
+    //   if (params.componentType === 'series' && params.seriesType === 'pie' && params.dataIndex !== undefined) {
+    //     // Navigate to the desired page
+    //     window.location.href = '/dashboard';
+    //   }
+    // });
 
     // Cleanup the chart on component unmount
     return () => {
