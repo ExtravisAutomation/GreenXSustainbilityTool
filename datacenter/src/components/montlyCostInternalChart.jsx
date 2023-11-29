@@ -33,7 +33,13 @@ const MonthlyCostInternalChart = () => {
 
     // Generate random data for two bars for each month
     let data1 = [20, 15, 22, 20, 30, 20, 22, 30, 20, 20, 15, 30]; // Energy Utilization A
-    let data2 = [25, 20, 25, 25, 35, 25, 25, 35, 25, 25, 20, 35]; // Energy Utilization B
+    let data2 = [25, 20, 25, 25, 35, 25, 25, 35, 25, 25, 20, 35]; // Energy Utilization B (2023 actual)
+
+    // Generate predictive data for December 2023
+    const predictiveDataDec2023 = Math.round(data2[11] * 1.2); // Assuming a 20% increase for prediction
+
+    // Set the predictive data for December 2023
+    data2[11] = predictiveDataDec2023;
 
     const emphasisStyle = {
       itemStyle: {
@@ -90,7 +96,7 @@ const MonthlyCostInternalChart = () => {
         // max: 100, // Uncomment this line if you want to set a maximum limit for y-axis
       },
       grid: {
-        bottom: 100,
+        bottom: 150, // Increase the bottom padding
       },
       series: [
         {
@@ -114,6 +120,20 @@ const MonthlyCostInternalChart = () => {
             barBorderRadius: [50, 50, 0, 0], // Add border radius at the end of the bar
           },
           data: data2,
+          label: {
+            show: true,
+            position: 'insideTop',
+            formatter: (params) => {
+              if (params.dataIndex === 11) {
+                return 'Predictive Energy for Dec 2023';
+              } else {
+                return '';
+              }
+            },
+            textStyle: {
+              color: '#e5e5e5',
+            },
+          },
         },
       ],
     };
