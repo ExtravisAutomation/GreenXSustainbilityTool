@@ -84,7 +84,7 @@ const MonthlyCostInternalChart = () => {
           },
         },
         axisLabel: {
-          formatter: (value) => `${value} kWh`, // Format the y-axis label to display kWh
+          formatter: (value) => `${value} kW`, // Format the y-axis label to display kWh
         },
         splitLine: { show: false },
         // max: 100, // Uncomment this line if you want to set a maximum limit for y-axis
