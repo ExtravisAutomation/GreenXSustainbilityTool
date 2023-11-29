@@ -26,10 +26,14 @@ const MonthlyCostInternalChart = () => {
     const myChart = echarts.init(chartDom);
     let option;
 
-    const dayNumbers = Array.from({ length: 28 }, (_, i) => i + 1); // Adjust the number of days as needed
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
 
-    // Generate random data in the range of -30% to 30%
-    let data1 = [-3,1,4,10,3,-10,-3,1,4,10,3,-10,-3,1,4,10,3,-10,-3,1,4,10,3,-10,-3,1,4,10,3,-10];
+    // Generate random data for two bars for each month
+    let data1 = [20, 15, 22, 20, 30, 20, 22, 30, 20, 20, 15, 30]; // Energy Utilization A
+    let data2 = [25, 20, 25, 25, 35, 25, 25, 35, 25, 25, 20, 35]; // Energy Utilization B
 
     const emphasisStyle = {
       itemStyle: {
@@ -47,7 +51,10 @@ const MonthlyCostInternalChart = () => {
         },
       },
       legend: {
-        show: false,
+        data: [
+          { name: 'Energy Utilization 2022', textStyle: { color: '#e5e5e5' } },
+          { name: 'Energy Utilization 2023', textStyle: { color: '#e5e5e5' } },
+        ], // Legend for the two bars with color customization
       },
       brush: {
         toolbox: ['rect', 'polygon', 'lineX', 'lineY', 'keep', 'clear'],
@@ -58,100 +65,58 @@ const MonthlyCostInternalChart = () => {
       },
       tooltip: {},
       xAxis: {
-        data: dayNumbers.map(day => `${day}`), // Display day numbers in the xAxis
-        name: 'Day',
+        data: monthNames, // Display month names in the xAxis
+        name: 'Month',
         axisLine: { onZero: true },
         splitLine: { show: false },
         splitArea: { show: false },
       },
-      yAxis: [
-        {
-          name: 'Avg Usage 2022-2023',
-          type: 'value',
-          position: 'left',
-          axisLine: {
-            show: false,
-            lineStyle: {
-              color: '#999',
-              width: 1,
-              type: 'solid',
-            },
-          },
-          axisLabel: {
-            formatter: (value) => {
-              if (value === 0) return 'Middle Avg Usage (Last Month)';
-              else if (value < 0) return `${Math.abs(value)}% Lower`;
-              else return `${value}% Higher`;
-            },
-          },
-          splitLine: { show: false },
-          max: 100, // Set maximum limit for y-axis
-        },
-        {
-          name: 'Count',
-          type: 'value',
-          position: 'right',
-          axisLine: {
-            show: false,
-            lineStyle: {
-              color: '#999',
-              width: 1,
-              type: 'solid',
-            },
+      yAxis: {
+        name: 'Energy Utilization',
+        type: 'value',
+        position: 'left',
+        axisLine: {
+          show: false,
+          lineStyle: {
+            color: '#999',
+            width: 1,
+            type: 'solid',
           },
         },
-      ],
+        axisLabel: {
+          formatter: (value) => `${value} kWh`, // Format the y-axis label to display kWh
+        },
+        splitLine: { show: false },
+        // max: 100, // Uncomment this line if you want to set a maximum limit for y-axis
+      },
       grid: {
         bottom: 100,
       },
       series: [
         {
-          name: 'bar',
+          name: 'Energy Utilization 2022',
           type: 'bar',
-          stack: 'one',
-          barWidth: 20, // Set the width of the bars
+          barWidth: 10, // Set the width of the bars
           emphasis: emphasisStyle,
           itemStyle: {
-            color: function (params) {
-              const value = params.data;
-              if (value >= 4) {
-                return '#A02823';
-              } else if (value >= 2) {
-                return '#C89902';
-              } else if (value >= -2) {
-                return '#01A5DE';
-              } else {
-                return '#77d810';
-              }
-            },
-            barBorderRadius: [50, 50, 50, 50], // Add border radius at the end of the bar
+            color: '#1dec5b',
+            barBorderRadius: [50, 50, 0, 0], // Add border radius at the end of the bar
           },
           data: data1,
         },
+        {
+          name: 'Energy Utilization 2023',
+          type: 'bar',
+          barWidth: 10, // Set the width of the bars
+          emphasis: emphasisStyle,
+          itemStyle: {
+            color: '#01A5DE',
+            barBorderRadius: [50, 50, 0, 0], // Add border radius at the end of the bar
+          },
+          data: data2,
+        },
       ],
     };
-
-    myChart.on('brushSelected', function (params) {
-      var brushed = [];
-      var brushComponent = params.batch[0];
-      for (var sIdx = 0; sIdx < brushComponent.selected.length; sIdx++) {
-        var rawIndices = brushComponent.selected[sIdx].dataIndex;
-        brushed.push('[Series ' + sIdx + '] ' + rawIndices.join(', '));
-      }
-      myChart.setOption({
-        title: {
-          backgroundColor: '#333',
-          text: 'SELECTED DATA INDICES: \n' + brushed.join('\n'),
-          bottom: 0,
-          right: '10%',
-          width: 100,
-          textStyle: {
-            fontSize: 12,
-            color: '#fff',
-          },
-        },
-      });
-    });
 
     option && myChart.setOption(option);
 

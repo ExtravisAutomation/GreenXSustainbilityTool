@@ -223,29 +223,29 @@ const Site_Module_Data = [
     {
       type: "Export",
       icon: <Icon fontSize="16px" icon="fe:export" />,
-      handleClick: handleExport,
-      options: [
-        {
-          type: "All Devices",
-          icon: <Icon fontSize="16px" icon="icon-park-outline:data-all" />,
-        },
-        {
-          type: "Template",
-          icon: (
-            <Icon fontSize="16px" icon="streamline:chat-bubble-square-write" />
-          ),
-        },
-      ],
+      // handleClick: handleExport,
+      // options: [
+      //   {
+      //     type: "All Devices",
+      //     icon: <Icon fontSize="16px" icon="icon-park-outline:data-all" />,
+      //   },
+      //   {
+      //     type: "Template",
+      //     icon: (
+      //       <Icon fontSize="16px" icon="streamline:chat-bubble-square-write" />
+      //     ),
+      //   },
+      // ],
     },
     {
       type: "Delete",
       icon: <Icon fontSize="16px" icon="mingcute:delete-line" />,
-      handleClick: handleDelete,
+      // handleClick: handleDelete,
     },
     {
       type: "Add",
       icon: <Icon fontSize="16px" icon="gridicons:add-outline" />,
-      handleClick: handleAdd,
+      // handleClick: handleAdd,
     },
   ];
 

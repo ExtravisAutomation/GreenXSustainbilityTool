@@ -36,21 +36,36 @@ const PowercostGraph = () => {
     const myChart = echarts.init(chartDom);
 
     const rawData = [
-      { time: '2023-11-25T02:00:00', renewable: 200 },
-      { time: '2023-11-26T03:00:00', renewable: 300 },
-      { time: '2023-11-27T04:00:00', renewable: 400 },
-      { time: '2023-11-28T05:00:00', renewable: 400 },
-      { time: '2023-11-29T06:00:00', renewable: 400 },
-      { time: '2023-11-30T07:00:00', renewable: 400 },
-      { time: '2023-12-01T08:00:00', renewable: 400},
-      { time: '2023-12-02T09:00:00', renewable: 400 },
-      { time: '2023-11-30T10:00:00', renewable: 400 },
-      { time: '2023-12-01T11:00:00', renewable: 400},
-      { time: '2023-12-02T12:00:00', renewable: 400 },
+      { time: '2023-01-01T02:00:00', renewable: 200, non_renewable: 150 },
+      { time: '2023-01-02T02:00:00', renewable: 300, non_renewable: 250 },
+      // ... (add data for other dates)
+      { time: '2023-01-03T02:00:00', renewable: 400, non_renewable: 350 },
+      { time: '2023-01-04T02:00:00', renewable: 350, non_renewable: 400 },
+      { time: '2023-01-05T02:00:00', renewable: 250, non_renewable: 330 },
+      { time: '2023-01-06T02:00:00', renewable: 200, non_renewable: 250 },
+      { time: '2023-01-07T02:00:00', renewable: 150, non_renewable: 200 },
+      { time: '2023-01-08T02:00:00', renewable: 210, non_renewable: 250 },
+      { time: '2023-01-09T02:00:00', renewable: 200, non_renewable: 230 },
+      { time: '2023-01-10T02:00:00', renewable: 230, non_renewable: 250 },
+      { time: '2023-01-11T02:00:00', renewable: 200, non_renewable: 220 },
+      { time: '2023-01-12T02:00:00', renewable: 300, non_renewable: 330 },
+      { time: '2023-01-13T02:00:00', renewable: 200, non_renewable: 230 },
+      { time: '2023-01-14T02:00:00', renewable: 180, non_renewable: 220 },
+      { time: '2023-12-15T02:00:00', renewable: 200, non_renewable: 240 },
+      { time: '2023-12-16T02:00:00', renewable: 200, non_renewable: 220 },
+      { time: '2023-01-17T02:00:00', renewable: 150, non_renewable: 300 },
+      { time: '2023-01-18T02:00:00', renewable: 160, non_renewable: 190 },
+      { time: '2023-01-19T02:00:00', renewable: 120, non_renewable: 150 },
+      { time: '2023-01-20T02:00:00', renewable: 120, non_renewable: 140 },
+      { time: '2023-01-21T02:00:00', renewable: 200, non_renewable: 230 },
+      { time: '2023-01-22T02:00:00', renewable: 250, non_renewable: 270 },
+      { time: '2023-01-23T02:00:00', renewable: 150, non_renewable: 200 },
+      { time: '2023-12-24T02:00:00', renewable: 210, non_renewable: 250 },
+      { time: '2023-12-25T02:00:00', renewable: 180, non_renewable: 220 },
     ];
 
-    const data = rawData.map(item => [item.time, item.renewable]);
-    const data2 = rawData.map(item => [item.time, item.non_renewable]);
+    const data = rawData.map(item => [moment(item.time).format('YYYY-MM-DD'), item.renewable]);
+    const data2 = rawData.map(item => [moment(item.time).format('YYYY-MM-DD'), item.non_renewable]);
 
     const option = {
       legend: {
@@ -73,11 +88,11 @@ const PowercostGraph = () => {
         type: 'category',
         axisLabel: {
           formatter: function (value) {
-            return moment(value).format('HH:mm');
+            return moment(value).format('YYYY-MM-DD');
           },
           color: '#e5e5e5', // Set x-axis label color
         },
-        data: rawData.map(item => item.time),
+        data: data.map(item => item[0]),
         axisPointer: {
           value: '1',
           snap: true,
@@ -110,7 +125,7 @@ const PowercostGraph = () => {
           show: false,
         },
         axisLabel: {
-          formatter: '{value} AED', // Add "AED" to the y-axis label
+          formatter: '{value} KWH', // Add "KWH" to the y-axis label
           color: '#e5e5e5', // Set y-axis label color
         },
         z: 10,

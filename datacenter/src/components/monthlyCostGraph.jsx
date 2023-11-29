@@ -52,20 +52,16 @@ function monthlyCostGraph(props) {
          
         }}
       >
-        <p style={{padding:"0px", margin:"0px", fontWeight:"bold"}}>Usage this month </p>
+        <p style={{padding:"0px", margin:"0px", fontWeight:"bold"}}>Usage this Year </p>
         <p style={{padding:"10px 0px", margin:"0px", fontWeight:"bold", fontSize:"40px", color:"#ac1717"}}>Higher </p>
         <p>Total Usage from August 1-31, when compared  to your usage  for the prior month (july 2022)</p>
       </div>
         </div>
-        <div style={{display:"flex", padding:"10px",flexDirection:"column"}}>
-        <div>More than 2% Lower</div>
-        <div style={{width:"20px", height:"20px", background:"#77d810", borderRadius:"5px",paddingLeft:"20px"}}></div>
-        <div>Less than 2% or Lower</div>
+        <div style={{display:"flex", padding:"20px",flexDirection:"row"}}>
+        <div style={{padding:"0px 10px"}}>2022</div>
+        <div style={{width:"20px", height:"20px", background:"#1dec5b", borderRadius:"5px",paddingLeft:"20px"}}></div>
+        <div style={{padding:"0px 10px"}}>2023</div>      
         <div style={{width:"20px", height:"20px", background:"#01A5DE", borderRadius:"5px",paddingLeft:"20px"}}></div>
-        <div>Between 2-3% higher</div>
-        <div style={{width:"20px", height:"20px", background:"#C89902", borderRadius:"5px", paddingLeft:"20px"}}></div>
-        <div>More than 3% or Lower</div>
-        <div style={{width:"20px", height:"20px", background:"#A02823", borderRadius:"5px",paddingLeft:"20px"}}></div>
         </div>
 
        
