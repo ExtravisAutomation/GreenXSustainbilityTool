@@ -26,13 +26,10 @@ const MonthlyCostInternalChart = () => {
     const myChart = echarts.init(chartDom);
     let option;
 
-    const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
+    const dayNumbers = Array.from({ length: 28 }, (_, i) => i + 1); // Adjust the number of days as needed
 
-    let data1 = [10, 5,15, 15,-10, 30, 10, 20,10,15,20,25,30,35];
-    let data2 = [-30, -10,-5,-8,-5, -15,-8,-5,-5,-10,-15,-20,-25,-30];
+    // Generate random data in the range of -30% to 30%
+    let data1 = [-3,1,4,10,3,-10,-3,1,4,10,3,-10,-3,1,4,10,3,-10,-3,1,4,10,3,-10,-3,1,4,10,3,-10];
 
     const emphasisStyle = {
       itemStyle: {
@@ -61,8 +58,8 @@ const MonthlyCostInternalChart = () => {
       },
       tooltip: {},
       xAxis: {
-        data: monthNames,
-        name: 'Month',
+        data: dayNumbers.map(day => `${day}`), // Display day numbers in the xAxis
+        name: 'Day',
         axisLine: { onZero: true },
         splitLine: { show: false },
         splitArea: { show: false },
@@ -112,25 +109,24 @@ const MonthlyCostInternalChart = () => {
           name: 'bar',
           type: 'bar',
           stack: 'one',
+          barWidth: 20, // Set the width of the bars
           emphasis: emphasisStyle,
           itemStyle: {
             color: function (params) {
-              return params.data >= 0 ? 'blue' : 'green'; // Set color based on value
+              const value = params.data;
+              if (value >= 4) {
+                return '#A02823';
+              } else if (value >= 2) {
+                return '#C89902';
+              } else if (value >= -2) {
+                return '#01A5DE';
+              } else {
+                return '#77d810';
+              }
             },
+            barBorderRadius: [50, 50, 50, 50], // Add border radius at the end of the bar
           },
           data: data1,
-        },
-        {
-          name: 'bar2',
-          type: 'bar',
-          stack: 'one',
-          emphasis: emphasisStyle,
-          itemStyle: {
-            color: function (params) {
-              return params.data >= 0 ? 'blue' : 'green'; // Set color based on value
-            },
-          },
-          data: data2,
         },
       ],
     };

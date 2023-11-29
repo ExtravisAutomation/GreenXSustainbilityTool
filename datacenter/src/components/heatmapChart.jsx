@@ -47,10 +47,14 @@ function HeatmapChart() {
           backgroundColor="#02A0FC"
           onClick={() => handleGraphBoxClick("rack2")}
         />
-        <GraphBox backgroundColor="#249b38" />
-        <GraphBox backgroundColor="#7a0802" />
-        <GraphBox backgroundColor="#02A0FC" />
-        <GraphBox backgroundColor="#249b38" />
+        <GraphBox backgroundColor="#249b38"
+          onClick={() => handleGraphBoxClick("rack1")} />
+        <GraphBox backgroundColor="#7a0802"
+          onClick={() => handleGraphBoxClick("rack1")} />
+        <GraphBox backgroundColor="#02A0FC"
+          onClick={() => handleGraphBoxClick("rack1")} />
+        <GraphBox backgroundColor="#249b38" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
       </div>
       <div
         style={{
@@ -60,12 +64,18 @@ function HeatmapChart() {
           padding: "15px 20px 0px 20px",
         }}
       >
-        <GraphBox backgroundColor="#249b38" />
-        <GraphBox backgroundColor="#02A0FC" />
-        <GraphBox backgroundColor="#7a0802" />
-        <GraphBox backgroundColor="#02A0FC" />
-        <GraphBox backgroundColor="#02A0FC" />
-        <GraphBox backgroundColor="#249b38" />
+        <GraphBox backgroundColor="#249b38"
+          onClick={() => handleGraphBoxClick("rack1")} />
+        <GraphBox backgroundColor="#02A0FC" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
+        <GraphBox backgroundColor="#7a0802" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
+        <GraphBox backgroundColor="#02A0FC"
+          onClick={() => handleGraphBoxClick("rack1")} />
+        <GraphBox backgroundColor="#02A0FC" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
+        <GraphBox backgroundColor="#249b38"
+          onClick={() => handleGraphBoxClick("rack1")} />
       </div>
       <div
         style={{
@@ -75,12 +85,18 @@ function HeatmapChart() {
           padding: "15px 20px 0px 20px",
         }}
       >
-        <GraphBox backgroundColor="#249b38" />
-        <GraphBox backgroundColor="#7a0802" />
-        <GraphBox backgroundColor="#249b38" />
-        <GraphBox backgroundColor="#249b38" />
-        <GraphBox backgroundColor="#02A0FC" />
-        <GraphBox backgroundColor="#7a0802" />
+        <GraphBox backgroundColor="#249b38"
+          onClick={() => handleGraphBoxClick("rack1")} />
+        <GraphBox backgroundColor="#7a0802"
+          onClick={() => handleGraphBoxClick("rack1")} />
+        <GraphBox backgroundColor="#249b38"
+          onClick={() => handleGraphBoxClick("rack1")} />
+        <GraphBox backgroundColor="#249b38" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
+        <GraphBox backgroundColor="#02A0FC"
+          onClick={() => handleGraphBoxClick("rack1")} />
+        <GraphBox backgroundColor="#7a0802" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
       </div>
       <div
         style={{
@@ -90,12 +106,18 @@ function HeatmapChart() {
           padding: "15px 20px 0px 20px",
         }}
       >
-        <GraphBox backgroundColor="#249b38" />
-        <GraphBox backgroundColor="#02A0FC" />
-        <GraphBox backgroundColor="#7a0802" />
-        <GraphBox backgroundColor="#02A0FC" />
-        <GraphBox backgroundColor="#249b38" />
-        <GraphBox backgroundColor="#02A0FC" />
+        <GraphBox backgroundColor="#249b38" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
+        <GraphBox backgroundColor="#02A0FC" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
+        <GraphBox backgroundColor="#7a0802" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
+        <GraphBox backgroundColor="#02A0FC" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
+        <GraphBox backgroundColor="#249b38" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
+        <GraphBox backgroundColor="#02A0FC" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
       </div>
       <div
         style={{
@@ -105,12 +127,18 @@ function HeatmapChart() {
           padding: "15px 20px 0px 20px",
         }}
       >
-        <GraphBox backgroundColor="#249b38" />
-        <GraphBox backgroundColor="#7a0802" />
-        <GraphBox backgroundColor="#249b38" />
-        <GraphBox backgroundColor="#249b38" />
-        <GraphBox backgroundColor="#7a0802" />
-        <GraphBox backgroundColor="#02A0FC" />
+        <GraphBox backgroundColor="#249b38"
+          onClick={() => handleGraphBoxClick("rack1")} />
+        <GraphBox backgroundColor="#7a0802" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
+        <GraphBox backgroundColor="#249b38" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
+        <GraphBox backgroundColor="#249b38" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
+        <GraphBox backgroundColor="#7a0802" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
+        <GraphBox backgroundColor="#02A0FC" 
+          onClick={() => handleGraphBoxClick("rack1")}/>
       </div>
 
       <div

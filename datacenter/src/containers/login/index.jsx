@@ -13,7 +13,7 @@ function Index() {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (username === "sami" && password === "sami@123") {
+    if (username === "Cisco" && password === "Cisco2024") {
       navigate("/main_layout");
     } else {
       alert("Incorrect username or password");

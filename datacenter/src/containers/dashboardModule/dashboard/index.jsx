@@ -7,15 +7,16 @@ import HardwareLifeCycle from "../../../components/hardwareLifeCycle.jsx";
 import UnusedPortsCharts from "../../../components/unusedPortGraph.jsx";
 import "./dashboard.css";
 import Dailyco from "../../../components/dailyco.jsx"
+import Co from "../../../components/co.jsx"
 import UsedFspsChart from "../../../components/usedFspsChart.jsx";
 import Grid from "@mui/material/Grid";
 import DailyCostGraph from "../../../components/dailyCostGraph.jsx";
 import TopDevicesCost from "../../../components/topDevicesCost.jsx";
 import TopDevicesEnergy from "../../../components/topDevicesEnergy.jsx";
 import TopDevicesGhg from "../../../components/topDeviceGhg.jsx"
-
-import dollar from "../../../resources/svgs/dollar.png";
 import electric from "../../../resources/svgs/electric.png";
+import dollar from "../../../resources/svgs/dollar.svg"
+import dollar1 from "../../../resources/svgs/dollar1.svg"
 import leaf from "../../../resources/svgs/leaf.png";
 import UaeSiteMap from "../../../components/uaeSiteMap.jsx";
 import HeatmapChart from "../../../components/heatmapChart.jsx";
@@ -69,7 +70,7 @@ function index() {
           }}
         >
           <div className="cost-graph-wrapper" style={{ height: "470px" }}>
-            <DailyCostGraph heading="Cost" headericon={electric} />
+            <DailyCostGraph heading="Cost" headericon={dollar1} />
           </div>
         </div>
       </div>
@@ -171,7 +172,7 @@ function index() {
             </div>
              <div style={{display:"flex"}}>
               <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Huawei Switch 2 </div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>45KWh </span> </div>
+              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>45% </span> </div>
               
             </div>
             <div style={{display:"flex"}}>
@@ -272,10 +273,10 @@ function index() {
           <HeatmapChart />
         </div>
         <div className="emission-chart-wrapper">
-          <EmissionChart />
+        <HardwareLifeCycle chartData={chartData} />
         </div>
       </div>
-      <div
+      {/* <div
         style={{
           display: "flex",
           justifyContent: "space-between",
@@ -291,7 +292,7 @@ function index() {
         <div className="donut-graph-wrapper">
           <UsedFspsChart />
         </div>
-      </div>
+      </div> */}
       {/* 3 x Table Dataaaaa */}
       <div
         style={{
@@ -326,12 +327,12 @@ function index() {
           </div>
         </div>
       </div>
-      monthlyCostGraph
+
       {/* <div>
         <Vendor/>
       </div> */}
 
-      {/* <div
+      <div
         style={{
           border: "1px solid #36424E",
           marginTop: "30px",
@@ -347,10 +348,11 @@ function index() {
           }}
         >
           <div className="cost-graph-wrapper" style={{ height: "470px" }}>
-            <Dailyco heading="Co2 Emission" headericon={electric} />
+            <Dailyco heading="Emission" headericon={electric} />
           </div>
+       
         </div>
-      </div> */}
+      </div>
     </>
   );
 }

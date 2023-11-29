@@ -197,7 +197,7 @@ const PowercostGraph = () => {
   return (
     <>
       <Typography variant="h6" style={{ color: 'white', marginLeft: 20, marginTop: 15, fontSize:"1.25rem", fontWeight:"500", lineHeight:"20px" }}>
-        Infrastructure Power Cost
+        Infrastructure Power Utilization
       </Typography>
       <div
         className=""

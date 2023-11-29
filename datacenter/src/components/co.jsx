@@ -15,24 +15,12 @@
 //     ];
 
 //     const generateData = () => {
-//       const data = [];
-//       let len = 10;
-//       while (len--) {
-//         data.push(Math.round(Math.random() * 1000));
-//       }
-//       return data;
+//       return monthNames.map((month, index) => {
+//         return Data[index]; // Assuming Data is an array with CO2 emission values
+//       });
 //     };
 
-//     const categories = (function () {
-//       let res = [];
-//       let len = 10;
-//       while (len--) {
-//         res.unshift(monthNames[len]);
-//       }
-//       return res;
-//     })();
-
-//     const data = generateData();
+//     const data = ;
 
 //     const option = {
 //       tooltip: {
@@ -44,7 +32,6 @@
 //           },
 //         },
 //       },
-//       legend: {},
 //       toolbox: {
 //         show: true,
 //         feature: {
@@ -61,15 +48,10 @@
 //           },
 //         },
 //       },
-//       dataZoom: {
-//         show: false,
-//         start: 0,
-//         end: 100,
-//       },
 //       xAxis: {
 //         type: 'category',
 //         boundaryGap: true,
-//         data: categories,
+//         data: monthNames,
 //         axisTick: {
 //           show: false,
 //         },
@@ -96,37 +78,32 @@
 //           name: 'Sustainable Operations Emissions',
 //           type: 'bar',
 //           data: data,
+//           itemStyle: {
+//             color: '#8ec06c', // Adjust the bar color as needed
+//           },
 //         },
 //       ],
 //     };
 
-//     setInterval(() => {
-//       let monthIndex = new Date().getMonth();
-//       let newMonthName = monthNames[monthIndex];
+//     const updateData = () => {
+//       setInterval(() => {
+//         const newData = generateData();
 
-//       if (!categories.includes(newMonthName)) {
-//         data.shift();
-//         data.push(Math.round(Math.random() * 1000));
-//         categories.shift();
-//         categories.push(newMonthName);
-
-//         chartRef.current.setOption({
-//           xAxis: {
-//             data: categories,
-//           },
+//         myChart.setOption({
 //           series: [
 //             {
-//               data: data,
+//               data: newData,
 //             },
 //           ],
 //         });
-//       }
-//     }, 2100);
+//       }, 2100);
+//     };
 
-//     option && chartRef.current.setOption(option);
+//     option && myChart.setOption(option);
+//     updateData();
 
 //     return () => {
-//       chartRef.current.dispose();
+//       myChart.dispose();
 //     };
 //   }, []);
 
