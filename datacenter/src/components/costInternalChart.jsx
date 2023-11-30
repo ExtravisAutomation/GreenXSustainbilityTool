@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import * as echarts from 'echarts';
 
 const CostInternalChart = () => {
-  // Your dynamic data
+  const navigate = useNavigate();
+
   const data = [
     { value: 40, name: 'DXB-40%' },
     { value: 10, name: 'SHJ-10%' },
@@ -23,6 +25,13 @@ const CostInternalChart = () => {
     }
 
     const myChart = echarts.init(chartDom);
+
+    myChart.on('click', (params) => {
+      if (params.data && params.data.name) {
+        // Navigate to the sitedetail page with the site name as a parameter
+        navigate(`/main_layout/uam_module/sites`);
+      }
+    });
 
     const option = {
       tooltip: {
@@ -53,7 +62,7 @@ const CostInternalChart = () => {
             formatter: '{b}: {d}%',
             emphasis: {
               show: true,
-              fontSize: 14, // Set the font size for emphasis (hover)
+              fontSize: 14,
               fontWeight: 'bold',
             },
           },
@@ -72,7 +81,7 @@ const CostInternalChart = () => {
     return () => {
       myChart.dispose();
     };
-  }, [data]);
+  }, [data, navigate]);
 
   return <div id="cost-internal-chart" style={{ width: '100%', height: '400px', marginTop: '20px' }} />;
 };
