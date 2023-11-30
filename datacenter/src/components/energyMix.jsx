@@ -51,9 +51,11 @@ class EnergyMix extends React.Component {
     const updatedSeries = [58, 20, 12, 10]; // Remaining percentage assigned to Coal
 
     return (
-      <div style={{ flexDirection: 'column', width: '60%', color: '#e5e5e5', paddingLeft: '100px' }}>
+      <div style={{ flexDirection: 'column', width: '60%', color: '#e5e5e5', paddingLeft: '0px' }}>
         <p style={{ fontSize: '25px', fontWeight: 'bold' }}>Energy Mix</p>
         <ApexChart series={updatedSeries} />
+        <p style={{ fontSize: '25px', fontWeight: 'bold' }}>Energy Mix</p>
+
       </div>
     );
   }
