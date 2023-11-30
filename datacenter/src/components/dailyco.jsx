@@ -68,7 +68,22 @@ function dailyco(props) {
         <p style={{padding:"0px", margin:"0px", fontWeight:"bold"}}>Total C02 Emissions  (Per Site) </p>
         {/* <p style={{padding:"10px 0px", margin:"0px", fontWeight:"bold", fontSize:"40px", color:"#ac1717"}}>AED  </p> */}
         <p>Two of your sites have higher emissions than your fabric's average</p>
-      </div>
+        <p style={{padding:"0px", margin:"0px", fontWeight:"bold"}}>Abu Dhabi</p>
+        <p style={{ fontSize: "14px" }}>
+  <span style={{ marginRight: "5px" }}>&#8226;</span> CO2 Emission 15kg <br />
+  <span style={{ marginRight: "5px" }}>&#8226;</span> AED 7500 <br />
+  <span style={{ marginRight: "5px" }}>&#8226;</span> Energy Consumption 7000 KW
+</p>        <p style={{padding:"0px", margin:"0px", fontWeight:"bold"}}>Dubai</p>
+<p style={{ fontSize: "14px" }}>
+  <span style={{ marginRight: "5px" }}>&#8226;</span> CO2 Emission 20kg <br />
+  <span style={{ marginRight: "5px" }}>&#8226;</span> AED 8000 <br />
+  <span style={{ marginRight: "5px" }}>&#8226;</span> Energy Consumption 7500 KW
+</p>        <p style={{padding:"0px", margin:"0px", fontWeight:"bold"}}>Sharjah</p>
+<p style={{ fontSize: "14px" }}>
+  <span style={{ marginRight: "5px" }}>&#8226;</span> CO2 Emission 20kg <br />
+  <span style={{ marginRight: "5px" }}>&#8226;</span> AED 8000 <br />
+  <span style={{ marginRight: "5px" }}>&#8226;</span> Energy Consumption 7500 KW
+</p>      </div>
         </div>
        
       </div>

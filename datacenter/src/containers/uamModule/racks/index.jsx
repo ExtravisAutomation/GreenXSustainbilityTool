@@ -349,7 +349,7 @@ const Index = () => {
             rowSelection={rowSelection}
             columns={columns}
             dataSource={rackPageData}
-            rowKey="rack_id"
+            rowKey="name"
             style={{ whiteSpace: "pre" }}
             pagination={{
               defaultPageSize: 9,

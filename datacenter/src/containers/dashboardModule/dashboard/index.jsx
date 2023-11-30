@@ -24,6 +24,9 @@ import Dropdown from "../../../components/dropdown.jsx";
 import MonthlyCostGraph from "../../../components/monthlyCostGraph.jsx";
 import Vendor from "../../../components/Vendor.jsx";
 import EnergyMix from "../../../components/energyMix.jsx";
+import car from "../../../resources/svgs/car.png"
+import airplane from "../../../resources/svgs/airplane.png"
+
 
 function index() {
   const gridStyle = {
@@ -430,6 +433,18 @@ function index() {
         <p style={{padding:"10px 0px", margin:"0px", fontWeight:"bold", fontSize:"30px", color:"#1dec5b"}}>5,187 kg CO2e</p>
 
         <p>Estimated Monthly carbon dioxide equivalent emissions (based on energy usage) Emissions are estimates from Utility data</p>
+        <div>
+          <img src={car} width={50} height={50}/>
+        <p style={{padding:"0px", margin:"0px", fontWeight:"500"}}>Equivalent of 416 car trips of 1070 km each in a gas-powered passenger vehicle.</p>
+        <p></p>
+        </div>
+        <div>
+          <img src={airplane} width={50} height={50}/>
+        <p style={{padding:"0px", margin:"0px", fontWeight:"500"}}>33 Airplane Flights of 1 hour, 50 minutes each</p>
+        <p></p>
+        </div>
+
+       
         </div>
         <div>
        

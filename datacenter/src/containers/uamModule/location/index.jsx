@@ -58,49 +58,49 @@ const Index = () => {
       space_row: "58% Utilized",
     },
     {
-      name: "Row_1",
+      name: "Row_2",
       site: "SHJ",
       racks: "08",
       devices: "16",
       space_row: "26% Utilized",
     },
     {
-      name: "Row_1",
+      name: "Row_3",
       site: "AUH",
       racks: "08",
       devices: "18",
       space_row: "10% Utilized",
     },
     {
-      name: "Row_1",
+      name: "Row_4",
       site: "FUJ",
       racks: "08",
       devices: "24",
       space_row: "16% Utilized",
     },
     {
-      name: "Row_2",
+      name: "Row_5",
       site: "RAK",
       racks: "07",
       devices: "17",
       space_row: "17% Utilized",
     },
     {
-      name: "Row_2",
+      name: "Row_6",
       site: "UAQ",
       racks: "07",
       devices: "21",
       space_row: "46% Utilized",
     },
     {
-      name: "Row_2",
+      name: "Row_7",
       site: "AJM",
       racks: "10",
       devices: "20",
       space_row: "20% Utilized",
     },
     {
-      name: "Row_3",
+      name: "Row_8",
       site: "AAN",
       racks: "10",
       devices: "15",
@@ -267,20 +267,21 @@ const Index = () => {
         <DefaultCard sx={{ width: `${width - 105}px` }}>
           <PageHeader pageName="Locations" buttons={buttons} />
           <DefaultTable
-            rowClassName={(record, index) => (index % 2 === 0 ? "even" : "odd")}
-            size="small"
-            scroll={{ x: 1000 }}
-            onChange={handleChange}
-            rowSelection={rowSelection}
-            columns={columns}
-            dataSource={locationPageData}
-            rowKey="location_id"
-            style={{ whiteSpace: "pre" }}
-            pagination={{
-              defaultPageSize: 9,
-              pageSizeOptions: [9, 50, 100, 500, 1000],
-            }}
-          />
+  rowClassName={(record, index) => (index % 2 === 0 ? "even" : "odd")}
+  size="small"
+  scroll={{ x: 1000 }}
+  onChange={handleChange}
+  rowSelection={rowSelection}
+  columns={columns}
+  dataSource={locationPageData}
+  rowKey={(record, index) => index}  // Use index as rowKey
+  style={{ whiteSpace: "pre" }}
+  pagination={{
+    defaultPageSize: 9,
+    pageSizeOptions: [9, 50, 100, 500, 1000],
+  }}
+/>
+
         </DefaultCard>
       </div>
     </Spin>

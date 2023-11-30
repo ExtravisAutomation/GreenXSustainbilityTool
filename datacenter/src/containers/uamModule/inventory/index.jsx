@@ -423,7 +423,7 @@ const Index = () => {
             rowSelection={rowSelection}
             columns={columns}
             dataSource={inventoryPageData}
-            rowKey="inventory_id"
+            rowKey="name"
             style={{ whiteSpace: "pre" }}
             pagination={{
               defaultPageSize: 9,

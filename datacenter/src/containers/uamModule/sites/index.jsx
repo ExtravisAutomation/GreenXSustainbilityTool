@@ -48,63 +48,58 @@ const Index = () => {
 
   // selectors
   const dataSource = useSelector(selectTableData);
-  console.log("dataaaaaaaa", dataSource)
 
-//dummy data to show 
-const Site_Module_Data = [
-  {
-      "name": "DXB",
-      "status": "Active",
-      "facility": "DSW",
-      "Region": "Dubai"
-  },
-  {
-      "name": "SHJ",
-      "status": "Active",
-      "facility": "DSW",
-      "Region": "Sharjah"
-  },
-  {
-      "name": "AUH",
-      "status": "Active",
-      "facility": "DSW",
-      "Region": "Abu Dubai"
-  },
-  {
-      "name": "FUJ",
-      "status": "Active",
-      "facility": " DSW",
-      "Region": "Fujairah"
-  },
-  {
-      "name": "RAK",
-      "status": "Active",
-      "facility": "DSW",
-      "Region": "Ras Al-Khema"
-  },
-  {
-    "name": "UAQ",
-    "status": "Active",
-    "facility": "DSW",
-    "Region": "Umm Al Quwain"
-},
-{
-    "name": "AJM",
-    "status": "Active",
-    "facility": "DSW",
-    "Region": "Ajman"
-},
-{
-  "name": "AAN",
-  "status": "Active",
-  "facility": "DSW",
-  "Region": "Ajman"
-},
-
-];
-
-
-
+  // dummy data to show
+  const Site_Module_Data = [
+    {
+      name: "DXB",
+      status: "Active",
+      facility: "DSW",
+      Region: "Dubai",
+    },
+    {
+      name: "SHJ",
+      status: "Active",
+      facility: "DSW",
+      Region: "Sharjah",
+    },
+    {
+      name: "AUH",
+      status: "Active",
+      facility: "DSW",
+      Region: "Abu Dhabi",
+    },
+    {
+      name: "FUJ",
+      status: "Active",
+      facility: "DSW",
+      Region: "Fujairah",
+    },
+    {
+      name: "RAK",
+      status: "Active",
+      facility: "DSW",
+      Region: "Ras Al-Khaimah",
+    },
+    {
+      name: "UAQ",
+      status: "Active",
+      facility: "DSW",
+      Region: "Umm Al Quwain",
+    },
+    {
+      name: "AJM",
+      status: "Active",
+      facility: "DSW",
+      Region: "Ajman",
+    },
+    {
+      name: "AAN",
+      status: "Active",
+      facility: "DSW",
+      Region: "Ajman",
+    },
+  ];
 
   // apis
   const {
@@ -151,7 +146,7 @@ const Site_Module_Data = [
   const handleDelete = () => {
     if (selectedRowKeys.length > 0) {
       handleCallbackAlert(
-        "Are you sure you want delete these records?",
+        "Are you sure you want to delete these records?",
         deleteData
       );
     } else {
@@ -189,6 +184,7 @@ const Site_Module_Data = [
   // row selection
   const onSelectChange = (selectedRowKeys) => {
     setSelectedRowKeys(selectedRowKeys);
+    console.log(selectedRowKeys);
   };
 
   const rowSelection = {
@@ -218,37 +214,21 @@ const Site_Module_Data = [
     ),
   });
 
-  /// page header buttons
+  // page header buttons
   const buttons = [
     {
       type: "Export",
       icon: <Icon fontSize="16px" icon="fe:export" />,
-      // handleClick: handleExport,
-      // options: [
-      //   {
-      //     type: "All Devices",
-      //     icon: <Icon fontSize="16px" icon="icon-park-outline:data-all" />,
-      //   },
-      //   {
-      //     type: "Template",
-      //     icon: (
-      //       <Icon fontSize="16px" icon="streamline:chat-bubble-square-write" />
-      //     ),
-      //   },
-      // ],
     },
     {
       type: "Delete",
       icon: <Icon fontSize="16px" icon="mingcute:delete-line" />,
-      // handleClick: handleDelete,
     },
     {
       type: "Add",
       icon: <Icon fontSize="16px" icon="gridicons:add-outline" />,
-      // handleClick: handleAdd,
     },
   ];
-
 
   const onRowClick = (record) => {
     navigate(`sitedetail`);
@@ -256,9 +236,7 @@ const Site_Module_Data = [
 
   const rowProps = (record) => {
     return {
-      onClick: () =>
-       onRowClick(record),
-   
+      onClick: () => onRowClick(record),
     };
   };
 
@@ -276,20 +254,21 @@ const Site_Module_Data = [
         <DefaultCard sx={{ width: `${width - 105}px` }}>
           <PageHeader pageName="Sites" buttons={buttons} />
           <DefaultTable
-            rowClassName={(record, index) => (index % 2 === 0 ? "even" : "odd")}
+            rowClassName={(record, index) =>
+              index % 2 === 0 ? "even" : "odd"
+            }
             size="small"
             onChange={handleChange}
             rowSelection={rowSelection}
             columns={columns}
             dataSource={Site_Module_Data}
-            rowKey="site_id"
+            rowKey="name" // Change 'site_id' to a unique key present in your data
             style={{ whiteSpace: "pre" }}
             pagination={{
               defaultPageSize: 9,
               pageSizeOptions: [9, 50, 100, 500, 1000],
             }}
             onRow={rowProps}
-
           />
         </DefaultCard>
       </div>
