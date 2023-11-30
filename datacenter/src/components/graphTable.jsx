@@ -22,7 +22,7 @@ const Table = () => {
         className="graph-table-heading"
         style={{ color: "#E5E5E5", padding: "8px 0px 2px 15px" }}
       >
-        Top Racks Utilization{" "}
+        Top Racks by Cost and Input Power Utilization{" "}
       </Typography>
       <table style={{ width: "100%", marginTop: "20px", borderRadius: "7px" }}>
         <thead>

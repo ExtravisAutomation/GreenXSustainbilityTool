@@ -63,18 +63,18 @@ const HardwareLifeCycle = ({ chartData }) => {
 
   return (
     <>
-      <Typography
+     <Typography
         variant="h6"
         style={{
           color: "white",
-          marginLeft: 10,
-          marginTop: 10,
-          fontSize: "16px",
+          marginLeft: 15,
+          marginTop: 15,
+          fontSize: "1.25rem",
           fontWeight: "500",
           lineHeight: "20px",
         }}
       >
-        Hardware Lifecycle{" "}
+       Hardware Lifecycle{" "}
       </Typography>
 
       <div

@@ -14,27 +14,27 @@ const handleMenuClick = (e) => {
 
 const items = [
   {
-    label: 'Data Center 1st',
+    label: 'SJH',
     key: '1',
     icon: <UserOutlined />,
   },
   {
-    label: 'Data Center 2st',
+    label: 'AUH',
     key: '2',
     icon: <UserOutlined />,
   },
   {
-    label: 'Data Center 3st',
+    label: 'FUJ',
     key: '3',
     icon: <UserOutlined />,
     danger: true,
   },
   {
-    label: 'Data Center 4st',
+    label: 'RAK',
     key: '4',
     icon: <UserOutlined />,
     danger: true,
-    disabled: true,
+   
   },
 ];
 
@@ -48,7 +48,7 @@ const Dropdownbutton = () => (
     <Dropdown menu={menuProps}>
       <Button style={{ backgroundColor: "rgba(5, 3, 34, 0.87)", color: "#e5e5e5", border: "1px solid #474747" }}>
         <Space>
-          Select Data Center
+          DBX
           <DownOutlined />
         </Space>
       </Button>

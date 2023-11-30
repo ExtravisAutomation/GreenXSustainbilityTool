@@ -69,30 +69,40 @@ const MonthlyCostInternalChart = () => {
       toolbox: {
         show: false,
       },
-      tooltip: {},
+      tooltip: {
+        textStyle: {
+          color: '#e5e5e5',
+        },
+      },
       xAxis: {
         data: monthNames, // Display month names in the xAxis
         name: 'Month',
-        axisLine: { onZero: true },
+        axisLine: { onZero: true, lineStyle: { color: '#e5e5e5' } },
         splitLine: { show: false },
         splitArea: { show: false },
+        axisLabel: {
+          color: '#e5e5e5',
+        },
       },
       yAxis: {
-        name: 'Energy Utilization',
+        name: 'Energy Utilization / Month',
         type: 'value',
         position: 'left',
         axisLine: {
-          show: false,
+          show: true,
           lineStyle: {
-            color: '#999',
+            color: '#e5e5e5',
             width: 1,
             type: 'solid',
           },
         },
         axisLabel: {
-          formatter: (value) => `${value} kW`, // Format the y-axis label to display kWh
+          formatter: (value) => `${value} kW/M`, // Format the y-axis label to display kWh
+          color: '#e5e5e5',
         },
         splitLine: { show: false },
+        nameGap: 25,
+        left: "10",
         // max: 100, // Uncomment this line if you want to set a maximum limit for y-axis
       },
       grid: {
@@ -115,10 +125,6 @@ const MonthlyCostInternalChart = () => {
           type: 'bar',
           barWidth: 10, // Set the width of the bars
           emphasis: emphasisStyle,
-          itemStyle: {
-            color: '#01A5DE',
-            barBorderRadius: [50, 50, 0, 0], // Add border radius at the end of the bar
-          },
           data: data2,
           label: {
             show: true,
@@ -133,6 +139,13 @@ const MonthlyCostInternalChart = () => {
             textStyle: {
               color: '#e5e5e5',
             },
+          },
+          itemStyle: {
+            color: (params) => {
+              // Check if it is the predictive data for December 2023
+              return params.dataIndex === 11 ? '#FF5722' : '#01A5DE';
+            },
+            barBorderRadius: [50, 50, 0, 0], // Add border radius at the end of the bar
           },
         },
       ],

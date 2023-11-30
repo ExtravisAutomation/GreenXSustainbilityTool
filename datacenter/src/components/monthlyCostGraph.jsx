@@ -30,13 +30,13 @@ function monthlyCostGraph(props) {
       <div
         style={{
           border: "1px solid #36424E",
-          margin: "5px 20px",
+          margin: "0px 20px",
           height: "370px",
           borderRadius: "7px",
           color: "#e5e5e5",
         //   border:"3px solid red",
           flexBasis:"30%",
-          height:"450px"
+          height:"400px"
         }}
       >
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
@@ -56,7 +56,7 @@ function monthlyCostGraph(props) {
         <p style={{padding:"10px 0px", margin:"0px", fontWeight:"bold", fontSize:"40px", color:"#ac1717"}}>Higher </p>
         <p style={{padding:"10px 0px", margin:"0px", fontWeight:"bold", fontSize:"20px", color:"#1dec5b"}}>Predictive Analysis</p>
 
-        <p>December 2023 energy consumption will be higher then 2022</p>
+        <p>December 2023 energy consumption will be higher then 2022 based on AI ML Data</p>
       </div>
         </div>
         <div style={{display:"flex", padding:"20px",flexDirection:"row"}}>
@@ -64,6 +64,10 @@ function monthlyCostGraph(props) {
         <div style={{width:"20px", height:"20px", background:"#1dec5b", borderRadius:"5px",paddingLeft:"20px"}}></div>
         <div style={{padding:"0px 10px"}}>2023</div>      
         <div style={{width:"20px", height:"20px", background:"#01A5DE", borderRadius:"5px",paddingLeft:"20px"}}></div>
+        <div style={{padding:"0px 10px"}}>Prediction</div>  
+        <div style={{width:"20px", height:"20px", background:"#FF5722", borderRadius:"5px",paddingLeft:"20px"}}></div>
+    
+
         </div>
 
        
@@ -77,7 +81,7 @@ function monthlyCostGraph(props) {
           borderRadius: "7px",
           color: "#e5e5e5",
           flexBasis:"70%",
-          height:"450px"
+          height:"400px"
         }}
       >
 <MonthlyCostInternalChart/>
