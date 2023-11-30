@@ -140,7 +140,7 @@ function index() {
               
             </div>
             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Leaf 203</div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Juniper SRX3600</div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>80.2g </span> </div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>40.1g </span> </div>
 

@@ -3,6 +3,10 @@ import DashboardModule from "../containers/dashboardModule";
 import Dashboard from "../containers/dashboardModule/dashboard";
 import { Navigate } from "react-router-dom";
 import InventoryDetail from "../containers/uamModule/inventory/inventoryDetail"
+import RedrackDetail from "../containers/uamModule/inventory/redrackDetail"
+import GreenrackDetail from "../containers/uamModule/inventory/greenrackDetail"
+import BluerackDetail from "../containers/uamModule/inventory/bluerackDetail"
+
 
 const routes = {
   path: "dashboard_module",
@@ -19,6 +23,18 @@ const routes = {
     {
       path: "dashboard/inventorydetail",
       element: <InventoryDetail />,
+    },
+    {
+      path: "dashboard/redrackdetail",
+      element: <RedrackDetail />,
+    },
+    {
+      path: "dashboard/greenrackdetail",
+      element: <GreenrackDetail />,
+    },
+    {
+      path: "dashboard/bluerackdetail",
+      element: <BluerackDetail />,
     },
   ],
 };
