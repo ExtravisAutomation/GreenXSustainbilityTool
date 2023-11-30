@@ -451,8 +451,8 @@ function index() {
       
         <div className="energymix-wrapper">
   <EnergyMix />
-  <div style={{ paddingTop: "20px", maxWidth: "350px" }}>
-    <p style={{ paddingTop: "10 px", margin: "0px", fontWeight: "bold" }}>
+  <div style={{ paddingTop: "40px", maxWidth: "350px" }}>
+    <p style={{ paddingTop: "20 px", margin: "0px", fontWeight: "bold" }}>
       Consolidation and Decommissioning:
     </p>
     <p style={{ fontSize: "14px" }}>
