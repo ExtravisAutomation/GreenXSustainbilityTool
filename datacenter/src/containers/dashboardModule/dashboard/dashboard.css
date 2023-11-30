@@ -73,7 +73,16 @@
 
 }
 .cost-graph-wrapper{
-    flex-basis: 100%!important;    
+    flex-basis: 100%!important;
+    /* border:"2px solid red"     */
+}
+.energymix-wrapper{
+    flex-basis: 60%!important;
+    display: flex;
+    justify-content: start;
+    /* align-items: center; */
+    color: #e5e5e5;
+ 
 }
 
 /* Add unique styles for each chart container */

@@ -449,12 +449,42 @@ function index() {
        
         </div>
       
-          <div className="cost-graph-wrapper" style={{  flexBasis:"100%", maxWidth:"60%"}}>
-          <EnergyMix/>
+        <div className="energymix-wrapper">
+  <EnergyMix />
+  <div style={{ paddingTop: "20px", maxWidth: "350px" }}>
+    <p style={{ paddingTop: "10 px", margin: "0px", fontWeight: "bold" }}>
+      Consolidation and Decommissioning:
+    </p>
+    <p style={{ fontSize: "14px" }}>
+      <span style={{ marginRight: "5px" }}>&#8226;</span> Regularly assess server usage, decommission outdated or underutilized servers, and consolidate workloads to optimize resource usage
+    </p>
 
+    <p style={{ paddingTop: "10px", margin: "0px", fontWeight: "bold" }}>
+      High-Efficiency Power Supplies:
+    </p>
+    <p style={{ fontSize: "14px" }}>
+      <span style={{ marginRight: "5px" }}>&#8226;</span> Use power supplies with high-efficiency ratings (e.g., 80 PLUS Platinum or Titanium)
+    </p>
+
+    <p style={{ paddingTop: "10px", margin: "0px", fontWeight: "bold" }}>
+      Data Center Certification:
+    </p>
+    <p style={{ fontSize: "14px" }}>
+      <span style={{ marginRight: "5px" }}>&#8226;</span> Pursue certifications such as LEED (Leadership in Energy and Environmental Design) or ISO 14001 for environmental management.
+    </p>
+    <p style={{ paddingTop: "10px", margin: "0px", fontWeight: "bold" }}>
+    Regular Maintenance:
+    </p>
+    <p style={{ fontSize: "14px" }}>
+      <span style={{ marginRight: "5px" }}>&#8226;</span>Conduct regular maintenance of IT equipment and cooling systems to ensure optimal performance.
+    </p>
+  </div>
+</div>
+
+  
+  
             
-            
-            </div>
+           
             
           
           </div>

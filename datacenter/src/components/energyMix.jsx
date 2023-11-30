@@ -24,16 +24,17 @@ class ApexChart extends React.Component {
             },
           },
         ],
-        labels: ['Solar', 'Natural Gas', 'Wind', 'Coal'], // Set labels for each segment of the donut chart
+        width: '70%', // Adjust the width of the chart
+        labels: ['Solar', 'Natural Gas', 'Wind', 'Coal'],
         legend: {
           show: true,
-          position: 'bottom', // Display the legend at the bottom
-          fontSize: '14px', // Set the font size of the legend
+          position: 'bottom',
+          fontSize: '14px',
           labels: {
-            colors: ['#e5e5e5', '#e5e5e5', '#e5e5e5', '#e5e5e5'], // Set label colors
+            colors: ['#e5e5e5', '#e5e5e5', '#e5e5e5', '#e5e5e5'],
           },
         },
-      }, // Correct the placement of this closing brace
+      },
     };
   }
 
@@ -48,14 +49,12 @@ class ApexChart extends React.Component {
 
 class EnergyMix extends React.Component {
   render() {
-    const updatedSeries = [58, 20, 12, 10]; // Remaining percentage assigned to Coal
+    const updatedSeries = [58, 20, 12, 10];
 
     return (
-      <div style={{ flexDirection: 'column', width: '60%', color: '#e5e5e5', paddingLeft: '0px' }}>
+      <div style={{ color: '#e5e5e5', width:"50%" }}>
         <p style={{ fontSize: '25px', fontWeight: 'bold' }}>Energy Mix</p>
         <ApexChart series={updatedSeries} />
-        <p style={{ fontSize: '25px', fontWeight: 'bold' }}>Energy Mix</p>
-
       </div>
     );
   }
