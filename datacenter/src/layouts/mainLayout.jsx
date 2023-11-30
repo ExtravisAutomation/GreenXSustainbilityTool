@@ -218,7 +218,7 @@ export default function Index() {
                   fontSize: theme.typography.textSize.medium,
                 }}
               >
-                Muhammad Husnain Ch
+                Cisco
               </div>
               <div
                 style={{
@@ -226,7 +226,7 @@ export default function Index() {
                   fontSize: theme.typography.textSize.small,
                 }}
               >
-                Product Developer
+               Data Center Sustainability
               </div>
             </div>
           </div>
