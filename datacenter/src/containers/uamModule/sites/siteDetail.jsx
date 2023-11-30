@@ -15,7 +15,7 @@ const SiteDetail = () => {
   
   <div>
     <p>Region</p>
-    <a>North America/ United State/ North Carolina</a>
+    <a>Asia/Middle East/United Arab Emirate</a>
 
   </div>
   <div>
@@ -30,16 +30,16 @@ const SiteDetail = () => {
   </div>
   <div>
     <p>Physical Address</p>
-    <a>3210 Faucette Dr., Raleigh, NC 2760757 Faucette</a>
+    <a> Office No. 302 Sobha Sapphire, Business Bay, Shaikh Zayed Road</a>
 
   </div>
   </article>
 
-  <article style={{display:"flex", justifyContent:"space-between", alignItems:"center", maxWidth:"70%"}}>
+  <article style={{display:"flex", justifyContent:"space-between", alignItems:"center", maxWidth:"65%"}}>
   
-  <div>
+  <div style={{maxWidth:"300px"}}>
     <p>Shipping Address</p>
-    <a>3210 Faucette Dr., Raleigh, NC 2760757 Faucette Dr. </a>
+    <a>Office No. 302 Sobha Sapphire, Business Bay, Shaikh Zayed Road</a>
 
   </div>
  

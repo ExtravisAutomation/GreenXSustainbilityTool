@@ -6,6 +6,7 @@ import InventoryDetail from "../containers/uamModule/inventory/inventoryDetail"
 import RedrackDetail from "../containers/uamModule/inventory/redrackDetail"
 import GreenrackDetail from "../containers/uamModule/inventory/greenrackDetail"
 import BluerackDetail from "../containers/uamModule/inventory/bluerackDetail"
+import SiteDetail from "../containers/uamModule/sites/siteDetail";
 
 
 const routes = {
@@ -35,6 +36,10 @@ const routes = {
     {
       path: "dashboard/bluerackdetail",
       element: <BluerackDetail />,
+    },
+    {
+      path: "dashboard/sitedetail",
+      element: <SiteDetail />,
     },
   ],
 };
