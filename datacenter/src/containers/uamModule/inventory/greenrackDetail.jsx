@@ -2,6 +2,9 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import device from "../../../resources/svgs/device.png"
 import deviceone from "../../../resources/svgs/deviceone.png"
+import simple from "../../../resources/svgs/simple.png"
+import srx from "../../../resources/svgs/srx.png"
+
 
 
 
@@ -72,7 +75,7 @@ return (
         <td style={cellStyle}>Serial No. <br/> AA3712AA0095</td>
         </tr>
         <tr>
-        <td style={cellStyle}>Manufacturer <br/> Juniper</td>
+        <td style={cellStyle}>Manufacturer <br/> Vendor B</td>
         <td style={cellStyle}>Input Power <br/> 23%</td>
         <td style={cellStyle}>Power <br/><span style={{backgroundColor:"rgb(5, 165, 0)", padding:"2px 20px", borderRadius:"20px"}}> 40%</span></td>
         <td style={cellStyle}> <br/> </td>
@@ -97,17 +100,12 @@ return (
 
 
 
-{/* image part */}
-    <div style={{flexBasis:"40%", paddingLeft:"20px"}}>
-
-    
-     <img src={deviceone} width={250} height={550}/>
-
+    <div style={{ flexBasis: "40%", paddingLeft: "20px", display: "flex", flexDirection: "column", position: "relative" }}>
+  <img src={simple} width={250} height={550} style={{ zIndex: 1 }} />
+  <img src={srx} width={210} height={100} style={{ position: "absolute", top: 20, left: 40, zIndex: 2 , borderRadius:"7px"}} />
+</div>
 
 
-
-   
-    </div>
     </div>
     </>
 

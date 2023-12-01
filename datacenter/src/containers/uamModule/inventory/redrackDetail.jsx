@@ -73,7 +73,7 @@
             <td style={cellStyle}>Serial No. <br/> FCW2152D1JE</td>
             </tr>
             <tr>
-            <td style={cellStyle}>Manufacturer <br/> Cisco</td>
+            <td style={cellStyle}>Manufacturer <br/> Vendor C</td>
             <td style={cellStyle}>Input Power <br/> 23%</td>
             <td style={cellStyle}>Power <br/><span style={{backgroundColor:"rgb(165, 0, 0)", padding:"2px 20px", borderRadius:"20px"}}> 90%</span></td>
             <td style={cellStyle}> <br/> </td>

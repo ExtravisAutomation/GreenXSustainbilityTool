@@ -70,7 +70,7 @@ return (
         <td style={cellStyle}>Serial No. <br/>WMP261400NZ</td>
         </tr>
         <tr>
-        <td style={cellStyle}>Manufacturer <br/> Cisco</td>
+        <td style={cellStyle}>Manufacturer <br/> Vendor A</td>
         <td style={cellStyle}>Input Power <br/> 23%</td>
         <td style={cellStyle}>Power <br/><span style={{backgroundColor:"rgb(4, 144, 231)", padding:"2px 20px", borderRadius:"20px"}}> 60%</span></td>
         <td style={cellStyle}> <br/> </td>
