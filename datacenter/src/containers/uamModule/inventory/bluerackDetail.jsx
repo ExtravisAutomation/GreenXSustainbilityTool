@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import device from "../../../resources/svgs/device.png"
-import devicedetail from "../../../resources/svgs/devicedetail.png"
+import deviceone from "../../../resources/svgs/device1.png"
 
 function BluerackDetail() {
 const { id } = useParams();
@@ -99,7 +99,7 @@ return (
     <div style={{flexBasis:"40%", paddingLeft:"20px"}}>
 
     
-     <img src={device} width={250} height={550}/>
+     <img src={deviceone} width={250} height={550}/>
 
 
 

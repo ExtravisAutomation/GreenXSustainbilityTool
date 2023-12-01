@@ -3,7 +3,7 @@
     import { useParams } from 'react-router-dom';
     import device from "../../../resources/svgs/device.png"
     import devicedetail from "../../../resources/svgs/devicedetail.png"
-    import devicethree from "../../../resources/svgs/devicethree.png"
+    import deviceone from "../../../resources/svgs/device1.png"
     
     
     function RedrackDetail() {
@@ -102,7 +102,7 @@
         <div style={{flexBasis:"40%", paddingLeft:"20px"}}>
     
         
-         <img src={devicethree} width={250} height={550}/>
+         <img src={deviceone} width={250} height={550}/>
     
     
     
