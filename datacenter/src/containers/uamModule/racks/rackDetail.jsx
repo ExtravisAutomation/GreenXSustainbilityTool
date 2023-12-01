@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import device from "../../../resources/svgs/device.png"
-import devicedetail from "../../../resources/svgs/devicedetail.png"
+import device from "../../../resources/svgs/deviceone.png"
+import devicedetail from "../../../resources/svgs/device1.png"
 
 function RackDetail() {
   const { id } = useParams();
@@ -67,7 +67,7 @@ function RackDetail() {
     
     <div style={{paddingRight:"50px",position: "relative", paddingRight: "150px" }}>
     <img src={device} width={250} height={550}/>
-    <img src={devicedetail} style={overlayStyle}/>
+    {/* <img src={devicedetail} style={overlayStyle}/> */}
     </div>
     </div>
   );
