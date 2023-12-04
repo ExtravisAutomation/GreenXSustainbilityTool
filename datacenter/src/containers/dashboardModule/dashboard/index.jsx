@@ -133,35 +133,35 @@ function index() {
               
             </div>
              <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Leaf 202</div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}> Cisco Leaf 202</div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>55.2g </span> </div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>20.5g </span> </div>
 
               
             </div>
             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Firewall</div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device  A</div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>40.3g </span> </div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>25.0g </span> </div>
 
               
             </div>
             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Server 01</div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device B</div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>30.0g </span> </div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>15.0g </span> </div>
 
               
             </div>
             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Switch 2</div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device C</div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>40.4g </span> </div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>20.4g </span> </div>
 
               
             </div>
             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Switch 2</div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device D</div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>50.5g </span> </div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>30.5g </span> </div>
 
@@ -187,27 +187,27 @@ function index() {
               
             </div>
              <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Switch 2 </div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device A </div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>45% </span> </div>
               
             </div>
             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Spine 101</div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Cisco Spine 101</div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>50% </span> </div>
               
             </div>
             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Firewall</div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device B</div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>40% </span> </div>
               
             </div>
             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device A</div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device C</div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>55% </span> </div>
               
             </div>
             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device B</div>
+              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device D</div>
               <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>20%</span> </div>
               
             </div>
