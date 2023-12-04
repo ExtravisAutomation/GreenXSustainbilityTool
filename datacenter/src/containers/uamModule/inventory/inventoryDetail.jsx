@@ -45,7 +45,11 @@ function InventoryDetail() {
           <div style={{display:"flex", justifyContent:"space-between"}}>
           <div style={{padding:"10px",minWidth:"30%"}}>
           <label style={{fontWeight:"bold"}}>Device Type</label>
-          <div style={{display:"flex", alignItems:"center", height:"40px", borderRadius:"8px", color:"#0490E7"}}>N9K-C93180YC-EX</div>
+          <div style={{display:"flex", alignItems:"center", height:"40px", borderRadius:"8px", color:"#0490E7"}}>
+            {/* N9K-C93180YC-EX */}
+            Device A
+            
+            </div>
           </div>
           <div style={{padding:"10px",minWidth:"30%"}}>
           <label style={{fontWeight:"bold"}}>Description</label>
@@ -65,7 +69,7 @@ function InventoryDetail() {
           <div style={{display:"flex", justifyContent:"space-between"}}>
           <div style={{padding:"10px",minWidth:"30%"}}>
           <label style={{fontWeight:"bold"}}>Manufacturer</label>
-          <div style={{display:"flex", alignItems:"center", height:"40px", borderRadius:"8px", color:"#0490E7"}}>Cisco</div>
+          <div style={{display:"flex", alignItems:"center", height:"40px", borderRadius:"8px", color:"#0490E7"}}>Vendor A</div>
           </div>
           <div style={{padding:"10px",minWidth:"30%"}}>
           <label style={{fontWeight:"bold"}}>Input Power</label>

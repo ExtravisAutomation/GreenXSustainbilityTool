@@ -32,7 +32,7 @@ function topDevicesEnergy(props) {
       >
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>ThinkSystem SR650</h4>
+          <h4 style={{ margin: "0px", padding: "0px" }}>Device A</h4>
           <p style={{ margin: "0px", padding: "0px" }}>2.2 kWh enery Consumed</p>
           </div>
           <img src={arrow} width={20} height={20} />
@@ -40,7 +40,7 @@ function topDevicesEnergy(props) {
         <Seprater/>
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>Spine 101</h4>
+          <h4 style={{ margin: "0px", padding: "0px" }}>Device B</h4>
           <p style={{ margin: "0px", padding: "0px" }}>2.1 kWh enery Consumed</p>
           </div>
           <img src={arrow} width={20} height={20} />
@@ -49,7 +49,7 @@ function topDevicesEnergy(props) {
         <div>
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>Huawei Switch</h4>
+          <h4 style={{ margin: "0px", padding: "0px" }}>Device C</h4>
           <p style={{ margin: "0px", padding: "0px" }}>1.8 kWh enery Consumed</p>
           </div>
           <img src={arrow} width={20} height={20} />
@@ -57,7 +57,7 @@ function topDevicesEnergy(props) {
         <Seprater/>
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>IBM Power Systems E950</h4>
+          <h4 style={{ margin: "0px", padding: "0px" }}>Device D</h4>
           <p style={{ margin: "0px", padding: "0px" }}>1.0 kWh enery Consumed</p>
           </div>
           <img src={arrow}  width={20} height={20}/>
@@ -65,7 +65,7 @@ function topDevicesEnergy(props) {
         <Seprater/>
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>SJ-Switch-1c</h4>
+          <h4 style={{ margin: "0px", padding: "0px" }}>Device E</h4>
           <p style={{ margin: "0px", padding: "0px" }}>2.2 kWh enery Consumed</p>
           </div>
           <img src={arrow} width={20} height={20}/>

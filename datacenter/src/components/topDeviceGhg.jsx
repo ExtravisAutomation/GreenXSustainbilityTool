@@ -32,7 +32,7 @@ function topDevicesGhg(props) {
       >
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>IBM Power Systems E950</h4>
+          <h4 style={{ margin: "0px", padding: "0px" }}>Device A</h4>
           <p style={{ margin: "0px", padding: "0px" }}>138 kg CO2e</p>
           </div>
           <img src={arrow} width={20} height={20} />
@@ -40,7 +40,7 @@ function topDevicesGhg(props) {
         <Seprater/>
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>Huawei Switch</h4>
+          <h4 style={{ margin: "0px", padding: "0px" }}>Device B</h4>
           <p style={{ margin: "0px", padding: "0px" }}>138 kg CO2e</p>
           </div>
           <img src={arrow} width={20} height={20} />
@@ -49,7 +49,7 @@ function topDevicesGhg(props) {
         <div>
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>Spine 101</h4>
+          <h4 style={{ margin: "0px", padding: "0px" }}>Device C</h4>
           <p style={{ margin: "0px", padding: "0px" }}>110 kg CO2e</p>
           </div>
           <img src={arrow} width={20} height={20} />
@@ -57,7 +57,7 @@ function topDevicesGhg(props) {
         <Seprater/>
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>Think System SR650</h4>
+          <h4 style={{ margin: "0px", padding: "0px" }}>Device D</h4>
           <p style={{ margin: "0px", padding: "0px" }}>104 kg CO2e</p>
           </div>
           <img src={arrow}  width={20} height={20}/>
@@ -65,7 +65,7 @@ function topDevicesGhg(props) {
         <Seprater/>
         <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
             <div>
-          <h4 style={{ margin: "0px", padding: "0px" }}>AD_Alaska</h4>
+          <h4 style={{ margin: "0px", padding: "0px" }}>Device E</h4>
           <p style={{ margin: "0px", padding: "0px" }}>103 kg CO2e</p>
           </div>
           <img src={arrow} width={20} height={20}/>
