@@ -1,5 +1,15 @@
 version: "3.8"
 services:
+  dcpd_db:
+    image: mysql:latest
+    restart: always
+    container_name: DATABASE_Container
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: fca
+
   backend:
     container_name: Backend_Container
     restart: always
