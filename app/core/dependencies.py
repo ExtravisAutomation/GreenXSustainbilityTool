@@ -1,5 +1,5 @@
 from dependency_injector.wiring import Provide, inject
-from fastapi import Depends
+# from fastapi import Depends
 from jose import jwt
 from pydantic import ValidationError
 
@@ -10,12 +10,15 @@ from app.core.security import ALGORITHM, JWTBearer
 from app.model.user import User
 from app.schema.auth_schema import Payload
 from app.services.user_service import UserService
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from app.core.database import Database
 
 
 @inject
 def get_current_user(
-    token: str = Depends(JWTBearer()),
-    service: UserService = Depends(Provide[Container.user_service]),
+        token: str = Depends(JWTBearer()),
+        service: UserService = Depends(Provide[Container.user_service]),
 ) -> User:
     try:
         payload = jwt.decode(token, configs.SECRET_KEY, algorithms=ALGORITHM)
@@ -35,8 +38,8 @@ def get_current_active_user(current_user: User = Depends(get_current_user)) -> U
 
 
 def get_current_user_with_no_exception(
-    token: str = Depends(JWTBearer()),
-    service: UserService = Depends(Provide[Container.user_service]),
+        token: str = Depends(JWTBearer()),
+        service: UserService = Depends(Provide[Container.user_service]),
 ) -> User:
     try:
         payload = jwt.decode(token, configs.SECRET_KEY, algorithms=ALGORITHM)
@@ -55,3 +58,8 @@ def get_current_super_user(current_user: User = Depends(get_current_user)) -> Us
     if not current_user.is_superuser:
         raise AuthError("It's not a super user")
     return current_user
+
+
+def get_db() -> Session:
+    with Database(configs.DATABASE_URI).session() as db:
+        yield db

@@ -47,6 +47,7 @@ class AuthService(BaseService):
     def sign_up(self, user_info: SignUp):
         user_token = get_rand_hash()
         user = User(**user_info.dict(exclude_none=True), is_active=True, is_superuser=False, user_token=user_token)
+        print("USERRRRRR", user)
         user.password = get_password_hash(user_info.password)
         created_user = self.user_repository.create(user)
         delattr(created_user, "password")

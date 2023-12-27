@@ -15,7 +15,7 @@ class Configs(BaseSettings):
     API: str = "/api"
     API_V1_STR: str = "/api/v1"
     API_V2_STR: str = "/api/v2"
-    PROJECT_NAME: str = "fca-api"
+    PROJECT_NAME: str = "Data Center Sustainability"
     ENV_DATABASE_MAPPER: dict = {
         "prod": "fca",
         "stage": "stage-fca",
@@ -41,12 +41,12 @@ class Configs(BaseSettings):
     BACKEND_CORS_ORIGINS: List[str] = ["*"]
 
     # database
-    DB: str = os.getenv("DB", "postgresql")
+    DB: str = os.getenv("DB", "mysql")
     DB_USER: str = os.getenv("DB_USER")
     DB_PASSWORD: str = os.getenv("DB_PASSWORD")
     DB_HOST: str = os.getenv("DB_HOST")
     DB_PORT: str = os.getenv("DB_PORT", "3306")
-    DB_ENGINE: str = DB_ENGINE_MAPPER.get(DB, "postgresql")
+    DB_ENGINE: str = DB_ENGINE_MAPPER.get(DB, "mysql+pymysql")
 
     DATABASE_URI_FORMAT: str = "{db_engine}://{user}:{password}@{host}:{port}/{database}"
 
