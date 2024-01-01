@@ -11,7 +11,7 @@ from dependency_injector.wiring import Provide, inject
 router = APIRouter(prefix="/racks", tags=["racks"])
 
 
-@router.get("/", response_model=GetRackResponse)
+@router.get("/", response_model=dict)
 @inject
 def get_racks(
     current_user: User = Depends(get_current_active_user),
@@ -30,22 +30,22 @@ def add_rack(
     return rack_service.create_rack(rack_data)
 
 
-# @router.put("/{rack_id}", response_model=dict)
-# @inject
-# def update_rack(
-#     rack_id: int,
-#     rack_data: RackUpdate,
-#     current_user: User = Depends(get_current_active_user),
-#     rack_service: RackService = Depends(Provide[Container.rack_service]),
-# ):
-#     return rack_service.update_rack(rack_id, rack_data)
+@router.put("/{rack_id}", response_model=dict)
+@inject
+def update_rack(
+    rack_id: int,
+    rack_data: RackUpdate,
+    current_user: User = Depends(get_current_active_user),
+    rack_service: RackService = Depends(Provide[Container.rack_service]),
+):
+    return rack_service.update_rack(rack_id, rack_data)
 
 
-# @router.delete("/{rack_id}", response_model=dict)
-# @inject
-# def delete_rack(
-#     rack_id: int,
-#     current_user: User = Depends(get_current_active_user),
-#     rack_service: RackService = Depends(Provide[Container.rack_service]),
-# ):
-#     return rack_service.delete_rack(rack_id)
+@router.delete("/{rack_id}", response_model=dict)
+@inject
+def delete_rack(
+    rack_id: int,
+    current_user: User = Depends(get_current_active_user),
+    rack_service: RackService = Depends(Provide[Container.rack_service]),
+):
+    return rack_service.delete_rack(rack_id)

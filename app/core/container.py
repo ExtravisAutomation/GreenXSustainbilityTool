@@ -37,7 +37,5 @@ class Container(containers.DeclarativeContainer):
 
     auth_service = providers.Factory(AuthService, user_repository=user_repository)
     site_service = providers.Factory(SiteService, site_repository=site_repo)
-    #post_service = providers.Factory(PostService, post_repository=post_repository, tag_repository=tag_repository)
-    #tag_service = providers.Factory(TagService, tag_repository=tag_repository)
     user_service = providers.Factory(UserService, user_repository=user_repository)
     rack_service = providers.Factory(RackService, rack_repository=rack_repository)

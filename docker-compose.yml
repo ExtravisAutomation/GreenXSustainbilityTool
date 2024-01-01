@@ -3,15 +3,15 @@ services:
   architecture_db:
     image: mysql:latest
     restart: always
-    container_name: DATABASE_Container
+    container_name: DATABASE_Containerr
     ports:
-      - "3307:3306"
+      - "3309:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: fca
 
   backend:
-    container_name: Backend_Container
+    container_name: Backend_Containerr
     restart: always
     build: ./
     ports:

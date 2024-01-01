@@ -6,9 +6,9 @@ from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
 from app.core.config import configs
-from app.model.post import Post
-from app.model.post_tag import PostTag
-from app.model.tag import Tag
+# from app.model.post import Post
+# from app.model.post_tag import PostTag
+# from app.model.tag import Tag
 from app.model.user import User
 
 cmd_kwargs = context.get_x_argument(as_dictionary=True)

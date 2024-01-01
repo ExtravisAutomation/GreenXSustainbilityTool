@@ -60,7 +60,12 @@ class BaseRepository:
 
     def create(self, schema):
         with self.session_factory() as session:
-            query = self.model(**schema.dict())
+
+            columns = [column.key for column in self.model.__table__.columns]
+
+            model_data = {column: getattr(schema, column) for column in columns}
+
+            query = self.model(**model_data)
             try:
                 session.add(query)
                 session.commit()

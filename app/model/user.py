@@ -27,8 +27,8 @@
 #     name: str = Field(default=None, nullable=True)
 #     is_active: bool = Field(default=True)
 #     is_superuser: bool = Field(default=False)
-#
-#
+
+
 from sqlalchemy import Column, String, Boolean
 from .base_model import BaseModel
 
