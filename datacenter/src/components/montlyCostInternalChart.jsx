@@ -43,14 +43,15 @@ const MonthlyCostInternalChart = () => {
     ];
 
     // Generate random data for two bars for each month
-    let data1 = [20, 15, 22, 20, 30, 20, 22, 30, 20, 20, 15, 30, 25]; // Energy Utilization A
-    let data2 = [25, 20, 25, 25, 35, 25, 25, 35, 25, 25, 20, 35, 36]; // Energy Utilization B (2023 actual)
+    let data1 = [20, 15, 22, 20, 30, 20, 22, 30, 20, 20, 15, 20, 0]; // Energy Utilization A
+    let data2 = [25, 20, 25, 25, 35, 25, 25, 35, 25, 25, 20, 22, 35]; // Energy Utilization B (2023 actual)
+    let data3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36]; // Energy Utilization B (2023 actual)
 
     // Generate predictive data for December 2023
     const predictiveDataDec2023 = Math.round(data2[12] * 1.2); // Assuming a 20% increase for prediction
 
     // Set the predictive data for December 2023
-    data2[12] = predictiveDataDec2023;
+    data3[12] = predictiveDataDec2023;
 
     // const updatedData = data1.some((data) => data == 35);
 
@@ -127,17 +128,7 @@ const MonthlyCostInternalChart = () => {
 
       series: [
         {
-          name: (params) => {
-            console.log(params, "paramsssssssss");
-            // Check if it is the predictive data for December 2023
-            return params.dataIndex === "12"
-              ? "Energy Utilization 2025"
-              : "Energy Utilization 2022";
-          },
-
-          // data1[12]
-          //   ? "Energy Utilization 2025"
-          //   : "Energy Utilization 2022",
+          name: "Energy Utilization 2022",
 
           type: "bar",
           barWidth: 10, // Set the width of the bars
@@ -150,16 +141,26 @@ const MonthlyCostInternalChart = () => {
           data: data1,
         },
         {
-          name: (params) => {
-            // Check if it is the predictive data for December 2023
-            return params.dataIndex === 12
-              ? "Energy Utilization 2025"
-              : "Energy Utilization 2022E";
-          },
+          name: "Energy Utilization 2023",
+
           type: "bar",
           barWidth: 10, // Set the width of the bars
           emphasis: emphasisStyle,
+          itemStyle: {
+            color: (params) =>
+              // params.dataIndex === 12 ? "#01A5DE" : "#1dec5b",
+              params.dataIndex === 12 ? "#01A5DE" : "#01A5DE",
+
+            barBorderRadius: [50, 50, 0, 0], // Add border radius at the end of the bar
+          },
           data: data2,
+        },
+        {
+          name: "Energy Utilization 2024",
+          type: "bar",
+          barWidth: 10, // Set the width of the bars
+          emphasis: emphasisStyle,
+          data: data3,
           label: {
             show: true,
             position: "insideTop",
