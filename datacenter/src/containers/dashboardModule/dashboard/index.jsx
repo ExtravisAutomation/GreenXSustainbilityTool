@@ -6,17 +6,17 @@ import EmissionChart from "../../../components/emissionChart.jsx";
 import HardwareLifeCycle from "../../../components/hardwareLifeCycle.jsx";
 import UnusedPortsCharts from "../../../components/unusedPortGraph.jsx";
 import "./dashboard.css";
-import Dailyco from "../../../components/dailyco.jsx"
-import Co from "../../../components/co.jsx"
+import Dailyco from "../../../components/dailyco.jsx";
+import Co from "../../../components/co.jsx";
 import UsedFspsChart from "../../../components/usedFspsChart.jsx";
 import Grid from "@mui/material/Grid";
 import DailyCostGraph from "../../../components/dailyCostGraph.jsx";
 import TopDevicesCost from "../../../components/topDevicesCost.jsx";
 import TopDevicesEnergy from "../../../components/topDevicesEnergy.jsx";
-import TopDevicesGhg from "../../../components/topDeviceGhg.jsx"
+import TopDevicesGhg from "../../../components/topDeviceGhg.jsx";
 import electric from "../../../resources/svgs/electric.png";
-import dollar from "../../../resources/svgs/dollar.svg"
-import dollar1 from "../../../resources/svgs/dollar1.svg"
+import dollar from "../../../resources/svgs/dollar.svg";
+import dollar1 from "../../../resources/svgs/dollar1.svg";
 import leaf from "../../../resources/svgs/leaf.png";
 import UaeSiteMap from "../../../components/uaeSiteMap.jsx";
 import HeatmapChart from "../../../components/heatmapChart.jsx";
@@ -24,9 +24,8 @@ import Dropdown from "../../../components/dropdown.jsx";
 import MonthlyCostGraph from "../../../components/monthlyCostGraph.jsx";
 import Vendor from "../../../components/Vendor.jsx";
 import EnergyMix from "../../../components/energyMix.jsx";
-import car from "../../../resources/svgs/car.png"
-import airplane from "../../../resources/svgs/airplane.png"
-
+import car from "../../../resources/svgs/car.png";
+import airplane from "../../../resources/svgs/airplane.png";
 
 function index() {
   const gridStyle = {
@@ -58,6 +57,7 @@ function index() {
       >
         <Dropdown />
       </div>
+
       <div
         style={{
           border: "1px solid #36424E",
@@ -78,6 +78,7 @@ function index() {
           </div>
         </div>
       </div>
+
       <div
         style={{
           border: "1px solid #36424E",
@@ -124,48 +125,370 @@ function index() {
               borderRadius: "7px",
             }}
           >
-            <p style={{fontWeight:"bold", padding:"0px 20px"}}>Top 5 Devices by Co2 Emission from Last Month</p>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"bold", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>Name </div>
-              <div style={{ display:"flex", fontWeight:"bold",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>CO2-eq emission/h [gco2 eq/hr] </div>
-              <div style={{ display:"flex", fontWeight:"bold",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>Average CO2 </div>
-
-              
+            <p style={{ fontWeight: "bold", padding: "0px 20px" }}>
+              Top 5 Devices by Co2 Emission from Last Month
+            </p>
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "bold",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                Name{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "bold",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                CO2-eq emission/h [gco2 eq/hr]{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "bold",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                Average CO2{" "}
+              </div>
             </div>
-             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}> Cisco Leaf 202</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>55.2g </span> </div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>20.5g </span> </div>
 
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                {" "}
+                Cisco Leaf 202
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  55.2g{" "}
+                </span>{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  20.5g{" "}
+                </span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device  A</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>40.3g </span> </div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>25.0g </span> </div>
 
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Device A
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  40.3g{" "}
+                </span>{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  25.0g{" "}
+                </span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device B</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>30.0g </span> </div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>15.0g </span> </div>
-
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Device B
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  30.0g{" "}
+                </span>{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  15.0g{" "}
+                </span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device C</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>40.4g </span> </div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>20.4g </span> </div>
-
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Device C
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  40.4g{" "}
+                </span>{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  20.4g{" "}
+                </span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device D</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>50.5g </span> </div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>30.5g </span> </div>
-
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Device D
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  50.5g{" "}
+                </span>{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  30.5g{" "}
+                </span>{" "}
+              </div>
             </div>
 
             <div></div>
@@ -180,36 +503,238 @@ function index() {
               borderRadius: "7px",
             }}
           >
-            <p style={{fontWeight:"bold", padding:"0px 20px"}}>Top 5 Devices with higher energy consumption from Last Month</p>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"bold", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>Name </div>
-              <div style={{ display:"flex", fontWeight:"bold",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>Cost Increase From Last Month</div>
-              
+            <p style={{ fontWeight: "bold", padding: "0px 20px" }}>
+              Top 5 Devices with higher energy consumption from Last Month
+            </p>
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "bold",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                Name{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "bold",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                Cost Increase From Last Month
+              </div>
             </div>
-             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device A </div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>45% </span> </div>
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Device A{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  45%{" "}
+                </span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Cisco Spine 101</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>50% </span> </div>
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Cisco Spine 101
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  50%{" "}
+                </span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device B</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>40% </span> </div>
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Device B
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  40%{" "}
+                </span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device C</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>55% </span> </div>
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Device C
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  55%{" "}
+                </span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device D</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>20%</span> </div>
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Device D
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  20%
+                </span>{" "}
+              </div>
             </div>
 
             <div></div>
@@ -242,36 +767,238 @@ function index() {
               borderRadius: "7px",
             }}
           >
-            <p style={{fontWeight:"bold", padding:"0px 20px"}}>Comparision of energy consumption on different Compute Devices</p>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"bold", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>Name </div>
-              <div style={{ display:"flex", fontWeight:"bold",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>kW/h </div>
-              
+            <p style={{ fontWeight: "bold", padding: "0px 20px" }}>
+              Comparision of energy consumption on different Compute Devices
+            </p>
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "bold",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                Name{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "bold",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                kW/h{" "}
+              </div>
             </div>
-             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device A</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>45kWh </span> </div>
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Device A
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  45kWh{" "}
+                </span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device B</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>50kWh </span> </div>
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Device B
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  50kWh{" "}
+                </span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device C</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>40kWh </span> </div>
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Device C
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  40kWh{" "}
+                </span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device D</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>55kWh </span> </div>
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Device D
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  55kWh{" "}
+                </span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Device E</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}> <span style={{backgroundColor:"#4C791B", padding:"3px 8px", borderRadius:"7px"}}>20kWh </span> </div>
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Device E
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                {" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "3px 8px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  20kWh{" "}
+                </span>{" "}
+              </div>
             </div>
 
             <div></div>
@@ -286,48 +1013,359 @@ function index() {
               borderRadius: "7px",
             }}
           >
-            <p style={{fontWeight:"bold", padding:"0px 20px"}}>Top Racks Utilization</p>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"bold", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>Name </div>
-              <div style={{ display:"flex", fontWeight:"bold",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>Cost</div>
-              <div style={{ display:"flex", fontWeight:"bold",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>Input Power</div>
-
-              
+            <p style={{ fontWeight: "bold", padding: "0px 20px" }}>
+              Top Racks Utilization
+            </p>
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "bold",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                Name{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "bold",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                Cost
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "bold",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                Input Power
+              </div>
             </div>
-             <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Rack AA </div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>AED 40 <span style={{backgroundColor:"#4C791B", padding:"4px 28px", marginLeft:"5px", borderRadius:"7px"}}></span> </div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>30 kWh <span style={{backgroundColor:"#4C791B", padding:"4px 20px", marginLeft:"5px", borderRadius:"7px"}}></span> </div>
-
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Rack AA{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                AED 40{" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "4px 28px",
+                    marginLeft: "5px",
+                    borderRadius: "7px",
+                  }}
+                ></span>{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                30 kWh{" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "4px 20px",
+                    marginLeft: "5px",
+                    borderRadius: "7px",
+                  }}
+                ></span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Rack AB</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>AED 50 <span style={{backgroundColor:"#4C791B", padding:"4px 32px", marginLeft:"5px", borderRadius:"7px"}}></span> </div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>40 kWh <span style={{backgroundColor:"#4C791B", padding:"4px 30px", marginLeft:"5px", borderRadius:"7px"}}></span> </div>
-
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Rack AB
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                AED 50{" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "4px 32px",
+                    marginLeft: "5px",
+                    borderRadius: "7px",
+                  }}
+                ></span>{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                40 kWh{" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "4px 30px",
+                    marginLeft: "5px",
+                    borderRadius: "7px",
+                  }}
+                ></span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Rack AC </div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>AED 60 <span style={{backgroundColor:"#4C791B", padding:"4px 35px", marginLeft:"5px", borderRadius:"7px"}}></span> </div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>35 Kwh <span style={{backgroundColor:"#4C791B", padding:"4px 30px", marginLeft:"5px", borderRadius:"7px"}}></span> </div>
-
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Rack AC{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                AED 60{" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "4px 35px",
+                    marginLeft: "5px",
+                    borderRadius: "7px",
+                  }}
+                ></span>{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                35 Kwh{" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "4px 30px",
+                    marginLeft: "5px",
+                    borderRadius: "7px",
+                  }}
+                ></span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Rack AD</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>AED 20  <span style={{backgroundColor:"#4C791B",padding:"4px 15px", marginLeft:"5px", borderRadius:"7px"}}> </span> </div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>45 kWh <span style={{backgroundColor:"#4C791B", padding:"4px 35px", marginLeft:"5px", borderRadius:"7px"}}></span> </div>
-
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Rack AD
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                AED 20{" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "4px 15px",
+                    marginLeft: "5px",
+                    borderRadius: "7px",
+                  }}
+                >
+                  {" "}
+                </span>{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                45 kWh{" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "4px 35px",
+                    marginLeft: "5px",
+                    borderRadius: "7px",
+                  }}
+                ></span>{" "}
+              </div>
             </div>
-            <div style={{display:"flex"}}>
-              <div style={{ display:"flex",fontWeight:"500", alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px", color:"#0490E7" }}>Rack BA</div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>AED 30 <span style={{backgroundColor:"#4C791B", padding:"4px 20px", marginLeft:"5px", borderRadius:"7px"}}></span> </div>
-              <div style={{ display:"flex", fontWeight:"500",alignItems:"center",justifyContent:"start",padding:"0px 20px",border: "1px solid #36424E", flexBasis:"50%", height:"44px" }}>50 KWh <span style={{backgroundColor:"#4C791B", padding:"4px 35px", marginLeft:"5px", borderRadius:"7px"}}></span> </div>
-
-              
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                  color: "#0490E7",
+                }}
+              >
+                Rack BA
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                AED 30{" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "4px 20px",
+                    marginLeft: "5px",
+                    borderRadius: "7px",
+                  }}
+                ></span>{" "}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontWeight: "500",
+                  alignItems: "center",
+                  justifyContent: "start",
+                  padding: "0px 20px",
+                  border: "1px solid #36424E",
+                  flexBasis: "50%",
+                  height: "44px",
+                }}
+              >
+                50 KWh{" "}
+                <span
+                  style={{
+                    backgroundColor: "#4C791B",
+                    padding: "4px 35px",
+                    marginLeft: "5px",
+                    borderRadius: "7px",
+                  }}
+                ></span>{" "}
+              </div>
             </div>
 
             <div></div>
@@ -358,7 +1396,7 @@ function index() {
           <HeatmapChart />
         </div>
         <div className="emission-chart-wrapper">
-        <HardwareLifeCycle chartData={chartData} />
+          <HardwareLifeCycle chartData={chartData} />
         </div>
       </div>
       {/* <div
@@ -413,83 +1451,122 @@ function index() {
         </div>
       </div>
 
-
-<div
+      <div
         style={{
           border: "1px solid #36424E",
           marginTop: "30px",
-          marginBottom:"20px",
+          marginBottom: "20px",
           borderRadius: "7px",
           height: "490px",
-          display:"flex",
-          justifyContent:"space-between"
-          
-          
+          display: "flex",
+          justifyContent: "space-between",
         }}
       >
-        <div style={{display:"flex", justifyContent:"start",padding:"0px 15px",width:"340px",  border: "1px solid #36424E", borderRadius:"7px 0px 0px 7px ", paddingTop:"30px", flexDirection:"column", color:"#e5e5e5"}}>
-        <p style={{padding:"0px", margin:"0px", fontSize:"25px",fontWeight:"bold"}}>Emission this Month </p>
-        <p style={{padding:"10px 0px", margin:"0px", fontWeight:"bold", fontSize:"30px", color:"#1dec5b"}}>5,187 kg CO2e</p>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "start",
+            padding: "0px 15px",
+            width: "340px",
+            border: "1px solid #36424E",
+            borderRadius: "7px 0px 0px 7px ",
+            paddingTop: "30px",
+            flexDirection: "column",
+            color: "#e5e5e5",
+          }}
+        >
+          <p
+            style={{
+              padding: "0px",
+              margin: "0px",
+              fontSize: "25px",
+              fontWeight: "bold",
+            }}
+          >
+            Emission this Month{" "}
+          </p>
+          <p
+            style={{
+              padding: "10px 0px",
+              margin: "0px",
+              fontWeight: "bold",
+              fontSize: "30px",
+              color: "#1dec5b",
+            }}
+          >
+            5,187 kg CO2e
+          </p>
 
-        <p>Estimated Monthly carbon dioxide equivalent emissions (based on energy usage) Emissions are estimates from Utility data</p>
-        <div>
-          <img src={car} width={50} height={50}/>
-        <p style={{padding:"0px", margin:"0px", fontWeight:"500"}}>Equivalent of 416 car trips of 1070 km each in a gas-powered passenger vehicle.</p>
-        <p></p>
-        </div>
-        <div>
-          <img src={airplane} width={50} height={50}/>
-        <p style={{padding:"0px", margin:"0px", fontWeight:"500"}}>33 Airplane Flights of 1 hour, 50 minutes each</p>
-        <p></p>
-        </div>
-
-       
-        </div>
-        <div>
-       
-        </div>
-      
-        <div className="energymix-wrapper">
-  <EnergyMix />
-  <div style={{ paddingTop: "40px", maxWidth: "350px" }}>
-    <p style={{ paddingTop: "20 px", margin: "0px", fontWeight: "bold" }}>
-      Consolidation and Decommissioning:
-    </p>
-    <p style={{ fontSize: "14px" }}>
-      <span style={{ marginRight: "5px" }}>&#8226;</span> Regularly assess server usage, decommission outdated or underutilized servers, and consolidate workloads to optimize resource usage
-    </p>
-
-    <p style={{ paddingTop: "10px", margin: "0px", fontWeight: "bold" }}>
-      High-Efficiency Power Supplies:
-    </p>
-    <p style={{ fontSize: "14px" }}>
-      <span style={{ marginRight: "5px" }}>&#8226;</span> Use power supplies with high-efficiency ratings (e.g., 80 PLUS Platinum or Titanium)
-    </p>
-
-    <p style={{ paddingTop: "10px", margin: "0px", fontWeight: "bold" }}>
-      Data Center Certification:
-    </p>
-    <p style={{ fontSize: "14px" }}>
-      <span style={{ marginRight: "5px" }}>&#8226;</span> Pursue certifications such as LEED (Leadership in Energy and Environmental Design) or ISO 14001 for environmental management.
-    </p>
-    <p style={{ paddingTop: "10px", margin: "0px", fontWeight: "bold" }}>
-    Regular Maintenance:
-    </p>
-    <p style={{ fontSize: "14px" }}>
-      <span style={{ marginRight: "5px" }}>&#8226;</span>Conduct regular maintenance of IT equipment and cooling systems to ensure optimal performance.
-    </p>
-  </div>
-</div>
-
-  
-  
-            
-           
-            
-          
+          <p>
+            Estimated Monthly carbon dioxide equivalent emissions (based on
+            energy usage) Emissions are estimates from Utility data
+          </p>
+          <div>
+            <img src={car} width={50} height={50} />
+            <p style={{ padding: "0px", margin: "0px", fontWeight: "500" }}>
+              Equivalent of 416 car trips of 1070 km each in a gas-powered
+              passenger vehicle.
+            </p>
+            <p></p>
           </div>
-       
-      
+          <div>
+            <img src={airplane} width={50} height={50} />
+            <p style={{ padding: "0px", margin: "0px", fontWeight: "500" }}>
+              33 Airplane Flights of 1 hour, 50 minutes each
+            </p>
+            <p></p>
+          </div>
+        </div>
+        <div></div>
+
+        <div className="energymix-wrapper">
+          <EnergyMix />
+          <div style={{ paddingTop: "40px", maxWidth: "350px" }}>
+            <p
+              style={{ paddingTop: "20 px", margin: "0px", fontWeight: "bold" }}
+            >
+              Consolidation and Decommissioning:
+            </p>
+            <p style={{ fontSize: "14px" }}>
+              <span style={{ marginRight: "5px" }}>&#8226;</span> Regularly
+              assess server usage, decommission outdated or underutilized
+              servers, and consolidate workloads to optimize resource usage
+            </p>
+
+            <p
+              style={{ paddingTop: "10px", margin: "0px", fontWeight: "bold" }}
+            >
+              High-Efficiency Power Supplies:
+            </p>
+            <p style={{ fontSize: "14px" }}>
+              <span style={{ marginRight: "5px" }}>&#8226;</span> Use power
+              supplies with high-efficiency ratings (e.g., 80 PLUS Platinum or
+              Titanium)
+            </p>
+
+            <p
+              style={{ paddingTop: "10px", margin: "0px", fontWeight: "bold" }}
+            >
+              Data Center Certification:
+            </p>
+            <p style={{ fontSize: "14px" }}>
+              <span style={{ marginRight: "5px" }}>&#8226;</span> Pursue
+              certifications such as LEED (Leadership in Energy and
+              Environmental Design) or ISO 14001 for environmental management.
+            </p>
+            <p
+              style={{ paddingTop: "10px", margin: "0px", fontWeight: "bold" }}
+            >
+              Regular Maintenance:
+            </p>
+            <p style={{ fontSize: "14px" }}>
+              <span style={{ marginRight: "5px" }}>&#8226;</span>Conduct regular
+              maintenance of IT equipment and cooling systems to ensure optimal
+              performance.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <div
         style={{
@@ -509,7 +1586,6 @@ function index() {
           <div className="cost-graph-wrapper" style={{ height: "470px" }}>
             <Dailyco heading="Emission" headericon={electric} />
           </div>
-       
         </div>
       </div>
     </>

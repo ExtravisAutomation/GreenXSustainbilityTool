@@ -2,90 +2,158 @@ import React from "react";
 import headericon from "../resources/svgs/logo.svg";
 import Seprater from "../components/seprater.jsx";
 import arrow from "../../src/resources/svgs/arrow.png";
-import CostInternalChart from "../components/costInternalChart.jsx"
+import CostInternalChart from "../components/costInternalChart.jsx";
 import MonthlyCostInternalChart from "./montlyCostInternalChart.jsx";
 
 function monthlyCostGraph(props) {
-    
   return (
-    <div  >
+    <div>
       <div
         style={{
           display: "flex",
           justifyContent: "start",
           alignItems: "center",
           color: "#e5e5e5",
-          padding:"0px 10px",
-        //   height:"450px",
-      
+          padding: "0px 10px",
+          //   height:"450px",
         }}
       >
         <img src={props.headericon} height={35} width={35} />
-        <p style={{padding:"15px", margin:"0px", fontWeight:"bold", fontSize:"25px"}}>{props.heading} </p>
+        <p
+          style={{
+            padding: "15px",
+            margin: "0px",
+            fontWeight: "bold",
+            fontSize: "25px",
+          }}
+        >
+          {props.heading}{" "}
+        </p>
       </div>
-      <p style={{color:"#e5e5e5", padding:"0px 0px 10px 60px", margin:"0px "}}>This month, you've use more energy from the grid accross your sites</p>
-
-      <div style={{display:"flex", justifyContent:"center"}}>
-
-      <div
+      <p
         style={{
-          border: "1px solid #36424E",
-          margin: "0px 20px",
-          height: "370px",
-          borderRadius: "7px",
           color: "#e5e5e5",
-        //   border:"3px solid red",
-          flexBasis:"30%",
-          height:"400px"
+          padding: "0px 0px 10px 60px",
+          margin: "0px ",
         }}
       >
-        <div style={{  display: "flex",  justifyContent: "space-between",padding:"15px",alignItems: "center" , color:"#e5e5e5"}}>
+        This month, you've use more energy from the grid accross your sites
+      </p>
+
+      <div style={{ display: "flex", justifyContent: "center" }}>
         <div
-        style={{
-          display: "flex",
-          justifyContent: "start",
-          flexDirection:"column",
-          alignItems: "start",
-          color: "#e5e5e5",
-          padding:"0px 10px",
-          
-         
-        }}
-      >
-        <p style={{padding:"0px", margin:"0px", fontWeight:"bold"}}>Usage this Year </p>
-        <p style={{padding:"10px 0px", margin:"0px", fontWeight:"bold", fontSize:"40px", color:"#ac1717"}}>Higher </p>
-        <p style={{padding:"10px 0px", margin:"0px", fontWeight:"bold", fontSize:"20px", color:"#1dec5b"}}>Predictive Analysis</p>
+          style={{
+            border: "1px solid #36424E",
+            margin: "0px 20px",
+            height: "370px",
+            borderRadius: "7px",
+            color: "#e5e5e5",
+            //   border:"3px solid red",
+            flexBasis: "30%",
+            height: "400px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "15px",
+              alignItems: "center",
+              color: "#e5e5e5",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "start",
+                flexDirection: "column",
+                alignItems: "start",
+                color: "#e5e5e5",
+                padding: "0px 10px",
+              }}
+            >
+              <p style={{ padding: "0px", margin: "0px", fontWeight: "bold" }}>
+                Usage this Year{" "}
+              </p>
+              <p
+                style={{
+                  padding: "10px 0px",
+                  margin: "0px",
+                  fontWeight: "bold",
+                  fontSize: "40px",
+                  color: "#ac1717",
+                }}
+              >
+                Higher{" "}
+              </p>
+              <p
+                style={{
+                  padding: "10px 0px",
+                  margin: "0px",
+                  fontWeight: "bold",
+                  fontSize: "20px",
+                  color: "#1dec5b",
+                }}
+              >
+                Predictive Analysis
+              </p>
 
-        <p>December 2023 energy consumption will be higher then 2022 based on AI ML Data</p>
-      </div>
+              <p>
+                December 2023 energy consumption will be higher then 2022 based
+                on AI ML Data
+              </p>
+            </div>
+          </div>
+          <div
+            style={{ display: "flex", padding: "20px", flexDirection: "row" }}
+          >
+            <div style={{ padding: "0px 10px" }}>2022</div>
+            <div
+              style={{
+                width: "20px",
+                height: "20px",
+                background: "#1dec5b",
+                borderRadius: "5px",
+                paddingLeft: "20px",
+              }}
+            ></div>
+            <div style={{ padding: "0px 10px" }}>2023</div>
+            <div
+              style={{
+                width: "20px",
+                height: "20px",
+                background: "#01A5DE",
+                borderRadius: "5px",
+                paddingLeft: "20px",
+              }}
+            ></div>
+            <div style={{ padding: "0px 10px" }}>Prediction</div>
+            <div
+              style={{
+                width: "20px",
+                height: "20px",
+                background: "#FF5722",
+                borderRadius: "5px",
+                paddingLeft: "20px",
+              }}
+            ></div>
+          </div>
         </div>
-        <div style={{display:"flex", padding:"20px",flexDirection:"row"}}>
-        <div style={{padding:"0px 10px"}}>2022</div>
-        <div style={{width:"20px", height:"20px", background:"#1dec5b", borderRadius:"5px",paddingLeft:"20px"}}></div>
-        <div style={{padding:"0px 10px"}}>2023</div>      
-        <div style={{width:"20px", height:"20px", background:"#01A5DE", borderRadius:"5px",paddingLeft:"20px"}}></div>
-        <div style={{padding:"0px 10px"}}>Prediction</div>  
-        <div style={{width:"20px", height:"20px", background:"#FF5722", borderRadius:"5px",paddingLeft:"20px"}}></div>
-    
 
+        <div
+          style={{
+            border: "1px solid #36424E",
+            margin: "0px 20px",
+            height: "370px",
+            borderRadius: "7px",
+            color: "#e5e5e5",
+            flexBasis: "70%",
+            height: "400px",
+            paddingTop: "10px",
+          }}
+        >
+          <MonthlyCostInternalChart />
         </div>
-
-       
-      </div>
-
-      <div
-        style={{
-          border: "1px solid #36424E",
-          margin: "0px 20px",
-          height: "370px",
-          borderRadius: "7px",
-          color: "#e5e5e5",
-          flexBasis:"70%",
-          height:"400px"
-        }}
-      >
-<MonthlyCostInternalChart/>
-      </div>
       </div>
     </div>
   );
