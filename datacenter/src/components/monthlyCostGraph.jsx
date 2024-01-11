@@ -99,7 +99,7 @@ function monthlyCostGraph(props) {
               </p>
 
               <p>
-                December 2023 energy consumption will be higher then 2022 based
+                January 2024 energy consumption will be higher then 2023 based
                 on AI ML Data
               </p>
             </div>
