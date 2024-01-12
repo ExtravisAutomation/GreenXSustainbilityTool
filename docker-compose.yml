@@ -22,7 +22,7 @@ services:
     volumes:
       - ./FAST_BACKEND:/app
 
-  react:
+  dcs_frontend:
     container_name: React_Container-DCS
     image: frontend_dcs_image:latest
     restart: always
