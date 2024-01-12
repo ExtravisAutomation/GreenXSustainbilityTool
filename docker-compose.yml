@@ -1,21 +1,15 @@
 version: "3.8"
 services:
-  architecture_db:
-    image: mysql:latest
+  react:
+    container_name: React_Container
     restart: always
-    container_name: DATABASE_Containerr
+    build: ./datacenter
     ports:
-      - "3309:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: fca
-
-  backend:
-    container_name: Backend_Containerr
-    restart: always
-    build: ./
-    ports:
-      - "8000:8000"
+      - "3010:3000"
     volumes:
-      - ./:/app
+      - ./datacenter:/frontend-app
+      - node_modules:/frontend-app/node_modules
+    command: ["npm", "start"]
 
+volumes:
+  node_modules:

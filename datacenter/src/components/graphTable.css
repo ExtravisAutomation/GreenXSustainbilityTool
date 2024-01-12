@@ -1,0 +1,49 @@
+.percentage-bar {
+    height: 10px;
+    background-color: lightgray;
+  }
+  
+  .percentage-bar.cost {
+    background-color: green;
+  }
+  
+  .percentage-bar.power {
+    background-color: green;
+  }
+/* graphTable.css */
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    color: white; /* Text color for dark mode */
+  }
+  
+  th, td {
+    border: 1px solid #555; /* Border color for dark mode */
+    padding: 8px;
+    text-align: left;
+  }
+  
+  th {
+    background-color: #333; /* Header background color for dark mode */
+  }
+  
+  .percentage-bar {
+    height: 10px;
+    background-color: lightgray; /* Default background color */
+  }
+  
+  .percentage-bar.cost {
+    background-color: green; /* Cost bar color for dark mode */
+    
+}
+  
+  .percentage-bar.power {
+    background-color: green; /* Power bar color for dark mode */
+  }
+.graph-table-heading{
+    font-size: 21px ;
+    font-weight: 500;
+    line-height: 20px;
+    padding-bottom: 0px!important;
+}    

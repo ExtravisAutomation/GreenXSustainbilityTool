@@ -36,3 +36,10 @@ async def get_me(current_user: User = Depends(get_current_active_user)):
     return user
 
 
+@router.post("/sign-out")
+@inject
+async def sign_out(
+    current_user: User = Depends(get_current_active_user),
+    service: AuthService = Depends(Provide[Container.auth_service])
+):
+    return service.sign_out(current_user.id)

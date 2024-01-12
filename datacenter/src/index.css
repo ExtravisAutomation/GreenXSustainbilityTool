@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+.rowClassName {
+  background-color: red !important;
+}
+
+.ant-checkbox-checked:not(.ant-checkbox-disabled) .ant-checkbox-inner {
+  background-color: #3d9e47 !important;
+  border-color: #3d9e47 !important;
+}
+:where(.css-dev-only-do-not-override-1adbn6x).ant-checkbox-wrapper:not(
+    .ant-checkbox-wrapper-disabled
+  ):hover {
+  border-color: #3d9e47 !important;
+}
+.css-1k2u9zb-MuiChartsAxis-root {
+  stroke: #e5e5e5;
+  shape-rendering: crispEdges;
+  stroke-width: 1;
+}
+.MuiChartsAxis-line {
+  stroke: #e5e5e5;
+  shape-rendering: crispEdges;
+  stroke-width: 1;
+}
+.css-wn5hww-MuiLineElement-root {
+  stroke-width: 6px!important;
+  stroke: #2B8FCA!important;
+}
+.css-a8rcf6-MuiLineElement-root {
+  stroke-width: 6px!important;
+  stroke: #40B553!important;
+}
+.css-bfv7z6-MuiMarkElement-root {
+    stroke-width: 0!important;
+}
+.css-p94pjm-MuiMarkElement-root {
+  stroke-width: 0!important;
+}
+.css-1nj9716-MuiMarkElement-root {
+  stroke-width: 0!important;
+
+}
+.css-1r7dp5y-MuiMarkElement-root {
+fill: #40B553!important;
+  stroke-width: 1px!important;
+}
+.percentage-bar.cost {
+  background-color: #40B553!important;
+}
+.percentage-bar.power {
+  background-color: #40B553!important;
+}
+
+

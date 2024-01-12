@@ -52,3 +52,7 @@ class AuthService(BaseService):
         created_user = self.user_repository.create(user)
         delattr(created_user, "password")
         return created_user
+
+    def sign_out(self, user_id: int):
+        self.user_repository.clear_user_token(user_id)
+        return {"message": "Successfully signed out"}
