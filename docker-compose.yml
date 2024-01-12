@@ -1,7 +1,30 @@
 version: "3.8"
 services:
+  dcs_db:
+    image: mysql:latest
+    restart: always
+    container_name: DATABASE_Container-DCS
+    ports:
+      - "3309:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: fca
+    volumes:
+      - dcs-db-volume:/var/lib/mysql
+
+  dcs_backend:
+    container_name: Backend_Container-DCS
+    image: dcs_backend_image:latest
+    restart: always
+    build: ./FAST_BACKEND
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./FAST_BACKEND:/app
+
   react:
-    container_name: React_Container
+    container_name: React_Container-DCS
+    image: frontend_dcs_image:latest
     restart: always
     build: ./datacenter
     ports:
@@ -12,4 +35,5 @@ services:
     command: ["npm", "start"]
 
 volumes:
+  dcs-db-volume:
   node_modules:
