@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { styled, useTheme } from "@mui/material/styles";
+import { baseUrl } from "../utils/axios";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -38,6 +39,7 @@ import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
 import { message } from "antd";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 // import LoadingSpinne
 const uname = localStorage.getItem("user_name");
@@ -109,6 +111,7 @@ export default function Index() {
   const { isDarkMode, setDarkMode } = useContext(AppContext);
   const [open, setOpen] = useState(false);
   const [open2, setOpen2] = useState(false);
+  const [access_token, setAccessToken] = useState();
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -125,60 +128,58 @@ export default function Index() {
 
   useEffect(() => {
     setOpen2(true);
-    setIsLoading(true);
-    const access_token = localStorage.getItem("auth_token");
-    setToken(access_token);
+    // setIsLoading(true);
+    const access_token = localStorage.getItem("access_token");
+    setAccessToken(access_token);
+    setToken(auth_token);
     setTimeout(() => {
       if (access_token === null) {
         setIsLoading(false);
-
         navigate("/");
       } else {
         setIsLoading(false);
       }
     }, 1000);
-  }, [auth_token]);
+  }, [access_token]);
 
   const logOut = async () => {
-    localStorage.removeItem("access_token");
-    const access_token = localStorage.getItem("auth_token");
-
-    // setIsLoading(true);
-    // ${access_token}
+    // const access_token = localStorage.getItem("access_token");
 
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/v2/auth/sign-out${access_token}`
+        baseUrl + "/sign-out",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        }
       );
-      console.log(response, "logout response");
-      // if (response.data.access_token !== 0) {
-      //   messageApi.open({
-      //     type: "success",
-      //     content: "Successfully Logged in",
-      //   });
-      //   setOpen2(true);
-
-      //   localStorage.setItem("user_name", response.data.user_info.name);
-      //   localStorage.setItem("auth_token", response.data.user_info.user_token);
-
-      //   setTimeout(() => {
-      //     navigate("/main_layout");
-      //     setOpen2(false);
-      //   }, 1000);
-      // } else {
-      //   alert("Unexpected response from the server");
-      // }
+      setIsLoading(true);
+      console.log(response, "logout");
+      if (response) {
+        setIsLoading(false);
+        console.log(response, "after");
+        localStorage.removeItem("access_token");
+        setAccessToken(null);
+        // messageApi.open({
+        //   type: "success",
+        //   content: response.data.message,
+        // });
+        Swal.fire({
+          title: response.data.message,
+          // text: response.data.message,
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+      }
     } catch (err) {
       if (err.response && err.response.data && err.response.data.detail) {
-        // alert(`Login failed: ${err.response.data.detail}`);
         messageApi.open({
           type: "error",
           content: err.response.data.detail,
         });
       }
-      // else {
-      //   alert("Login failed. Please check your credentials.");
-      // }
     }
 
     // if (!auth_token && auth_token === null) {

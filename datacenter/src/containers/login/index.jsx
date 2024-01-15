@@ -4,6 +4,8 @@ import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import cisco from "../../resources/svgs/cisco.svg";
 import axios from "axios";
+import { baseUrl } from "../../utils/axios";
+import Swal from "sweetalert2";
 import { message } from "antd";
 import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -21,18 +23,21 @@ function Index() {
 
   const handleLogin = async (event) => {
     try {
-      const response = await axios.post(
-        "http://localhost:8000/api/v2/auth/sign-in",
-        {
-          email__eq: username,
-          password: password,
-        }
-      );
+      const response = await axios.post(baseUrl + "/sign-in", {
+        email__eq: username,
+        password: password,
+      });
       console.log(response, "login response");
       if (response.data.access_token !== 0) {
-        messageApi.open({
-          type: "success",
-          content: "Successfully Logged in",
+        // messageApi.open({
+        //   type: "success",
+        //   content: "Successfully Logged in",
+        // });
+        Swal.fire({
+          title: "Login successfully",
+          // text: response.data.message,
+          icon: "success",
+          confirmButtonText: "OK",
         });
         // setOpen2(true);
 
