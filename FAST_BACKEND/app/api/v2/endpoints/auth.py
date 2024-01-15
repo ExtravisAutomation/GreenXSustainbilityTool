@@ -1,12 +1,15 @@
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends
-
+from fastapi import APIRouter, Depends, Response, status, HTTPException
+from fastapi.responses import JSONResponse
 from app.core.container import Container
 from app.core.dependencies import get_current_active_user
 from app.model.user import User
 from app.schema.auth_schema import SignIn, SignUp, SignInResponse
 from app.schema.user_schema import User as UserSchema
 from app.services.auth_service import AuthService
+# from fastapi.status import HTTP_204_NO_CONTENT
+
+from app.core.security import JWTBearer
 
 router = APIRouter(
     prefix="/auth",
@@ -36,10 +39,27 @@ async def get_me(current_user: User = Depends(get_current_active_user)):
     return user
 
 
-@router.post("/sign-out")
+#
+#
+# @router.post("/sign-out", status_code=204)
+# @inject
+# async def sign_out(
+#         current_user: User = Depends(get_current_active_user),
+#         service: AuthService = Depends(Provide[Container.auth_service]),
+#         token: str = Depends(JWTBearer())):
+#     service.blacklist_token(current_user.email, token)
+#     return Response(status_code=204)
+#
+
+@router.post("/sign-out", status_code=204)
 @inject
 async def sign_out(
-    current_user: User = Depends(get_current_active_user),
-    service: AuthService = Depends(Provide[Container.auth_service])
-):
-    return service.sign_out(current_user.id)
+        current_user: User = Depends(get_current_active_user),
+        service: AuthService = Depends(Provide[Container.auth_service]),
+        token: str = Depends(JWTBearer())):
+    try:
+        service.blacklist_token(current_user.email, token)
+        # End the response here without any content
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

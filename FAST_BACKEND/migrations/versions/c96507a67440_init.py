@@ -73,6 +73,16 @@ def upgrade():
         sa.UniqueConstraint("user_token"),
     )
 
+    op.create_table(
+        "blacklisted_token",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("token", sa.String(length=512), nullable=False),
+        sa.Column("email", sa.String(length=255), nullable=True),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("token"),
+    )
     # ### end Alembic commands ###
 
 

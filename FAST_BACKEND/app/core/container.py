@@ -8,7 +8,7 @@ from app.repository.site_repository import SiteRepository
 from app.services.rack_service import RackService
 from app.repository.rack_repository import RackRepository
 from app.services.site_service import SiteService
-
+from app.repository.blacklisted_token_repository import BlacklistedTokenRepository
 
 class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(
@@ -32,10 +32,12 @@ class Container(containers.DeclarativeContainer):
     site_repo = providers.Factory(SiteRepository, session_factory=db.provided.session)
     user_repository = providers.Factory(UserRepository, session_factory=db.provided.session)
     rack_repository = providers.Factory(RackRepository, session_factory=db.provided.session)
+    blacklisted_token_repository = providers.Factory(
+        BlacklistedTokenRepository,
+        session_factory=db.provided.session
+    )
 
-
-
-    auth_service = providers.Factory(AuthService, user_repository=user_repository)
+    auth_service = providers.Factory(AuthService, user_repository=user_repository, blacklisted_token_repository=blacklisted_token_repository)
     site_service = providers.Factory(SiteService, site_repository=site_repo)
     user_service = providers.Factory(UserService, user_repository=user_repository)
     rack_service = providers.Factory(RackService, rack_repository=rack_repository)

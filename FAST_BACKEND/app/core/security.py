@@ -7,7 +7,12 @@ from passlib.context import CryptContext
 
 from app.core.config import configs
 from app.core.exceptions import AuthError
+from sqlalchemy.orm import Session
 
+from app.model.blacklisted_token import BlacklistedToken
+
+
+from app.core.database import Database
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
 
@@ -43,6 +48,7 @@ class JWTBearer(HTTPBearer):
     def __init__(self, auto_error: bool = True):
         super(JWTBearer, self).__init__(auto_error=auto_error)
 
+
     async def __call__(self, request: Request):
         credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)
         if credentials:
@@ -54,12 +60,27 @@ class JWTBearer(HTTPBearer):
         else:
             raise AuthError(detail="Invalid authorization code.")
 
+    # def verify_jwt(self, jwt_token: str) -> bool:
+    #     is_token_valid: bool = False
+    #     try:
+    #         payload = decode_jwt(jwt_token)
+    #     except Exception as e:
+    #         payload = None
+    #     if payload:
+    #         is_token_valid = True
+    #     return is_token_valid
+
     def verify_jwt(self, jwt_token: str) -> bool:
         is_token_valid: bool = False
         try:
             payload = decode_jwt(jwt_token)
         except Exception as e:
             payload = None
+
         if payload:
-            is_token_valid = True
+            # Check if token is blacklisted
+            with Database(configs.DATABASE_URI).session() as db:
+                blacklisted = db.query(BlacklistedToken).filter(BlacklistedToken.token == jwt_token).first()
+                if blacklisted is None:
+                    is_token_valid = True
         return is_token_valid
