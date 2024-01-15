@@ -11,11 +11,18 @@ from app.schema.user_schema import FindUser
 from app.services.base_service import BaseService
 from app.util.hash import get_rand_hash
 
+from app.model.blacklisted_token import BlacklistedToken
+
+from app.repository import blacklisted_token_repository
+
+from app.repository.blacklisted_token_repository import BlacklistedTokenRepository
+
 
 class AuthService(BaseService):
-    def __init__(self, user_repository: UserRepository):
+    def __init__(self, user_repository: UserRepository, blacklisted_token_repository: BlacklistedTokenRepository):
         self.user_repository = user_repository
         super().__init__(user_repository)
+        self.blacklisted_token_repository = blacklisted_token_repository
 
     def sign_in(self, sign_in_info: SignIn):
         find_user = FindUser()
@@ -53,6 +60,6 @@ class AuthService(BaseService):
         delattr(created_user, "password")
         return created_user
 
-    def sign_out(self, user_id: int):
-        self.user_repository.clear_user_token(user_id)
-        return {"message": "Successfully signed out"}
+    def blacklist_token(self, email: str, token: str):
+        blacklisted_token = BlacklistedToken(email=email, token=token)
+        self.blacklisted_token_repository.create(blacklisted_token)
