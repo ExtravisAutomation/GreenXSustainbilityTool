@@ -34,10 +34,11 @@ function Index() {
           type: "success",
           content: "Successfully Logged in",
         });
-        setOpen2(true);
+        // setOpen2(true);
 
         localStorage.setItem("user_name", response.data.user_info.name);
         localStorage.setItem("auth_token", response.data.user_info.user_token);
+        localStorage.setItem("access_token", response.data.access_token);
 
         setTimeout(() => {
           navigate("/main_layout");

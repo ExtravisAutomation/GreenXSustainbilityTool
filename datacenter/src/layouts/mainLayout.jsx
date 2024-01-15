@@ -37,10 +37,13 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
 import { message } from "antd";
+import axios from "axios";
 
 // import LoadingSpinne
 const uname = localStorage.getItem("user_name");
 const auth_token = localStorage.getItem("auth_token");
+const access_token = localStorage.getItem("access_token");
+console.log(access_token, "access_token");
 
 console.log(auth_token, "user auth_token");
 const drawerWidth = 240;
@@ -123,38 +126,76 @@ export default function Index() {
   useEffect(() => {
     setOpen2(true);
     setIsLoading(true);
-    const auth_token = localStorage.getItem("auth_token");
-    setToken(auth_token);
+    const access_token = localStorage.getItem("auth_token");
+    setToken(access_token);
     setTimeout(() => {
-      if (auth_token === null) {
+      if (access_token === null) {
         setIsLoading(false);
 
         navigate("/");
       } else {
         setIsLoading(false);
       }
-    }, 1500);
+    }, 1000);
   }, [auth_token]);
 
   const logOut = async () => {
-    localStorage.removeItem("auth_token");
-    setIsLoading(true);
+    localStorage.removeItem("access_token");
+    const access_token = localStorage.getItem("auth_token");
 
-    if (!auth_token && auth_token === null) {
-      setTimeout(() => {
-        if (auth_token === null) {
-          // messageApi.open({
-          //   type: "success",
-          //   content: "Logged out Successfully",
-          // });
-          setIsLoading(false);
+    // setIsLoading(true);
+    // ${access_token}
 
-          navigate("/");
-        } else {
-          setIsLoading(false);
-        }
-      }, 3000);
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/v2/auth/sign-out${access_token}`
+      );
+      console.log(response, "logout response");
+      // if (response.data.access_token !== 0) {
+      //   messageApi.open({
+      //     type: "success",
+      //     content: "Successfully Logged in",
+      //   });
+      //   setOpen2(true);
+
+      //   localStorage.setItem("user_name", response.data.user_info.name);
+      //   localStorage.setItem("auth_token", response.data.user_info.user_token);
+
+      //   setTimeout(() => {
+      //     navigate("/main_layout");
+      //     setOpen2(false);
+      //   }, 1000);
+      // } else {
+      //   alert("Unexpected response from the server");
+      // }
+    } catch (err) {
+      if (err.response && err.response.data && err.response.data.detail) {
+        // alert(`Login failed: ${err.response.data.detail}`);
+        messageApi.open({
+          type: "error",
+          content: err.response.data.detail,
+        });
+      }
+      // else {
+      //   alert("Login failed. Please check your credentials.");
+      // }
     }
+
+    // if (!auth_token && auth_token === null) {
+    //   setTimeout(() => {
+    //     if (auth_token === null) {
+    //       // messageApi.open({
+    //       //   type: "success",
+    //       //   content: "Logged out Successfully",
+    //       // });
+    //       setIsLoading(false);
+
+    //       navigate("/");
+    //     } else {
+    //       setIsLoading(false);
+    //     }
+    //   }, 3000);
+    // }
   };
   const toggleTheme = () => {
     setDarkMode(!isDarkMode);
