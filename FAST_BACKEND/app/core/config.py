@@ -1,5 +1,6 @@
 import os
 from typing import List
+import sys
 
 from dotenv import load_dotenv
 from pydantic import BaseSettings
@@ -10,7 +11,7 @@ ENV: str = ""
 
 
 class Configs(BaseSettings):
-    # base
+    # baseos.environ["TEST_ENV_VAR"]
     ENV: str = os.getenv("ENV", "dev")
     API: str = "/api"
     API_V1_STR: str = "/api/v1"
@@ -27,7 +28,8 @@ class Configs(BaseSettings):
         "mysql": "mysql+pymysql",
     }
 
-    PROJECT_ROOT: str = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    PROJECT_ROOT: str = os.path.dirname(os.path.dirname(
+        os.path.dirname(os.path.abspath(__file__))))
 
     # date
     DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%S"
@@ -35,7 +37,8 @@ class Configs(BaseSettings):
 
     # auth
     SECRET_KEY: str = os.getenv("SECRET_KEY", "")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 30  # 60 minutes * 24 hours * 30 days = 30 days
+    # 60 minutes * 24 hours * 30 days = 30 days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 30
 
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = ["*"]
@@ -58,6 +61,7 @@ class Configs(BaseSettings):
         port=DB_PORT,
         database=ENV_DATABASE_MAPPER[ENV],
     )
+    print("Database url in config", DATABASE_URI, file=sys.stderr)
 
     # find query
     PAGE = 1

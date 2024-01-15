@@ -99,6 +99,7 @@ function index() {
           </div>
         </div>
       </div>
+
       <div
         style={{
           border: "1px solid #36424E",

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { styled, useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -33,7 +33,16 @@ import dayModeIcon from "../resources/svgs/dayModeIcon.svg";
 import nightModeIcon from "../resources/svgs/nightModeIcon.svg";
 import profileimage from "../resources/svgs/profileimage.png";
 import { useNavigate } from "react-router-dom";
+import LogoutIcon from "@mui/icons-material/Logout";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
+import { message } from "antd";
 
+// import LoadingSpinne
+const uname = localStorage.getItem("user_name");
+const auth_token = localStorage.getItem("auth_token");
+
+console.log(auth_token, "user auth_token");
 const drawerWidth = 240;
 
 const openedMixin = (theme) => ({
@@ -96,10 +105,57 @@ export default function Index() {
 
   const { isDarkMode, setDarkMode } = useContext(AppContext);
   const [open, setOpen] = useState(false);
+  const [open2, setOpen2] = useState(false);
+
+  const [messageApi, contextHolder] = message.useMessage();
+
   const [selectedModule, setSelectedModule] = useState(
     "Data Center Sustainability"
   );
+  const [isLoading, setIsLoading] = useState(true);
 
+  const [token, setToken] = useState();
+
+  const handleClose = () => {
+    setOpen2(false);
+  };
+
+  useEffect(() => {
+    setOpen2(true);
+    setIsLoading(true);
+    const auth_token = localStorage.getItem("auth_token");
+    setToken(auth_token);
+    setTimeout(() => {
+      if (auth_token === null) {
+        setIsLoading(false);
+
+        navigate("/");
+      } else {
+        setIsLoading(false);
+      }
+    }, 1500);
+  }, [auth_token]);
+
+  const logOut = async () => {
+    localStorage.removeItem("auth_token");
+    setIsLoading(true);
+
+    if (!auth_token && auth_token === null) {
+      setTimeout(() => {
+        if (auth_token === null) {
+          // messageApi.open({
+          //   type: "success",
+          //   content: "Logged out Successfully",
+          // });
+          setIsLoading(false);
+
+          navigate("/");
+        } else {
+          setIsLoading(false);
+        }
+      }, 3000);
+    }
+  };
   const toggleTheme = () => {
     setDarkMode(!isDarkMode);
   };
@@ -126,67 +182,84 @@ export default function Index() {
   ];
 
   return (
-    <Box sx={{ display: "flex", zIndex: "9", position: "relative" }}>
-      <Drawer variant="permanent" open={open}>
-        <DrawerHeader>
-          <img src={logo} alt="Data Center" />
-        </DrawerHeader>
-        <Divider />
+    <>
+      {contextHolder}
 
-        <List style={{ padding: 0 }}>
-          {drawerMenuItems?.map((item, index) => (
-            <Tooltip key={item.name} title={item.name} placement="right">
-              <Link to={item.path}>
-                <ListItem
-                  key={item.name}
-                  disablePadding
-                  onClick={() => setSelectedModule(item.name)}
-                >
-                  <ListItemButton
-                    sx={{
-                      justifyContent: open ? "initial" : "center",
-                      padding: 0,
-                    }}
+      {isLoading === true ? (
+        <Backdrop
+          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={open2}
+          onClick={handleClose}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+      ) : null}
+      <Box sx={{ display: "flex", zIndex: "9", position: "relative" }}>
+        <Drawer variant="permanent" open={open}>
+          <DrawerHeader>
+            <img src={logo} alt="Data Center" />
+          </DrawerHeader>
+          <Divider />
+
+          <List style={{ padding: 0 }}>
+            {drawerMenuItems?.map((item, index) => (
+              <Tooltip key={item.name} title={item.name} placement="right">
+                <Link to={item.path}>
+                  <ListItem
+                    key={item.name}
+                    disablePadding
+                    onClick={() => setSelectedModule(item.name)}
                   >
-                    <ListItemIcon
+                    <ListItemButton
                       sx={{
-                        minWidth: 0,
-                        justifyContent: "center",
+                        justifyContent: open ? "initial" : "center",
+                        padding: 0,
                       }}
                     >
-                      {selectedModule === item.name
-                        ? item.activeIcon
-                        : item.inActiveIcon}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={item.name}
-                      sx={{ opacity: open ? 1 : 0 }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              </Link>
-            </Tooltip>
-          ))}
-        </List>
-      </Drawer>
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          justifyContent: "center",
+                        }}
+                      >
+                        {selectedModule === item.name
+                          ? item.activeIcon
+                          : item.inActiveIcon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.name}
+                        sx={{ opacity: open ? 1 : 0 }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                </Link>
+              </Tooltip>
+            ))}
+          </List>
+        </Drawer>
 
-      <Box
-        component="main"
-        sx={{ flexGrow: 1, p: 0, border: "0px solid red", minHeight: "100vh" }}
-      >
-        <DrawerHeader
+        <Box
+          component="main"
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "0 20px",
-            borderBottom: `0.5px solid ${theme?.palette?.main_layout?.border_bottom}`,
+            flexGrow: 1,
+            p: 0,
+            border: "0px solid red",
+            minHeight: "100vh",
           }}
         >
-          <div style={{ color: theme?.palette?.main_layout?.primary_text }}>
-            {selectedModule}
-          </div>
-          <div style={{ display: "flex" }}>
-            {/* <div style={{ cursor: "pointer" }}>
+          <DrawerHeader
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "0 20px",
+              borderBottom: `0.5px solid ${theme?.palette?.main_layout?.border_bottom}`,
+            }}
+          >
+            <div style={{ color: theme?.palette?.main_layout?.primary_text }}>
+              {selectedModule}
+            </div>
+            <div style={{ display: "flex" }}>
+              {/* <div style={{ cursor: "pointer" }}>
               {isDarkMode ? (
                 <img
                   src={dayModeIcon}
@@ -203,39 +276,46 @@ export default function Index() {
                 />
               )}
             </div> */}
-            &nbsp; &nbsp;
-            <ProfileContainer
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                navigate("/");
-              }}
-            ></ProfileContainer>
-            &nbsp; &nbsp;
-            <div>
-              <div
+              &nbsp; &nbsp;
+              <ProfileContainer
                 style={{
-                  color: theme?.palette?.main_layout?.primary_text,
-                  fontSize: theme.typography.textSize.medium,
+                  cursor: "pointer",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  color: "gray",
                 }}
+                onClick={logOut}
               >
-                Cisco
-              </div>
-              <div
-                style={{
-                  color: theme?.palette?.main_layout?.secondary_text,
-                  fontSize: theme.typography.textSize.small,
-                }}
-              >
-               Data Center Sustainability
+                <LogoutIcon />
+              </ProfileContainer>
+              &nbsp; &nbsp;
+              <div>
+                <div
+                  style={{
+                    color: theme?.palette?.main_layout?.primary_text,
+                    fontSize: theme.typography.textSize.medium,
+                  }}
+                >
+                  {token !== null ? uname : ""}
+                </div>
+                <div
+                  style={{
+                    color: theme?.palette?.main_layout?.secondary_text,
+                    fontSize: theme.typography.textSize.small,
+                  }}
+                >
+                  {token !== null ? token : "Data Center Sustainability"}
+                </div>
               </div>
             </div>
+          </DrawerHeader>
+          <div style={{ padding: "10px 20px" }}>
+            <Outlet />
           </div>
-        </DrawerHeader>
-        <div style={{ padding: "10px 20px" }}>
-          <Outlet />
-        </div>
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 }
 

@@ -1,11 +1,12 @@
 import os
 from logging.config import fileConfig
-
+import sys
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
 from app.core.config import configs
+# from app.core.config import *
 # from app.model.post import Post
 # from app.model.post_tag import PostTag
 # from app.model.tag import Tag
@@ -22,6 +23,7 @@ else:
 # access to the values within the .ini file in use.
 config = context.config
 if not config.get_main_option("sqlalchemy.url"):
+    print("Database uri is:::::::::::", configs.DATABASE_URI, file=sys.stderr)
     config.set_main_option("sqlalchemy.url", configs.DATABASE_URI)
 
 # Interpret the config file for Python logging.
