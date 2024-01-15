@@ -51,7 +51,7 @@ async def get_me(current_user: User = Depends(get_current_active_user)):
 #     return Response(status_code=204)
 #
 
-@router.post("/sign-out", status_code=204)
+@router.post("/sign-out")
 @inject
 async def sign_out(
         current_user: User = Depends(get_current_active_user),
@@ -59,7 +59,7 @@ async def sign_out(
         token: str = Depends(JWTBearer())):
     try:
         service.blacklist_token(current_user.email, token)
-        # End the response here without any content
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
+        # Send a JSON response with a success message
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Logout successful"})
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
