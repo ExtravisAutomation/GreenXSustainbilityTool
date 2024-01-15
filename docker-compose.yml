@@ -21,6 +21,9 @@ services:
       - "8000:8000"
     volumes:
       - ./FAST_BACKEND:/app
+    command: [ "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload" ]
+    environment:
+      - WATCHFILES_FORCE_POLLING=true
 
   dcs_frontend:
     container_name: React_Container-DCS
