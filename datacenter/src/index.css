@@ -40,32 +40,37 @@ code {
   stroke-width: 1;
 }
 .css-wn5hww-MuiLineElement-root {
-  stroke-width: 6px!important;
-  stroke: #2B8FCA!important;
+  stroke-width: 6px !important;
+  stroke: #2b8fca !important;
 }
 .css-a8rcf6-MuiLineElement-root {
-  stroke-width: 6px!important;
-  stroke: #40B553!important;
+  stroke-width: 6px !important;
+  stroke: #40b553 !important;
 }
 .css-bfv7z6-MuiMarkElement-root {
-    stroke-width: 0!important;
+  stroke-width: 0 !important;
 }
 .css-p94pjm-MuiMarkElement-root {
-  stroke-width: 0!important;
+  stroke-width: 0 !important;
 }
 .css-1nj9716-MuiMarkElement-root {
-  stroke-width: 0!important;
-
+  stroke-width: 0 !important;
 }
 .css-1r7dp5y-MuiMarkElement-root {
-fill: #40B553!important;
-  stroke-width: 1px!important;
+  fill: #40b553 !important;
+  stroke-width: 1px !important;
 }
 .percentage-bar.cost {
-  background-color: #40B553!important;
+  background-color: #40b553 !important;
 }
 .percentage-bar.power {
-  background-color: #40B553!important;
+  background-color: #40b553 !important;
 }
-
-
+.profile_item {
+  background-color: transparent !important;
+  transition: all 0.2s !important;
+}
+.ant-dropdown-menu-item:hover,
+.ant-dropdown-menu-item:hover .profile_item {
+  color: rgb(32, 154, 195) !important;
+}

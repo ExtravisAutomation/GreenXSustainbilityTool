@@ -38,9 +38,16 @@ function Index() {
           // text: response.data.message,
           icon: "success",
           confirmButtonText: "OK",
+          timer: 1000, // Adjust the time in milliseconds (e.g., 3000 for 3 seconds)
+          timerProgressBar: true,
+          onClose: () => {
+            // This will be called when the timer is up
+            // Add any additional logic you want to execute when the popup is closed
+            console.log("Popup closed");
+          },
         });
         // setOpen2(true);
-
+        localStorage.setItem("loginData", JSON.stringify(response.data));
         localStorage.setItem("user_name", response.data.user_info.name);
         localStorage.setItem("auth_token", response.data.user_info.user_token);
         localStorage.setItem("access_token", response.data.access_token);

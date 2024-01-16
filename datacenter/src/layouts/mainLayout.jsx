@@ -37,10 +37,10 @@ import { useNavigate } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
 import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
-import { message } from "antd";
+import { message, Button, Modal, Dropdown, Space } from "antd";
 import axios from "axios";
 import Swal from "sweetalert2";
-
+import { ExclamationCircleFilled, RightOutlined } from "@ant-design/icons";
 // import LoadingSpinne
 const uname = localStorage.getItem("user_name");
 const auth_token = localStorage.getItem("auth_token");
@@ -105,21 +105,24 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 export default function Index() {
+  const loginData = JSON.parse(localStorage.getItem("loginData"));
+  console.log(loginData, "login dataaaaa");
   const theme = useTheme();
   const navigate = useNavigate();
+  const { confirm } = Modal;
 
   const { isDarkMode, setDarkMode } = useContext(AppContext);
   const [open, setOpen] = useState(false);
   const [open2, setOpen2] = useState(false);
   const [access_token, setAccessToken] = useState();
-
+  const [openRightDrawer, setOpenRightDrawer] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 
   const [selectedModule, setSelectedModule] = useState(
     "Data Center Sustainability"
   );
   const [isLoading, setIsLoading] = useState(true);
-
+  const [modal2Open, setModal2Open] = useState(false);
   const [token, setToken] = useState();
 
   const handleClose = () => {
@@ -171,6 +174,13 @@ export default function Index() {
           // text: response.data.message,
           icon: "success",
           confirmButtonText: "OK",
+          timer: 1500, // Adjust the time in milliseconds (e.g., 3000 for 3 seconds)
+          timerProgressBar: true,
+          onClose: () => {
+            // This will be called when the timer is up
+            // Add any additional logic you want to execute when the popup is closed
+            console.log("Popup closed");
+          },
         });
       }
     } catch (err) {
@@ -198,6 +208,92 @@ export default function Index() {
     //   }, 3000);
     // }
   };
+
+  const showConfirm = () => {
+    confirm({
+      title: "Are you sure you want to log-out?",
+      icon: <ExclamationCircleFilled />,
+      content:
+        "Logging out will end your current session. Are you sure you want to proceed?",
+      okText: "yes",
+      okType: "primary",
+      okButtonProps: {
+        // disabled: true,
+      },
+      cancelText: "No",
+      onOk() {
+        logOut();
+      },
+      onCancel() {
+        console.log("Cancel");
+      },
+    });
+  };
+
+  const items = [
+    {
+      label: (
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              width: "50px",
+              height: "50px",
+              borderRadius: "100%",
+              background: "black",
+              margin: "0 auto",
+            }}
+          ></div>
+          <h3>{token !== null ? uname : ""}</h3>
+        </div>
+      ),
+      key: "0",
+    },
+    {
+      label: (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+          onClick={() => setModal2Open(true)}
+        >
+          <Button
+            className="profile_item"
+            style={{ border: "none", boxShadow: "none" }}
+          >
+            Profile
+          </Button>
+          <RightOutlined />
+        </div>
+      ),
+      key: "1",
+    },
+    {
+      type: "divider",
+    },
+    {
+      label: (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+          onClick={showConfirm}
+        >
+          <Button
+            className="profile_item"
+            style={{ border: "none", boxShadow: "none" }}
+          >
+            Log out
+          </Button>
+          <RightOutlined />
+        </div>
+      ),
+      key: "3",
+    },
+  ];
   const toggleTheme = () => {
     setDarkMode(!isDarkMode);
   };
@@ -222,6 +318,9 @@ export default function Index() {
       path: "uam_module",
     },
   ];
+  const overlayStyle = {
+    width: "250px", // Set the desired width
+  };
 
   return (
     <>
@@ -236,6 +335,79 @@ export default function Index() {
           <CircularProgress color="inherit" />
         </Backdrop>
       ) : null}
+
+      <Modal
+        title={
+          <div
+            style={{
+              margin: "0 auto",
+              width: "70px",
+              height: "70px",
+              borderRadius: "100%",
+              background: "black",
+            }}
+          ></div>
+        }
+        width={400}
+        style={{
+          top: 20,
+          width: 200,
+        }}
+        // centered
+        open={modal2Open}
+        onOk={() => setModal2Open(false)}
+        onCancel={() => setModal2Open(false)}
+        footer={null}
+      >
+        <h3 style={{ textAlign: "center" }}>{token !== null ? uname : ""}</h3>
+        {loginData.user_info.is_active === true ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <p style={{ marginBottom: "0px", fontWeight: "bold" }}>Status:</p>
+            <p style={{ color: "green", marginBottom: "0px" }}>Active</p>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <p style={{ marginBottom: "0px" }}>Status:</p>
+            <p style={{ color: "green", marginBottom: "0px", color: "red" }}>
+              Inactive
+            </p>
+          </div>
+        )}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <p style={{ marginBottom: "0px", fontWeight: "bold" }}>Name:</p>
+          <p style={{ marginBottom: "0px" }}>{token !== null ? uname : ""}</p>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <p style={{ marginBottom: "0px", fontWeight: "bold" }}>Email:</p>
+          <p style={{ marginBottom: "0px" }}>{loginData.user_info.email}</p>
+        </div>
+      </Modal>
+
       <Box sx={{ display: "flex", zIndex: "9", position: "relative" }}>
         <Drawer variant="permanent" open={open}>
           <DrawerHeader>
@@ -300,7 +472,7 @@ export default function Index() {
             <div style={{ color: theme?.palette?.main_layout?.primary_text }}>
               {selectedModule}
             </div>
-            <div style={{ display: "flex" }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
               {/* <div style={{ cursor: "pointer" }}>
               {isDarkMode ? (
                 <img
@@ -319,22 +491,33 @@ export default function Index() {
               )}
             </div> */}
               &nbsp; &nbsp;
-              <ProfileContainer
-                style={{
-                  cursor: "pointer",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  color: "gray",
+              <Dropdown
+                menu={{
+                  items,
                 }}
-                onClick={logOut}
+                trigger={["click"]}
+                overlayStyle={overlayStyle}
               >
-                <LogoutIcon />
-              </ProfileContainer>
+                <a onClick={(e) => e.preventDefault()}>
+                  <Space>
+                    <ProfileContainer
+                      style={{
+                        cursor: "pointer",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        color: "gray",
+                      }}
+                      // onClick={logOut}
+                    ></ProfileContainer>
+                  </Space>
+                </a>
+              </Dropdown>
               &nbsp; &nbsp;
               <div>
                 <div
                   style={{
+                    marginBottom: "0px",
                     color: theme?.palette?.main_layout?.primary_text,
                     fontSize: theme.typography.textSize.medium,
                   }}
@@ -347,7 +530,17 @@ export default function Index() {
                     fontSize: theme.typography.textSize.small,
                   }}
                 >
-                  {token !== null ? token : "Data Center Sustainability"}
+                  {loginData.user_info.is_active === true ? (
+                    <p
+                      style={{
+                        color: "green",
+                        marginBottom: "0px",
+                        marginTop: "0px",
+                      }}
+                    >
+                      Active
+                    </p>
+                  ) : null}
                 </div>
               </div>
             </div>
