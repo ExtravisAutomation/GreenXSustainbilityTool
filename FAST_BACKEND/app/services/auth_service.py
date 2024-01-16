@@ -17,6 +17,8 @@ from app.repository import blacklisted_token_repository
 
 from app.repository.blacklisted_token_repository import BlacklistedTokenRepository
 
+from app.schema.auth_schema import SignInNew
+
 
 class AuthService(BaseService):
     def __init__(self, user_repository: UserRepository, blacklisted_token_repository: BlacklistedTokenRepository):
@@ -24,17 +26,17 @@ class AuthService(BaseService):
         super().__init__(user_repository)
         self.blacklisted_token_repository = blacklisted_token_repository
 
-    def sign_in(self, sign_in_info: SignIn):
+    def sign_in(self, sign_in_info: SignInNew):
         find_user = FindUser()
-        find_user.email__eq = sign_in_info.email__eq
+        find_user.user_name = sign_in_info.user_name
         user: List[User] = self.user_repository.read_by_options(find_user)["founds"]
         if len(user) < 1:
-            raise AuthError(detail="Incorrect email or password")
+            raise AuthError(detail="Incorrect username or password")
         found_user = user[0]
         if not found_user.is_active:
             raise AuthError(detail="Account is not active")
         if not verify_password(sign_in_info.password, found_user.password):
-            raise AuthError(detail="Incorrect email or password")
+            raise AuthError(detail="Incorrect username or password")
         delattr(found_user, "password")
         payload = Payload(
             id=found_user.id,

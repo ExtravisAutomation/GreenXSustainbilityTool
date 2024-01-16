@@ -27,6 +27,7 @@ class User(ModelBaseInfo, BaseUser, metaclass=AllOptional):
 
 class FindUser(FindBase, BaseUser, metaclass=AllOptional):
     email__eq: str
+    user_name: str
     ...
 
 

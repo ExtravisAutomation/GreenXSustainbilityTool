@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from app.core.container import Container
 from app.core.dependencies import get_current_active_user
 from app.model.user import User
-from app.schema.auth_schema import SignIn, SignUp, SignInResponse
+from app.schema.auth_schema import SignIn, SignUp, SignInResponse, SignInNew
 from app.schema.user_schema import User as UserSchema
 from app.services.auth_service import AuthService
 # from fastapi.status import HTTP_204_NO_CONTENT
@@ -19,7 +19,7 @@ router = APIRouter(
 
 @router.post("/sign-in", response_model=SignInResponse)
 @inject
-async def sign_in(user_info: SignIn, service: AuthService = Depends(Provide[Container.auth_service])):
+async def sign_in(user_info: SignInNew, service: AuthService = Depends(Provide[Container.auth_service])):
     return service.sign_in(user_info)
 
 

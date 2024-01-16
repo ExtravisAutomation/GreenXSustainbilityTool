@@ -4,6 +4,9 @@ from pydantic import BaseModel
 
 from app.schema.user_schema import User
 
+class SignInNew(BaseModel):
+    user_name: str
+    password: str
 
 class SignIn(BaseModel):
     email__eq: str
