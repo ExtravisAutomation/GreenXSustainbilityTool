@@ -49,6 +49,6 @@ async def sign_out(
     try:
         service.blacklist_token(current_user.email, token)
 
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Logout successful"})
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Logout successfully"})
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
