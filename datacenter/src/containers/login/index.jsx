@@ -24,7 +24,7 @@ function Index() {
   const handleLogin = async (event) => {
     try {
       const response = await axios.post(baseUrl + "/sign-in", {
-        email__eq: username,
+        user_name: username,
         password: password,
       });
       console.log(response, "login response");
