@@ -74,3 +74,14 @@ code {
 .ant-dropdown-menu-item:hover .profile_item {
   color: rgb(32, 154, 195) !important;
 }
+.ant-modal {
+  /* background-color: #050c20 !important; */
+  border-radius: 10px !important;
+}
+.ant-modal-header {
+  background-color: transparent !important;
+}
+.ant-modal-content {
+  background-color: #050c20 !important;
+  border-radius: 10px !important;
+}

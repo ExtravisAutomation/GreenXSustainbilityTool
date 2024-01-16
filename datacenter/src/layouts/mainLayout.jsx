@@ -40,7 +40,11 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { message, Button, Modal, Dropdown, Space } from "antd";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { ExclamationCircleFilled, RightOutlined } from "@ant-design/icons";
+import {
+  ExclamationCircleFilled,
+  RightOutlined,
+  CloseOutlined,
+} from "@ant-design/icons";
 // import LoadingSpinne
 const uname = localStorage.getItem("user_name");
 const auth_token = localStorage.getItem("auth_token");
@@ -211,10 +215,16 @@ export default function Index() {
 
   const showConfirm = () => {
     confirm({
-      title: "Are you sure you want to log-out?",
+      title: (
+        <span style={{ color: "gray" }}>Are you sure you want to log-out?</span>
+      ),
       icon: <ExclamationCircleFilled />,
-      content:
-        "Logging out will end your current session. Are you sure you want to proceed?",
+      content: (
+        <span style={{ color: "gray" }}>
+          Logging out will end your current session. Are you sure you want to
+          proceed?
+        </span>
+      ),
       okText: "yes",
       okType: "primary",
       okButtonProps: {
@@ -239,11 +249,17 @@ export default function Index() {
               width: "50px",
               height: "50px",
               borderRadius: "100%",
-              background: "black",
+              background: "gray",
               margin: "0 auto",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              fontSize: "30px",
             }}
-          ></div>
-          <h3>{token !== null ? uname : ""}</h3>
+          >
+            G
+          </div>
+          <h3 style={{ color: "gray" }}>{token !== null ? uname : ""}</h3>
         </div>
       ),
       key: "0",
@@ -255,12 +271,13 @@ export default function Index() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            color: "gray",
           }}
           onClick={() => setModal2Open(true)}
         >
           <Button
             className="profile_item"
-            style={{ border: "none", boxShadow: "none" }}
+            style={{ color: "gray", border: "none", boxShadow: "none" }}
           >
             Profile
           </Button>
@@ -279,12 +296,13 @@ export default function Index() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            color: "gray",
           }}
           onClick={showConfirm}
         >
           <Button
             className="profile_item"
-            style={{ border: "none", boxShadow: "none" }}
+            style={{ color: "gray", border: "none", boxShadow: "none" }}
           >
             Log out
           </Button>
@@ -320,6 +338,10 @@ export default function Index() {
   ];
   const overlayStyle = {
     width: "250px", // Set the desired width
+    // backgroundColor: "black",
+  };
+  const dropdownMenuStyle = {
+    backgroundColor: "#050C20",
   };
 
   return (
@@ -344,7 +366,7 @@ export default function Index() {
               width: "70px",
               height: "70px",
               borderRadius: "100%",
-              background: "black",
+              background: "gray",
             }}
           ></div>
         }
@@ -358,14 +380,18 @@ export default function Index() {
         onOk={() => setModal2Open(false)}
         onCancel={() => setModal2Open(false)}
         footer={null}
+        closeIcon={<CloseOutlined style={{ color: "gray" }} />}
       >
-        <h3 style={{ textAlign: "center" }}>{token !== null ? uname : ""}</h3>
+        <h3 style={{ textAlign: "center", color: "gray" }}>
+          {token !== null ? uname : ""}
+        </h3>
         {loginData.user_info.is_active === true ? (
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              color: "gray",
             }}
           >
             <p style={{ marginBottom: "0px", fontWeight: "bold" }}>Status:</p>
@@ -377,6 +403,7 @@ export default function Index() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              color: "gray",
             }}
           >
             <p style={{ marginBottom: "0px" }}>Status:</p>
@@ -390,6 +417,7 @@ export default function Index() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            color: "gray",
           }}
         >
           <p style={{ marginBottom: "0px", fontWeight: "bold" }}>Name:</p>
@@ -401,6 +429,7 @@ export default function Index() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            color: "gray",
           }}
         >
           <p style={{ marginBottom: "0px", fontWeight: "bold" }}>Email:</p>
@@ -493,6 +522,7 @@ export default function Index() {
               &nbsp; &nbsp;
               <Dropdown
                 menu={{
+                  style: dropdownMenuStyle,
                   items,
                 }}
                 trigger={["click"]}
