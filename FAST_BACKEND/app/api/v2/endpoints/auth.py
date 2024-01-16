@@ -36,6 +36,10 @@ async def get_me(current_user: User = Depends(get_current_active_user)):
     user.name = current_user.name
     user.email = current_user.email
     user.created_at = current_user.created_at
+    user.updated_at = current_user.updated_at
+    user.is_active = current_user.is_active
+    user.is_superuser = current_user.is_superuser
+    user.id = current_user.id
     return user
 
 
@@ -52,3 +56,4 @@ async def sign_out(
         return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Logout successfully"})
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+

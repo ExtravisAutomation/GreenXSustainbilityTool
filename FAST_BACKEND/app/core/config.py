@@ -61,7 +61,7 @@ class Configs(BaseSettings):
         port=DB_PORT,
         database=ENV_DATABASE_MAPPER[ENV],
     )
-    print("Database url in config", DATABASE_URI, file=sys.stderr)
+    #print("Database url in config", DATABASE_URI, file=sys.stderr)
 
     # find query
     PAGE = 1
