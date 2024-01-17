@@ -43,7 +43,6 @@ async def get_me(current_user: User = Depends(get_current_active_user)):
     return user
 
 
-
 @router.post("/sign-out")
 @inject
 async def sign_out(
@@ -56,4 +55,3 @@ async def sign_out(
         return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Logout successfully"})
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-
