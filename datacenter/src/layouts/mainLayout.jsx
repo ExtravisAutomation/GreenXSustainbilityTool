@@ -169,23 +169,20 @@ export default function Index() {
         console.log(response, "after");
         localStorage.removeItem("access_token");
         setAccessToken(null);
-        // messageApi.open({
-        //   type: "success",
-        //   content: response.data.message,
-        // });
-        Swal.fire({
-          title: response.data.message,
-          // text: response.data.message,
-          icon: "success",
-          confirmButtonText: "OK",
-          timer: 1500, // Adjust the time in milliseconds (e.g., 3000 for 3 seconds)
-          timerProgressBar: true,
-          onClose: () => {
-            // This will be called when the timer is up
-            // Add any additional logic you want to execute when the popup is closed
-            console.log("Popup closed");
-          },
+        messageApi.open({
+          type: "success",
+          content: response.data.message,
         });
+        // Swal.fire({
+        //   title: response.data.message,
+        //   icon: "success",
+        //   confirmButtonText: "OK",
+        //   timer: 1500,
+        //   timerProgressBar: true,
+        //   onClose: () => {
+        //     console.log("Popup closed");
+        //   },
+        // });
       }
     } catch (err) {
       if (err.response && err.response.data && err.response.data.detail) {

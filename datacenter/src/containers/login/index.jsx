@@ -29,24 +29,23 @@ function Index() {
       });
       console.log(response, "login response");
       if (response.data.access_token !== 0) {
-        // messageApi.open({
-        //   type: "success",
-        //   content: "Successfully Logged in",
-        // });
-        Swal.fire({
-          title: "Login successfully",
-          // text: response.data.message,
-          icon: "success",
-          confirmButtonText: "OK",
-          timer: 1000, // Adjust the time in milliseconds (e.g., 3000 for 3 seconds)
-          timerProgressBar: true,
-          onClose: () => {
-            // This will be called when the timer is up
-            // Add any additional logic you want to execute when the popup is closed
-            console.log("Popup closed");
-          },
+        messageApi.open({
+          type: "success",
+          content: "Successfully Logged in",
         });
-        // setOpen2(true);
+        // Swal.fire({
+        //   title: "Login successfully",
+
+        //   icon: "success",
+        //   confirmButtonText: "OK",
+        //   timer: 1000,
+        //   timerProgressBar: true,
+        //   onClose: () => {
+
+        //     console.log("Popup closed");
+        //   },
+        // });
+
         localStorage.setItem("loginData", JSON.stringify(response.data));
         localStorage.setItem("user_name", response.data.user_info.name);
         localStorage.setItem("auth_token", response.data.user_info.user_token);
@@ -55,7 +54,7 @@ function Index() {
         setTimeout(() => {
           navigate("/main_layout");
           setOpen2(false);
-        }, 1000);
+        }, 500);
       } else {
         alert("Unexpected response from the server");
       }
