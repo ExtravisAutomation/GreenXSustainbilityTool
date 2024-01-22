@@ -60,6 +60,30 @@ def get_current_super_user(current_user: User = Depends(get_current_user)) -> Us
     return current_user
 
 
+def get_current_super_admin_user(current_user: User = Depends(get_current_user)) -> User:
+    if not current_user.is_active or current_user.role != 'super_admin':
+        raise AuthError("Access denied")
+    return current_user
+
+
+def get_current_admin_user(current_user: User = Depends(get_current_user)) -> User:
+    if not current_user.is_active or current_user.role != 'admin':
+        raise AuthError("Access denied")
+    return current_user
+
+
+def get_current_regular_user(current_user: User = Depends(get_current_user)) -> User:
+    if not current_user.is_active or current_user.role != 'user':
+        raise AuthError("Access denied")
+    return current_user
+
+
+def get_current_admin_or_user(current_user: User = Depends(get_current_user)) -> User:
+    if not current_user.is_active or current_user.role not in ['admin', 'user']:
+        raise AuthError("Access denied")
+    return current_user
+
+
 def get_db() -> Session:
     with Database(configs.DATABASE_URI).session() as db:
         yield db

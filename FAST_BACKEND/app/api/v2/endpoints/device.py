@@ -15,6 +15,12 @@ from influxdb_client import InfluxDBClient, Point, WritePrecision
 
 from app.repository.influxdb_repository import InfluxDBRepository
 
+from app.core.dependencies import get_current_admin_user
+
+from app.core.dependencies import get_current_regular_user
+
+from app.core.dependencies import get_current_admin_or_user
+
 router = APIRouter(prefix="/ACIdevice", tags=["ACIdevice"])
 
 
@@ -22,7 +28,7 @@ router = APIRouter(prefix="/ACIdevice", tags=["ACIdevice"])
 async def monitor_device(
         request: MonitorDeviceRequest,
         background_tasks: BackgroundTasks,
-        current_user: User = Depends(get_current_active_user),
+        current_user: User = Depends(get_current_admin_user),
 ):
     # instance of DeviceService
     influxdb_client = InfluxDBClient(
@@ -46,7 +52,7 @@ async def monitor_device(
 async def get_device_data(
     ip: str,
     service: DeviceService = Depends(Provide[Container.device_service]),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_admin_or_user),
 ):
     influxdb_client = InfluxDBClient(
         url=configs.INFLUXDB_URL,
