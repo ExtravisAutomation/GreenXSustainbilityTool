@@ -36,6 +36,24 @@ services:
       - node_modules:/frontend-app/node_modules
     command: ["npm", "start"]
 
+
+  influxdb_dcs:
+    image: influxdb:latest
+    container_name: INFLUXDB_CONTAINER_DCS
+    ports:
+      - "8086:8086"
+    volumes:
+      - C:\Users\Hp\influxdb-docker-data-volume:/var/lib/influxdb
+      - myInfluxVolume:/var/lib/influxdb2
+    environment:
+      DOCKER_INFLUXDB_URL: http://localhost:8086
+      DOCKER_INFLUXDB_INIT_ORG: dcs
+      DOCKER_INFLUXDB_INIT_BUCKET: actual_power
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: BTjOoqiLJMxwdqaPM37yx7Rpupb6lYAyX7I3f95JdDjEmDf67E3pviNfoto7VKC-hpL_KiSRTSnC_E-d5x85Sw==
+
+
 volumes:
   dcs-db-volume:
   node_modules:
+  myInfluxVolume:
+    external: true

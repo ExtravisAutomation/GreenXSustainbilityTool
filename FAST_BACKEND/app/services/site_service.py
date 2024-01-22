@@ -11,7 +11,7 @@ import traceback
 class SiteService:
     def __init__(self, site_repository: SiteRepository):
         self.site_repository = site_repository
-        # super().__init__(site_repository)
+        super().__init__(site_repository)
 
     def get_sites(self) -> GetSitesResponse:
         results = self.site_repository.test_func()["results"]

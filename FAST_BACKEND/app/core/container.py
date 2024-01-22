@@ -9,13 +9,22 @@ from app.services.rack_service import RackService
 from app.repository.rack_repository import RackRepository
 from app.services.site_service import SiteService
 from app.repository.blacklisted_token_repository import BlacklistedTokenRepository
+from influxdb_client import InfluxDBClient, Point, WritePrecision
+
+from app.repository.influxdb_repository import InfluxDBRepository
+
+from app.services.device_service import DeviceService
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(
         modules=[
-            #"app.api.v1.endpoints.auth",
-            #"app.api.v1.endpoints.post",
-            #"app.api.v1.endpoints.tag",
+            # "app.api.v1.endpoints.auth",
+            # "app.api.v1.endpoints.post",
+            # "app.api.v1.endpoints.tag",
             "app.api.v1.endpoints.user",
             "app.api.v2.endpoints.auth",
             "app.api.v2.endpoints.site",
@@ -27,8 +36,21 @@ class Container(containers.DeclarativeContainer):
 
     db = providers.Singleton(Database, db_url=configs.DATABASE_URI)
 
-    #post_repository = providers.Factory(PostRepository, session_factory=db.provided.session)
-    #tag_repository = providers.Factory(TagRepository, session_factory=db.provided.session)
+    influxdb_client = providers.Singleton(
+        InfluxDBClient,
+        url=configs.INFLUXDB_URL,
+        token=configs.INFLUXDB_TOKEN,
+        org=configs.INFLUXDB_ORG)
+
+    influxdb_repository = providers.Factory(
+        InfluxDBRepository,
+        client=influxdb_client,
+        bucket=configs.INFLUXDB_BUCKET,
+        org=configs.INFLUXDB_ORG,
+        token=configs.INFLUXDB_TOKEN
+    )
+    device_service = providers.Factory(DeviceService, influxdb_repository=influxdb_repository)
+
     site_repo = providers.Factory(SiteRepository, session_factory=db.provided.session)
     user_repository = providers.Factory(UserRepository, session_factory=db.provided.session)
     rack_repository = providers.Factory(RackRepository, session_factory=db.provided.session)
@@ -37,7 +59,8 @@ class Container(containers.DeclarativeContainer):
         session_factory=db.provided.session
     )
 
-    auth_service = providers.Factory(AuthService, user_repository=user_repository, blacklisted_token_repository=blacklisted_token_repository)
+    auth_service = providers.Factory(AuthService, user_repository=user_repository,
+                                     blacklisted_token_repository=blacklisted_token_repository)
     site_service = providers.Factory(SiteService, site_repository=site_repo)
     user_service = providers.Factory(UserService, user_repository=user_repository)
     rack_service = providers.Factory(RackService, rack_repository=rack_repository)

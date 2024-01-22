@@ -1,11 +1,14 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-#from app.api.v1.routes import routers as v1_routers
+# from app.api.v1.routes import routers as v1_routers
 from app.api.v2.routes import routers as v2_routers
 from app.core.config import configs
 from app.core.container import Container
 from app.util.class_object import singleton
+#from influxdb_client import InfluxDBClient, Point, WritePrecision
+#import os
+
 
 
 @singleton
@@ -22,6 +25,18 @@ class AppCreator:
         self.container = Container()
         self.db = self.container.db()
         # self.db.create_database()
+        self.container.wire(modules=[
+            "app.api.v2.endpoints",
+            "app.core.dependencies",
+            "app.core.database",
+            "app.repository",
+            "app.services",
+            "app.util",
+            "app.model",
+            "app.core.config",
+            "app.core.container",
+
+        ])
 
         # set cors
         if configs.BACKEND_CORS_ORIGINS:
@@ -38,7 +53,7 @@ class AppCreator:
         def root():
             return "service is working"
 
-        #self.app.include_router(v1_routers, prefix=configs.API_V1_STR)
+        # self.app.include_router(v1_routers, prefix=configs.API_V1_STR)
         self.app.include_router(v2_routers, prefix=configs.API_V2_STR)
 
 
@@ -46,3 +61,26 @@ app_creator = AppCreator()
 app = app_creator.app
 db = app_creator.db
 container = app_creator.container
+
+
+
+# def test_influxdb_connection():
+#     try:
+#         client = InfluxDBClient(
+#             url=os.getenv("INFLUXDB_URL"),
+#             token=os.getenv("INFLUXDB_TOKEN"),
+#             org=os.getenv("INFLUXDB_ORG")
+#         )
+#         buckets_api = client.buckets_api()
+#         buckets = buckets_api.find_buckets()
+#         print("Successfully connected to InfluxDB. Found buckets:", buckets)
+#         client.close()
+#     except Exception as e:
+#         print(f"Failed to connect to InfluxDB: {e}")
+#         raise e
+#
+#
+# @app.on_event("startup")
+# async def startup_event():
+#     test_influxdb_connection()
+#
