@@ -14,15 +14,17 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, Integer, String, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from app.model.base_model import BaseModel, Base
+from app.model.base_model import BaseModel
 
 
-class Site(BaseModel, Base):
+class Site(BaseModel):
     __tablename__ = "site"
 
-    name = Column(String, nullable=False)
-    status = Column(String, nullable=True)
-    facility = Column(String, nullable=True)
+    site_name = Column(String, nullable=True)
+    site_type = Column(String, nullable=True)
     region = Column(String, nullable=True)
+    city = Column(String, nullable=True)
+    Location = Column(String, nullable=True)
+    status = Column(String, nullable=True)
+    total_devices = Column(String, nullable=True)
 
-    rack = relationship("Rack", back_populates="site")
