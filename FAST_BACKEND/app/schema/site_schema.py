@@ -1,25 +1,28 @@
-from typing import Optional, List
 from app.schema.base_schema import ModelBaseInfo, FindBase, SearchOptions, FindResult, Blank
 from pydantic import BaseModel
+from typing import Generic, TypeVar, Optional, List
+from pydantic.generics import GenericModel
+
+DataT = TypeVar('DataT')
 
 
-class SiteDetails(BaseModel):
-    id: int
-    name: str
-    status: str
-    facility: str
+class SiteBase(BaseModel):
+    site_name: str
+    site_type: str
     region: str
+    city: str
+    latitude: str
+    longitude: str
+    status: str
+    total_devices: str
+
+
+class SiteDetails(SiteBase):
+    id: int
 
 
 class GetSitesResponse(BaseModel):
     sites: List[SiteDetails]
-
-
-class SiteBase(BaseModel):
-    name: str
-    status: str
-    facility: str
-    region: str
 
 
 class SiteCreate(SiteBase):
@@ -27,10 +30,14 @@ class SiteCreate(SiteBase):
 
 
 class SiteUpdate(BaseModel):
-    name: Optional[str] = None
-    status: Optional[str] = None
-    facility: Optional[str] = None
+    site_name: Optional[str] = None
+    site_type: Optional[str] = None
     region: Optional[str] = None
+    city: Optional[str] = None
+    latitude: Optional[str] = None
+    longitude: Optional[str] = None
+    status: Optional[str] = None
+    total_devices: Optional[str] = None
 
 
 class Site(ModelBaseInfo, SiteBase):
@@ -48,3 +55,9 @@ class UpsertSite(SiteBase):
 class FindSiteResult(FindResult):
     founds: Optional[List[Site]]
     search_options: Optional[SearchOptions]
+
+
+class CustomResponse(GenericModel, Generic[DataT]):
+    message: str
+    data: Optional[DataT]
+    status_code: int
