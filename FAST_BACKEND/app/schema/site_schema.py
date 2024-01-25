@@ -61,3 +61,11 @@ class CustomResponse(GenericModel, Generic[DataT]):
     message: str
     data: Optional[DataT]
     status_code: int
+
+
+T = TypeVar("T")
+
+class CustomResponse1(BaseModel, Generic[T]):
+    message: str
+    data: T
+    status_code: int
