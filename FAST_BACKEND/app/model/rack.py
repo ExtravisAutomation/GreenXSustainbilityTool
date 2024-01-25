@@ -27,8 +27,9 @@ from app.model.base_model import BaseModel, Base
 class Rack(BaseModel, Base):
     __tablename__ = "rack"
 
-    name = Column(String, nullable=False)
-    site_id = Column(Integer, ForeignKey("site.id"), nullable=False)
+    Rack_name = Column(String, nullable=True)
+    site_id = Column(Integer, nullable=True)
+    Manufacture_date = Column(datetime, nullable=True)
     location = Column(String, nullable=True)
     height = Column(String, nullable=True)
     devices = Column(String, nullable=True)
