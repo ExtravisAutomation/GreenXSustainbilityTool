@@ -17,6 +17,7 @@ class SignUp(BaseModel):
     email: str
     password: str
     name: str
+    role: str
 
 
 class Payload(BaseModel):

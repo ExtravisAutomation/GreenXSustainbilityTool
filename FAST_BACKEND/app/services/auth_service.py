@@ -55,11 +55,22 @@ class AuthService(BaseService):
 
     def sign_up(self, user_info: SignUp):
         user_token = get_rand_hash()
-        user = User(**user_info.dict(exclude_none=True), is_active=True, is_superuser=False, user_token=user_token)
+        user_data = user_info.dict(exclude_none=True)
+        role = user_data.pop('role', 'user')
+        user = User(
+            **user_data,
+            is_active=True,
+            is_superuser=False,
+            user_token=user_token,
+            role=role
+        )
         print("USERRRRRR", user)
         user.password = get_password_hash(user_info.password)
+
         created_user = self.user_repository.create(user)
+
         delattr(created_user, "password")
+
         return created_user
 
     def blacklist_token(self, email: str, token: str):

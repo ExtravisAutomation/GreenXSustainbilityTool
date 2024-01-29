@@ -11,8 +11,8 @@ from sqlalchemy.orm import Session
 
 from app.model.blacklisted_token import BlacklistedToken
 
-
 from app.core.database import Database
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
 
@@ -47,7 +47,6 @@ def decode_jwt(token: str) -> dict:
 class JWTBearer(HTTPBearer):
     def __init__(self, auto_error: bool = True):
         super(JWTBearer, self).__init__(auto_error=auto_error)
-
 
     async def __call__(self, request: Request):
         credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)

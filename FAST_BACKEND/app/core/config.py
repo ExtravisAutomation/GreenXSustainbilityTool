@@ -43,7 +43,7 @@ class Configs(BaseSettings):
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = ["*"]
 
-    # database
+    # mysql
     DB: str = os.getenv("DB", "mysql")
     DB_USER: str = os.getenv("DB_USER")
     DB_PASSWORD: str = os.getenv("DB_PASSWORD")
@@ -51,6 +51,15 @@ class Configs(BaseSettings):
     DB_PORT: str = os.getenv("DB_PORT", "3306")
     DB_ENGINE: str = DB_ENGINE_MAPPER.get(DB, "mysql+pymysql")
 
+    # influxdb
+    INFLUXDB_URL: str = os.getenv("INFLUXDB_URL")
+    INFLUXDB_TOKEN: str = os.getenv("INFLUXDB_TOKEN")
+    INFLUXDB_ORG: str = os.getenv("INFLUXDB_ORG")
+    INFLUXDB_BUCKET: str = os.getenv("INFLUXDB_BUCKET")
+    print("Influxdb url in config", INFLUXDB_URL, file=sys.stderr)
+    print("Influxdb token in config", INFLUXDB_TOKEN, file=sys.stderr)
+    print("Influxdb org in config", INFLUXDB_ORG, file=sys.stderr)
+    print("Influxdb bucket in config", INFLUXDB_BUCKET, file=sys.stderr)
     DATABASE_URI_FORMAT: str = "{db_engine}://{user}:{password}@{host}:{port}/{database}"
 
     DATABASE_URI = "{db_engine}://{user}:{password}@{host}:{port}/{database}".format(
@@ -61,7 +70,7 @@ class Configs(BaseSettings):
         port=DB_PORT,
         database=ENV_DATABASE_MAPPER[ENV],
     )
-    #print("Database url in config", DATABASE_URI, file=sys.stderr)
+    # print("Database url in config", DATABASE_URI, file=sys.stderr)
 
     # find query
     PAGE = 1

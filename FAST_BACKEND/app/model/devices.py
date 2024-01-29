@@ -1,0 +1,42 @@
+from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey
+from .base_model import BaseModel
+
+class Devices(BaseModel):
+    __tablename__ = "devices"
+
+    ip = Column(String, nullable=True)
+    device_id = Column(String, nullable=True)
+    device_name = Column(String, nullable=True)
+    rack_id = Column(String, nullable=True)
+    site_id = Column(String, nullable=True)
+    manufacture_date = Column(Date, nullable=True)
+    virtual = Column(Boolean, nullable=True)
+    authentication = Column(String, nullable=True)
+    item_code = Column(String, nullable=True)
+    item_desc = Column(String, nullable=True)
+    hw_eos_date = Column(Date, nullable=True)
+    hw_eol_date = Column(Date, nullable=True)
+    sw_eos_date = Column(Date, nullable=True)
+    sw_eol_date = Column(Date, nullable=True)
+    criticality = Column(String, nullable=True)
+    function = Column(String, nullable=True)
+    domain = Column(String, nullable=True)
+    patch_version = Column(String, nullable=True)
+    section = Column(String, nullable=True)
+    software_version = Column(String, nullable=True)
+    hardware_version = Column(String, nullable=True)
+    department = Column(String, nullable=True)
+    serial_number = Column(String, nullable=True)
+    RFS = Column(Date, nullable=True)
+    dismantle_date = Column(Date, nullable=True)
+    Pn_Code = Column(String, nullable=True)
+    Tag_id = Column(Integer, nullable=True)
+    Max_power = Column(String, nullable=True)
+    Device_Ru = Column(String, nullable=True)
+    Manufacturer = Column(String, nullable=True)
+    Source = Column(String, nullable=True)
+    Site_type = Column(String, nullable=True)
+    contact_number = Column(String, nullable=True)
+    contract_expiry = Column(Date, nullable=True)
+    status = Column(String, nullable=True)
+
