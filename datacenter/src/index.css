@@ -21,13 +21,13 @@ code {
 }
 
 .ant-checkbox-checked:not(.ant-checkbox-disabled) .ant-checkbox-inner {
-  background-color: #3d9e47 !important;
-  border-color: #3d9e47 !important;
+  background-color: #0490e7 !important;
+  border-color: #0490e7 !important;
 }
 :where(.css-dev-only-do-not-override-1adbn6x).ant-checkbox-wrapper:not(
     .ant-checkbox-wrapper-disabled
   ):hover {
-  border-color: #3d9e47 !important;
+  border-color: #0490e7 !important;
 }
 .css-1k2u9zb-MuiChartsAxis-root {
   stroke: #e5e5e5;
@@ -84,4 +84,10 @@ code {
 .ant-modal-content {
   background-color: #050c20 !important;
   border-radius: 10px !important;
+}
+.css-12i7wg6-MuiPaper-root-MuiDrawer-paper {
+  border-right: 1px solid #36424e !important;
+}
+.anticon-search {
+  color: #acacac !important;
 }

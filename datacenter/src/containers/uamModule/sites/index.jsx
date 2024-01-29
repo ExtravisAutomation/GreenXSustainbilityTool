@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useTheme } from "@mui/material/styles";
 import DefaultCard from "../../../components/cards";
 import { Icon } from "@iconify/react";
@@ -28,6 +28,9 @@ import { Spin } from "antd";
 import useErrorHandling from "../../../hooks/useErrorHandling";
 import { dataKeysArray } from "./constants";
 import PageHeader from "../../../components/pageHeader";
+import { Button } from "@mui/material";
+import axios from "axios";
+import { baseUrl } from "../../../utils/axios";
 
 const Index = () => {
   // theme
@@ -46,9 +49,151 @@ const Index = () => {
   const [recordToEdit, setRecordToEdit] = useState(null);
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    try {
+      const response = axios.post(baseUrl + "/sites/getallsites");
+      console.log(response, "login response");
+      // if (response.data.access_token !== 0) {
+
+      //   Swal.fire({
+      //     title: "Login successfully",
+
+      //     icon: "success",
+      //     confirmButtonText: "OK",
+      //     timer: 1000,
+      //     timerProgressBar: true,
+      //     onClose: () => {
+
+      //       console.log("Popup closed");
+      //     },
+      //   });
+      // } else {
+      //   alert("Unexpected response from the server");
+      // }
+    } catch (err) {
+      // else {
+      //   alert("Login failed. Please check your credentials.");
+      // }
+    }
+  }, []);
   // selectors
   const dataSource = useSelector(selectTableData);
 
+  const columns = [
+    {
+      title: "Site Name",
+      dataIndex: "name",
+      key: "name",
+      ...getColumnSearchProps("name"),
+    },
+    {
+      title: "Site Type",
+      dataIndex: "site_type",
+      key: "site_type",
+      ...getColumnSearchProps("site_type"),
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      ...getColumnSearchProps("status"),
+
+      render: (record) => {
+        return (
+          <>
+            {record == "Active" ? (
+              <div
+                style={{
+                  background: "#71B62633",
+                  width: "59px",
+                  textAlign: "center",
+                  height: "18px",
+                  borderRadius: "24px",
+                  color: "#C8FF8C",
+                }}
+              >
+                {record}
+              </div>
+            ) : (
+              <div
+                style={{
+                  background: "#d87053",
+                  width: "59px",
+                  textAlign: "center",
+                  height: "18px",
+                  borderRadius: "24px",
+                  color: "white",
+                }}
+              >
+                {record}
+              </div>
+            )}
+          </>
+        );
+      },
+    },
+    {
+      title: "City",
+      dataIndex: "city",
+      key: "city",
+      ...getColumnSearchProps("city"),
+    },
+    {
+      title: "Facility",
+      dataIndex: "facility",
+      key: "facility",
+      ...getColumnSearchProps("facility"),
+    },
+    {
+      title: "Latitude",
+      dataIndex: "latitude",
+      key: "latitude",
+      ...getColumnSearchProps("latitude"),
+    },
+    {
+      title: "Longitude",
+      dataIndex: "longitude",
+      key: "longitude",
+      ...getColumnSearchProps("longitude"),
+    },
+    {
+      title: "Total Devices",
+      dataIndex: "total_devices",
+      key: "total_devices",
+      ...getColumnSearchProps("total_devices"),
+    },
+    {
+      title: "Region",
+      dataIndex: "Region",
+      key: "Region",
+      ...getColumnSearchProps("Region"),
+      render: (record) => {
+        return (
+          <>
+            <div
+              style={{
+                color: "#0490E7",
+              }}
+            >
+              {record}
+            </div>
+          </>
+        );
+      },
+    },
+    {
+      title: "Created At",
+      dataIndex: "created_at",
+      key: "created_at",
+      ...getColumnSearchProps("created_at"),
+    },
+    {
+      title: "Updated At",
+      dataIndex: "updated_at",
+      key: "updated_at",
+      ...getColumnSearchProps("updated_at"),
+    },
+  ];
   // dummy data to show
   const Site_Module_Data = [
     {
@@ -65,13 +210,13 @@ const Index = () => {
     },
     {
       name: "AUH",
-      status: "Active",
+      status: "In Active",
       facility: "DSW",
       Region: "Abu Dhabi",
     },
     {
       name: "FUJ",
-      status: "Active",
+      status: "In Active",
       facility: "DSW",
       Region: "Fujairah",
     },
@@ -181,19 +326,8 @@ const Index = () => {
     handleSuccessAlert("File exported successfully.");
   };
 
-  // row selection
-  const onSelectChange = (selectedRowKeys) => {
-    setSelectedRowKeys(selectedRowKeys);
-    console.log(selectedRowKeys);
-  };
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  };
-
   // columns
-  let columns = columnGenerator(dataKeys, getColumnSearchProps, getTitle);
+  // let columns = columnGenerator(dataKeys, getColumnSearchProps, getTitle);
 
   columns.push({
     title: "Actions",
@@ -205,11 +339,19 @@ const Index = () => {
       <div
         style={{
           display: "flex",
-          gap: "10px",
-          justifyContent: "center",
+          gap: "13px",
+          // justifyContent: "center",
+          alignItems: "center",
+          zIndex: 999,
         }}
       >
-        <Icon onClick={() => handleEdit(record)} icon="bx:edit" />
+        {/* <Icon  icon="bx:edit" /> */}
+        <Icon
+          fontSize={"16px"}
+          onClick={() => handleEdit(record)}
+          icon="ri:edit-line"
+        />
+        <Icon fontSize={"14px"} icon="uiw:delete" />
       </div>
     ),
   });
@@ -224,20 +366,35 @@ const Index = () => {
       type: "Delete",
       icon: <Icon fontSize="16px" icon="mingcute:delete-line" />,
     },
-    {
-      type: "Add",
-      icon: <Icon fontSize="16px" icon="gridicons:add-outline" />,
-    },
   ];
 
   const onRowClick = (record) => {
-    navigate(`sitedetail`);
+    // navigate(`sitedetail`);
   };
 
   const rowProps = (record) => {
     return {
       onClick: () => onRowClick(record),
     };
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedKeys, selectedRows) => {
+      setSelectedRowKeys(selectedKeys);
+    },
+    onSelect: (record, selected, selectedRows) => {
+      // console.log(record, selected, selectedRows);
+      console.log(record, "record data");
+      // const newFormId = { form_id: record.resp_id };
+      // setFormId((prevFormId) => [...prevFormId, newFormId]);
+    },
+    onSelectAll: (record, selected, selectedRows) => {
+      // console.log(record.userid, "user id from record");
+      // console.log(selected, "selected data");
+      // const newFormId = { form_id: record.resp_id };
+      // setFormId((prevFormId) => [...prevFormId, newFormId]);
+    },
   };
 
   return (
@@ -251,24 +408,80 @@ const Index = () => {
           />
         ) : null}
 
-        <DefaultCard sx={{ width: `${width - 105}px` }}>
-          <PageHeader pageName="Sites" buttons={buttons} />
+        <div
+          style={{
+            color: "white",
+            display: "flex",
+            alignItems: "center",
+            gap: "5px",
+            background: "#050C17",
+            padding: "12px 0px 14px 15px",
+            marginTop: "10px",
+            width: "96.5%",
+            margin: "0 auto",
+          }}
+        >
+          <span>Resultes</span>
+          <span
+            style={{
+              width: "16px",
+              height: "16px",
+              borderRadius: "100%",
+              background: "#0490E7",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              fontSize: "10px",
+            }}
+          >
+            {Site_Module_Data.length}
+          </span>
+        </div>
+        <DefaultCard sx={{ width: `${width - 120}px`, margin: "0 auto" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Button
+              style={{
+                background: "#0490E7",
+                height: "30px",
+                color: "white",
+                textTransform: "capitalize",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                borderRadius: "2px",
+              }}
+            >
+              <Icon icon="uil:setting" />
+              Configure Table
+            </Button>
+            <PageHeader pageName="" buttons={buttons} />
+          </div>
           <DefaultTable
-            rowClassName={(record, index) =>
-              index % 2 === 0 ? "even" : "odd"
-            }
+            rowClassName={(record, index) => (index % 2 === 0 ? "even" : "odd")}
             size="small"
             onChange={handleChange}
-            rowSelection={rowSelection}
+            // rowSelection={rowSelection}
             columns={columns}
             dataSource={Site_Module_Data}
-            rowKey="name" // Change 'site_id' to a unique key present in your data
+            rowSelection={{
+              ...rowSelection,
+            }}
+            rowKey="name"
             style={{ whiteSpace: "pre" }}
             pagination={{
               defaultPageSize: 9,
-              pageSizeOptions: [9, 50, 100, 500, 1000],
+              pageSizeOptions: [9, 50, Site_Module_Data.length],
             }}
             onRow={rowProps}
+            scroll={{
+              x: 1240,
+            }}
           />
         </DefaultCard>
       </div>

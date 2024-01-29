@@ -6,10 +6,11 @@ import { Typography } from "@mui/material";
 export default function PageHeader({ pageName, buttons }) {
   const theme = useTheme();
 
-  const renderButton = (buttonNamePostfix, button) => {
-    const { type, icon, handleClick, options } = button;
+  const renderButton = (buttonNamePostfix, buttons) => {
+    const { type, icon, handleClick, options } = buttons;
     let sx = null;
-    if (type === "Export") {
+    console.log(type, "typeee");
+    if (type == "Export") {
       sx = {
         backgroundColor: theme?.palette?.drop_down_button?.export_background,
         color: theme?.palette?.drop_down_button?.export_text,

@@ -20,7 +20,7 @@ const DefaultStyledAntDesignTable = styled(Table)`
           font-size: 14px;
           margin: 0 !important;
           padding: 0 !important;
-          padding: 5px 10px 10px 10px !important;
+          padding: 8px 10px 10px 10px !important;
           font-family: ${({ theme }) =>
             theme?.palette?.default_table?.fontFamily};
           font-weight: 600;
@@ -61,7 +61,7 @@ const DefaultStyledAntDesignTable = styled(Table)`
           margin: 0 !important;
           padding: 0 !important;
           padding-left: 10px !important;
-          height: ${(p) => p.cellHeight || "33px"} !important;
+          height: ${(p) => p.cellHeight || "43px"} !important;
           color: ${({ theme }) => theme?.palette?.default_table?.primary_text};
           border: none;
         }

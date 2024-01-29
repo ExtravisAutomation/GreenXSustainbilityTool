@@ -57,7 +57,7 @@ export default function useColumnSearchProps() {
             size="small"
             style={{
               width: 30,
-              backgroundColor: "#3D9E47",
+              backgroundColor: "rgb(32, 154, 195)",
             }}
           >
             Search
@@ -67,7 +67,7 @@ export default function useColumnSearchProps() {
             size="small"
             style={{
               width: 90,
-              borderColor: "#3D9E47",
+              borderColor: "rgb(32, 154, 195)",
             }}
           >
             Reset
@@ -78,6 +78,7 @@ export default function useColumnSearchProps() {
             onClick={() => {
               close();
             }}
+            style={{ color: "rgb(32, 154, 195)" }}
           >
             close
           </Button>

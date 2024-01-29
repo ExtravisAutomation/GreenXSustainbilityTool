@@ -14,7 +14,7 @@ import { Outlet } from "react-router-dom";
 import Tooltip from "@mui/material/Tooltip";
 import { AppContext } from "../context/appContext";
 import dashboardInactiveIcon from "../resources/svgs/dashboardInactiveIcon.svg";
-import dashboardActiveIcon from "../resources/svgs/dashboardActiveIcon.svg";
+import dashboardActiveIcon from "../resources/svgs/dashboard-icon.png";
 import monitoringInactiveIcon from "../resources/svgs/monitoringInactiveIcon.svg";
 import monitoringActiveIcon from "../resources/svgs/monitoringActiveIcon.svg";
 import atomInactiveIcon from "../resources/svgs/atomInactiveIcon.svg";
@@ -25,8 +25,8 @@ import networkMappingInactiveIcon from "../resources/svgs/networkMappingInactive
 import networkMappingActiveIcon from "../resources/svgs/networkMappingActiveIcon.svg";
 import autoDiscoveryInactiveIcon from "../resources/svgs/autoDiscoveryInactiveIcon.svg";
 import autoDiscoveryActiveIcon from "../resources/svgs/autoDiscoveryActiveIcon.svg";
-import uamInactiveIcon from "../resources/svgs/uamInactiveIcon.svg";
-import uamActiveIcon from "../resources/svgs/uamActiveIcon.svg";
+import uamInactiveIcon from "../resources/svgs/sites.svg";
+import uamActiveIcon from "../resources/svgs/sitesActive.png";
 import ncmInactiveIcon from "../resources/svgs/ncmInactiveIcon.svg";
 import ncmActiveIcon from "../resources/svgs/ncmActiveIcon.svg";
 import logo from "../resources/svgs/logo.svg";
@@ -110,7 +110,7 @@ const Drawer = styled(MuiDrawer, {
 
 export default function Index() {
   const loginData = JSON.parse(localStorage.getItem("loginData"));
-  console.log(loginData, "login dataaaaa");
+  // console.log(loginData, "login dataaaaa");
   const theme = useTheme();
   const navigate = useNavigate();
   const { confirm } = Modal;
@@ -154,7 +154,7 @@ export default function Index() {
 
     try {
       const response = await axios.post(
-        baseUrl + "/sign-out",
+        baseUrl + "/auth/sign-out",
         {},
         {
           headers: {
@@ -323,13 +323,43 @@ export default function Index() {
     {
       name: "Data Center Sustainability",
       inActiveIcon: <img src={dashboardInactiveIcon} alt="Admin" />,
-      activeIcon: <img src={dashboardActiveIcon} alt="Admin" />,
+      // activeIcon: <img src={dashboardActiveIcon} alt="Admin" />,
+      activeIcon: (
+        <div
+          style={{
+            background: "#049FD921",
+            width: "100%",
+            borderRadius: "50px 0px 0px 50px",
+            padding: "12px 10px 10px 10px",
+            marginTop: "5px",
+            marginBottom: "5px",
+          }}
+        >
+          <img src={dashboardActiveIcon} alt="Admin" />
+        </div>
+      ),
       path: "dashboard_module",
     },
     {
       name: "Sites",
-      inActiveIcon: <img src={uamInactiveIcon} alt="Atom" />,
-      activeIcon: <img src={uamActiveIcon} alt="Atom" />,
+      inActiveIcon: (
+        <img style={{ margin: "0 auto" }} src={uamInactiveIcon} alt="sites" />
+      ),
+      // activeIcon: <img src={uamActiveIcon} alt="Atom" />,
+      activeIcon: (
+        <div
+          style={{
+            background: "#049FD921",
+            width: "100%",
+            borderRadius: "50px 0px 0px 50px",
+            padding: "12px 10px 10px 10px",
+            marginTop: "5px",
+            marginBottom: "5px",
+          }}
+        >
+          <img src={uamActiveIcon} alt="Sites" />
+        </div>
+      ),
       path: "uam_module",
     },
   ];
@@ -458,8 +488,10 @@ export default function Index() {
                     >
                       <ListItemIcon
                         sx={{
-                          minWidth: 0,
-                          justifyContent: "center",
+                          minWidth: "100%",
+                          marginLeft: "0 auto",
+                          // justifyContent: "right",
+                          textAlign: "center",
                         }}
                       >
                         {selectedModule === item.name
@@ -485,6 +517,7 @@ export default function Index() {
             p: 0,
             border: "0px solid red",
             minHeight: "100vh",
+            background: "#0D131C",
           }}
         >
           <DrawerHeader
@@ -492,7 +525,8 @@ export default function Index() {
               display: "flex",
               justifyContent: "space-between",
               padding: "0 20px",
-              borderBottom: `0.5px solid ${theme?.palette?.main_layout?.border_bottom}`,
+              // borderBottom: `0.5px solid ${theme?.palette?.main_layout?.border_bottom}`,
+              borderBottom: "1px solid #36424E",
             }}
           >
             <div style={{ color: theme?.palette?.main_layout?.primary_text }}>
@@ -572,7 +606,8 @@ export default function Index() {
               </div>
             </div>
           </DrawerHeader>
-          <div style={{ padding: "10px 20px" }}>
+
+          <div style={{}}>
             <Outlet />
           </div>
         </Box>

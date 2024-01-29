@@ -64,7 +64,7 @@ export const lightTheme = createTheme({
       add_text: "#FFFFFF",
 
       export_background: "#FFFFFF",
-      export_text: "#000000",
+      export_text: "red",
 
       border: "#EAEAEA",
       options_text: "#000000",

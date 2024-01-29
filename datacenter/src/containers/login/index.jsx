@@ -23,7 +23,7 @@ function Index() {
 
   const handleLogin = async (event) => {
     try {
-      const response = await axios.post(baseUrl + "/sign-in", {
+      const response = await axios.post(baseUrl + "/auth/sign-in", {
         user_name: username,
         password: password,
       });
