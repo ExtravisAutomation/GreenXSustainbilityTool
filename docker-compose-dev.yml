@@ -1,0 +1,63 @@
+version: "3.8"
+services:
+  dcs_db_dev:
+    image: mysql:latest
+    restart: always
+    container_name: DATABASE_Container-DCS-dev
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: fca
+    volumes:
+      - dcs-db-volume-dev:/var/lib/mysql
+
+  dcs_backend_dev:
+    container_name: Backend_Container-DCS-dev
+    image: dcs_backend_image_dev:latest
+    restart: always
+    build: ./FAST_BACKEND
+    ports:
+      - "5010:8000"
+    volumes:
+      - ./FAST_BACKEND:/app
+    environment:
+      - WATCHFILES_FORCE_POLLING=true
+    command: alembic upgrade head
+    depends_on:
+      - dcs_db_dev
+      - influxdb_dcs_dev
+
+  dcs_frontend_dev:
+    container_name: React_Container-DCS-dev
+    image: frontend_dcs_image_dev:latest
+    restart: always
+    build: ./datacenter
+    ports:
+      - "3015:3000"
+    volumes:
+      - ./datacenter:/frontend-app
+      - node_modules_dev:/frontend-app/node_modules
+    command: ["npm", "start"]
+    depends_on:
+      - dcs_backend_dev
+
+
+  influxdb_dcs_dev:
+    image: influxdb:latest
+    container_name: INFLUXDB_CONTAINER_DCS_dev
+    ports:
+      - "8088:8086"
+    volumes:
+      - myInfluxVolume_dev:/var/lib/influxdb2
+    environment:
+      DOCKER_INFLUXDB_URL: http://13.43.212.6:8088
+      DOCKER_INFLUXDB_INIT_ORG: dcs
+      DOCKER_INFLUXDB_INIT_BUCKET: actual_power
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: BTjOoqiLJMxwdqaPM37yx7Rpupb6lYAyX7I3f95JdDjEmDf67E3pviNfoto7VKC-hpL_KiSRTSnC_E-d5x85Sw==
+
+
+volumes:
+  dcs-db-volume-dev:
+  node_modules_dev:
+  myInfluxVolume_dev:
