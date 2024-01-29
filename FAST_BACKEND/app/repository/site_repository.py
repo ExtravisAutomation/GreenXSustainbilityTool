@@ -38,17 +38,20 @@ class SiteRepository(BaseRepository):
             session.refresh(new_site)
             return new_site
 
-    def update_site(self, site_id: int, site_data: SiteUpdate) -> Site:
+    def update_site(self, id: int, site_data: SiteUpdate) -> Site:
         with self.session_factory() as session:
-            db_site = session.get(Site, site_id)
+            db_site = session.get(Site, id)
             if not db_site:
                 raise HTTPException(status_code=404, detail="Site not found")
 
+            # Update logic...
             for key, value in site_data.dict(exclude_unset=True).items():
                 if value is not None and value != '' and value != 'string':
                     setattr(db_site, key, value)
 
             session.commit()
+
+            session.refresh(db_site)
             return db_site
 
     def delete_site(self, site_id: int):

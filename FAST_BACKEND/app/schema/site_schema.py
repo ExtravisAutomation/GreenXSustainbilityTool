@@ -69,3 +69,14 @@ class CustomResponse1(BaseModel, Generic[T]):
     message: str
     data: T
     status_code: int
+
+
+class SiteDetails1(BaseModel):
+    site_name: Optional[str] = None
+    site_type: Optional[str] = None
+    region: Optional[str] = None
+    city: Optional[str] = None
+    latitude: Optional[str] = None
+    longitude: Optional[str] = None
+    status: Optional[str] = None
+    total_devices: Optional[str] = None
