@@ -70,3 +70,11 @@ async def get_device_data(
     return await service.get_device_data(ip)
 
 
+@router.get("/device_data/{ip}", response_model=DeviceDataResponse)
+@inject
+async def get_device_data(
+        ip: str,
+        service: DeviceService = Depends(Provide[Container.device_service]),
+        current_user: User = Depends(get_current_regular_user),
+):
+    return await service.get_device_data(ip)

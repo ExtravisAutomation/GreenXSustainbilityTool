@@ -15,10 +15,17 @@ class PowerUsageData(BaseModel):
     output: int
 
 
+
 class PowerUsageRecord(BaseModel):
     ip: str
     time: datetime
-    output: int
+    #output: int
+    power_capacity: int
+    power_input_cumulative: int
+    power_output: int
+    power_input: int
+    power_allocated: int
+    power_available_for_add_module: int
 
 
 class DeviceDataResponse(BaseModel):
