@@ -17,21 +17,20 @@ depends_on = None
 
 
 def upgrade():
-    def upgrade():
-        op.create_table(
-            "site",
-            sa.Column("id", sa.Integer(), nullable=False),
-            sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-            sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now(), nullable=False),
-            sa.Column("site_name", sa.String(length=255), nullable=True),
-            sa.Column("site_type", sa.String(length=255), nullable=True),
-            sa.Column("region", sa.String(length=255), nullable=True),
-            sa.Column("city", sa.String(length=255), nullable=True),
-            sa.Column("latitude", sa.String(length=255), nullable=True),
-            sa.Column("longitude", sa.String(length=255), nullable=True),
-            sa.Column("status", sa.String(length=255), nullable=True),
-            sa.Column("total_devices", sa.String(length=255), nullable=True),
-            sa.PrimaryKeyConstraint("id")
+    op.create_table(
+        "site",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now(), nullable=False),
+        sa.Column("site_name", sa.String(length=255), nullable=True),
+        sa.Column("site_type", sa.String(length=255), nullable=True),
+        sa.Column("region", sa.String(length=255), nullable=True),
+        sa.Column("city", sa.String(length=255), nullable=True),
+        sa.Column("latitude", sa.String(length=255), nullable=True),
+        sa.Column("longitude", sa.String(length=255), nullable=True),
+        sa.Column("status", sa.String(length=255), nullable=True),
+        sa.Column("total_devices", sa.String(length=255), nullable=True),
+        sa.PrimaryKeyConstraint("id")
         )
 
     # op.create_table(
@@ -158,10 +157,10 @@ def upgrade():
 def downgrade():
 
     op.drop_table("user")
-    op.drop_table("inventory")
-    op.drop_table("rack")
+    #op.drop_table("inventory")
+    #op.drop_table("rack")
     op.drop_table("site")
     op.drop_table("blacklisted_token")
-    op.drop_table("board_devices")
-    op.drop_table("communication_room")
-    op.drop_table("devices")
+    #op.drop_table("board_devices")
+    #op.drop_table("communication_room")
+    #op.drop_table("devices")
