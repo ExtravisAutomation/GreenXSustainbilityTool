@@ -21,7 +21,6 @@ from app.core.dependencies import get_current_regular_user
 
 from app.core.dependencies import get_current_admin_or_user
 
-
 router = APIRouter(prefix="/ACIdevice", tags=["ACIdevice"])
 
 
@@ -31,7 +30,6 @@ async def monitor_device(
         background_tasks: BackgroundTasks,
         current_user: User = Depends(get_current_admin_user),
 ):
-
     influxdb_client = InfluxDBClient(
         url=configs.INFLUXDB_URL,
         token=configs.INFLUXDB_TOKEN,

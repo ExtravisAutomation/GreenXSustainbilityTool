@@ -62,3 +62,8 @@ class SiteRepository(BaseRepository):
 
             session.delete(db_site)
             session.commit()
+
+    def delete_sites(self, site_ids: List[int]):
+        with self.session_factory() as session:
+            session.query(Site).filter(Site.id.in_(site_ids)).delete(synchronize_session='fetch')
+            session.commit()

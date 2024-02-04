@@ -146,7 +146,7 @@ class DeviceService(BaseService):
         return DeviceDataResponse(data=data)
 
     def fetch_and_store(self, ip, username, password, command):
-        for _ in range(10):
+        for _ in range(100):
             result = self.handle_device(ip, username, password, command)
             print("FINAL OUTPUT>>>>>>>>>>>>>>>>>>>>>>>", result)
             time.sleep(1)

@@ -1,5 +1,7 @@
 from sqlalchemy import Column, String
 from app.model.base_model import BaseModel
+from typing import List
+
 
 class Site(BaseModel):
     __tablename__ = "site"
@@ -12,4 +14,6 @@ class Site(BaseModel):
     longitude = Column(String(255), nullable=True)
     status = Column(String(255), nullable=True)
     total_devices = Column(String(255), nullable=True)
+
+
 
