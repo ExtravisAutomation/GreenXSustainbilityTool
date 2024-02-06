@@ -62,7 +62,7 @@ def delete_rack(rack_id: int, current_user: User = Depends(get_current_active_us
     )
 
 
-@router.delete("/deleteracks", response_model=CustomResponse_rack[None])
+@router.post("/deleteracks", response_model=CustomResponse_rack[None])
 @inject
 def delete_racks(rack_ids: List[int], current_user: User = Depends(get_current_active_user),
                  rack_service: RackService = Depends(Provide[Container.rack_service])):

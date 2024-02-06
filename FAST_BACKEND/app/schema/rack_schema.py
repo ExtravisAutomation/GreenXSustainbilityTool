@@ -41,6 +41,7 @@ class RackDetails(RackBase):
 
 class RackUpdate(BaseModel):
     site_id: int
+    rack_name: str
     manufacture_date: Optional[date] = None
     unit_position: Optional[int] = None
     rack_model: Optional[str] = None
