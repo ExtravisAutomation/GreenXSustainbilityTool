@@ -44,7 +44,7 @@ class SiteRepository(BaseRepository):
             if not db_site:
                 raise HTTPException(status_code=404, detail="Site not found")
 
-            # Update logic...
+
             for key, value in site_data.dict(exclude_unset=True).items():
                 if value is not None and value != '' and value != 'string':
                     setattr(db_site, key, value)

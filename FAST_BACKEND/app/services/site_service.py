@@ -13,6 +13,7 @@ from app.schema.site_schema import SiteDetails1
 class SiteService:
     def __init__(self, site_repository: SiteRepository):
         self.site_repository = site_repository
+        #super().__init__(site_repository)
 
     def get_sites(self) -> List[SiteDetails]:
         sites = self.site_repository.get_all_sites()

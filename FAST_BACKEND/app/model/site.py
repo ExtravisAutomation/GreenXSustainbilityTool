@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String
 from app.model.base_model import BaseModel
 from typing import List
+from sqlalchemy.orm import relationship
 
 
 class Site(BaseModel):
@@ -15,5 +16,4 @@ class Site(BaseModel):
     status = Column(String(255), nullable=True)
     total_devices = Column(String(255), nullable=True)
 
-
-
+    #racks = relationship("Rack", order_by="Rack.id", back_populates="site")

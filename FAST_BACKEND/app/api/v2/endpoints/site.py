@@ -13,7 +13,7 @@ from dependency_injector.wiring import Provide, inject
 from starlette.responses import JSONResponse
 from app.schema.site_schema import SiteDetails1
 
-router = APIRouter(prefix="/sites", tags=["sites"])
+router = APIRouter(prefix="/sites", tags=["SITES"])
 
 
 class DeleteRequest(BaseModel):
