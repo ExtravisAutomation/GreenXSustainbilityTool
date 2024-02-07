@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from app.schema.rack_schema import RackCreate, RackUpdate, RackDetails, CustomResponse_rack, GetRacksResponse
-# print(RackCreate)
-
+from pydantic import BaseModel
 from app.services.rack_service import RackService
 from app.core.container import Container
 from dependency_injector.wiring import inject, Provide
@@ -62,9 +61,13 @@ def delete_rack(rack_id: int, current_user: User = Depends(get_current_active_us
     )
 
 
+class DeleteRequest(BaseModel):
+    racks_ids: List[int]
+
+
 @router.post("/deleteracks", response_model=CustomResponse_rack[None])
 @inject
-def delete_racks(rack_ids: List[int], current_user: User = Depends(get_current_active_user),
+def delete_racks(rack_ids: DeleteRequest, current_user: User = Depends(get_current_active_user),
                  rack_service: RackService = Depends(Provide[Container.rack_service])):
     rack_service.delete_racks(rack_ids)
     return CustomResponse_rack(
