@@ -1,3 +1,4 @@
+import sys
 from contextlib import AbstractContextManager
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
@@ -48,11 +49,5 @@ class RackRepository(BaseRepository):
 
     def delete_racks(self, rack_ids: List[int]):
         with self.session_factory() as session:
-            racks = session.query(Rack).filter(Rack.id.in_(rack_ids)).all()
-            if not racks:
-                raise HTTPException(status_code=404, detail="Racks not found")
-
-            for rack in racks:
-                session.delete(rack)
-
+            session.query(Rack).filter(Rack.id.in_(rack_ids)).delete(synchronize_session='fetch')
             session.commit()

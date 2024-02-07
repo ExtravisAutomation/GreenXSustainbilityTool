@@ -61,15 +61,16 @@ def delete_rack(rack_id: int, current_user: User = Depends(get_current_active_us
     )
 
 
-class DeleteRequest(BaseModel):
-    racks_ids: List[int]
+class DeleteRequest1(BaseModel):
+    rack_ids: List[int]
 
 
 @router.post("/deleteracks", response_model=CustomResponse_rack[None])
 @inject
-def delete_racks(rack_ids: DeleteRequest, current_user: User = Depends(get_current_active_user),
+def delete_racks(delete_request: DeleteRequest1, current_user: User = Depends(get_current_active_user),
                  rack_service: RackService = Depends(Provide[Container.rack_service])):
-    rack_service.delete_racks(rack_ids)
+    rack_ids_list = delete_request.rack_ids
+    rack_service.delete_racks(rack_ids_list)
     return CustomResponse_rack(
         message="Racks deleted successfully",
         data=None,
