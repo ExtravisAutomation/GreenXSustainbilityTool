@@ -12,7 +12,8 @@ from app.repository.blacklisted_token_repository import BlacklistedTokenReposito
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 
 from app.repository.influxdb_repository import InfluxDBRepository
-
+from app.services.apic_service import APICService
+from app.repository.apic_repository import APICRepository
 from app.services.device_service import DeviceService
 from dotenv import load_dotenv
 
@@ -29,6 +30,7 @@ class Container(containers.DeclarativeContainer):
             "app.api.v2.endpoints.auth",
             "app.api.v2.endpoints.site",
             "app.api.v2.endpoints.rack",
+            "app.api.v2.endpoints.apic_data",
             "app.core.dependencies",
         ]
     )
@@ -57,10 +59,11 @@ class Container(containers.DeclarativeContainer):
         BlacklistedTokenRepository,
         session_factory=db.provided.session
     )
+    apic_repository = providers.Factory(APICRepository, session_factory=db.provided.session)
 
     rack_service = providers.Factory(RackService, rack_repository=rack_repository)
     auth_service = providers.Factory(AuthService, user_repository=user_repository,
                                      blacklisted_token_repository=blacklisted_token_repository)
     site_service = providers.Factory(SiteService, site_repository=site_repo)
     user_service = providers.Factory(UserService, user_repository=user_repository)
-
+    apic_service = providers.Factory(APICService, apic_repository=apic_repository)

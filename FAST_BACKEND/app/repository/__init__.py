@@ -3,3 +3,4 @@ from app.repository.site_repository import SiteRepository
 from app.repository.rack_repository import RackRepository
 from app.repository.blacklisted_token_repository import BlacklistedTokenRepository
 from app.repository.influxdb_repository import InfluxDBRepository
+from app.repository.apic_repository import APICRepository

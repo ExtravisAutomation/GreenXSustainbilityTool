@@ -7,12 +7,15 @@ from typing import Callable
 from influxdb_client.client.query_api import QueryApi
 from influxdb_client.client.write_api import SYNCHRONOUS
 
+from app.core.config import configs
+
 
 class InfluxDBRepository:
     def __init__(self, client: InfluxDBClient, bucket: str, org: str):
         self.client = client
         self.bucket = bucket
         self.org = org
+        self.query_api1 = self.client.query_api()
 
     def write_data(self, data: Point):
         try:
@@ -28,4 +31,20 @@ class InfluxDBRepository:
         result = query_api.query_data_frame(query)
         return result if not result.empty else []
 
+    def get_power_data(self, apic_ip, node):
+        query = f'''
+           from(bucket: "{configs.INFLUXDB_BUCKET}")
+           |> range(start: -5m)  # Updated to last 5 minutes
+           |> filter(fn: (r) => r["apic_ip"] == "{apic_ip}" and r["node"] == "{node}")
+           |> last()
+           '''
+        result = self.query_api1.query(query)
+        drawnAvg, suppliedAvg = None, None
 
+        for table in result:
+            for record in table.records:
+                if record.get_field() == "drawnAvg":
+                    drawnAvg = record.get_value()
+                elif record.get_field() == "suppliedAvg":
+                    suppliedAvg = record.get_value()
+        return drawnAvg, suppliedAvg
