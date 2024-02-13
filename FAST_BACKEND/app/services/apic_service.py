@@ -17,10 +17,11 @@ from app.model.fabric_node import FabricNode
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from app.schema.fabric_node import FabricNodeDetails
 
+
 class APICService:
     def __init__(self, apic_repository: APICRepository):
         self.apic_repository = apic_repository
-        #self.influxdb_repository = influxdb_repository
+        # self.influxdb_repository = influxdb_repository
 
     # def collect_and_store_data(self, apic_ips, username, password):
     #     session = requests.Session()
@@ -100,4 +101,27 @@ class APICService:
 
     def get_fabric_nodes(self) -> List[FabricNodeDetails]:
         fabric_nodes = self.apic_repository.get_all_fabric_nodes()
-        return [FabricNodeDetails(**node.__dict__) for node in fabric_nodes]
+        result = []
+        for node in fabric_nodes:
+            node_dict = {
+                "id": node.id,
+                "name": node.name,
+                "role": node.role,
+                "adStatus": node.adStatus,
+                "address": node.address,
+                "model": node.model,
+                "serial": node.serial,
+                "version": node.version,
+                "pod": node.pod,
+                "node": node.node,
+                "mod_ts": node.mod_ts,
+                "status": node.status,
+                "vendor": node.vendor,
+                "last_state_mod_ts": node.last_state_mod_ts,
+                "delayed_heartbeat": node.delayed_heartbeat,
+                "fabric_status": node.fabric_status,
+                "apic_controller_id": node.apic_controller_id,
+                "apic_controller_ip": node.apic_controller.ip_address if node.apic_controller else None,
+            }
+            result.append(FabricNodeDetails(**node_dict))
+        return result

@@ -88,6 +88,7 @@ class FabricNodeDetails(BaseModel):
     delayed_heartbeat: Optional[str] = None
     fabric_status: Optional[str] = None
     apic_controller_id: int
+    apic_controller_ip: Optional[str] = None
 
     class Config:
         orm_mode = True

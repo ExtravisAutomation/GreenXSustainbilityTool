@@ -1,7 +1,7 @@
 from contextlib import AbstractContextManager
 from typing import Callable, List
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.model.apic_controller import APICController
 from app.model.fabric_node import FabricNode
 from app.schema.fabric_node import FabricNodeCreate
@@ -36,4 +36,4 @@ class APICRepository(BaseRepository):
 
     def get_all_fabric_nodes(self) -> list[FabricNode]:
         with self.session_factory() as session:
-            return session.query(FabricNode).all()
+            return session.query(FabricNode).options(joinedload(FabricNode.apic_controller)).all()
