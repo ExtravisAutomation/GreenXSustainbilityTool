@@ -1,3 +1,4 @@
+import sys
 import traceback
 from typing import List
 
@@ -7,6 +8,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 import requests
 import urllib3
+from collections import defaultdict
 from datetime import datetime
 
 from app.repository.influxdb_repository import InfluxDBRepository
@@ -16,6 +18,8 @@ from app.schema.fabric_node import FabricNodeResponse
 from app.model.fabric_node import FabricNode
 
 from app.schema.fabric_node import HourlyPowerUtilizationResponse
+
+from app.schema.data_traffic import DataTrafficResponse
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from app.schema.fabric_node import FabricNodeDetails
@@ -211,3 +215,68 @@ class APICService:
         except Exception as e:
             traceback.print_exc()
             raise HTTPException(status_code=500, detail=str(e))
+
+    def get_top_data_traffic_nodes(self) -> List[DataTrafficResponse]:
+        raw_data = self.apic_repository.influxdb_repository.get_top_data_traffic_nodes()
+
+        filtered_data = [item for item in raw_data if item['bytesRateAvg'] > 0]
+
+        organized_data: dict[str, List[dict]] = defaultdict(list)
+        for item in filtered_data:
+            organized_data[item['controller']].append(item)
+
+        for controller, nodes in organized_data.items():
+            organized_data[controller] = sorted(nodes, key=lambda x: x['bytesRateAvg'], reverse=True)[:5]
+
+        response = []
+        for controller, nodes in organized_data.items():
+            for node in nodes:
+                response.append(DataTrafficResponse(
+                    controller=controller,
+                    highest_node=node['node'],
+                    bytesRateAvg=round(node['bytesRateAvg'], 2)
+                ))
+
+        return response
+
+    def get_top_data_traffic_nodes_with_device_name(self) -> List[DataTrafficResponse]:
+        try:
+            # Fetch all fabric nodes to reduce database calls
+            fabric_nodes = self.apic_repository.get_all_fabric_nodes()
+            print(f"Fabric nodes fetched: {len(fabric_nodes)}", file=sys.stderr)  # Debugging log
+
+            # Mapping of (controller, node) to device name for easy lookup
+            controller_node_to_device_name = {
+                (node.apic_controller.ip_address, str(node.node)): node.name for node in fabric_nodes
+            }
+
+            # Fetch top data traffic nodes from InfluxDB
+            raw_data = self.apic_repository.influxdb_repository.get_top_data_traffic_nodes()
+            print(f"Raw data fetched from InfluxDB: {len(raw_data)}", file=sys.stderr)  # Debugging log
+
+            # Filter out entries with bytesRateAvg = 0
+            filtered_data = [item for item in raw_data if item['bytesRateAvg'] > 0]
+            print(f"Filtered data (bytesRateAvg > 0): {len(filtered_data)}", file=sys.stderr)  # Debugging log
+
+            organized_data: dict[str, List[dict]] = defaultdict(list)
+            for item in filtered_data:
+                organized_data[item['controller']].append(item)
+
+            response = []
+            for controller, nodes in organized_data.items():
+                nodes = sorted(nodes, key=lambda x: x['bytesRateAvg'], reverse=True)[:5]  # Top 5 per controller
+                for node in nodes:
+                    device_name = controller_node_to_device_name.get((controller, node['node']))
+                    if device_name:  # Include only if device name is found
+                        response.append(DataTrafficResponse(
+                            controller=controller,
+                            highest_node=node['node'],
+                            device_name=device_name,
+                            bytesRateAvg=round(node['bytesRateAvg'], 2)
+                        ))
+
+            print(f"Response prepared: {len(response)} items", file=sys.stderr)  # Debugging log
+            return response
+        except Exception as e:
+            traceback.print_exc(file=sys.stderr)
+            raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")

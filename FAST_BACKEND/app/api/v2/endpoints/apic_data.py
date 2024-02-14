@@ -22,6 +22,8 @@ from app.schema.fabric_node import PowerUtilizationResponse_per_day, PowerUtiliz
 
 from app.schema.fabric_node import HourlyPowerUtilizationResponse
 
+from app.schema.data_traffic import DataTrafficResponse
+
 router = APIRouter(prefix="/apic", tags=["APIC"])
 
 
@@ -117,3 +119,10 @@ def get_fabric_nodes_with_power_utilization(current_user: User = Depends(get_cur
         raise http_exc
     except Exception as exc:
         raise HTTPException(status_code=500, detail="An error occurred while processing your request.")
+
+
+@router.get("/data-traffic-top-nodes", response_model=List[DataTrafficResponse])
+@inject
+def get_top_data_traffic_nodes(current_user: User = Depends(get_current_active_user),
+                               service: APICService = Depends(Provide[Container.apic_service])):
+    return service.get_top_data_traffic_nodes_with_device_name()

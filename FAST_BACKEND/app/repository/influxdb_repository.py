@@ -209,3 +209,29 @@ class InfluxDBRepository:
                     "power_utilization": round(power_utilization, 2) if power_utilization is not None else None
                 })
         return hourly_data
+
+    def get_top_data_traffic_nodes(self) -> List[dict]:
+        start_range = "-6h"
+        query = f'''
+            from(bucket: "{configs.INFLUXDB_BUCKET}")
+            |> range(start: {start_range})
+            |> filter(fn: (r) => r["_measurement"] == "datatrafic_Engr_1hr")
+            |> filter(fn: (r) => r["_field"] == "bytesRateAvg")
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        '''
+        try:
+            result = self.query_api1.query(query)
+            print("RESULT!!!!!!!!!!!!!!!!!!!!!!", result, file=sys.stderr)
+            data = []
+            for table in result:
+                for record in table.records:
+                    data.append({
+                        "controller": record.values.get("controller"),
+                        "node": record.values.get("node"),
+                        "bytesRateAvg": record.values.get("bytesRateAvg"),
+                    })
+            print(f"Fetched {len(data)} records from InfluxDB.", file=sys.stderr)
+            return data
+        except Exception as e:
+            print(f"Failed to fetch top data traffic nodes from InfluxDB: {e}", file=sys.stderr)
+            return []
