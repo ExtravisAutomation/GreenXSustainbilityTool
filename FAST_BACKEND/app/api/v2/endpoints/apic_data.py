@@ -16,6 +16,10 @@ from app.schema.site_schema import CustomResponse1
 
 from app.schema.fabric_node import FabricNodeDetails
 
+#from app.schema.fabric_node import PowerUtilizationResponse
+
+from app.schema.fabric_node import PowerUtilizationResponse_per_day, PowerUtilizationResponse_5min
+
 router = APIRouter(prefix="/apic", tags=["APIC"])
 
 
@@ -23,6 +27,11 @@ class APICDataRequest(BaseModel):
     apic_ips: List[str] = Field(..., example=["10.14.106.4", "10.14.106.6", "10.14.106.8"])
     username: str = Field(..., example="ciscotac")
     password: str = Field(..., example="C15c0@mob1ly")
+
+
+class PowerDataRequest(BaseModel):
+    apic_controller_ip: str = Field(..., example="10.14.106.4")
+    node: str = Field(..., example="317")
 
 
 @router.post("/collect_apic_data", response_model=CustomResponse)
@@ -49,3 +58,32 @@ def get_fabric_nodes(current_user: User = Depends(get_current_active_user),
         data=fabric_nodes,
         status_code=status.HTTP_200_OK
     )
+
+
+@router.get("/fabric-nodes/with-power", response_model=List[FabricNodeDetails])
+@inject
+def get_fabric_nodes_with_power_utilization(service: APICService = Depends(Provide[Container.apic_service])):
+    try:
+        return service.get_fabric_nodes_with_power_utilization()
+    except HTTPException as http_exc:  #
+        raise http_exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail="An error occurred while processing your request.")
+
+
+@router.post("/power-utilization-5min", response_model=PowerUtilizationResponse_5min)
+@inject
+def get_power_utilization_5min(request: PowerDataRequest,
+                               service: APICService = Depends(Provide[Container.apic_service])):
+    power_utilization = service.get_power_utilization_5min(request.apic_controller_ip, request.node)
+    return {"apic_controller_ip": request.apic_controller_ip, "node": request.node,
+            "power_utilization_5min": power_utilization}
+
+
+@router.post("/power-utilization-per-day", response_model=PowerUtilizationResponse_per_day)
+@inject
+def get_power_utilization_perday(request: PowerDataRequest,
+                                 service: APICService = Depends(Provide[Container.apic_service])):
+    power_utilization = service.get_power_utilization_perday(request.apic_controller_ip, request.node)
+    return {"apic_controller_ip": request.apic_controller_ip, "node": request.node,
+            "power_utilization_per_day": power_utilization}

@@ -1,3 +1,4 @@
+import traceback
 from typing import List
 
 from app.repository.apic_repository import APICRepository
@@ -125,3 +126,27 @@ class APICService:
             }
             result.append(FabricNodeDetails(**node_dict))
         return result
+
+    def get_fabric_nodes_with_power_utilization(self) -> List[FabricNodeDetails]:
+        try:
+            fabric_nodes = self.apic_repository.get_fabric_nodes_with_power_utilization()
+            return [FabricNodeDetails.from_orm(node) for node in fabric_nodes]
+        except Exception as e:
+            traceback.print_exc()
+            raise HTTPException(status_code=500, detail=str(e))
+
+    def get_power_utilization_5min(self, apic_controller_ip: str, node: str) -> float:
+        drawn_avg, supplied_avg = self.apic_repository.influxdb_repository.get_power_data_last_5min(apic_controller_ip,
+                                                                                                    node)
+        if drawn_avg and supplied_avg:
+            return (drawn_avg / supplied_avg) * 100
+        else:
+            return 0
+
+    def get_power_utilization_perday(self, apic_controller_ip: str, node: str) -> float:
+        drawn_avg, supplied_avg = self.apic_repository.influxdb_repository.get_power_data_per_day(apic_controller_ip,
+                                                                                                 node)
+        if drawn_avg and supplied_avg:
+            return (drawn_avg / supplied_avg) * 100
+        else:
+            return 0

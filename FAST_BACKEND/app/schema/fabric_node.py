@@ -89,6 +89,19 @@ class FabricNodeDetails(BaseModel):
     fabric_status: Optional[str] = None
     apic_controller_id: int
     apic_controller_ip: Optional[str] = None
+    power_utilization: Optional[float] = None
 
     class Config:
         orm_mode = True
+
+
+class PowerUtilizationResponse_per_day(BaseModel):
+    apic_controller_ip: str
+    node: str
+    power_utilization_per_day: Optional[float] = None
+
+
+class PowerUtilizationResponse_5min(BaseModel):
+    apic_controller_ip: str
+    node: str
+    power_utilization_5min: Optional[float] = None

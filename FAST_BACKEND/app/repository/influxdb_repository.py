@@ -11,10 +11,11 @@ from app.core.config import configs
 
 
 class InfluxDBRepository:
-    def __init__(self, client: InfluxDBClient, bucket: str, org: str):
+    def __init__(self, client: InfluxDBClient, bucket: str, org: str, token: str = None):
         self.client = client
         self.bucket = bucket
         self.org = org
+        self.token = token
         self.query_api1 = self.client.query_api()
 
     def write_data(self, data: Point):
@@ -31,20 +32,124 @@ class InfluxDBRepository:
         result = query_api.query_data_frame(query)
         return result if not result.empty else []
 
-    def get_power_data(self, apic_ip, node):
-        query = f'''
-           from(bucket: "{configs.INFLUXDB_BUCKET}")
-           |> range(start: -5m)  # Updated to last 5 minutes
-           |> filter(fn: (r) => r["apic_ip"] == "{apic_ip}" and r["node"] == "{node}")
-           |> last()
-           '''
-        result = self.query_api1.query(query)
-        drawnAvg, suppliedAvg = None, None
+    # def get_power_data(self, apic_ip, node):
+    #     query = f'''
+    #        from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #        |> range(start: -5m)  # Updated to last 5 minutes
+    #        |> filter(fn: (r) => r["apic_ip"] == "{apic_ip}" and r["node"] == "{node}")
+    #        |> last()
+    #        '''
+    #     result = self.query_api1.query(query)
+    #     drawnAvg, suppliedAvg = None, None
+    #
+    #     for table in result:
+    #         for record in table.records:
+    #             if record.get_field() == "drawnAvg":
+    #                 drawnAvg = record.get_value()
+    #             elif record.get_field() == "suppliedAvg":
+    #                 suppliedAvg = record.get_value()
+    #     return drawnAvg, suppliedAvg
 
-        for table in result:
-            for record in table.records:
-                if record.get_field() == "drawnAvg":
-                    drawnAvg = record.get_value()
-                elif record.get_field() == "suppliedAvg":
-                    suppliedAvg = record.get_value()
-        return drawnAvg, suppliedAvg
+    def get_power_data(self, apic_ip, node):
+
+        query = f'''
+            from(bucket: "{configs.INFLUXDB_BUCKET}")
+            |> range(start: -2h)
+            |> filter(fn: (r) => r["_measurement"] == "Final_Apic_power_consumption")
+            |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}" and r["node"] == "{node}")
+            |> last()
+        '''
+        try:
+            print(f"Executing query: {query}", file=sys.stderr)
+            result = self.query_api1.query(query)
+            if not result:
+                print("Query returned no results.", file=sys.stderr)
+                return None, None
+
+            drawnAvg, suppliedAvg = None, None
+
+            for table in result:
+                for record in table.records:
+                    print(f"Record: {record}", file=sys.stderr)
+                    if record.get_field() == "drawnAvg":
+                        drawnAvg = record.get_value()
+                    elif record.get_field() == "suppliedAvg":
+                        suppliedAvg = record.get_value()
+
+            print(
+                f"drawnAvg@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@: {drawnAvg}, suppliedAvg@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@: {suppliedAvg}",
+                file=sys.stderr)
+            return drawnAvg, suppliedAvg
+        except Exception as e:
+            print(f"Error executing query in InfluxDB: {e}", file=sys.stderr)
+
+            raise
+
+    def get_power_data_last_5min(self, apic_ip, node):
+
+        query = f'''
+            from(bucket: "{configs.INFLUXDB_BUCKET}")
+            |> range(start: -5m)
+            |> filter(fn: (r) => r["_measurement"] == "Final_Apic_power_consumption")
+            |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}" and r["node"] == "{node}")
+            |> last()
+        '''
+        try:
+            print(f"Executing query: {query}", file=sys.stderr)
+            result = self.query_api1.query(query)
+            if not result:
+                print("Query returned no results.", file=sys.stderr)
+                return None, None
+
+            drawnAvg, suppliedAvg = None, None
+
+            for table in result:
+                for record in table.records:
+                    print(f"Record: {record}", file=sys.stderr)
+                    if record.get_field() == "drawnAvg":
+                        drawnAvg = record.get_value()
+                    elif record.get_field() == "suppliedAvg":
+                        suppliedAvg = record.get_value()
+
+            print(f"drawnAvg_5555555555555555555555555555: {drawnAvg}, suppliedAvg_555555555555555555: {suppliedAvg}",
+                  file=sys.stderr)
+            return drawnAvg, suppliedAvg
+        except Exception as e:
+            print(f"Error executing query in InfluxDB: {e}", file=sys.stderr)
+
+            raise
+
+    def get_power_data_per_day(self, apic_ip, node):
+
+        query = f'''
+            from(bucket: "{configs.INFLUXDB_BUCKET}")
+            |> range(start: -24h)
+            |> filter(fn: (r) => r["_measurement"] == "Final_Apic_power_consumption")
+            |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}" and r["node"] == "{node}")
+            |> last()
+        '''
+        try:
+            print(f"Executing query: {query}", file=sys.stderr)
+            result = self.query_api1.query(query)
+            if not result:
+                print("Query returned no results.", file=sys.stderr)
+                return None, None
+
+            drawnAvg, suppliedAvg = None, None
+
+            for table in result:
+                for record in table.records:
+                    print(f"Record: {record}", file=sys.stderr)
+                    if record.get_field() == "drawnAvg":
+                        drawnAvg = record.get_value()
+                    elif record.get_field() == "suppliedAvg":
+                        suppliedAvg = record.get_value()
+
+            print(
+                f"drawnAvg_DAYYYYYYYYYYYYYYYYYYYYYYYYYYY: {drawnAvg}, suppliedAvg_DAYYYYYYYYYYYYYYYYYYY: {suppliedAvg}",
+                file=sys.stderr)
+            return drawnAvg, suppliedAvg
+        except Exception as e:
+            print(f"Error executing query in InfluxDB: {e}", file=sys.stderr)
+
+            raise

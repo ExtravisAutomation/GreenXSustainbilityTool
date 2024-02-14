@@ -59,7 +59,7 @@ class Container(containers.DeclarativeContainer):
         BlacklistedTokenRepository,
         session_factory=db.provided.session
     )
-    apic_repository = providers.Factory(APICRepository, session_factory=db.provided.session)
+    apic_repository = providers.Factory(APICRepository, session_factory=db.provided.session, influxdb_repository=influxdb_repository)
 
     rack_service = providers.Factory(RackService, rack_repository=rack_repository)
     auth_service = providers.Factory(AuthService, user_repository=user_repository,
