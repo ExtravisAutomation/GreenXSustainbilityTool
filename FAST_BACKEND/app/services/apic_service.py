@@ -15,6 +15,8 @@ from app.schema.fabric_node import FabricNodeResponse
 
 from app.model.fabric_node import FabricNode
 
+from app.schema.fabric_node import HourlyPowerUtilizationResponse
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from app.schema.fabric_node import FabricNodeDetails
 
@@ -145,8 +147,20 @@ class APICService:
 
     def get_power_utilization_perday(self, apic_controller_ip: str, node: str) -> float:
         drawn_avg, supplied_avg = self.apic_repository.influxdb_repository.get_power_data_per_day(apic_controller_ip,
-                                                                                                 node)
+                                                                                                  node)
         if drawn_avg and supplied_avg:
             return (drawn_avg / supplied_avg) * 100
         else:
             return 0
+
+    def get_hourly_power_utilization(self, apic_ip: str, node: str) -> List[HourlyPowerUtilizationResponse]:
+        hourly_data = self.apic_repository.influxdb_repository.get_power_data_per_hour(apic_ip, node)
+        response = [
+            HourlyPowerUtilizationResponse(
+                apic_controller_ip=apic_ip,
+                node=node,
+                hour=data['hour'],
+                power_utilization=data['power_utilization']
+            ) for data in hourly_data
+        ]
+        return response

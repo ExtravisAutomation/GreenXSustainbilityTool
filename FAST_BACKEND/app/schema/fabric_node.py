@@ -105,3 +105,10 @@ class PowerUtilizationResponse_5min(BaseModel):
     apic_controller_ip: str
     node: str
     power_utilization_5min: Optional[float] = None
+
+
+class HourlyPowerUtilizationResponse(BaseModel):
+    apic_controller_ip: str
+    node: str
+    hour: Optional[str] = None
+    power_utilization: Optional[float] = None

@@ -2,7 +2,7 @@ import sys
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from contextlib import AbstractContextManager
-from typing import Callable
+from typing import Callable, List
 
 from influxdb_client.client.query_api import QueryApi
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -153,3 +153,60 @@ class InfluxDBRepository:
             print(f"Error executing query in InfluxDB: {e}", file=sys.stderr)
 
             raise
+
+    # def get_power_data_per_hour(self, apic_ip: str, node: str) -> List[dict]:
+    #     start_range = "-24h"
+    #     query = f'''
+    #     from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #     |> range(start: {start_range})
+    #     |> filter(fn: (r) => r["_measurement"] == "Final_Apic_power_consumption")
+    #     |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
+    #     |> filter(fn: (r) => r["node"] == "{node}")
+    #     |> filter(fn: (r) => r["_field"] == "drawnAvg")
+    #     |> filter(fn: (r) => r["_field"] == "suppliedAvg")
+    #     |> aggregateWindow(every: 1h, fn: mean)
+    #     '''
+    #     result = self.query_api1.query(query)
+    #     print("RESULTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT", result, file=sys.stderr)
+    #     hourly_data = []
+    #     for table in result:
+    #         for record in table.records:
+    #             hour = record.get_time().strftime('%Y-%m-%d %H:00')
+    #             drawnAvg = record.get_value() if 'drawnAvg' in record.values else None
+    #             suppliedAvg = record.get_value() if 'suppliedAvg' in record.values else None
+    #             power_utilization = None
+    #             if drawnAvg is not None and suppliedAvg is not None and suppliedAvg > 0:
+    #                 power_utilization = (drawnAvg / suppliedAvg) * 100
+    #             hourly_data.append({
+    #                 "hour": hour,
+    #                 "power_utilization": round(power_utilization, 2) if power_utilization is not None else None
+    #             })
+    #     return hourly_data
+
+    def get_power_data_per_hour(self, apic_ip: str, node: str) -> List[dict]:
+        start_range = "-24h"
+        query = f'''
+        from(bucket: "{configs.INFLUXDB_BUCKET}")
+        |> range(start: {start_range})
+        |> filter(fn: (r) => r["_measurement"] == "Final_Apic_power_consumption")
+        |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}" and r["node"] == "{node}")
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        '''
+        result = self.query_api1.query(query)
+        print("RESULTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT", result, file=sys.stderr)
+        hourly_data = []
+        for table in result:
+            for record in table.records:
+                hour = record.get_time().strftime('%Y-%m-%d %H:00')
+                drawnAvg = record.values.get('drawnAvg', None)
+                suppliedAvg = record.values.get('suppliedAvg', None)
+                power_utilization = None
+                if drawnAvg is not None and suppliedAvg is not None and suppliedAvg > 0:
+                    power_utilization = (drawnAvg / suppliedAvg) * 100
+                hourly_data.append({
+                    "apic_controller_ip": apic_ip,
+                    "node": node,
+                    "hour": hour,
+                    "power_utilization": round(power_utilization, 2) if power_utilization is not None else None
+                })
+        return hourly_data

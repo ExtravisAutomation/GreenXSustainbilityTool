@@ -20,6 +20,8 @@ from app.schema.fabric_node import FabricNodeDetails
 
 from app.schema.fabric_node import PowerUtilizationResponse_per_day, PowerUtilizationResponse_5min
 
+from app.schema.fabric_node import HourlyPowerUtilizationResponse
+
 router = APIRouter(prefix="/apic", tags=["APIC"])
 
 
@@ -89,3 +91,16 @@ def get_power_utilization_perday(request: PowerDataRequest,
     power_utilization = service.get_power_utilization_perday(request.apic_controller_ip, request.node)
     return {"apic_controller_ip": request.apic_controller_ip, "node": request.node,
             "power_utilization_per_day": round(power_utilization, 1)}
+
+
+@router.post("/power-utilization-per-hour", response_model=List[HourlyPowerUtilizationResponse])
+@inject
+def get_hourly_power_utilization_endpoint(
+        request: PowerDataRequest,
+        current_user: User = Depends(get_current_active_user),
+        service: APICService = Depends(Provide[Container.apic_service])
+):
+    try:
+        return service.get_hourly_power_utilization(request.apic_controller_ip, request.node)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
