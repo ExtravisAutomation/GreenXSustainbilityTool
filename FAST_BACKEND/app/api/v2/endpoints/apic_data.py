@@ -16,7 +16,7 @@ from app.schema.site_schema import CustomResponse1
 
 from app.schema.fabric_node import FabricNodeDetails
 
-#from app.schema.fabric_node import PowerUtilizationResponse
+# from app.schema.fabric_node import PowerUtilizationResponse
 
 from app.schema.fabric_node import PowerUtilizationResponse_per_day, PowerUtilizationResponse_5min
 
@@ -30,8 +30,8 @@ class APICDataRequest(BaseModel):
 
 
 class PowerDataRequest(BaseModel):
-    apic_controller_ip: str = Field(..., example="10.14.106.4")
-    node: str = Field(..., example="317")
+    apic_controller_ip: str
+    node: str
 
 
 @router.post("/collect_apic_data", response_model=CustomResponse)
@@ -74,16 +74,18 @@ def get_fabric_nodes_with_power_utilization(service: APICService = Depends(Provi
 @router.post("/power-utilization-5min", response_model=PowerUtilizationResponse_5min)
 @inject
 def get_power_utilization_5min(request: PowerDataRequest,
+                               current_user: User = Depends(get_current_active_user),
                                service: APICService = Depends(Provide[Container.apic_service])):
     power_utilization = service.get_power_utilization_5min(request.apic_controller_ip, request.node)
     return {"apic_controller_ip": request.apic_controller_ip, "node": request.node,
-            "power_utilization_5min": power_utilization}
+            "power_utilization_5min": round(power_utilization, 1)}
 
 
 @router.post("/power-utilization-per-day", response_model=PowerUtilizationResponse_per_day)
 @inject
 def get_power_utilization_perday(request: PowerDataRequest,
+                                 current_user: User = Depends(get_current_active_user),
                                  service: APICService = Depends(Provide[Container.apic_service])):
     power_utilization = service.get_power_utilization_perday(request.apic_controller_ip, request.node)
     return {"apic_controller_ip": request.apic_controller_ip, "node": request.node,
-            "power_utilization_per_day": power_utilization}
+            "power_utilization_per_day": round(power_utilization, 1)}
