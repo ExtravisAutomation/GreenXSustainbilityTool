@@ -42,7 +42,7 @@ class APICRepository(BaseRepository):
 
     def get_all_fabric_nodes(self) -> list[FabricNode]:
         with self.session_factory() as session:
-            return session.query(FabricNode).options(joinedload(FabricNode.apic_controller)).all()
+            return session.query(FabricNode).options(joinedload(FabricNode.apic_controller)).limit(10).all()
 
     def get_fabric_nodes_with_power_utilization(self) -> List[FabricNode]:
         try:

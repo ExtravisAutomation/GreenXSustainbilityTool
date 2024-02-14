@@ -51,10 +51,9 @@ class InfluxDBRepository:
     #     return drawnAvg, suppliedAvg
 
     def get_power_data(self, apic_ip, node):
-
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
-            |> range(start: -2h)
+            |> range(start: -6h)
             |> filter(fn: (r) => r["_measurement"] == "Final_Apic_power_consumption")
             |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}" and r["node"] == "{node}")
             |> last()

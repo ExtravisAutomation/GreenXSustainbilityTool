@@ -64,7 +64,8 @@ def get_fabric_nodes(current_user: User = Depends(get_current_active_user),
 
 @router.get("/fabric-nodes/with-power", response_model=List[FabricNodeDetails])
 @inject
-def get_fabric_nodes_with_power_utilization(service: APICService = Depends(Provide[Container.apic_service])):
+def get_fabric_nodes_with_power_utilization(current_user: User = Depends(get_current_active_user),
+                                            service: APICService = Depends(Provide[Container.apic_service])):
     try:
         return service.get_fabric_nodes_with_power_utilization()
     except HTTPException as http_exc:  #
@@ -104,3 +105,15 @@ def get_hourly_power_utilization_endpoint(
         return service.get_hourly_power_utilization(request.apic_controller_ip, request.node)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@router.get("/top-fabric-nodes", response_model=List[FabricNodeDetails])
+@inject
+def get_fabric_nodes_with_power_utilization(current_user: User = Depends(get_current_active_user),
+                                            service: APICService = Depends(Provide[Container.apic_service])):
+    try:
+        return service.get_fabric_nodes_with_power_utilization_top()
+    except HTTPException as http_exc:  #
+        raise http_exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail="An error occurred while processing your request.")

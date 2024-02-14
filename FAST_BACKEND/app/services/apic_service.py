@@ -164,3 +164,50 @@ class APICService:
             ) for data in hourly_data
         ]
         return response
+
+    def get_fabric_nodes_with_power_utilization_top(self) -> List[FabricNodeDetails]:
+        try:
+            fabric_nodes = self.apic_repository.get_all_fabric_nodes()
+            nodes_with_utilization = []
+
+            for node in fabric_nodes:
+                drawn_avg, supplied_avg = self.apic_repository.influxdb_repository.get_power_data(
+                    node.apic_controller.ip_address,
+                    str(node.node))
+
+                if drawn_avg is not None and supplied_avg is not None and supplied_avg > 0:
+                    power_utilization = round((drawn_avg / supplied_avg) * 100, 2)
+                    nodes_with_utilization.append((node, power_utilization))
+
+            top_nodes_with_utilization = sorted(nodes_with_utilization, key=lambda x: x[1], reverse=True)[:5]
+
+            top_nodes_details = []
+            for node, power_utilization in top_nodes_with_utilization:
+                node_detail = FabricNodeDetails(
+                    id=node.id,
+                    name=node.name,
+                    role=node.role,
+                    adStatus=node.adStatus,
+                    address=node.address,
+                    model=node.model,
+                    serial=node.serial,
+                    version=node.version,
+                    pod=node.pod,
+                    node=node.node,
+                    mod_ts=node.mod_ts,
+                    status=node.status,
+                    vendor=node.vendor,
+                    last_state_mod_ts=node.last_state_mod_ts,
+                    delayed_heartbeat=node.delayed_heartbeat,
+                    fabric_status=node.fabric_status,
+                    apic_controller_id=node.apic_controller_id,
+                    apic_controller_ip=node.apic_controller.ip_address if node.apic_controller else None,
+                    power_utilization=power_utilization
+                )
+                top_nodes_details.append(node_detail)
+
+            return top_nodes_details
+
+        except Exception as e:
+            traceback.print_exc()
+            raise HTTPException(status_code=500, detail=str(e))
