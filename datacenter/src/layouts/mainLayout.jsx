@@ -465,7 +465,11 @@ export default function Index() {
       </Modal>
 
       <Box sx={{ display: "flex", zIndex: "9", position: "relative" }}>
-        <Drawer variant="permanent" open={open}>
+        <Drawer
+          variant="permanent"
+          open={open}
+          style={{ minWidth: "4.2%", background: "red" }}
+        >
           <DrawerHeader>
             <img src={logo} alt="Data Center" />
           </DrawerHeader>
@@ -518,6 +522,8 @@ export default function Index() {
             border: "0px solid red",
             minHeight: "100vh",
             background: "#0D131C",
+            minWidth: "95.7%",
+            overflowX: "none",
           }}
         >
           <DrawerHeader
@@ -534,22 +540,22 @@ export default function Index() {
             </div>
             <div style={{ display: "flex", alignItems: "center" }}>
               {/* <div style={{ cursor: "pointer" }}>
-              {isDarkMode ? (
-                <img
-                  src={dayModeIcon}
-                  alt="theme"
-                  onClick={toggleTheme}
-                  height={35}
-                />
-              ) : (
-                <img
-                  src={nightModeIcon}
-                  alt="theme"
-                  onClick={toggleTheme}
-                  height={35}
-                />
-              )}
-            </div> */}
+                {isDarkMode ? (
+                  <img
+                    src={dayModeIcon}
+                    alt="theme"
+                    onClick={toggleTheme}
+                    height={35}
+                  />
+                ) : (
+                  <img
+                    src={nightModeIcon}
+                    alt="theme"
+                    onClick={toggleTheme}
+                    height={35}
+                  />
+                )}
+              </div> */}
               &nbsp; &nbsp;
               <Dropdown
                 menu={{

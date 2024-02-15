@@ -1,119 +1,149 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
-import device from "../../../resources/svgs/device.png"
-import deviceone from "../../../resources/svgs/device1.png"
+import React from "react";
+import { useParams } from "react-router-dom";
+import device from "../../../resources/svgs/device.png";
+import deviceone from "../../../resources/svgs/device1.png";
 
 function BluerackDetail() {
-const { id } = useParams();
-const containerStyle = {
-    position: 'relative',
-    paddingRight: '150px',
-};
+  const { id } = useParams();
+  const containerStyle = {
+    position: "relative",
+    paddingRight: "150px",
+  };
 
-const overlayStyle = {
-    position: 'absolute',
-    top: '0',
-    right: '20',
-};
-const tableStyle = {
-    borderCollapse: 'collapse',
+  const overlayStyle = {
+    position: "absolute",
+    top: "0",
+    right: "20",
+  };
+  const tableStyle = {
+    borderCollapse: "collapse",
     // border: '1px solid black',
   };
-  
 
   const cellStyle = {
     // border: '1px solid black',
-    padding: '16px 15px 15px 15px',
-    fontWeight:"500"
+    padding: "16px 15px 15px 15px",
+    fontWeight: "500",
   };
   const span = {
-   
-    fontWeight:"500"
+    fontWeight: "500",
   };
-  const spanblue ={
-    color:"rgb(4, 144, 231)"
-  }
+  const spanblue = {
+    color: "rgb(4, 144, 231)",
+  };
 
-
-return (
-
+  return (
     <>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <div style={{ flexBasis: "60%" }}>
+          <div style={{ color: "#e5e5e5", maxWidth: "100%" }}>
+            {/* <heading>Device</heading> */}
 
-<div style={{display:"flex", justifyContent:"space-between"}}>
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th colSpan="4" style={cellStyle}>
+                    Device
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={cellStyle}>
+                    Region <br /> <span style={span}>UAE</span>{" "}
+                  </td>
+                  <td style={cellStyle}>
+                    Site <br /> DXB
+                  </td>
+                  <td style={cellStyle}>
+                    Rack <br /> Rack-A
+                  </td>
+                  <td style={cellStyle}>
+                    Position <br /> Front
+                  </td>
+                </tr>
+                <tr>
+                  <td style={cellStyle}>
+                    Device Type <br />
+                    <span style={spanblue}>N9K-C93180YC-EX</span>{" "}
+                  </td>
+                  <td style={cellStyle}>
+                    Description <br />
+                    <span style={spanblue}>DXB-CI-N9K-001</span>
+                  </td>
+                  <td style={cellStyle}>
+                    Status <br />
+                    <span
+                      style={{
+                        backgroundColor: "rgb(4, 144, 231)",
+                        padding: "2px 10px",
+                        borderRadius: "20px",
+                      }}
+                    >
+                      ACTIVE
+                    </span>{" "}
+                  </td>
+                  <td style={cellStyle}>
+                    Serial No. <br />
+                    WMP261400NZ
+                  </td>
+                </tr>
+                <tr>
+                  <td style={cellStyle}>
+                    Manufacturer <br /> Vendor A
+                  </td>
+                  <td style={cellStyle}>
+                    Input Power <br /> 23%
+                  </td>
+                  <td style={cellStyle}>
+                    Power <br />
+                    <span
+                      style={{
+                        backgroundColor: "rgb(4, 144, 231)",
+                        padding: "2px 20px",
+                        borderRadius: "20px",
+                      }}
+                    >
+                      {" "}
+                      60%
+                    </span>
+                  </td>
+                  <td style={cellStyle}>
+                    {" "}
+                    <br />{" "}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={cellStyle}>
+                    Cost <br /> AED 90
+                  </td>
+                  <td style={cellStyle}>
+                    Traffic <br /> 450.0 Gb/s
+                  </td>
+                  <td style={cellStyle}>
+                    Bandwidth <br /> 30%
+                  </td>
+                  <td style={cellStyle}>
+                    PCR <br /> 1.8 W/Gbps
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-<div style={{flexBasis:"60%"}}>
-
-    <div style={{color:"#e5e5e5", maxWidth:"100%"}}>
-        {/* <heading>Device</heading> */}
-
-
-        <table style={tableStyle}>
-      <thead>
-        <tr>
-          <th colSpan="4" style={cellStyle}>
-            Device
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style={cellStyle}>Region <br/> <span style={span}>UAE</span> </td>
-          <td style={cellStyle}>Site  <br/> DXB</td>
-          <td style={cellStyle}>Rack <br/> Rack-A</td>
-          <td style={cellStyle}>Position <br/> Front</td>
-       
-        </tr>
-        <tr>
-        <td style={cellStyle}>Device Type <br/><span style={spanblue}>N9K-C93180YC-EX</span> </td>
-        <td style={cellStyle}>Description <br/><span style={spanblue}>DXB-CI-N9K-001</span></td>
-        <td style={cellStyle}>Status <br/><span style={{backgroundColor:"rgb(4, 144, 231)", padding:"2px 10px", borderRadius:"20px"}}>ACTIVE</span> </td>
-        <td style={cellStyle}>Serial No. <br/>WMP261400NZ</td>
-        </tr>
-        <tr>
-        <td style={cellStyle}>Manufacturer <br/> Vendor A</td>
-        <td style={cellStyle}>Input Power <br/> 23%</td>
-        <td style={cellStyle}>Power <br/><span style={{backgroundColor:"rgb(4, 144, 231)", padding:"2px 20px", borderRadius:"20px"}}> 60%</span></td>
-        <td style={cellStyle}> <br/> </td>
-        </tr>
-        <tr>
-        <td style={cellStyle}>Cost <br/> AED 90
-</td>
-        <td style={cellStyle}>Traffic <br/> 450.0 Gb/s
-</td>
-        <td style={cellStyle}>Bandwidth <br/> 30%
-</td>
-        <td style={cellStyle}>PCR <br/> 1.8 W/Gbps
-</td>
-        </tr>
-      </tbody>
-    </table>
-
-
-
-    </div>
-    </div>
-
-
-
-{/* image part */}
-    <div style={{flexBasis:"40%", paddingLeft:"20px"}}>
-
-    
-     <img src={deviceone} width={250} height={550}/>
-
-
-
-
-   
-    </div>
-    </div>
+        {/* image part */}
+        <div style={{ flexBasis: "40%", paddingLeft: "20px" }}>
+          <img src={deviceone} width={250} height={550} />
+        </div>
+      </div>
     </>
 
     // <div style={{display:"flex",color:"#e5e5e5", justifyContent:"space-between"}}>
     // <div style={{color:"#e5e5e5", fontSize:"15px",minWidth:"60%"}}>
     //     <div style={{display:"flex", justifyContent:"start", alignItems:"center",font:"bold",paddingLeft:"15px",   maxWidth:"100%", border:"1px solid #474747", height:"47px", borderRadius:"7px 7px 0px 0px "}}> Device</div>
-    //     <div style={{display:"flex",flexDirection:"column", justifyContent:"center", alignItems:"start",font:"bold",paddingLeft:"15px",   minWidth:"100%",width:"100%", border:"1px solid #474747", height:"400px", borderRadius:"0px 0px 7px 7px"}}> 
-        
+    //     <div style={{display:"flex",flexDirection:"column", justifyContent:"center", alignItems:"start",font:"bold",paddingLeft:"15px",   minWidth:"100%",width:"100%", border:"1px solid #474747", height:"400px", borderRadius:"0px 0px 7px 7px"}}>
+
     //     <div style={{display:"flex"}}>
     //     <div style={{padding:"0px", minWidth:"40%"}}>
     //     <label style={{fontWeight:"bold"}}>Region</label>
@@ -132,7 +162,7 @@ return (
     //     <div style={{display:"flex", alignItems:"center",  width:"80px", height:"40px", borderRadius:"8px"}}>Front</div>
     //     </div>
     //     </div>
-        
+
     //     <div style={{display:"flex", justifyContent:"space-between",border:'2px solid red',minWidth:"100%"}}>
     //     <div style={{padding:"10px",minWidth:""}}>
     //     <label style={{fontWeight:"bold"}}>Device Type</label>
@@ -155,7 +185,6 @@ return (
     //     <div style={{display:"flex", alignItems:"center",paddingLeft:"20px",  width:"80px", height:"40px", borderRadius:"8px"}}>WMP261400NZ</div>
     //     </div> */}
     //     </div>
-
 
     //     <div style={{display:"flex", justifyContent:"space-between"}}>
     //     <div style={{padding:"10px",minWidth:"30%"}}>
@@ -195,7 +224,7 @@ return (
     //     </div>
     //     </div>
 
-        /* <div style={{display:"flex"}}>
+    /* <div style={{display:"flex"}}>
         <div style={{padding:"10px",paddingLeft:"80px"}}>
         <label style={{fontWeight:"bold"}}>Menufacturer</label>
         <div style={{display:"flex", alignItems:"center", height:"40px", borderRadius:"8px", color:"#0490E7"}}>Cisco</div>
@@ -211,7 +240,7 @@ return (
         
         </div> */
 
-        /* <div style={{display:"flex"}}>
+    /* <div style={{display:"flex"}}>
         <div style={{padding:"10px"}}>
         <label style={{fontWeight:"bold"}}>Cost</label>
         <div style={{display:"flex", alignItems:"center", height:"40px", borderRadius:"8px", color:"#0490E7"}}>AED 90</div>
@@ -229,7 +258,7 @@ return (
         <div style={{display:"flex", alignItems:"center",  width:"80px", height:"40px", borderRadius:"8px"}}>1.3 W/Gbps</div>
         </div>
         </div> */
-        /* <div style={{display:"flex"}}>
+    /* <div style={{display:"flex"}}>
         <div style={{padding:"10px"}}>
         <label style={{fontWeight:"bold"}}>Power Efficieny</label>
         <div style={{display:"flex", alignItems:"center", height:"40px", borderRadius:"8px", color:"#0490E7"}}>80%</div>
@@ -244,53 +273,44 @@ return (
         </div>
         
         </div> */
-        
-
-        
-        
-        // </div>
-
-
-        
-        
 
     // </div>
-    
+
+    // </div>
+
     // <div style={{paddingRight:"50px",position: "relative", paddingRight: "150px" }}>
     // <img src={device} width={250} height={550}/>
-    
+
     // </div>
     // </div>
-//     <div style={{ color: '#e5e5e5' }}>
-//       <article style={{display:"flex", justifyContent:"space-between",alignItems:"center", padding:"20px 20px"}}>
+    //     <div style={{ color: '#e5e5e5' }}>
+    //       <article style={{display:"flex", justifyContent:"space-between",alignItems:"center", padding:"20px 20px"}}>
 
-//         <div style={{display:"flex", flexDirection:"column"}}>
+    //         <div style={{display:"flex", flexDirection:"column"}}>
 
-// <label>Region</label>
-// <label>DXB</label>
-// </div>
-// <div style={{display:"flex", flexDirection:"column"}}>
+    // <label>Region</label>
+    // <label>DXB</label>
+    // </div>
+    // <div style={{display:"flex", flexDirection:"column"}}>
 
-// <label>Site</label>
-// <label>DXB</label>
-// </div>
-// <div style={{display:"flex", flexDirection:"column"}}>
+    // <label>Site</label>
+    // <label>DXB</label>
+    // </div>
+    // <div style={{display:"flex", flexDirection:"column"}}>
 
-// <label>Rack</label>
-// <label>Rack AC</label>
-// </div>
-// <div style={{display:"flex", flexDirection:"column"}}>
+    // <label>Rack</label>
+    // <label>Rack AC</label>
+    // </div>
+    // <div style={{display:"flex", flexDirection:"column"}}>
 
-// <label>Position</label>
-// <label>Front</label>
-// </div>
+    // <label>Position</label>
+    // <label>Front</label>
+    // </div>
 
+    //       </article>
 
-
-//       </article>
-    
-//     </div>
-);
+    //     </div>
+  );
 }
 
 export default BluerackDetail;

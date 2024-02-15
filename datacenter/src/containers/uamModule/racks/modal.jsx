@@ -1,146 +1,88 @@
-// import React, { useEffect, useState } from "react";
-// import { useForm } from "react-hook-form";
-// import FormModal from "../../../components/dialogs";
-// import Grid from "@mui/material/Grid";
-// import DefaultFormUnit from "../../../components/formUnits";
-// import { SelectFormUnit } from "../../../components/formUnits";
-// import DefaultDialogFooter from "../../../components/dialogFooters";
-// import { yupResolver } from "@hookform/resolvers/yup";
-// import * as yup from "yup";
-// import { useTheme } from "@mui/material/styles";
-// import {
-//   useUpdateRecordMutation,
-//   useAddRecordMutation,
-// } from "../../../store/features/uamModule/racks/apis";
-// import { useFetchSiteNamesQuery } from "../../../store/features/dropDowns/apis";
-// import { useSelector } from "react-redux";
-// import { selectSiteNames } from "../../../store/features/dropDowns/selectors";
-// import useErrorHandling from "../../../hooks/useErrorHandling";
-// import { formSetter } from "../../../utils/helpers";
+import React, { useEffect, useState } from "react";
+import CustomForm from "../../../components/customForm";
+import CustomFormRacks from "./form";
+import { Icon } from "@iconify/react";
+import axios from "axios";
+import { baseUrl } from "../../../utils/axios";
+import Swal from "sweetalert2";
+import { Modal } from "antd";
+import dayjs from "dayjs";
+const access_token = localStorage.getItem("access_token");
+console.log(access_token, "access toke");
+const CustomModalRacks = ({ handleClose, open, recordToEdit, fetchRacks }) => {
+  //   const [open, setOpen] = useState(false);
 
-// const schema = yup.object().shape({
-//   rack_name: yup.string().required("Rack name is required"),
-//   site_name: yup.string().required("Site name is required"),
-// });
+  const handleOk = async (values) => {
+    console.log(values, "values in modal");
+    // setLoading(true);
+    // setOpen(false);
+    values.manufacture_date = dayjs(values.manufacture_date).format(
+      "YYYY-MM-DD"
+    );
+    values.site_id = Number(values.site_id);
+    values.unit_position = Number(values.unit_position);
+    values.Ru = Number(values.Ru);
+    values.Height = Number(values.Height);
+    values.Width = Number(values.Width);
+    values.Depth = Number(values.Depth);
+    values.floor = Number(values.floor);
+    values.total_devices = Number(values.total_devices);
 
-// const Index = ({ handleClose, open, recordToEdit }) => {
-//   const theme = useTheme();
+    const res = await axios.post(baseUrl + "/racks/addrack", values, {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    if (res.status == "200") {
+      handleCancel();
 
-//   // states
+      Swal.fire({
+        title: res.data.message,
+        icon: "success",
+        confirmButtonText: "OK",
+        timer: 2000,
+        timerProgressBar: true,
+        onClose: () => {
+          console.log("Popup closed");
+        },
+      });
+      fetchRacks();
+    }
+    console.log(res, "response");
+  };
 
-//   // useForm hook
-//   const { handleSubmit, control, setValue, watch, trigger } = useForm({
-//     resolver: yupResolver(schema),
-//   });
+  const handleCancel = (e) => {
+    console.log(e);
+    handleClose();
+  };
+  return (
+    <Modal
+      width={"auto"}
+      style={{ color: "white" }}
+      open={open}
+      title={
+        <h3 style={{ color: "white" }}>
+          {recordToEdit ? "Update Rack" : "Add Rack"}
+        </h3>
+      }
+      onOk={handleOk}
+      onCancel={handleCancel}
+      closeIcon={<CustomCloseIcon />}
+      footer={false}
+    >
+      <CustomFormRacks
+        onCancel={handleCancel}
+        submit={handleOk}
+        recordToEdit={recordToEdit}
+        fetchRacks={fetchRacks}
+      />
+    </Modal>
+  );
+};
 
-//   // effects
-//   useEffect(() => {
-//     formSetter(recordToEdit, setValue);
-//   }, []);
-
-//   // fetching dropdowns data from backend using apis
-//   const { error: siteNamesError, isLoading: isSiteNamesLoading } =
-//     useFetchSiteNamesQuery();
-
-//   // post api for the form
-//   const [
-//     addRecord,
-//     {
-//       data: addRecordData,
-//       isSuccess: isAddRecordSuccess,
-//       isLoading: isAddRecordLoading,
-//       isError: isAddRecordError,
-//       error: addRecordError,
-//     },
-//   ] = useAddRecordMutation();
-
-//   const [
-//     updateRecord,
-//     {
-//       data: updateRecordData,
-//       isSuccess: isUpdateRecordSuccess,
-//       isLoading: isUpdateRecordLoading,
-//       isError: isUpdateRecordError,
-//       error: updateRecordError,
-//     },
-//   ] = useUpdateRecordMutation();
-
-//   // error handling custom hooks
-//   useErrorHandling({
-//     data: addRecordData,
-//     isSuccess: isAddRecordSuccess,
-//     isError: isAddRecordError,
-//     error: addRecordError,
-//     type: "single",
-//   });
-
-//   useErrorHandling({
-//     data: updateRecordData,
-//     isSuccess: isUpdateRecordSuccess,
-//     isError: isUpdateRecordError,
-//     error: updateRecordError,
-//     type: "single",
-//   });
-
-//   // ///getting dropdowns data from the store
-//   const siteNames = useSelector(selectSiteNames);
-
-//   // on form submit
-//   const onSubmit = (data) => {
-//     if (recordToEdit) {
-//       data.rack_id = recordToEdit.rack_id;
-//       updateRecord(data);
-//     } else {
-//       addRecord(data);
-//     }
-//   };
-
-//   return (
-//     <FormModal
-//       sx={{ zIndex: "999" }}
-//       title={`${recordToEdit ? "Edit" : "Add"} Rack`}
-//       open={open}
-//     >
-//       <form onSubmit={handleSubmit(onSubmit)}>
-//         <Grid container spacing={3}>
-//           <Grid item xs={12} sm={4}>
-//             <DefaultFormUnit
-//               control={control}
-//               dataKey="rack_name"
-//               disabled={recordToEdit !== null}
-//               required
-//             />
-
-//             <SelectFormUnit
-//               control={control}
-//               dataKey="site_name"
-//               options={siteNames}
-//               required
-//             />
-//             <DefaultFormUnit control={control} dataKey="serial_number" />
-//             <DefaultFormUnit control={control} dataKey="manufacturer_date" />
-//             <DefaultFormUnit control={control} dataKey="pn_code" />
-//           </Grid>
-//           <Grid item xs={12} sm={4}>
-//             <DefaultFormUnit control={control} dataKey="unit_position" />
-//             <DefaultFormUnit control={control} dataKey="status" required />
-//             <DefaultFormUnit control={control} dataKey="ru" />
-//             <DefaultFormUnit control={control} dataKey="height" />
-//           </Grid>
-//           <Grid item xs={12} sm={4}>
-//             <DefaultFormUnit control={control} dataKey="rfs_date" />
-//             <DefaultFormUnit control={control} dataKey="rack_model" />
-//             <DefaultFormUnit control={control} dataKey="brand" />
-//             <DefaultFormUnit control={control} dataKey="width" />
-//           </Grid>
-
-//           <Grid item xs={12}>
-//             <DefaultDialogFooter handleClose={handleClose} />
-//           </Grid>
-//         </Grid>
-//       </form>
-//     </FormModal>
-//   );
-// };
-
-// export default Index;
+export default CustomModalRacks;
+const CustomCloseIcon = () => (
+  <span style={{ color: "red" }}>
+    <Icon fontSize={"25px"} icon="material-symbols:close" />
+  </span>
+);

@@ -6,37 +6,60 @@ import { Button } from "@mui/material";
 import { Modal } from "antd";
 import { Icon } from "@iconify/react";
 import CustomForm from "../../components/customForm";
+import axios from "axios";
+import { baseUrl } from "../../utils/axios";
+import Swal from "sweetalert2";
 
 const menuItems = [
   { id: "sites", name: "Sites", path: "sites" },
   { id: "racks", name: "Racks", path: "racks" },
-  { id: "location", name: "Location", path: "location" },
-  { id: "inventory", name: "Inventory", path: "inventory" },
+  // { id: "location", name: "Location", path: "location" },
+  { id: "seeds", name: "Seeds", path: "inventory" },
 ];
 
+const access_token = localStorage.getItem("access_token");
+console.log(access_token, "access toke");
 function Index(props) {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const showModal = () => {
-    setOpen(true);
-  };
-  const handleOk = (values) => {
-    console.log(values, "values in modal");
-    setLoading(true);
-    setOpen(false);
+  // const [open, setOpen] = useState(false);
+  // const [loading, setLoading] = useState(false);
+  // const showModal = () => {
+  //   setOpen(true);
+  // };
+  // const handleOk = async (values) => {
+  //   console.log(values, "values in modal");
+  //   setLoading(true);
+  //   setOpen(false);
+  //   const res = await axios.post(baseUrl + "/sites/addsite", values, {
+  //     headers: {
+  //       Authorization: `Bearer ${access_token}`,
+  //     },
+  //   });
+  //   if (res.status == "200") {
+  //     Swal.fire({
+  //       title: res.data.message,
+  //       icon: "success",
+  //       confirmButtonText: "OK",
+  //       timer: 2000,
+  //       timerProgressBar: true,
+  //       onClose: () => {
+  //         console.log("Popup closed");
+  //       },
+  //     });
+  //   }
+  //   console.log(res, "response");
+  //   // setTimeout(() => {
+  //   //   setLoading(false);
+  //   //   setOpen(false);
+  //   // }, 1000);
+  // };
 
-    // setTimeout(() => {
-    //   setLoading(false);
-    //   setOpen(false);
-    // }, 1000);
-  };
-  const handleCancel = (e) => {
-    console.log(e);
-    setOpen(false);
-  };
+  // const handleCancel = (e) => {
+  //   console.log(e);
+  //   setOpen(false);
+  // };
   return (
     <>
-      <Modal
+      {/* <Modal
         width={650}
         style={{ color: "white" }}
         open={open}
@@ -47,7 +70,7 @@ function Index(props) {
         footer={false}
       >
         <CustomForm submit={handleOk} />
-      </Modal>
+      </Modal> */}
       <Card
         sx={{
           marginBottom: "10px",
@@ -64,7 +87,7 @@ function Index(props) {
         >
           <HorizontalMenu menuItems={menuItems} defaultPage="sites" />
 
-          <Button
+          {/* <Button
             style={{
               display: "flex",
               alignItems: "center",
@@ -87,7 +110,7 @@ function Index(props) {
             >
               Add Site
             </p>
-          </Button>
+          </Button> */}
         </div>
       </Card>
       <Outlet />

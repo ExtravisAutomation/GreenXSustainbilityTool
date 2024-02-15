@@ -3,11 +3,13 @@ import { useTheme } from "@mui/material/styles";
 import DefaultButton, { DropDownButton } from "./buttons";
 import { Typography } from "@mui/material";
 
-export default function PageHeader({ pageName, buttons }) {
+export default function PageHeader({ pageName, buttons, setOpen }) {
   const theme = useTheme();
 
   const renderButton = (buttonNamePostfix, buttons) => {
     const { type, icon, handleClick, options } = buttons;
+    console.log(handleClick, "handleClickhandleClickhandleClick");
+    console.log(type, "btn type");
     let sx = null;
     console.log(type, "typeee");
     if (type == "Export") {
@@ -23,7 +25,7 @@ export default function PageHeader({ pageName, buttons }) {
       sx = {
         backgroundColor: theme?.palette?.default_button?.delete_background,
       };
-    } else if (type === "Add") {
+    } else if (type === "Add Site") {
       if (options) {
         sx = {
           backgroundColor: theme?.palette?.drop_down_button?.add_background,

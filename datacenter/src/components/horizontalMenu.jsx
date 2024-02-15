@@ -37,6 +37,7 @@ export default function HorizontalMenu({ menuItems, defaultPage }) {
     position = { top: 125, left: 0 }
   ) => {
     return items?.map((item) => {
+      console.log(items, "itemssss");
       const id = parentId ? `${parentId}-${item.id}` : item.id;
       const isClicked = id === selectedMenuItem;
       if (item.children) {

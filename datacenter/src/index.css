@@ -82,7 +82,7 @@ code {
   background-color: transparent !important;
 }
 .ant-modal-content {
-  background-color: #050c20 !important;
+  background-color: #0d131c !important;
   border-radius: 10px !important;
 }
 .css-12i7wg6-MuiPaper-root-MuiDrawer-paper {
@@ -91,3 +91,68 @@ code {
 .anticon-search {
   color: #acacac !important;
 }
+
+.dynamic-delete-button {
+  position: relative;
+  /* top: 4px; */
+  /* margin: 0 8px; */
+  color: #999;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+  width: 40px;
+  justify-content: center;
+}
+.dynamic-delete-button:hover {
+  color: #777;
+}
+.dynamic-delete-button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.custom-label-color {
+  color: white !important;
+  width: 100% !important;
+}
+/* .form_list {
+  background-color: yellow !important;
+  width: 100% !important;
+  margin-top: 100px;
+} */
+
+.ant-table-column-sorter {
+  color: gray !important;
+}
+.required_power {
+  background-image: linear-gradient(
+    to right,
+    #f5bf00 0%,
+    #f5bf00 33.33%,
+    #b57234 33.33%,
+    #b57234 66.66%,
+    #ffffff 66.66%,
+    #ffffff 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 23px !important;
+  font-weight: 700;
+  margin-top: 5px !important;
+}
+/* .react-vis-area {
+  fill: none !important;
+} */
+
+.ant-progress-inner {
+  border-radius: 10px !important;
+}
+.ant-progress-bg {
+  border-radius: 10px !important;
+}
+
+.nsewdrag {
+  fill: #0d131c !important;
+}
+/* .drag {
+  fill: transparent !important;
+} */
