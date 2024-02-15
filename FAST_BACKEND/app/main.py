@@ -64,23 +64,3 @@ container = app_creator.container
 
 
 
-# def test_influxdb_connection():
-#     try:
-#         client = InfluxDBClient(
-#             url=os.getenv("INFLUXDB_URL"),
-#             token=os.getenv("INFLUXDB_TOKEN"),
-#             org=os.getenv("INFLUXDB_ORG")
-#         )
-#         buckets_api = client.buckets_api()
-#         buckets = buckets_api.find_buckets()
-#         print("Successfully connected to InfluxDB. Found buckets:", buckets)
-#         client.close()
-#     except Exception as e:
-#         print(f"Failed to connect to InfluxDB: {e}")
-#         raise e
-#
-#
-# @app.on_event("startup")
-# async def startup_event():
-#     test_influxdb_connection()
-#

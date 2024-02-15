@@ -1,18 +1,23 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.core.dependencies import get_db, get_current_active_user
 from app.model.user import User
 from app.repository.site_repository import SiteRepository
-from app.schema.site_schema import SiteCreate, SiteUpdate, Site, FindSiteResult, GetSitesResponse, SiteDetails, \
-    CustomResponse, CustomResponse1
+from app.schema.site_schema import SiteCreate, SiteUpdate, Site, FindSiteResult, GetSitesResponse, SiteDetails,  CustomResponse, CustomResponse1
 from app.services.site_service import SiteService
 from app.core.container import Container
 from dependency_injector.wiring import Provide, inject
 from starlette.responses import JSONResponse
-
 from app.schema.site_schema import SiteDetails1
 
-router = APIRouter(prefix="/sites", tags=["sites"])
+router = APIRouter(prefix="/sites", tags=["SITES"])
+
+
+class DeleteRequest(BaseModel):
+    site_ids: List[int]
 
 
 @router.get("/getallsites", response_model=CustomResponse1[GetSitesResponse])
@@ -61,6 +66,18 @@ def delete_site(site_id: int, current_user: User = Depends(get_current_active_us
     site_service.delete_site(site_id)
     return CustomResponse(
         message="Site deleted successfully",
+        data=None,
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.post("/deletesites", response_model=CustomResponse[None])
+@inject
+def delete_sites(request: DeleteRequest, current_user: User = Depends(get_current_active_user),
+                 site_service: SiteService = Depends(Provide[Container.site_service])):
+    site_service.delete_sites(request.site_ids)
+    return CustomResponse(
+        message="Sites deleted successfully",
         data=None,
         status_code=status.HTTP_200_OK
     )

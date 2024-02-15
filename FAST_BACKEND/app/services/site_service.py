@@ -13,6 +13,7 @@ from app.schema.site_schema import SiteDetails1
 class SiteService:
     def __init__(self, site_repository: SiteRepository):
         self.site_repository = site_repository
+        #super().__init__(site_repository)
 
     def get_sites(self) -> List[SiteDetails]:
         sites = self.site_repository.get_all_sites()
@@ -41,8 +42,10 @@ class SiteService:
             total_devices=updated_site.total_devices
         )
 
-
     def delete_site(self, site_id: int) -> str:
         self.site_repository.delete_site(site_id)
         return {"message": "Site deleted successfully"}
 
+    def delete_sites(self, site_ids: List[int]) -> str:
+        self.site_repository.delete_sites(site_ids)
+        return "Sites deleted successfully"

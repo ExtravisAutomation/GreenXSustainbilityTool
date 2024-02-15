@@ -13,7 +13,7 @@ from app.core.security import JWTBearer
 
 router = APIRouter(
     prefix="/auth",
-    tags=["auth"],
+    tags=["AUTHENTICATION"],
 )
 
 
