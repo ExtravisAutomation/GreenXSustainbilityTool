@@ -82,8 +82,9 @@ def get_power_utilization_5min(request: PowerDataRequest,
                                current_user: User = Depends(get_current_active_user),
                                service: APICService = Depends(Provide[Container.apic_service])):
     power_utilization = service.get_power_utilization_5min(request.apic_controller_ip, request.node)
+    power = int(82.432123)
     return {"apic_controller_ip": request.apic_controller_ip, "node": request.node,
-            "power_utilization_5min": round(power_utilization, 1)}
+            "power_utilization_5min": round(power, 1)}
 
 
 @router.post("/power-utilization-per-day", response_model=PowerUtilizationResponse_per_day)
@@ -126,3 +127,15 @@ def get_fabric_nodes_with_power_utilization(current_user: User = Depends(get_cur
 def get_top_data_traffic_nodes(current_user: User = Depends(get_current_active_user),
                                service: APICService = Depends(Provide[Container.apic_service])):
     return service.get_top_data_traffic_nodes_with_device_name()
+
+
+@router.get("/top-fabric-nodes-drawn-last", response_model=List[FabricNodeDetails])
+@inject
+def get_fabric_nodes_with_power_utilization(current_user: User = Depends(get_current_active_user),
+                                            service: APICService = Depends(Provide[Container.apic_service])):
+    try:
+        return service.get_fabric_nodes_with_power_utilization_top_drawnLast()
+    except HTTPException as http_exc:  #
+        raise http_exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail="An error occurred while processing your request.")

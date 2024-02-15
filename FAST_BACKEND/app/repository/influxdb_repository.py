@@ -53,7 +53,7 @@ class InfluxDBRepository:
     def get_power_data(self, apic_ip, node):
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
-            |> range(start: -6h)
+            |> range(start: -24h)
             |> filter(fn: (r) => r["_measurement"] == "Final_Apic_power_consumption")
             |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}" and r["node"] == "{node}")
             |> last()
@@ -235,3 +235,32 @@ class InfluxDBRepository:
         except Exception as e:
             print(f"Failed to fetch top data traffic nodes from InfluxDB: {e}", file=sys.stderr)
             return []
+
+    def get_power_data_drawnLast(self, apic_ip, node):
+        query = f'''
+            from(bucket: "{configs.INFLUXDB_BUCKET}")
+            |> range(start: -24h)
+            |> filter(fn: (r) => r["_measurement"] == "Final_Apic_power_consumption")
+            |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}" and r["node"] == "{node}")
+            |> last()
+        '''
+        try:
+            print(f"Executing query: {query}", file=sys.stderr)
+            result = self.query_api1.query(query)
+            if not result:
+                print("Query returned no results.", file=sys.stderr)
+                return None
+
+            drawnLast = None  # Initialize drawnLast as None
+
+            for table in result:
+                for record in table.records:
+                    if record.get_field() == "drawnLast":
+                        drawnLast = record.get_value()
+                        break  # Assuming only one drawnLast value per node
+
+            print(f"drawnLast for {apic_ip} node {node}: {drawnLast}", file=sys.stderr)
+            return drawnLast
+        except Exception as e:
+            print(f"Error executing query in InfluxDB: {e}", file=sys.stderr)
+            raise
