@@ -139,3 +139,6 @@ def get_fabric_nodes_with_power_utilization(current_user: User = Depends(get_cur
         raise http_exc
     except Exception as exc:
         raise HTTPException(status_code=500, detail="An error occurred while processing your request.")
+
+
+

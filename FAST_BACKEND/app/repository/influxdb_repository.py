@@ -84,13 +84,13 @@ class InfluxDBRepository:
 
             raise
 
-    def get_power_data_last_5min(self, apic_ip, node):
+    def get_power_data_last_5min(self, apic_ip):
 
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
-            |> range(start: -5m)
-            |> filter(fn: (r) => r["_measurement"] == "Final_Apic_power_consumption")
-            |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}" and r["node"] == "{node}")
+            |> range(start: -24h)
+            |> filter(fn: (r) => r["_measurement"] == "device_Power_Utilzation")
+            |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
             |> last()
         '''
         try:
@@ -211,7 +211,7 @@ class InfluxDBRepository:
         return hourly_data
 
     def get_top_data_traffic_nodes(self) -> List[dict]:
-        start_range = "-6h"
+        start_range = "-24h"
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
             |> range(start: {start_range})
@@ -221,7 +221,7 @@ class InfluxDBRepository:
         '''
         try:
             result = self.query_api1.query(query)
-            print("RESULT!!!!!!!!!!!!!!!!!!!!!!", result, file=sys.stderr)
+            print("RESULT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", result, file=sys.stderr)
             data = []
             for table in result:
                 for record in table.records:
