@@ -4,7 +4,7 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import AppContextProvider from "./context/appContext";
-// import AdminDashboard from "./containers/dashboardModule/adminDashboard";
+import AdminDashboard from "./containers/dashboardModule/adminDashboard";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
