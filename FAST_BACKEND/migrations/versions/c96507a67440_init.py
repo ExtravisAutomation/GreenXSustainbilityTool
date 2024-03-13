@@ -18,20 +18,93 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        "site",
+        "Devices",
         sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("ip_address", sa.String(length=255), nullable=True),
+        sa.Column("device_type", sa.String(length=200), nullable=True),
+        sa.Column("device_name", sa.String(length=200), nullable=True),
+        sa.Column("OnBoardingStatus", sa.Boolean(), nullable=True),
+        sa.Column("site_id", sa.Integer(), nullable=True),
+        sa.Column("rack_id", sa.Integer(), nullable=True),
+        sa.Column("credential_id", sa.Integer(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now(), nullable=False),
-        sa.Column("site_name", sa.String(length=255), nullable=True),
-        sa.Column("site_type", sa.String(length=255), nullable=True),
-        sa.Column("region", sa.String(length=255), nullable=True),
-        sa.Column("city", sa.String(length=255), nullable=True),
-        sa.Column("latitude", sa.String(length=255), nullable=True),
-        sa.Column("longitude", sa.String(length=255), nullable=True),
+        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now(),
+                  nullable=False),
+        sa.Index("ip_index", "ip_address"),
+        sa.ForeignKeyConstraint(["site_id"], ["site.id"]),
+        sa.ForeignKeyConstraint(["rack_id"], ["rack.id"]),
+        sa.ForeignKeyConstraint(["credential_id"], ["Device_Credential.id"])
+    )
+
+    op.create_table(
+        "Device_Credential",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("username", sa.String(length=100), nullable=True),
+        sa.Column("password", sa.String(length=100), nullable=True),
+        sa.Column("Device_id", sa.Integer(), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now(),
+                  nullable=False),
+        sa.ForeignKeyConstraint(["Device_id"], ["Devices.id"])
+    )
+
+    op.create_table(
+        "Inventory",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("cisco_domain", sa.String(length=255), nullable=True),
+        sa.Column("contract_expiry", sa.Date(), nullable=True),
+        sa.Column("contract_number", sa.String(length=255), nullable=True),
+        sa.Column("device_UID", sa.Integer(), nullable=True),
+        sa.Column("created_by", sa.String(length=255), nullable=True),
+        sa.Column("creation_date", sa.DateTime(), nullable=True),
+        sa.Column("criticality", sa.String(length=255), nullable=True),
+        sa.Column("department", sa.String(length=255), nullable=True),
+        sa.Column("device_ru", sa.Integer(), nullable=True),
+        sa.Column("domain", sa.String(length=255), nullable=True),
+        sa.Column("hardware_version", sa.String(length=255), nullable=True),
+        sa.Column("hw_eol_date", sa.Date(), nullable=True),
+        sa.Column("hw_eos_date", sa.Date(), nullable=True),
+        sa.Column("item_code", sa.String(length=255), nullable=True),
+        sa.Column("item_desc", sa.Text(), nullable=True),
+        sa.Column("manufacturer_date", sa.Date(), nullable=True),
+        sa.Column("manufacturer", sa.String(length=255), nullable=True),
+        sa.Column("modification_date", sa.DateTime(), nullable=True),
+        sa.Column("modified_by", sa.String(length=255), nullable=True),
+        sa.Column("parent", sa.String(length=255), nullable=True),
+        sa.Column("patch_version", sa.String(length=255), nullable=True),
+        sa.Column("pn_code", sa.String(length=255), nullable=True),
+        sa.Column("rfs_date", sa.Date(), nullable=True),
+        sa.Column("section", sa.String(length=255), nullable=True),
+        sa.Column("serial_number", sa.String(length=255), nullable=True),
+        sa.Column("software_version", sa.String(length=255), nullable=True),
+        sa.Column("source", sa.String(length=255), nullable=True),
+        sa.Column("stack", sa.Boolean(), nullable=True),
         sa.Column("status", sa.String(length=255), nullable=True),
-        sa.Column("total_devices", sa.String(length=255), nullable=True),
-        sa.PrimaryKeyConstraint("id")
-        )
+        sa.Column("sw_eol_date", sa.Date(), nullable=True),
+        sa.Column("sw_eos_date", sa.Date(), nullable=True),
+        sa.Column("tag_id", sa.String(length=255), nullable=True),
+        sa.Column("Device_id", sa.Integer(), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now(),
+                  nullable=False),
+        sa.ForeignKeyConstraint(["Device_id"], ["Devices.id"]),
+    )
+
+    # op.create_table(
+    #     "site",
+    #     sa.Column("id", sa.Integer(), nullable=False),
+    #     sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+    #     sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now(), nullable=False),
+    #     sa.Column("site_name", sa.String(length=255), nullable=True),
+    #     sa.Column("site_type", sa.String(length=255), nullable=True),
+    #     sa.Column("region", sa.String(length=255), nullable=True),
+    #     sa.Column("city", sa.String(length=255), nullable=True),
+    #     sa.Column("latitude", sa.String(length=255), nullable=True),
+    #     sa.Column("longitude", sa.String(length=255), nullable=True),
+    #     sa.Column("status", sa.String(length=255), nullable=True),
+    #     sa.Column("total_devices", sa.String(length=255), nullable=True),
+    #     sa.PrimaryKeyConstraint("id")
+    #     )
 
     # op.create_table(
     #     "rack",
@@ -63,32 +136,32 @@ def upgrade():
     #     sa.PrimaryKeyConstraint("id"),
     #     sa.UniqueConstraint("name"),
     # )
-    op.create_table(
-        "user",
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("email", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("password", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("user_token", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("name", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-        sa.Column("is_active", sa.Boolean(), nullable=False),
-        sa.Column("is_superuser", sa.Boolean(), nullable=False),
-        sa.Column("role", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-        sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("email"),
-        sa.UniqueConstraint("user_token"),
-    )
+    # op.create_table(
+    #     "user",
+    #     sa.Column("created_at", sa.DateTime(timezone=True), nullable=True),
+    #     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
+    #     sa.Column("id", sa.Integer(), nullable=False),
+    #     sa.Column("email", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    #     sa.Column("password", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    #     sa.Column("user_token", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    #     sa.Column("name", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    #     sa.Column("is_active", sa.Boolean(), nullable=False),
+    #     sa.Column("is_superuser", sa.Boolean(), nullable=False),
+    #     sa.Column("role", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    #     sa.PrimaryKeyConstraint("id"),
+    #     sa.UniqueConstraint("email"),
+    #     sa.UniqueConstraint("user_token"),
+    # )
 
-    op.create_table(
-        "blacklisted_token",
-        sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("token", sa.String(length=512), nullable=False),
-        sa.Column("email", sa.String(length=255), nullable=True),
-        sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("token"),)
+    # op.create_table(
+    #     "blacklisted_token",
+    #     sa.Column("id", sa.Integer(), nullable=False),
+    #     sa.Column("created_at", sa.DateTime(timezone=True), nullable=True),
+    #     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
+    #     sa.Column("token", sa.String(length=512), nullable=False),
+    #     sa.Column("email", sa.String(length=255), nullable=True),
+    #     sa.PrimaryKeyConstraint("id"),
+    #     sa.UniqueConstraint("token"),)
 
     # op.create_table(
     #     "board_devices",

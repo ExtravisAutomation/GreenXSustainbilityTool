@@ -6,12 +6,16 @@ from sqlalchemy.orm import Session
 from app.core.dependencies import get_db, get_current_active_user
 from app.model.user import User
 from app.repository.site_repository import SiteRepository
-from app.schema.site_schema import SiteCreate, SiteUpdate, Site, FindSiteResult, GetSitesResponse, SiteDetails,  CustomResponse, CustomResponse1
+from app.schema.site_schema import SiteCreate, SiteUpdate, Site, FindSiteResult, GetSitesResponse, SiteDetails, \
+    CustomResponse, CustomResponse1
 from app.services.site_service import SiteService
 from app.core.container import Container
 from dependency_injector.wiring import Provide, inject
 from starlette.responses import JSONResponse
 from app.schema.site_schema import SiteDetails1
+from app.schema.site_schema import SitePowerConsumptionResponse
+
+from app.schema.site_schema import EnergyConsumptionMetricsDetails
 
 router = APIRouter(prefix="/sites", tags=["SITES"])
 
@@ -79,5 +83,35 @@ def delete_sites(request: DeleteRequest, current_user: User = Depends(get_curren
     return CustomResponse(
         message="Sites deleted successfully",
         data=None,
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/sites/power_summary_metrics/{site_id}", response_model=CustomResponse[SitePowerConsumptionResponse])
+@inject
+def get_site_power_metrics(
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    power_metrics = site_service.calculate_site_power_metrics_by_id(site_id)
+    return CustomResponse(
+        message="Power consumption metrics retrieved successfully",
+        data=power_metrics,
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/sites/energy_consumption_metrics/{site_id}", response_model=CustomResponse[list[EnergyConsumptionMetricsDetails]])
+@inject
+def get_energy_consumption_metrics(
+    site_id: int,
+    current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    metrics = site_service.calculate_energy_consumption_by_id(site_id)
+    return CustomResponse(
+        message="Energy consumption metrics retrieved successfully",
+        data=metrics,
         status_code=status.HTTP_200_OK
     )

@@ -65,6 +65,7 @@ class CustomResponse(GenericModel, Generic[DataT]):
 
 T = TypeVar("T")
 
+
 class CustomResponse1(BaseModel, Generic[T]):
     message: str
     data: T
@@ -80,3 +81,16 @@ class SiteDetails1(BaseModel):
     longitude: Optional[str] = None
     status: Optional[str] = None
     total_devices: Optional[str] = None
+
+
+class SitePowerConsumptionResponse(BaseModel):
+    total_power: Optional[float]
+    average_power: Optional[float]
+    max_power: Optional[float]
+
+
+class EnergyConsumptionMetricsDetails(BaseModel):
+    time: str
+    total_current_power: Optional[float] = None
+    total_POut: Optional[float] = None
+    average_energy_consumed: Optional[float] = None

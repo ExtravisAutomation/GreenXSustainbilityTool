@@ -8,6 +8,8 @@ from influxdb_client.client.query_api import QueryApi
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 from app.core.config import configs
+from datetime import datetime, timedelta
+import pandas as pd
 
 
 class InfluxDBRepository:
@@ -264,3 +266,215 @@ class InfluxDBRepository:
         except Exception as e:
             print(f"Error executing query in InfluxDB: {e}", file=sys.stderr)
             raise
+
+    def get_site_power_metrics(self, device_ips: List[str]) -> dict:
+        total_power = 0
+        max_power = 0
+        power_measurements = []
+
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: -1d)
+                |> filter(fn: (r) => r["_measurement"] == "device_Total_Power" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_Power")
+                |> last()
+            '''
+            result = self.query_api1.query_data_frame(query)
+            print("RESULTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT", result, file=sys.stderr)
+            if not result.empty:
+                power = result.loc[result['_field'] == 'total_Power', '_value'].values[0]
+                total_power += power
+                max_power = max(max_power, power)
+                power_measurements.append(power)
+
+        average_power = total_power / len(power_measurements) if power_measurements else 0
+
+        total_power = int(total_power)
+        average_power = int(average_power)
+        max_power = int(max_power)
+
+        return {
+            "total_power": total_power,
+            "average_power": average_power,
+            "max_power": max_power
+        }
+
+    # def get_energy_consumption_metrics(self, device_ips: List[str]) -> List[dict]:
+    #     energy_consumption_metrics = []
+    #
+    #     for ip in device_ips:
+    #         # Query to get the last values of total_Pin and total_POut
+    #         query = f'''
+    #             from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #             |> range(start: -1d)
+    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+    #             |> filter(fn: (r) => r["_field"] == "total_Pin")
+    #             |> filter(fn: (r) => r["_field"] == "total_POut")
+    #             |> last()
+    #         '''
+    #         result = self.query_api1.query_data_frame(query)
+    #         if not result.empty:
+    #
+    #             total_Pin = result[result['_field'] == 'total_Pin']['_value'].values[0]
+    #             total_POut = result[result['_field'] == 'total_POut']['_value'].values[0]
+    #             energy_consumed = total_Pin / total_POut if total_POut != 0 else None
+    #             time = result['_time'].values[0]
+    #
+    #             energy_consumption_metrics.append({
+    #                 "ip": ip,
+    #                 "time": str(time),
+    #                 "Pin": total_Pin,
+    #                 "POut": total_POut,
+    #                 "energy_consumed": energy_consumed
+    #             })
+    #
+    #     return energy_consumption_metrics
+
+    # def get_energy_consumption_metrics(self, device_ips: List[str]) -> List[dict]:
+    #     energy_consumption_metrics = []
+    #
+    #     for ip in device_ips:
+    #         # Adjusted query to properly pivot the fields for DataFrame processing
+    #         query = f'''
+    #             from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #             |> range(start: -1d)
+    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+    #             |> filter(fn: (r) => r["_field"] == "total_PIn" and r["_field"] == "total_POut")
+    #             |> last()
+    #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #         '''
+    #         result = self.query_api1.query_data_frame(query)
+    #         if not result.empty:
+    #             total_Pin = result['total_Pin'][0] if 'total_Pin' in result.columns else None
+    #             total_POut = result['total_POut'][0] if 'total_POut' in result.columns else None
+    #             energy_consumed = total_Pin / total_POut if total_POut and total_Pin else None
+    #             time = result.index[0]
+    #
+    #             energy_consumption_metrics.append({
+    #                 "ip": ip,
+    #                 "time": str(time),
+    #                 "Pin": total_Pin,
+    #                 "POut": total_POut,
+    #                 "energy_consumed": energy_consumed
+    #             })
+    #
+    #     return energy_consumption_metrics
+
+    # def get_energy_consumption_metrics(self, device_ips: List[str]) -> List[dict]:
+    #     energy_consumption_metrics = []
+    #
+    #     for ip in device_ips:
+    #         query = f'''
+    #             from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #             |> range(start: -1d)
+    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+    #             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+    #             |> last()
+    #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #         '''
+    #         result = self.query_api1.query_data_frame(query)
+    #         if not result.empty and 'total_Pin' in result.columns and 'total_POut' in result.columns:
+    #             total_Pin = result['total_Pin'].iloc[0] if 'total_PIn' in result else None
+    #             total_POut = result['total_POut'].iloc[0] if 'total_POut' in result else None
+    #             energy_consumed = total_Pin / total_POut if total_POut and total_Pin is not None else None
+    #             time = result.index[0] if not result.empty else "N/A"
+    #
+    #             energy_consumption_metrics.append({
+    #                 "ip": ip,
+    #                 "time": str(time),
+    #                 "Pin": total_Pin,
+    #                 "POut": total_POut,
+    #                 "energy_consumed": energy_consumed
+    #             })
+    #
+    #     return energy_consumption_metrics
+    #
+
+    # def get_energy_consumption_metrics(self, device_ips: List[str]) -> List[dict]:
+    #     energy_consumption_metrics = []
+    #
+    #     for ip in device_ips:
+    #         # Query for total_Pin
+    #         query_pin = f'''
+    #             from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #             |> range(start: -1d)
+    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+    #             |> filter(fn: (r) => r["_field"] == "total_PIn")
+    #             |> last()
+    #         '''
+    #         result_pin = self.query_api1.query_data_frame(query_pin)
+    #         total_Pin = result_pin['_value'].values[0] if not result_pin.empty else None
+    #         print("PINNNNNNNNNNNNNNNNNNNNNNNNNNNNN", total_Pin, file=sys.stderr)
+    #         # Query for total_POut
+    #         query_pout = f'''
+    #             from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #             |> range(start: -1d)
+    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+    #             |> filter(fn: (r) => r["_field"] == "total_POut")
+    #             |> last()
+    #         '''
+    #         result_pout = self.query_api1.query_data_frame(query_pout)
+    #         total_POut = result_pout['_value'].values[0] if not result_pout.empty else None
+    #         print("POUTTTTTTTTTTTTTTTTTTTTTTTT", total_POut, file=sys.stderr)
+    #         # Calculate energy consumed if both values are available
+    #         energy_consumed = total_Pin / total_POut if total_Pin is not None and total_POut is not None and total_POut != 0 else None
+    #
+    #         # Assume the time from the Pin query as the reference time
+    #         time = result_pin['_time'].values[0] if not result_pin.empty else "N/A"
+    #
+    #         energy_consumption_metrics.append({
+    #             "ip": ip,
+    #             "time": str(time),
+    #             "current_power": total_Pin,
+    #             "POut": total_POut,
+    #             "energy_consumed": energy_consumed
+    #         })
+    #
+    #     return energy_consumption_metrics
+
+    def get_energy_consumption_metrics(self, device_ips: List[str]) -> List[dict]:
+        # Initialize metrics
+        total_power_metrics = []
+
+        # Iterate over each device IP
+        for ip in device_ips:
+            # Perform separate queries for total_PIn and total_POut, and aggregate data hourly
+            power_metrics_per_device = []
+
+            for field in ['total_PIn', 'total_POut']:
+                query = f'''
+                    from(bucket: "{configs.INFLUXDB_BUCKET}")
+                    |> range(start: -1d)
+                    |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                    |> filter(fn: (r) => r["_field"] == "{field}")
+                    |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+                '''
+                result = self.query_api1.query_data_frame(query)
+                if not result.empty:
+                    # Extract power values and append to power_metrics_per_device
+                    result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
+                    for index, row in result.iterrows():
+                        power_metrics_per_device.append({
+                            "time": row['time'],
+                            field: row['_value']
+                        })
+
+            # Aggregate the results for total_PIn and total_POut across all devices
+            if power_metrics_per_device:
+                df = pd.DataFrame(power_metrics_per_device)
+                grouped_df = df.groupby('time').sum().reset_index()
+
+                for index, row in grouped_df.iterrows():
+                    total_power_metrics.append({
+                        "time": row['time'],
+                        "total_current_power": row.get('total_PIn', 0),
+                        "total_POut": row.get('total_POut', 0),
+                        "average_energy_consumed": row.get('total_PIn', 0) / row.get('total_POut', 1) if row.get(
+                            'total_POut', 1) > 0 else None
+                    })
+
+        return total_power_metrics
+
+
+

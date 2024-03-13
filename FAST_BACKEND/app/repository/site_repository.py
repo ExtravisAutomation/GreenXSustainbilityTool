@@ -12,6 +12,8 @@ from app.schema.site_schema import GetSitesResponse, SiteUpdate
 
 from app.schema.site_schema import SiteCreate
 
+from app.model.APIC_controllers import APICControllers
+
 
 class SiteRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
@@ -44,7 +46,6 @@ class SiteRepository(BaseRepository):
             if not db_site:
                 raise HTTPException(status_code=404, detail="Site not found")
 
-
             for key, value in site_data.dict(exclude_unset=True).items():
                 if value is not None and value != '' and value != 'string':
                     setattr(db_site, key, value)
@@ -67,3 +68,16 @@ class SiteRepository(BaseRepository):
         with self.session_factory() as session:
             session.query(Site).filter(Site.id.in_(site_ids)).delete(synchronize_session='fetch')
             session.commit()
+
+    # def get_devices_by_site_name(self, site_name: str) -> List[APICControllers]:
+    #     with self.session_factory() as session:
+    #         return session.query(APICControllers).join(Site).filter(Site.site_name == site_name).all()
+
+    def get_devices_by_site_id(self, site_id: int) -> List[APICControllers]:
+        with self.session_factory() as session:
+            devices = (
+                session.query(APICControllers)
+                .filter(APICControllers.site_id == site_id)
+                .all()
+            )
+            return devices

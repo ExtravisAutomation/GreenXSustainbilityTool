@@ -21,4 +21,5 @@ class Rack(BaseModel):
     floor = Column(Integer, nullable=True)
     status = Column(String(255), nullable=True)
     total_devices = Column(Integer, nullable=True)
-
+    site = relationship("Site", back_populates="racks")
+    devices = relationship("APICControllers", back_populates="rack")

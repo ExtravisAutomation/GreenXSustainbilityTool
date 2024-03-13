@@ -71,7 +71,7 @@ class Container(containers.DeclarativeContainer):
     rack_service = providers.Factory(RackService, rack_repository=rack_repository)
     auth_service = providers.Factory(AuthService, user_repository=user_repository,
                                      blacklisted_token_repository=blacklisted_token_repository)
-    site_service = providers.Factory(SiteService, site_repository=site_repo)
+    site_service = providers.Factory(SiteService, site_repository=site_repo, influxdb_repository=influxdb_repository)
     user_service = providers.Factory(UserService, user_repository=user_repository)
     apic_service = providers.Factory(APICService, apic_repository=apic_repository)
     device_inventory_service = providers.Factory(DeviceInventoryService, device_inventory_repository=device_inventory_repository)
