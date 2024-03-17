@@ -1,8 +1,9 @@
+import sys
 from contextlib import AbstractContextManager
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Optional
 
 from sqlalchemy.engine import Row
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, status
 from app.model.site import Site
 from app.repository.base_repository import BaseRepository
@@ -13,6 +14,8 @@ from app.schema.site_schema import GetSitesResponse, SiteUpdate
 from app.schema.site_schema import SiteCreate
 
 from app.model.APIC_controllers import APICControllers
+
+from app.model.device_inventory import DeviceInventory
 
 
 class SiteRepository(BaseRepository):
@@ -81,3 +84,65 @@ class SiteRepository(BaseRepository):
                 .all()
             )
             return devices
+
+    # def get_devices_with_inventory_by_site_id(self, site_id: int) -> List[DeviceInventory]:
+    #     with self.session_factory() as session:
+    #         # Since the relationship is defined in DeviceInventory pointing to APICControllers,
+    #         # we start the query from DeviceInventory and join APICControllers.
+    #         devices_with_inventory = session.query(DeviceInventory).join(DeviceInventory.apic_controller).options(
+    #             joinedload(DeviceInventory.apic_controller)
+    #         ).filter(APICControllers.site_id == site_id).all()
+    #
+    #         return devices_with_inventory
+
+    def get_apic_controller_ips_by_site_id(self, site_id: int) -> List[str]:
+        with self.session_factory() as session:
+            # Query DeviceInventory to get APICControllers by site_id
+            apic_ips = (
+                session.query(APICControllers.ip_address)
+                .join(DeviceInventory, DeviceInventory.apic_controller_id == APICControllers.id)
+                .filter(DeviceInventory.site_id == site_id)
+                .all()
+            )
+            print("APIC IPsSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS:", apic_ips, file=sys.stderr)
+            # Extract IP addresses from query results
+            ip_addresses = [ip[0] for ip in apic_ips]
+            return ip_addresses
+
+    def get_device_inventory_by_site_id(self, site_id: int) -> List[Dict[str, any]]:
+        with self.session_factory() as session:
+            # Query DeviceInventory and APICControllers tables to fetch required data
+            device_inventory_data = (
+                session.query(DeviceInventory, APICControllers)
+                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .filter(DeviceInventory.site_id == site_id)
+                .all()
+            )
+
+            # Convert query result to dictionary format
+            device_inventory_dicts = []
+            for device, apic in device_inventory_data:
+                device_info = device.__dict__
+                device_info['ip_address'] = apic.ip_address  # Add APIC IP address to the device info
+                device_inventory_dicts.append(device_info)
+
+            return device_inventory_dicts
+
+    def get_device_inventory_with_apic_ips_by_site_id(self, site_id: int) -> List[Dict[str, any]]:
+        with self.session_factory() as session:
+            # Query DeviceInventory and APICControllers tables to fetch required data
+            device_inventory_data = (
+                session.query(DeviceInventory, APICControllers)
+                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .filter(DeviceInventory.site_id == site_id)
+                .all()
+            )
+
+            # Convert query result to dictionary format
+            device_inventory_dicts = []
+            for device, apic in device_inventory_data:
+                device_info = device.__dict__
+                device_info['apic_ip'] = apic.ip_address  # Add APIC IP address to the device info
+                device_inventory_dicts.append(device_info)
+
+            return device_inventory_dicts

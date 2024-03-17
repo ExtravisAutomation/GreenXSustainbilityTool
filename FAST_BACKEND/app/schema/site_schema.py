@@ -2,7 +2,7 @@ from app.schema.base_schema import ModelBaseInfo, FindBase, SearchOptions, FindR
 from pydantic import BaseModel
 from typing import Generic, TypeVar, Optional, List
 from pydantic.generics import GenericModel
-
+from datetime import datetime
 DataT = TypeVar('DataT')
 
 
@@ -94,3 +94,23 @@ class EnergyConsumptionMetricsDetails(BaseModel):
     total_current_power: Optional[float] = None
     total_POut: Optional[float] = None
     average_energy_consumed: Optional[float] = None
+
+
+class DeviceEnergyMetric(BaseModel):
+    device_name: Optional[str] = None
+    hardware_version: Optional[str] = None
+    manufacturer: Optional[str] = None
+    pn_code: Optional[str] = None
+    serial_number: Optional[str] = None
+    software_version: Optional[str] = None
+    status: Optional[str] = None
+    site_name: Optional[str] = None
+    apic_controller_ip: Optional[str] = None
+    PE: Optional[float] = None
+    PUE: Optional[float] = None
+    current_power: Optional[float] = None
+    time: Optional[datetime] = None
+
+
+class HourlyEnergyMetricsResponse(BaseModel):
+    metrics: List[DeviceEnergyMetric]

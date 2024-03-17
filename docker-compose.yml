@@ -42,13 +42,13 @@ services:
     ports:
       - "8086:8086"
     volumes:
-<<<<<<< HEAD
+
       # - C:\Users\Hp\influxdb-docker-data-volume:/var/lib/influxdb
       - myInfluxVolume:/var/lib/influxdb2/
-=======
+
       #- C:\Users\Hp\influxdb-docker-data-volume:/var/lib/influxdb
       - myInfluxVolume:/var/lib/influxdb2
->>>>>>> 6c6cf57bfc3de667052e33742683ee919da95805
+
     environment:
       DOCKER_INFLUXDB_URL: http://localhost:8086
       DOCKER_INFLUXDB_INIT_ORG: dcs
@@ -59,8 +59,7 @@ volumes:
   dcs-db-volume:
   node_modules:
   myInfluxVolume:
-<<<<<<< HEAD
+
     # external: true
-=======
+
     #external: true
->>>>>>> 6c6cf57bfc3de667052e33742683ee919da95805

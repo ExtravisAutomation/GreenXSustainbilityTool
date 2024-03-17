@@ -476,5 +476,111 @@ class InfluxDBRepository:
 
         return total_power_metrics
 
+    # def calculate_hourly_metrics_for_device(self, apic_controller_ip: str) -> List[dict[str, float]]:
+    #     hourly_metrics = []
+    #
+    #     # Query for total_PIn with hourly aggregation
+    #     query_pin = f'''
+    #         from(bucket: "{self.bucket}")
+    #         |> range(start: -7d)
+    #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{apic_controller_ip}")
+    #         |> filter(fn: (r) => r["_field"] == "total_PIn")
+    #         |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+    #     '''
+    #     result_pin = self.query_api1.query_data_frame(query_pin)
+    #
+    #     # Query for total_POut with hourly aggregation
+    #     query_pout = f'''
+    #         from(bucket: "{self.bucket}")
+    #         |> range(start: -7d)
+    #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{apic_controller_ip}")
+    #         |> filter(fn: (r) => r["_field"] == "total_POut")
+    #         |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+    #     '''
+    #     result_pout = self.query_api1.query_data_frame(query_pout)
+    #
+    #     if not result_pin.empty and not result_pout.empty:
+    #         # Merge the two dataframes on the time column
+    #         merged_results = pd.merge(result_pin, result_pout, on=["_time", "_start", "_stop"],
+    #                                   suffixes=('_pin', '_pout'))
+    #
+    #         for _, row in merged_results.iterrows():
+    #             total_PIn = row['_value_pin']
+    #             total_POut = row['_value_pout']
+    #             current_power = total_PIn  # This is an assumption; adjust as necessary
+    #
+    #             # Calculate PE (Power Efficiency)
+    #             PE = (total_POut / total_PIn) * 100 if total_PIn else 0
+    #
+    #             # For PUE calculation, assume placeholders for total energy and computing equipment energy
+    #             total_energy_consumed_by_data_center = 1  # Placeholder
+    #             energy_consumed_by_computing_equipment = total_PIn  # Placeholder
+    #             PUE = (
+    #                         total_energy_consumed_by_data_center / energy_consumed_by_computing_equipment) if energy_consumed_by_computing_equipment else 0
+    #
+    #             hourly_metrics.append({
+    #                 "time": row['_time'].strftime('%Y-%m-%d %H:%M:%S'),
+    #                 "PE": PE,
+    #                 "PUE": PUE,
+    #                 "current_power": current_power
+    #             })
+    #
+    #     return hourly_metrics
+
+    def calculate_hourly_metrics_for_device(self, device_ips: List[str]) -> List[dict]:
+        total_power_metrics = []
+
+        for ip in device_ips:
+            # Debug: Print the IP being processed
+            print(f"Processing IP: {ip}", file=sys.stderr)
+
+            # Initialize dictionaries to store aggregated power metrics
+            power_metrics = {}
+
+            # Query for total_PIn and total_POut separately
+            for field in ['total_PIn', 'total_POut']:
+                query = f'''
+                    from(bucket: "{configs.INFLUXDB_BUCKET}")
+                    |> range(start: -7d)
+                    |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                    |> filter(fn: (r) => r["_field"] == "{field}")
+                    |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+                '''
+                # Debug: Print the query being executed
+                print(f"Executing query: {query}", file=sys.stderr)
+
+                result = self.query_api1.query_data_frame(query)
+                if not result.empty:
+                    result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
+                    for _, row in result.iterrows():
+                        time_key = row['time']
+                        if time_key not in power_metrics:
+                            power_metrics[time_key] = {}
+                        power_metrics[time_key][field] = row['_value']
+
+            # Process the aggregated data
+            for time, metrics in power_metrics.items():
+                total_PIn = metrics.get('total_PIn', 0)
+                total_POut = metrics.get('total_POut', 0)
+                current_power = total_PIn
+
+                PE = (total_POut / total_PIn * 100) if total_PIn else None
+                # Placeholder for total energy consumed by the data center for PUE calculation
+                total_energy = total_PIn * 1.2  # Example calculation for total energy
+                PUE = total_energy / total_PIn if total_PIn else None
+
+                # Debug: Print calculated metrics
+                print(f"Metrics for IP {ip} at {time}: PE={PE}, PUE={PUE}, Current Power={current_power}",
+                      file=sys.stderr)
+
+                total_power_metrics.append({
+                    "ip": ip,
+                    "time": time,
+                    "PE": PE,
+                    "PUE": PUE,
+                    "current_power": current_power
+                })
+
+        return total_power_metrics
 
 
