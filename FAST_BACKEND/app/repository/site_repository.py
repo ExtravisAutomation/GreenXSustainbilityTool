@@ -113,36 +113,39 @@ class SiteRepository(BaseRepository):
         with self.session_factory() as session:
             # Query DeviceInventory and APICControllers tables to fetch required data
             device_inventory_data = (
-                session.query(DeviceInventory, APICControllers)
+                session.query(DeviceInventory, APICControllers, Site.site_name)
                 .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Site, DeviceInventory.site_id == Site.id)  # This join depends on your model relationships
                 .filter(DeviceInventory.site_id == site_id)
                 .all()
             )
 
             # Convert query result to dictionary format
             device_inventory_dicts = []
-            for device, apic in device_inventory_data:
+            for device, apic, site_name in device_inventory_data:
                 device_info = device.__dict__
-                device_info['ip_address'] = apic.ip_address  # Add APIC IP address to the device info
+                device_info['ip_address'] = apic.ip_address # Add APIC IP address to the device info
+                device_info['site_name'] = site_name
                 device_inventory_dicts.append(device_info)
 
             return device_inventory_dicts
 
     def get_device_inventory_with_apic_ips_by_site_id(self, site_id: int) -> List[Dict[str, any]]:
         with self.session_factory() as session:
-            # Query DeviceInventory and APICControllers tables to fetch required data
+            # This example assumes a relationship exists that can be navigated from DeviceInventory to Site
             device_inventory_data = (
-                session.query(DeviceInventory, APICControllers)
+                session.query(DeviceInventory, APICControllers, Site.site_name)
                 .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Site, DeviceInventory.site_id == Site.id)  # This join depends on your model relationships
                 .filter(DeviceInventory.site_id == site_id)
                 .all()
             )
 
-            # Convert query result to dictionary format
             device_inventory_dicts = []
-            for device, apic in device_inventory_data:
+            for device, apic, site_name in device_inventory_data:
                 device_info = device.__dict__
-                device_info['apic_ip'] = apic.ip_address  # Add APIC IP address to the device info
+                device_info['apic_ip'] = apic.ip_address
+                device_info['site_name'] = site_name  # Include site name in the device info
                 device_inventory_dicts.append(device_info)
 
             return device_inventory_dicts

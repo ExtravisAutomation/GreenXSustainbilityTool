@@ -583,4 +583,98 @@ class InfluxDBRepository:
 
         return total_power_metrics
 
+    # def get_hourly_power_metrics_for_ip(self, device_ips: List[str]) -> List[dict]:
+    #     hourly_power_metrics = []
+    #
+    #     for ip in device_ips:
+    #         # Initialize a dictionary to store the hourly metrics for the current IP
+    #         ip_metrics = {}
+    #
+    #         # Query for total_PIn with hourly aggregation
+    #         query_pin = f'''
+    #             from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #             |> range(start: -7d)
+    #             |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+    #             |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+    #         '''
+    #         result_pin = self.query_api1.query_data_frame(query_pin)
+    #         if not result_pin.empty:
+    #             for _, row in result_pin.iterrows():
+    #                 hour = pd.to_datetime(row['_time']).strftime('%Y-%m-%d %H:%M:%S')
+    #                 if hour not in ip_metrics:
+    #                     ip_metrics[hour] = {"total_PIn": row['_value']}
+    #                 else:
+    #                     ip_metrics[hour]["total_PIn"] = row['_value']
+    #
+    #         # Query for total_POut with hourly aggregation
+    #         query_pout = f'''
+    #             from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #             |> range(start: -7d)
+    #             |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_POut")
+    #             |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+    #         '''
+    #         result_pout = self.query_api1.query_data_frame(query_pout)
+    #         if not result_pout.empty:
+    #             for _, row in result_pout.iterrows():
+    #                 hour = pd.to_datetime(row['_time']).strftime('%Y-%m-%d %H:%M:%S')
+    #                 if hour not in ip_metrics:
+    #                     ip_metrics[hour] = {"total_POut": row['_value']}
+    #                 else:
+    #                     ip_metrics[hour]["total_POut"] = row['_value']
+    #
+    #         # Compile the results into the hourly_power_metrics list
+    #         for hour, metrics in ip_metrics.items():
+    #             hourly_power_metrics.append({
+    #                 "apic_controller_ip": ip,
+    #                 "hour": hour,
+    #                 **metrics,
+    #                 "power_utilization": (metrics.get("total_POut", 0) / metrics.get("total_PIn", 1)) * 100 if metrics.get("total_PIn", 1) > 0 else None
+    #             })
+    #
+    #     return hourly_power_metrics
 
+    def get_hourly_power_metrics_for_ip(self, device_ips: List[str]) -> List[dict]:
+        hourly_power_metrics = []
+
+        for ip in device_ips:
+            print(f"Processing IP: {ip}")  # Debug print
+            total_power_accumulated = []
+            ip_hourly_metrics = []
+
+            query_pin = f'''
+                from(bucket: "{self.bucket}")
+                |> range(start: -7d)
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+                |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+            '''
+            result_pin = self.query_api1.query_data_frame(query_pin)
+            if not result_pin.empty:
+                for _, row in result_pin.iterrows():
+                    hour = pd.to_datetime(row['_time']).strftime('%Y-%m-%d %H:%M:%S')
+                    total_power = row['_value']
+                    ip_hourly_metrics.append({
+                        "hour": hour,
+                        "total_PIn": total_power
+                    })
+                    total_power_accumulated.append(total_power)
+
+            # Add similar logic for total_POut if necessary
+
+            print(f"Total power accumulated for IP {ip}: {total_power_accumulated}")  # Debug print
+            total_power = sum(total_power_accumulated) if total_power_accumulated else None
+            max_power = max(total_power_accumulated) if total_power_accumulated else None
+            print(f"Total power for IP {ip}: {total_power}, Max power for IP {ip}: {max_power}")  # Debug print
+
+            for metric in ip_hourly_metrics:
+                metric.update({
+                    "apic_controller_ip": ip,
+                    "total_power": total_power,
+                    "max_power": max_power
+                })
+                print(f"Metric before appending to list for IP {ip}: {metric}")  # Debug print
+                hourly_power_metrics.append(metric)
+
+        return hourly_power_metrics

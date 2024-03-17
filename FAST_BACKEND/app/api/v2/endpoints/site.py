@@ -19,6 +19,8 @@ from app.schema.site_schema import EnergyConsumptionMetricsDetails
 
 from app.schema.site_schema import HourlyEnergyMetricsResponse
 
+from app.schema.site_schema import HourlyDevicePowerMetricsResponse
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 
 
@@ -128,3 +130,13 @@ def get_hourly_energy_metrics(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     return site_service.calculate_hourly_energy_metrics(site_id)
+
+
+@router.get("/site/POWER_METRICS_on_click", response_model=HourlyDevicePowerMetricsResponse)
+@inject
+def get_detailed_hourly_power_metrics_for_site(
+    site_id: int,
+    current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    return site_service.calculate_hourly_power_metrics_for_each_device(site_id)

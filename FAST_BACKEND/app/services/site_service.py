@@ -13,6 +13,8 @@ from app.schema.site_schema import SiteDetails1
 
 from app.schema.site_schema import DeviceEnergyMetric, HourlyEnergyMetricsResponse
 
+from app.schema.site_schema import HourlyDevicePowerMetricsResponse, DevicePowerMetric
+
 
 class SiteService:
     def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
@@ -144,3 +146,74 @@ class SiteService:
                 print(f"No device info found for IP: {metric_data.get('ip')}")
 
         return HourlyEnergyMetricsResponse(metrics=metrics_list)
+
+    # def calculate_hourly_power_metrics_for_each_device(self, site_id: int) -> HourlyDevicePowerMetricsResponse:
+    #     device_inventory_data = self.site_repository.get_device_inventory_with_apic_ips_by_site_id(site_id)
+    #
+    #     metrics_list = []
+    #     for device in device_inventory_data:
+    #         apic_ip = device['apic_ip']
+    #         # Assume get_hourly_power_metrics_for_ip is a method to fetch power metrics from InfluxDB
+    #         power_metrics = self.influxdb_repository.get_hourly_power_metrics_for_ip(apic_ip)
+    #
+    #         for hour, metrics in power_metrics.items():
+    #             device_metric = DevicePowerMetric(
+    #                 device_name=device.get('device_name'),
+    #                 hardware_version=device.get('hardware_version'),
+    #                 manufacturer=device.get('manufacturer'),
+    #                 pn_code=device.get('pn_code'),
+    #                 serial_number=device.get('serial_number'),
+    #                 software_version=device.get('software_version'),
+    #                 status=device.get('status'),
+    #                 site_name=device.get('site_name'),
+    #                 apic_controller_ip=apic_ip,
+    #                 total_power=metrics.get('total_power'),
+    #                 max_power=metrics.get('max_power'),
+    #                 current_power=metrics.get('current_power'),
+    #                 time=hour
+    #             )
+    #             metrics_list.append(device_metric)
+    #
+    #     return HourlyDevicePowerMetricsResponse(metrics=metrics_list)
+
+    def calculate_hourly_power_metrics_for_each_device(self, site_id: int) -> HourlyDevicePowerMetricsResponse:
+        # Fetch APIC controller IPs for the given site
+        apic_ips = self.site_repository.get_apic_controller_ips_by_site_id(site_id)
+
+        # Fetch device inventory with APIC IP addresses for the given site
+        device_inventory_data = self.site_repository.get_device_inventory_with_apic_ips_by_site_id(site_id)
+
+        # Fetch hourly power metrics for each APIC controller IP
+        hourly_power_metrics = self.influxdb_repository.get_hourly_power_metrics_for_ip(apic_ips)
+
+        # Create a list to hold the final metrics response
+        metrics_list = []
+
+        # Map the hourly power metrics with the device inventory data
+        for metric_data in hourly_power_metrics:
+            # Find the corresponding device inventory data
+            device_info = next(
+                (d for d in device_inventory_data if d.get('apic_ip') == metric_data.get('apic_controller_ip')), None)
+
+            if device_info:
+                # Combine the data and create a DeviceEnergyMetric object
+                metric = DevicePowerMetric(
+                    device_name=device_info.get('device_name'),
+                    hardware_version=device_info.get('hardware_version'),
+                    manufacturer=device_info.get('manufacturer'),
+                    pn_code=device_info.get('pn_code'),
+                    serial_number=device_info.get('serial_number'),
+                    software_version=device_info.get('software_version'),
+                    status=device_info.get('status'),
+                    site_name=device_info.get('site_name'),
+                    apic_controller_ip=metric_data.get('apic_controller_ip'),
+                    time=metric_data.get('hour'),
+                    current_power=metric_data.get("total_PIn"),
+                    total_power=metric_data.get("total_PIn"),
+                    max_power=metric_data.get("max_power")
+
+                    # You can add more fields here as per your requirement
+                )
+                metrics_list.append(metric)
+
+        return HourlyDevicePowerMetricsResponse(metrics=metrics_list)
