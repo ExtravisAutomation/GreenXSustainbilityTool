@@ -1,6 +1,6 @@
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.core.dependencies import get_db, get_current_active_user
@@ -135,8 +135,37 @@ def get_hourly_energy_metrics(
 @router.get("/site/POWER_METRICS_on_click/{site_id}", response_model=HourlyDevicePowerMetricsResponse)
 @inject
 def get_detailed_hourly_power_metrics_for_site(
-    site_id: int,
-    current_user: User = Depends(get_current_active_user),
-    site_service: SiteService = Depends(Provide[Container.site_service])
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     return site_service.calculate_hourly_power_metrics_for_each_device(site_id)
+
+
+@router.get("/site/device_specific_comparison/{site_id}", response_model=HourlyDevicePowerMetricsResponse)
+@inject
+def compare_devices_metrics(
+        site_id: int,
+        device_name1: Optional[str] = Query(None, alias="device_name1"),
+        device_name2: Optional[str] = Query(None, alias="device_name2"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+
+    device_name1 = device_name1 or "ciscotest"
+    device_name2 = device_name2 or "Device2"
+
+    # Now, call your service with the device names
+    return site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2)
+
+
+@router.get("/site/pie_chart/{site_id}", response_model=dict[str, int])
+@inject
+def read_eol_eos_counts(site_id: int,
+                        current_user: User = Depends(get_current_active_user),
+                        site_service: SiteService = Depends(Provide[Container.site_service])):
+    try:
+        eol_eos_counts = site_service.get_eol_eos_counts_for_site(site_id)
+        return eol_eos_counts
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

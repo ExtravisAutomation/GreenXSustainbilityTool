@@ -1,7 +1,9 @@
 import sys
 from contextlib import AbstractContextManager
-from typing import Callable, Dict, List, Optional
+from datetime import datetime
+from typing import Callable, Dict, List, Optional, Any
 
+from sqlalchemy import func
 from sqlalchemy.engine import Row
 from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, status
@@ -124,7 +126,7 @@ class SiteRepository(BaseRepository):
             device_inventory_dicts = []
             for device, apic, site_name in device_inventory_data:
                 device_info = device.__dict__
-                device_info['ip_address'] = apic.ip_address # Add APIC IP address to the device info
+                device_info['ip_address'] = apic.ip_address  # Add APIC IP address to the device info
                 device_info['site_name'] = site_name
                 device_inventory_dicts.append(device_info)
 
@@ -149,3 +151,51 @@ class SiteRepository(BaseRepository):
                 device_inventory_dicts.append(device_info)
 
             return device_inventory_dicts
+
+    def get_device_ips_by_names_and_site_id(self, site_id: int, device_names: List[str]) -> list[dict[str, Any]]:
+        with self.session_factory() as session:
+            device_ips_and_site_name = (
+                session.query(APICControllers.ip_address, Site.site_name)
+                .join(DeviceInventory, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Site, DeviceInventory.site_id == Site.id)  # Assumes relationship between DeviceInventory and Site
+                .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name.in_(device_names))
+                .all()
+            )
+
+            # Constructing a list of dictionaries, each containing the IP address and site name
+            devices_info = [
+                {"ip_address": ip_address, "site_name": site_name} for ip_address, site_name in device_ips_and_site_name
+            ]
+
+            return devices_info
+
+    def get_eol_eos_counts(self, site_id: int) -> dict:
+        with self.session_factory() as session:  # session: Session for type hinting
+            current_date = datetime.now()
+            hw_eol_count = session.query(DeviceInventory).filter(
+                DeviceInventory.site_id == site_id,
+                DeviceInventory.hw_eol_date != None,
+                DeviceInventory.hw_eol_date < current_date
+            ).count()
+            hw_eos_count = session.query(DeviceInventory).filter(
+                DeviceInventory.site_id == site_id,
+                DeviceInventory.hw_eos_date != None,
+                DeviceInventory.hw_eos_date < current_date
+            ).count()
+            sw_eol_count = session.query(DeviceInventory).filter(
+                DeviceInventory.site_id == site_id,
+                DeviceInventory.sw_eol_date != None,
+                DeviceInventory.sw_eol_date < current_date
+            ).count()
+            sw_eos_count = session.query(DeviceInventory).filter(
+                DeviceInventory.site_id == site_id,
+                DeviceInventory.sw_eos_date != None,
+                DeviceInventory.sw_eos_date < current_date
+            ).count()
+
+            return {
+                "hardware_eol_count": hw_eol_count,
+                "hardware_eos_count": hw_eos_count,
+                "software_eol_count": sw_eol_count,
+                "software_eos_count": sw_eos_count
+            }

@@ -217,3 +217,30 @@ class SiteService:
                 metrics_list.append(metric)
 
         return HourlyDevicePowerMetricsResponse(metrics=metrics_list)
+
+    def compare_devices_hourly_power_metrics(self, site_id: int, device_name1: str,
+                                             device_name2: str) -> HourlyDevicePowerMetricsResponse:
+        # Fetch device IPs and site names for the given device names and site ID
+        devices_info = self.site_repository.get_device_ips_by_names_and_site_id(site_id, [device_name1, device_name2])
+
+        # Fetch hourly power metrics for each APIC controller IP
+        hourly_power_metrics = []
+        for device in devices_info:
+            ip_metrics = self.influxdb_repository.get_hourly_power_metrics_for_ip([device['ip_address']])
+            # Append additional device info to each metric
+            for metric in ip_metrics:
+                metric.update({
+                    "device_name": device_name1 if device['ip_address'] == devices_info[0][
+                        'ip_address'] else device_name2,
+                    "site_name": device['site_name']
+                    # Add any additional fields you need to pass from `devices_info`
+                })
+            hourly_power_metrics.extend(ip_metrics)
+
+        # Prepare the final metrics response based on updated `hourly_power_metrics` with all needed info
+        metrics_list = [DevicePowerMetric(**metric) for metric in hourly_power_metrics]
+
+        return HourlyDevicePowerMetricsResponse(metrics=metrics_list)
+
+    def get_eol_eos_counts_for_site(self, site_id: int):
+        return self.site_repository.get_eol_eos_counts(site_id)
