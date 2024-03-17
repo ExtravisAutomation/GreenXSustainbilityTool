@@ -132,7 +132,7 @@ def get_hourly_energy_metrics(
     return site_service.calculate_hourly_energy_metrics(site_id)
 
 
-@router.get("/site/POWER_METRICS_on_click", response_model=HourlyDevicePowerMetricsResponse)
+@router.get("/site/POWER_METRICS_on_click/{site_id}", response_model=HourlyDevicePowerMetricsResponse)
 @inject
 def get_detailed_hourly_power_metrics_for_site(
     site_id: int,
