@@ -445,7 +445,7 @@ class InfluxDBRepository:
             for field in ['total_PIn', 'total_POut']:
                 query = f'''
                     from(bucket: "{configs.INFLUXDB_BUCKET}")
-                    |> range(start: -1d)
+                    |> range(start: -7d)
                     |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                     |> filter(fn: (r) => r["_field"] == "{field}")
                     |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
@@ -468,10 +468,12 @@ class InfluxDBRepository:
                 for index, row in grouped_df.iterrows():
                     total_power_metrics.append({
                         "time": row['time'],
-                        "total_current_power": row.get('total_PIn', 0),
+                        "energy_consumption": row.get('total_PIn', 0),
                         "total_POut": row.get('total_POut', 0),
                         "average_energy_consumed": row.get('total_PIn', 0) / row.get('total_POut', 1) if row.get(
-                            'total_POut', 1) > 0 else None
+                            'total_POut', 1) > 0 else None,
+                        "power_efficiency": row.get('total_POut', 0) / row.get('total_PIn', 1) * 100 if row.get(
+                            'total_PIn', 1) > 0 else None
                     })
 
         return total_power_metrics

@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import Generic, TypeVar, Optional, List
 from pydantic.generics import GenericModel
 from datetime import datetime
+
 DataT = TypeVar('DataT')
 
 
@@ -91,9 +92,10 @@ class SitePowerConsumptionResponse(BaseModel):
 
 class EnergyConsumptionMetricsDetails(BaseModel):
     time: str
-    total_current_power: Optional[float] = None
+    energy_consumption: Optional[float] = None
     total_POut: Optional[float] = None
     average_energy_consumed: Optional[float] = None
+    power_efficiency: Optional[float] = None
 
 
 class DeviceEnergyMetric(BaseModel):
@@ -130,6 +132,7 @@ class DevicePowerMetric(BaseModel):
     max_power: Optional[float] = None
     current_power: Optional[float] = None
     time: Optional[datetime] = None
+
 
 class HourlyDevicePowerMetricsResponse(BaseModel):
     metrics: List[DevicePowerMetric]
