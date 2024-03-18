@@ -122,7 +122,7 @@ def get_energy_consumption_metrics(
     )
 
 
-@router.get("/sites/KPI_on_click/{site_id}", response_model=HourlyEnergyMetricsResponse)
+@router.get("/site/KPI_on_click/{site_id}", response_model=HourlyEnergyMetricsResponse)
 @inject
 def get_hourly_energy_metrics(
         site_id: int,
@@ -155,7 +155,6 @@ def compare_devices_metrics(
     device_name1 = device_name1 or "ciscotest"
     device_name2 = device_name2 or "Device2"
 
-    # Now, call your service with the device names
     return site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2)
 
 

@@ -99,7 +99,7 @@ class SiteRepository(BaseRepository):
 
     def get_apic_controller_ips_by_site_id(self, site_id: int) -> List[str]:
         with self.session_factory() as session:
-            # Query DeviceInventory to get APICControllers by site_id
+
             apic_ips = (
                 session.query(APICControllers.ip_address)
                 .join(DeviceInventory, DeviceInventory.apic_controller_id == APICControllers.id)
@@ -107,26 +107,26 @@ class SiteRepository(BaseRepository):
                 .all()
             )
             print("APIC IPsSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS:", apic_ips, file=sys.stderr)
-            # Extract IP addresses from query results
+
             ip_addresses = [ip[0] for ip in apic_ips]
             return ip_addresses
 
     def get_device_inventory_by_site_id(self, site_id: int) -> List[Dict[str, any]]:
         with self.session_factory() as session:
-            # Query DeviceInventory and APICControllers tables to fetch required data
+
             device_inventory_data = (
                 session.query(DeviceInventory, APICControllers, Site.site_name)
                 .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
-                .join(Site, DeviceInventory.site_id == Site.id)  # This join depends on your model relationships
+                .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id)
                 .all()
             )
 
-            # Convert query result to dictionary format
+
             device_inventory_dicts = []
             for device, apic, site_name in device_inventory_data:
                 device_info = device.__dict__
-                device_info['ip_address'] = apic.ip_address  # Add APIC IP address to the device info
+                device_info['ip_address'] = apic.ip_address
                 device_info['site_name'] = site_name
                 device_inventory_dicts.append(device_info)
 
@@ -134,11 +134,11 @@ class SiteRepository(BaseRepository):
 
     def get_device_inventory_with_apic_ips_by_site_id(self, site_id: int) -> List[Dict[str, any]]:
         with self.session_factory() as session:
-            # This example assumes a relationship exists that can be navigated from DeviceInventory to Site
+
             device_inventory_data = (
                 session.query(DeviceInventory, APICControllers, Site.site_name)
                 .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
-                .join(Site, DeviceInventory.site_id == Site.id)  # This join depends on your model relationships
+                .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id)
                 .all()
             )
@@ -147,7 +147,7 @@ class SiteRepository(BaseRepository):
             for device, apic, site_name in device_inventory_data:
                 device_info = device.__dict__
                 device_info['apic_ip'] = apic.ip_address
-                device_info['site_name'] = site_name  # Include site name in the device info
+                device_info['site_name'] = site_name
                 device_inventory_dicts.append(device_info)
 
             return device_inventory_dicts
@@ -157,12 +157,12 @@ class SiteRepository(BaseRepository):
             device_ips_and_site_name = (
                 session.query(APICControllers.ip_address, Site.site_name)
                 .join(DeviceInventory, DeviceInventory.apic_controller_id == APICControllers.id)
-                .join(Site, DeviceInventory.site_id == Site.id)  # Assumes relationship between DeviceInventory and Site
+                .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name.in_(device_names))
                 .all()
             )
 
-            # Constructing a list of dictionaries, each containing the IP address and site name
+
             devices_info = [
                 {"ip_address": ip_address, "site_name": site_name} for ip_address, site_name in device_ips_and_site_name
             ]
@@ -170,7 +170,7 @@ class SiteRepository(BaseRepository):
             return devices_info
 
     def get_eol_eos_counts(self, site_id: int) -> dict:
-        with self.session_factory() as session:  # session: Session for type hinting
+        with self.session_factory() as session:
             current_date = datetime.now()
             hw_eol_count = session.query(DeviceInventory).filter(
                 DeviceInventory.site_id == site_id,
