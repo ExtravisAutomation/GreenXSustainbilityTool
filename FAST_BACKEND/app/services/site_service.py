@@ -240,10 +240,11 @@ class SiteService:
     def calculate_traffic_throughput_by_id(self, site_id: int) -> List[dict]:
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
+        print("Device IPssssssssssssssssssssssssss:", device_ips, file=sys.stderr)
 
         if not device_ips:
             return []
-        throughput_metrics = self.influxdb_repository.get_traffic_throughput_metrics(device_ips)
+        throughput_metrics = self.influxdb_repository.get_traffic_throughput_metrics1(device_ips)
         return throughput_metrics
 
     def calculate_device_data_by_name(self, site_id: int, device_name: str) -> List[dict]:
