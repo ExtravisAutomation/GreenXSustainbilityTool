@@ -223,3 +223,13 @@ class SiteRepository(BaseRepository):
                 return device_info
             else:
                 return {}
+
+    def get_device_names_by_site_id2(self, site_id: int) -> List[str]:
+        with self.session_factory() as session:
+            device_names = (
+                session.query(DeviceInventory.device_name)
+                .filter(DeviceInventory.site_id == site_id)
+                .distinct()
+                .all()
+            )
+            return [name[0] for name in device_names if name[0] is not None]

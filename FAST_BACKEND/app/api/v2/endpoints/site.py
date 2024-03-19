@@ -226,3 +226,21 @@ def get_site_traffic_throughput_metrics(
 ):
     metrics = site_service.calculate_site_traffic_throughput_metrics(site_id)
     return metrics
+
+
+@router.get("/site/devices_name/{site_id}", response_model=CustomResponse[List[str]])
+@inject
+def get_device_names_by_site_id(
+    site_id: int,
+    current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        device_names = site_service.get_device_names_by_site_id1(site_id)
+        return CustomResponse(
+            message="Device names fetched successfully",
+            data=device_names,
+            status_code=status.HTTP_200_OK
+        )
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

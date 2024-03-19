@@ -289,3 +289,6 @@ class SiteService:
                 metrics_list.append(metric)
 
         return TrafficThroughputMetricsResponse(metrics=metrics_list)
+
+    def get_device_names_by_site_id1(self, site_id: int) -> List[str]:
+        return self.site_repository.get_device_names_by_site_id2(site_id)
