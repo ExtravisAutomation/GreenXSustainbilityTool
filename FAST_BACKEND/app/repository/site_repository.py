@@ -233,3 +233,25 @@ class SiteRepository(BaseRepository):
                 .all()
             )
             return [name[0] for name in device_names if name[0] is not None]
+
+    def get_device_by_site_and_rack(self, site_id: int, rack_id: int) -> Dict[str, Any]:
+        with self.session_factory() as session:
+            device = (
+                session.query(DeviceInventory)
+                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .filter(DeviceInventory.site_id == site_id, APICControllers.rack_id == rack_id)
+                .first()
+            )
+            if device:
+                return {
+                    "ip_address": device.apic_controller.ip_address,
+                    "device_name": device.device_name,
+                    "hardware_version": device.hardware_version,
+                    "manufacturer": device.manufacturer,
+                    "pn_code": device.pn_code,
+                    "serial_number": device.serial_number,
+                    "software_version": device.software_version,
+                    "status": device.status
+
+                    # Add other fields as necessary
+                }

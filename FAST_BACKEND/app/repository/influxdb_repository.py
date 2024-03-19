@@ -436,9 +436,10 @@ class InfluxDBRepository:
             if not result.empty:
                 result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
                 for _, row in result.iterrows():
+                    total_bytes_rate_last_gb = row['_value'] / (2 ** 30)
                     throughput_metrics.append({
                         "time": row['time'],
-                        "total_bytes_rate_last": row['_value']
+                        "total_bytes_rate_last": total_bytes_rate_last_gb
                     })
 
         return throughput_metrics
@@ -446,7 +447,7 @@ class InfluxDBRepository:
     def get_traffic_throughput_metrics1(self, device_ips: List[str]) -> List[dict]:
         throughput_metrics = []
         print("devicesIPSSSSSSSS", type(device_ips), file=sys.stderr)
-        #device_ips = [device_ips]
+        # device_ips = [device_ips]
         for ip in device_ips:
             query = f'''
                 from(bucket: "{self.bucket}")
@@ -487,3 +488,32 @@ class InfluxDBRepository:
                         "time": pd.to_datetime(row['_time'])
                     })
         return throughput_metrics
+
+    def get_total_power_for_ip(self, ip_address: str) -> float:
+        query = f'''
+            from(bucket: "{self.bucket}")
+            |> range(start: -7d)
+            |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
+            |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+            |> sum()
+        '''
+        result = self.query_api1.query_data_frame(query)
+        if not result.empty:
+            total_power_kwh = result['_value'].sum() / 1000.0  # Assuming _value is in Watts
+            return total_power_kwh
+        return 0.0
+
+    def get_traffic_throughput_for_ip(self, ip_address: str) -> float:
+        query = f'''
+            from(bucket: "{self.bucket}")
+            |> range(start: -7d)
+            |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
+            |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
+            |> sum()
+        '''
+        result = self.query_api1.query_data_frame(query)
+        if not result.empty:
+            total_bytes = result['_value'].sum()
+            total_gigabytes = total_bytes / (1024 ** 3)  # Convert bytes to Gigabytes
+            return total_gigabytes
+        return 0.0
