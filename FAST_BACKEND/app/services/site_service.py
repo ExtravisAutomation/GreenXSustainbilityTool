@@ -15,6 +15,8 @@ from app.schema.site_schema import DeviceEnergyMetric, HourlyEnergyMetricsRespon
 
 from app.schema.site_schema import HourlyDevicePowerMetricsResponse, DevicePowerMetric
 
+from app.schema.site_schema import TopDevicesPowerResponse, DevicePowerConsumption
+
 
 class SiteService:
     def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
@@ -105,16 +107,13 @@ class SiteService:
         print("APIC IPsssssssssssssssssssssssss:", apic_ips, file=sys.stderr)
         metrics_list = []
 
-
         device_inventory_data = self.site_repository.get_device_inventory_by_site_id(site_id)
         print("DATAAAAAAAAAAAAAAAAAAAAAa", device_inventory_data)
         print("Keys in device_inventory_data:")
         for item in device_inventory_data:
             print(item.keys(), file=sys.stderr)
 
-
         total_power_metrics = self.influxdb_repository.calculate_hourly_metrics_for_device(apic_ips)
-
 
         for metric_data in total_power_metrics:
 
@@ -206,3 +205,32 @@ class SiteService:
 
     def get_eol_eos_counts_for_site(self, site_id: int):
         return self.site_repository.get_eol_eos_counts(site_id)
+
+    def get_top_5_power_devices(self, site_id: int) -> TopDevicesPowerResponse:
+        device_inventory = self.site_repository.get_device_inventory_by_site_id(site_id)
+        device_ips = [device['ip_address'] for device in device_inventory]
+
+        top_devices_data_raw = self.influxdb_repository.get_top_5_devices_by_power(device_ips)
+        top_devices_data = []
+        processed_ips = set()  # To keep track of IPs that have already been processed
+
+        for device_data in top_devices_data_raw:
+            ip = device_data['ip']
+            if ip in processed_ips:
+                continue  # Skip this device if its IP has already been processed
+
+            device_info = next((device for device in device_inventory if device['ip_address'] == ip), None)
+            if device_info:
+                cost_of_power = device_data['cost_of_power']
+                average_power = device_data['average_PIn']
+
+                top_devices_data.append(DevicePowerConsumption(
+                    device_name=device_info['device_name'],
+                    total_power=device_data['total_PIn'],
+                    average_power=average_power,
+                    cost_of_power=cost_of_power
+                ))
+
+                processed_ips.add(ip)  # Mark this IP as processed
+
+        return TopDevicesPowerResponse(top_devices=top_devices_data)

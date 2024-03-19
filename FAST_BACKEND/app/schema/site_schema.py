@@ -136,3 +136,14 @@ class DevicePowerMetric(BaseModel):
 
 class HourlyDevicePowerMetricsResponse(BaseModel):
     metrics: List[DevicePowerMetric]
+
+
+class DevicePowerConsumption(BaseModel):
+    device_name: Optional[str] = None
+    total_power: Optional[float] = None
+    average_power: Optional[float] = None
+    cost_of_power: Optional[float] = None
+
+
+class TopDevicesPowerResponse(BaseModel):
+    top_devices: List[DevicePowerConsumption]

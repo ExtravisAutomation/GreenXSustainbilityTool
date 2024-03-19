@@ -34,7 +34,6 @@ class InfluxDBRepository:
         result = query_api.query_data_frame(query)
         return result if not result.empty else []
 
-
     def get_power_data(self, apic_ip, node):
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
@@ -137,7 +136,6 @@ class InfluxDBRepository:
             print(f"Error executing query in InfluxDB: {e}", file=sys.stderr)
 
             raise
-
 
     def get_power_data_per_hour(self, apic_ip: str, node: str) -> List[dict]:
         start_range = "-24h"
@@ -255,11 +253,9 @@ class InfluxDBRepository:
             "max_power": max_power
         }
 
-
     def get_energy_consumption_metrics(self, device_ips: List[str]) -> List[dict]:
         # Initialize metrics
         total_power_metrics = []
-
 
         for ip in device_ips:
 
@@ -283,7 +279,6 @@ class InfluxDBRepository:
                             field: row['_value']
                         })
 
-
             if power_metrics_per_device:
                 df = pd.DataFrame(power_metrics_per_device)
                 grouped_df = df.groupby('time').sum().reset_index()
@@ -301,8 +296,6 @@ class InfluxDBRepository:
 
         return total_power_metrics
 
-
-
     def calculate_hourly_metrics_for_device(self, device_ips: List[str]) -> List[dict]:
         total_power_metrics = []
 
@@ -310,9 +303,7 @@ class InfluxDBRepository:
 
             print(f"Processing IP: {ip}", file=sys.stderr)
 
-
             power_metrics = {}
-
 
             for field in ['total_PIn', 'total_POut']:
                 query = f'''
@@ -334,7 +325,6 @@ class InfluxDBRepository:
                             power_metrics[time_key] = {}
                         power_metrics[time_key][field] = row['_value']
 
-
             for time, metrics in power_metrics.items():
                 total_PIn = metrics.get('total_PIn', 0)
                 total_POut = metrics.get('total_POut', 0)
@@ -344,7 +334,6 @@ class InfluxDBRepository:
 
                 total_energy = total_PIn * 1.2
                 PUE = total_energy / total_PIn if total_PIn else None
-
 
                 print(f"Metrics for IP {ip} at {time}: PE={PE}, PUE={PUE}, Current Power={current_power}",
                       file=sys.stderr)
@@ -358,8 +347,6 @@ class InfluxDBRepository:
                 })
 
         return total_power_metrics
-
-
 
     def get_hourly_power_metrics_for_ip(self, device_ips: List[str]) -> List[dict]:
         hourly_power_metrics = []
@@ -387,8 +374,6 @@ class InfluxDBRepository:
                     })
                     total_power_accumulated.append(total_power)
 
-
-
             print(f"Total power accumulated for IP {ip}: {total_power_accumulated}")
             total_power = sum(total_power_accumulated) if total_power_accumulated else None
             max_power = max(total_power_accumulated) if total_power_accumulated else None
@@ -404,3 +389,36 @@ class InfluxDBRepository:
                 hourly_power_metrics.append(metric)
 
         return hourly_power_metrics
+
+    def get_top_5_devices_by_power(self, device_ips: List[str]) -> List[dict]:
+        top_devices_power = []
+
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{self.bucket}")
+                |> range(start: -7d)
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+                |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+                |> sort(columns: ["_value"], desc: true)
+                |> limit(n:5)
+            '''
+            result = self.query_api1.query_data_frame(query)
+            if not result.empty:
+                # Assuming '_value' is the average per hour, calculate the total and average for the period
+                total_power = result['_value'].sum()
+                count_measurements = len(result['_value'])
+                average_power = total_power / count_measurements if count_measurements > 0 else 0
+                powerinkwh = total_power / 1000 # aed
+                cost_of_power = powerinkwh * 0.405
+                top_devices_power.append({
+                    'ip': ip,
+                    'total_PIn': total_power,
+                    'average_PIn': average_power,
+                    'cost_of_power': cost_of_power
+                    # Add other necessary data as needed
+                })
+
+        # Additional sorting or processing to find global top 5 if necessary
+
+        return top_devices_power

@@ -21,6 +21,8 @@ from app.schema.site_schema import HourlyEnergyMetricsResponse
 
 from app.schema.site_schema import HourlyDevicePowerMetricsResponse
 
+from app.schema.site_schema import TopDevicesPowerResponse
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 
 
@@ -151,7 +153,6 @@ def compare_devices_metrics(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-
     device_name1 = device_name1 or "ciscotest"
     device_name2 = device_name2 or "Device2"
 
@@ -168,3 +169,12 @@ def read_eol_eos_counts(site_id: int,
         return eol_eos_counts
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/site/top_devices_power_cost/{site_id}", response_model=TopDevicesPowerResponse)
+@inject
+def get_top_5_power_devices(
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])):
+    return site_service.get_top_5_power_devices(site_id)

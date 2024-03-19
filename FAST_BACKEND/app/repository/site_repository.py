@@ -99,7 +99,6 @@ class SiteRepository(BaseRepository):
 
     def get_apic_controller_ips_by_site_id(self, site_id: int) -> List[str]:
         with self.session_factory() as session:
-
             apic_ips = (
                 session.query(APICControllers.ip_address)
                 .join(DeviceInventory, DeviceInventory.apic_controller_id == APICControllers.id)
@@ -113,7 +112,6 @@ class SiteRepository(BaseRepository):
 
     def get_device_inventory_by_site_id(self, site_id: int) -> List[Dict[str, any]]:
         with self.session_factory() as session:
-
             device_inventory_data = (
                 session.query(DeviceInventory, APICControllers, Site.site_name)
                 .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
@@ -121,7 +119,6 @@ class SiteRepository(BaseRepository):
                 .filter(DeviceInventory.site_id == site_id)
                 .all()
             )
-
 
             device_inventory_dicts = []
             for device, apic, site_name in device_inventory_data:
@@ -134,7 +131,6 @@ class SiteRepository(BaseRepository):
 
     def get_device_inventory_with_apic_ips_by_site_id(self, site_id: int) -> List[Dict[str, any]]:
         with self.session_factory() as session:
-
             device_inventory_data = (
                 session.query(DeviceInventory, APICControllers, Site.site_name)
                 .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
@@ -161,7 +157,6 @@ class SiteRepository(BaseRepository):
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name.in_(device_names))
                 .all()
             )
-
 
             devices_info = [
                 {"ip_address": ip_address, "site_name": site_name} for ip_address, site_name in device_ips_and_site_name
