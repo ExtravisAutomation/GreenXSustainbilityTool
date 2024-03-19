@@ -230,7 +230,7 @@ class SiteService:
                     device_name=device_info['device_name'],
                     total_power=device_data['total_PIn'],
                     average_power=average_power,
-                    cost_of_power=cost_of_power
+                    cost_of_power=round(cost_of_power, 2)
                 ))
 
                 processed_ips.add(ip)  # Mark this IP as processed
