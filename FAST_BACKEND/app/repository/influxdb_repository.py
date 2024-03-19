@@ -498,6 +498,7 @@ class InfluxDBRepository:
             |> sum()
         '''
         result = self.query_api1.query_data_frame(query)
+        print("RESULTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT", result, file=sys.stderr)
         if not result.empty:
             total_power_kwh = result['_value'].sum() / 1000.0  # Assuming _value is in Watts
             return total_power_kwh

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import BaseModel
@@ -240,6 +240,25 @@ def get_device_names_by_site_id(
         return CustomResponse(
             message="Device names fetched successfully",
             data=device_names,
+            status_code=status.HTTP_200_OK
+        )
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.get("/site/rack_by_id/{site_id}/{rack_id}", response_model=CustomResponse[Dict[str, Any]])
+@inject
+def get_device_metrics_by_site_and_rack(
+    site_id: int,
+    rack_id: int,
+    current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        device_metrics = site_service.get_device_metrics_by_site_and_rack(site_id, rack_id)
+        return CustomResponse(
+            message="Device metrics fetched successfully",
+            data=device_metrics,
             status_code=status.HTTP_200_OK
         )
     except Exception as e:
