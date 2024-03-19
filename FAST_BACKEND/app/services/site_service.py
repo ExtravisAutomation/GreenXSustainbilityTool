@@ -17,6 +17,8 @@ from app.schema.site_schema import HourlyDevicePowerMetricsResponse, DevicePower
 
 from app.schema.site_schema import TopDevicesPowerResponse, DevicePowerConsumption
 
+from app.schema.site_schema import DeviceTrafficThroughputMetric1, TrafficThroughputMetricsResponse
+
 
 class SiteService:
     def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
@@ -234,3 +236,55 @@ class SiteService:
                 processed_ips.add(ip)  # Mark this IP as processed
 
         return TopDevicesPowerResponse(top_devices=top_devices_data)
+
+    def calculate_traffic_throughput_by_id(self, site_id: int) -> List[dict]:
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        if not device_ips:
+            return []
+        throughput_metrics = self.influxdb_repository.get_traffic_throughput_metrics(device_ips)
+        return throughput_metrics
+
+    def calculate_device_data_by_name(self, site_id: int, device_name: str) -> List[dict]:
+        device_info_list = self.site_repository.get_device_ips_by_names_and_site_id(site_id, [device_name])
+
+        if not device_info_list:
+            return []
+
+        data_metrics = []
+        for device_info in device_info_list:
+            device_ip = device_info['ip_address']
+            print("IPPPPPPPPPPPPPPP", device_ip, file=sys.stderr)
+            metrics = self.influxdb_repository.get_traffic_throughput_metrics(device_ip)
+            data_metrics.extend(metrics)
+
+        return data_metrics
+
+    def calculate_site_traffic_throughput_metrics(self, site_id: int) -> TrafficThroughputMetricsResponse:
+        device_inventory_data = self.site_repository.get_device_inventory_by_site_id(site_id)
+        apic_ips = [device['ip_address'] for device in device_inventory_data if 'ip_address' in device]
+
+        throughput_metrics = self.influxdb_repository.calculate_throughput_metrics_for_devices(apic_ips)
+        metrics_list = []
+
+        for metric_data in throughput_metrics:
+            device_info = next((d for d in device_inventory_data if d.get('ip_address') == metric_data.get('ip')), None)
+
+            if device_info:
+                metric = DeviceTrafficThroughputMetric1(
+                    device_name=device_info.get('device_name'),
+                    hardware_version=device_info.get('hardware_version'),
+                    manufacturer=device_info.get('manufacturer'),
+                    pn_code=device_info.get('pn_code'),
+                    serial_number=device_info.get('serial_number'),
+                    software_version=device_info.get('software_version'),
+                    status=device_info.get('status'),
+                    site_name=device_info.get('site_name'),
+                    apic_controller_ip=device_info.get('ip_address'),
+                    traffic_throughput=metric_data.get('traffic_throughput'),
+                    time=metric_data.get('time')
+                )
+                metrics_list.append(metric)
+
+        return TrafficThroughputMetricsResponse(metrics=metrics_list)

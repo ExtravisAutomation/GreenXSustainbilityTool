@@ -194,3 +194,32 @@ class SiteRepository(BaseRepository):
                 "software_eol_count": sw_eol_count,
                 "software_eos_count": sw_eos_count
             }
+
+    def get_device_ip_by_name(self, site_id: int, device_name: str) -> str:
+        with self.session_factory() as session:
+            device = (
+                session.query(APICControllers.ip_address)
+                .join(DeviceInventory, DeviceInventory.apic_controller_id == APICControllers.id)
+                .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name == device_name)
+                .first()
+            )
+            return device.ip_address if device else None
+
+    def get_device_ip_by_device_name_and_site_id(self, site_id: int, device_name: str) -> dict[str, Any]:
+        with self.session_factory() as session:
+            device_ip_and_site_name = (
+                session.query(APICControllers.ip_address, Site.site_name)
+                .join(DeviceInventory, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Site, DeviceInventory.site_id == Site.id)
+                .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name == device_name)
+                .first()
+            )
+
+            if device_ip_and_site_name:
+                device_info = {
+                    "ip_address": device_ip_and_site_name[0],
+                    "site_name": device_ip_and_site_name[1]
+                }
+                return device_info
+            else:
+                return {}

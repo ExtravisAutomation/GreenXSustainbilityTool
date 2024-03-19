@@ -147,3 +147,30 @@ class DevicePowerConsumption(BaseModel):
 
 class TopDevicesPowerResponse(BaseModel):
     top_devices: List[DevicePowerConsumption]
+
+
+class TrafficThroughputMetricsDetails(BaseModel):
+    time: Optional[datetime] = None
+    total_bytes_rate_last: Optional[float] = None
+
+
+from pydantic import BaseModel
+from typing import List, Optional
+
+
+class DeviceTrafficThroughputMetric1(BaseModel):
+    device_name: Optional[str]
+    hardware_version: Optional[str]
+    manufacturer: Optional[str]
+    pn_code: Optional[str]
+    serial_number: Optional[str]
+    software_version: Optional[str]
+    status: Optional[str]
+    site_name: Optional[str]
+    apic_controller_ip: Optional[str]
+    traffic_throughput: Optional[float]
+    time: Optional[datetime]
+
+
+class TrafficThroughputMetricsResponse(BaseModel):
+    metrics: List[DeviceTrafficThroughputMetric1]

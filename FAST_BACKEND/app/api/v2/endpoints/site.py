@@ -23,6 +23,10 @@ from app.schema.site_schema import HourlyDevicePowerMetricsResponse
 
 from app.schema.site_schema import TopDevicesPowerResponse
 
+from app.schema.site_schema import TrafficThroughputMetricsDetails
+
+from app.schema.site_schema import TrafficThroughputMetricsResponse
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 
 
@@ -178,3 +182,47 @@ def get_top_5_power_devices(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])):
     return site_service.get_top_5_power_devices(site_id)
+
+
+@router.get("/site/traffic_throughput_metrics/{site_id}",
+            response_model=CustomResponse[List[TrafficThroughputMetricsDetails]])
+@inject
+def get_traffic_throughput_metrics(
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    metrics = site_service.calculate_traffic_throughput_by_id(site_id)
+    return CustomResponse(
+        message="Traffic throughput metrics retrieved successfully",
+        data=metrics,
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/site/traffic_throughput_metrics_by_device/{site_id}/{device_name}",
+            response_model=CustomResponse[List[TrafficThroughputMetricsDetails]])
+@inject
+def get_device_data_metrics(
+        site_id: int,
+        device_name: str,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    metrics = site_service.calculate_device_data_by_name(site_id, device_name)
+    return CustomResponse(
+        message="Device data metrics retrieved successfully",
+        data=metrics,
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/site/TRAFFIC_THROUGHPUT_on_click/{site_id}", response_model=TrafficThroughputMetricsResponse)
+@inject
+def get_site_traffic_throughput_metrics(
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    metrics = site_service.calculate_site_traffic_throughput_metrics(site_id)
+    return metrics

@@ -405,11 +405,10 @@ class InfluxDBRepository:
             '''
             result = self.query_api1.query_data_frame(query)
             if not result.empty:
-                # Assuming '_value' is the average per hour, calculate the total and average for the period
                 total_power = result['_value'].sum()
                 count_measurements = len(result['_value'])
                 average_power = total_power / count_measurements if count_measurements > 0 else 0
-                powerinkwh = total_power / 1000 # aed
+                powerinkwh = total_power / 1000  # aed
                 cost_of_power = powerinkwh * 0.405
                 top_devices_power.append({
                     'ip': ip,
@@ -419,6 +418,48 @@ class InfluxDBRepository:
                     # Add other necessary data as needed
                 })
 
-        # Additional sorting or processing to find global top 5 if necessary
-
         return top_devices_power
+
+    def get_traffic_throughput_metrics(self, device_ips: List[str]) -> List[dict]:
+        throughput_metrics = []
+        print("devicesIPSSSSSSSS", type(device_ips), file=sys.stderr)
+        device_ips = [device_ips]
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{self.bucket}")
+                |> range(start: -7d)
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
+                |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+            '''
+            result = self.query_api1.query_data_frame(query)
+            if not result.empty:
+                result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
+                for _, row in result.iterrows():
+                    throughput_metrics.append({
+                        "time": row['time'],
+                        "total_bytes_rate_last": row['_value']
+                    })
+
+        return throughput_metrics
+
+    def calculate_throughput_metrics_for_devices(self, device_ips: List[str]) -> List[dict]:
+        throughput_metrics = []
+
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{self.bucket}")
+                |> range(start: -7d)
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
+                |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+            '''
+            result = self.query_api1.query_data_frame(query)
+            if not result.empty:
+                for _, row in result.iterrows():
+                    throughput_metrics.append({
+                        "ip": ip,
+                        "traffic_throughput": row['_value'],
+                        "time": pd.to_datetime(row['_time'])
+                    })
+        return throughput_metrics
