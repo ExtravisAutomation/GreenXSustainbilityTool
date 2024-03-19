@@ -459,9 +459,10 @@ class InfluxDBRepository:
             if not result.empty:
                 result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
                 for _, row in result.iterrows():
+                    total_bytes_rate_last_gb = row['_value'] / (2 ** 30)
                     throughput_metrics.append({
                         "time": row['time'],
-                        "total_bytes_rate_last": row['_value']
+                        "total_bytes_rate_last": total_bytes_rate_last_gb
                     })
 
         return throughput_metrics
