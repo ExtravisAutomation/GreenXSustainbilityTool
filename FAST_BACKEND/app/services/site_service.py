@@ -223,7 +223,7 @@ class SiteService:
 
         top_devices_data_raw = self.influxdb_repository.get_top_5_devices_by_power(device_ips)
         top_devices_data = []
-        processed_ips = set()  # To keep track of IPs that have already been processed
+        processed_ips = set()
 
         for device_data in top_devices_data_raw:
             ip = device_data['ip']
@@ -335,29 +335,26 @@ class SiteService:
         return cost_of_power
 
     def fetch_hourly_device_data(self, site_id: int, device_id: int) -> dict:
-        # Fetch the device IP and name using the device_id and site_id
+
         device_info = self.site_repository.get_device_ip_by_id(site_id, device_id)
         if not device_info:
             raise HTTPException(status_code=404, detail="Device not found")
 
-        # Unpack the tuple into device_ip and device_name
         device_ip, device_name = device_info
 
-        # Fetch hourly total PIn data
         hourly_total_pin_data = self.influxdb_repository.fetch_hourly_total_pin(device_ip)
 
-        # Fetch hourly traffic throughput data
         hourly_traffic_throughput_data = self.influxdb_repository.fetch_hourly_traffic_throughput(device_ip)
 
-        # Merge or format the data as required by your application's needs
         hourly_data = []
         for pin_data, throughput_data in zip(hourly_total_pin_data, hourly_traffic_throughput_data):
             hourly_data.append({
-                "time": pin_data["time"],  # Assuming time stamps align; adjust logic as needed
-                "Power Usage": pin_data["total_PIn"],
+                "time": pin_data["time"],
+                "Power Usage (kW)": round(pin_data["total_PIn"] / 1000, 2),
                 "device_name": device_name,
-                "traffic_throughput_gb": throughput_data["traffic_throughput"],
-                "Cost": pin_data["total_PIn"] * 0.14  # Example cost calculation
+                "Traffic Throughput (GB)": round(throughput_data["traffic_throughput"], 2),
+                "Cost": round(pin_data["total_PIn"] * 0.14 / 1000, 2)
+
             })
 
         return {"hourly_data": hourly_data}
