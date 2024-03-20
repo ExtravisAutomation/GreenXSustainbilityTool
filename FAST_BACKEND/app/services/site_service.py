@@ -323,7 +323,7 @@ class SiteService:
             "device_info": device_info,
             "total_power": total_power,
             "traffic_throughput": traffic_throughput,
-            "cost_of_power": cost_of_power
+            "cost_of_power": round(cost_of_power, 2)
         }
 
         return device_metrics

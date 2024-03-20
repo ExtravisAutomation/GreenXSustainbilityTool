@@ -19,6 +19,8 @@ from app.model.APIC_controllers import APICControllers
 
 from app.model.device_inventory import DeviceInventory
 
+from app.model.rack import Rack
+
 
 class SiteRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
@@ -239,28 +241,58 @@ class SiteRepository(BaseRepository):
             )
             return [name[0] for name in device_names if name[0] is not None]
 
+    # def get_device_by_site_and_rack(self, site_id: int, rack_id: int) -> Dict[str, Any]:
+    #     with self.session_factory() as session:
+    #         device = (
+    #             session.query(DeviceInventory)
+    #             .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+    #             .filter(DeviceInventory.site_id == site_id, APICControllers.rack_id == rack_id)
+    #             .first()
+    #         )
+    #         if device:
+    #             return {
+    #                 "ip_address": device.apic_controller.ip_address,
+    #                 "device_name": device.device_name,
+    #                 "hardware_version": device.hardware_version,
+    #                 "manufacturer": device.manufacturer,
+    #                 "pn_code": device.pn_code,
+    #                 "serial_number": device.serial_number,
+    #                 "software_version": device.software_version,
+    #                 "status": device.status
+    #
+    #                 # Add other fields as necessary
+    #             }
+
     def get_device_by_site_and_rack(self, site_id: int, rack_id: int) -> Dict[str, Any]:
         with self.session_factory() as session:
+            # Adjusting the query to join with Site and Rack for additional details
             device = (
-                session.query(DeviceInventory)
+                session.query(DeviceInventory, APICControllers, Site, Rack)
                 .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
-                .filter(DeviceInventory.site_id == site_id, APICControllers.rack_id == rack_id)
+                .join(Site, APICControllers.site_id == Site.id)
+                .join(Rack, APICControllers.rack_id == Rack.id)
+                .filter(APICControllers.site_id == site_id, APICControllers.rack_id == rack_id)
                 .first()
             )
             if device:
+                # Unpack the result into individual models
+                device_inventory, apic_controller, site, rack = device
                 return {
-                    "ip_address": device.apic_controller.ip_address,
-                    "device_name": device.device_name,
-                    "hardware_version": device.hardware_version,
-                    "manufacturer": device.manufacturer,
-                    "pn_code": device.pn_code,
-                    "serial_number": device.serial_number,
-                    "software_version": device.software_version,
-                    "status": device.status
+                    "region": site.region,
+                    "site_name": site.site_name,
+                    "rack_name": rack.rack_name,
+                    "device_type": apic_controller.device_type,
+                    "ip_address": apic_controller.ip_address,
+                    "device_name": device_inventory.device_name,
+                    "hardware_version": device_inventory.hardware_version,
+                    "manufacturer": device_inventory.manufacturer,
+                    "pn_code": device_inventory.pn_code,
+                    "serial_number": device_inventory.serial_number,
+                    "software_version": device_inventory.software_version,
+                    "status": device_inventory.status
 
                     # Add other fields as necessary
                 }
-
     def get_device_details_by_name_and_site_id(self, site_id: int, device_name: str) -> dict:
         with self.session_factory() as session:
             # Assuming `DeviceInventory` has a relationship with `APICControllers` and possibly other models for additional details
