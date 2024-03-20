@@ -329,10 +329,10 @@ class InfluxDBRepository:
                         "total_POut": self.sanitize_for_json(round(row.get('total_POut', 0) / 1000, 2)),
                         "average_energy_consumed": self.sanitize_for_json(
                             round(row.get('total_PIn', 0) / row.get('total_POut', 1), 2)) if row.get('total_POut',
-                                                                                                     1) > 0 else None,
+                                                                                                     1) > 0 else 0,
                         "power_efficiency": self.sanitize_for_json(
                             round(row.get('total_POut', 0) / row.get('total_PIn', 1) * 100, 2)) if row.get('total_PIn',
-                                                                                                           1) > 0 else None
+                                                                                                           1) > 0 else 0
                     })
 
         return total_power_metrics
