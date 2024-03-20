@@ -158,10 +158,8 @@ class SiteService:
         metrics_list = []
 
         for metric_data in hourly_power_metrics:
-
-            device_info = next(
-                (d for d in device_inventory_data if d.get('apic_ip') == metric_data.get('apic_controller_ip')), None)
-
+            device_info = self.site_repository.get_device_details_by_name_and_site_id(site_id,
+                                                                                      metric_data['device_name'])
             if device_info:
                 metric = DevicePowerMetric(
                     device_name=device_info.get('device_name'),
@@ -173,11 +171,10 @@ class SiteService:
                     status=device_info.get('status'),
                     site_name=device_info.get('site_name'),
                     apic_controller_ip=metric_data.get('apic_controller_ip'),
-                    time=metric_data.get('hour'),
+                    total_power=metric_data.get('total_power'),
+                    time=metric_data.get('time'),
                     current_power=metric_data.get("total_PIn"),
-                    total_power=metric_data.get("total_PIn"),
                     max_power=metric_data.get("max_power")
-
                 )
                 metrics_list.append(metric)
 
@@ -185,25 +182,37 @@ class SiteService:
 
     def compare_devices_hourly_power_metrics(self, site_id: int, device_name1: str,
                                              device_name2: str) -> HourlyDevicePowerMetricsResponse:
-
         devices_info = self.site_repository.get_device_ips_by_names_and_site_id(site_id, [device_name1, device_name2])
-
+        print("DEVICESSSSSSS", devices_info, file=sys.stderr)
         hourly_power_metrics = []
+
         for device in devices_info:
             ip_metrics = self.influxdb_repository.get_hourly_power_metrics_for_ip([device['ip_address']])
+            device_details = self.site_repository.get_device_details_by_name_and_site_id(site_id, device['device_name'])
 
             for metric in ip_metrics:
-                metric.update({
-                    "device_name": device_name1 if device['ip_address'] == devices_info[0][
-                        'ip_address'] else device_name2,
-                    "site_name": device['site_name']
+                if device_details:
+                    # Update metric with detailed device information
+                    updated_metric = {
+                        "device_name": device_details.get('device_name', ''),
+                        "hardware_version": device_details.get('hardware_version', None),
+                        "manufacturer": device_details.get('manufacturer', None),
+                        "pn_code": device_details.get('pn_code', None),
+                        "serial_number": device_details.get('serial_number', None),
+                        "software_version": device_details.get('software_version', None),
+                        "status": device_details.get('status', None),
+                        "site_name": device_details.get('site_name', ''),
+                        "apic_controller_ip": device['ip_address'],
+                        "total_power": metric.get('total_power', None),
+                        "max_power": metric.get('max_power', None),
+                        "current_power": metric.get('total_PIn', None),
+                        # Assuming total_PIn is equivalent to current_power in your schema
+                        "time": metric.get('hour', None)
+                    }
+                    hourly_power_metrics.append(updated_metric)
 
-                })
-            hourly_power_metrics.extend(ip_metrics)
-
-        metrics_list = [DevicePowerMetric(**metric) for metric in hourly_power_metrics]
-
-        return HourlyDevicePowerMetricsResponse(metrics=metrics_list)
+        return HourlyDevicePowerMetricsResponse(
+            metrics=[DevicePowerMetric(**metric) for metric in hourly_power_metrics])
 
     def get_eol_eos_counts_for_site(self, site_id: int):
         return self.site_repository.get_eol_eos_counts(site_id)

@@ -150,16 +150,21 @@ class SiteRepository(BaseRepository):
 
     def get_device_ips_by_names_and_site_id(self, site_id: int, device_names: List[str]) -> list[dict[str, Any]]:
         with self.session_factory() as session:
-            device_ips_and_site_name = (
-                session.query(APICControllers.ip_address, Site.site_name)
-                .join(DeviceInventory, DeviceInventory.apic_controller_id == APICControllers.id)
+            device_ips_and_details = (
+                session.query(
+                    DeviceInventory.device_name,
+                    APICControllers.ip_address,
+                    Site.site_name
+                )
+                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name.in_(device_names))
                 .all()
             )
 
             devices_info = [
-                {"ip_address": ip_address, "site_name": site_name} for ip_address, site_name in device_ips_and_site_name
+                {"device_name": device_name, "ip_address": ip_address, "site_name": site_name}
+                for device_name, ip_address, site_name in device_ips_and_details
             ]
 
             return devices_info
@@ -255,3 +260,43 @@ class SiteRepository(BaseRepository):
 
                     # Add other fields as necessary
                 }
+
+    def get_device_details_by_name_and_site_id(self, site_id: int, device_name: str) -> dict:
+        with self.session_factory() as session:
+            # Assuming `DeviceInventory` has a relationship with `APICControllers` and possibly other models for additional details
+            # Adjust the fields according to your actual database schema
+            query_result = (
+                session.query(
+                    DeviceInventory.device_name,
+                    DeviceInventory.hardware_version,
+                    DeviceInventory.manufacturer,
+                    DeviceInventory.pn_code,
+                    DeviceInventory.serial_number,
+                    DeviceInventory.software_version,
+                    DeviceInventory.status,
+                    APICControllers.ip_address,
+                    Site.site_name
+                )
+                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Site, DeviceInventory.site_id == Site.id)
+                .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name == device_name)
+                .first()
+            )
+
+            if query_result:
+                # Mapping the result to a dictionary
+                device_details = {
+                    "device_name": query_result.device_name,
+                    "hardware_version": query_result.hardware_version,
+                    "manufacturer": query_result.manufacturer,
+                    "pn_code": query_result.pn_code,
+                    "serial_number": query_result.serial_number,
+                    "software_version": query_result.software_version,
+                    "status": query_result.status,
+                    "ip_address": query_result.ip_address,
+                    "site_name": query_result.site_name,
+                }
+                return device_details
+            else:
+                # Return an empty dictionary or handle the case where no results are found
+                return {}
