@@ -139,6 +139,7 @@ class HourlyDevicePowerMetricsResponse(BaseModel):
 
 
 class DevicePowerConsumption(BaseModel):
+    id: Optional[int] = None
     device_name: Optional[str] = None
     total_power: Optional[float] = None
     average_power: Optional[float] = None

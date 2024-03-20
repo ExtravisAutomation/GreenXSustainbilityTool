@@ -1,7 +1,7 @@
 import sys
 from contextlib import AbstractContextManager
 from datetime import datetime
-from typing import Callable, Dict, List, Optional, Any
+from typing import Callable, Dict, List, Optional, Any, Tuple
 
 from sqlalchemy import func
 from sqlalchemy.engine import Row
@@ -300,3 +300,18 @@ class SiteRepository(BaseRepository):
             else:
                 # Return an empty dictionary or handle the case where no results are found
                 return {}
+
+    def get_device_ip_by_id(self, site_id: int, device_id: int) -> Optional[tuple[Any, Any]]:
+        with self.session_factory() as session:
+            # Adjust the query to also select the device_name from the DeviceInventory table
+            result = (
+                session.query(APICControllers.ip_address, DeviceInventory.device_name)
+                .join(DeviceInventory, APICControllers.id == DeviceInventory.apic_controller_id)
+                .filter(DeviceInventory.site_id == site_id, DeviceInventory.id == device_id)
+                .first()
+            )
+            if result:
+                # Return both ip_address and device_name if the query was successful
+                return result.ip_address, result.device_name
+            else:
+                return None

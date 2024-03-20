@@ -518,3 +518,36 @@ class InfluxDBRepository:
             total_gigabytes = total_bytes / (1024 ** 3)  # Convert bytes to Gigabytes
             return total_gigabytes
         return 0.0
+
+    def fetch_hourly_total_pin(self, device_ip: str) -> List[dict]:
+        query = f'''
+        from(bucket: "{self.bucket}")
+        |> range(start: -7d)
+        |> filter(fn: (r) => r["ApicController_IP"] == "10.14.106.6")
+        |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+        |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+        |> yield(name: "mean")
+        '''
+        result = self.query_api1.query_data_frame(query=query)
+        if result.empty:
+            return []
+        result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
+        hourly_data = [{"time": row['time'], "total_PIn": row['_value']} for index, row in result.iterrows()]
+        return hourly_data
+
+    def fetch_hourly_traffic_throughput(self, device_ip: str) -> List[dict]:
+        query = f'''
+        from(bucket: "{self.bucket}")
+        |> range(start: -7d)
+        |> filter(fn: (r) => r["ApicController_IP"] == "10.14.106.8")
+        |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
+        |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+        |> yield(name: "mean")
+        '''
+        result = self.query_api1.query_data_frame(query=query)
+        if result.empty:
+            return []
+        result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
+        hourly_data = [{"time": row['time'], "traffic_throughput": row['_value'] / (1024 ** 3)} for index, row in
+                       result.iterrows()]  # Convert bytes to Gigabytes
+        return hourly_data
