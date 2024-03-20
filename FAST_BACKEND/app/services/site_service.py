@@ -314,7 +314,7 @@ class SiteService:
 
         ip_address = device_info['ip_address']
 
-        total_power = self.influxdb_repository.get_total_power_for_ip(ip_address)
+        total_power, total_pin  = self.influxdb_repository.get_total_power_for_ip(ip_address)
         traffic_throughput = self.influxdb_repository.get_traffic_throughput_for_ip(ip_address)
 
         cost_of_power = self.calculate_cost_of_power(total_power)
@@ -323,7 +323,8 @@ class SiteService:
             "device_info": device_info,
             "total_power": total_power,
             "traffic_throughput": traffic_throughput,
-            "cost_of_power": round(cost_of_power, 2)
+            "cost_of_power": round(cost_of_power, 2),
+            "input power": total_pin
         }
 
         return device_metrics

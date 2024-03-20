@@ -3,7 +3,7 @@ import sys
 import numpy as np
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from contextlib import AbstractContextManager
-from typing import Callable, List
+from typing import Callable, List, Union, Tuple, Any
 
 from influxdb_client.client.query_api import QueryApi
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -301,6 +301,7 @@ class InfluxDBRepository:
         if isinstance(obj, float) and (np.isnan(obj) or np.isinf(obj)):
             return 0
         return obj
+
     def get_energy_consumption_metrics(self, device_ips: List[str]) -> List[dict]:
         total_power_metrics = []
         all_hours = pd.date_range(start=pd.Timestamp.now() - pd.Timedelta(days=1),
@@ -530,7 +531,7 @@ class InfluxDBRepository:
                     })
         return throughput_metrics
 
-    def get_total_power_for_ip(self, ip_address: str) -> float:
+    def get_total_power_for_ip(self, ip_address: str) -> Union[tuple[Union[float, Any], Any], float]:
         query = f'''
             from(bucket: "{self.bucket}")
             |> range(start: -7d)
@@ -541,9 +542,11 @@ class InfluxDBRepository:
         result = self.query_api1.query_data_frame(query)
         print("RESULTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT", result, file=sys.stderr)
         if not result.empty:
-            total_power_kwh = result['_value'].sum() / 1000.0  # Assuming _value is in Watts
-            return total_power_kwh
-        return 0.0
+            # Assuming _value is in Watts and you wish to sum up for total power consumption
+            total_pin_sum = result['_value'].sum()  # Sum up all values if there are multiple
+            total_power_kwh = total_pin_sum / 1000.0  # Convert to kWh assuming values are in Watts
+            return total_power_kwh, total_pin_sum  # Return the sum directly
+        return 0.0, 0  # Return both as 0 if no results
 
     def get_traffic_throughput_for_ip(self, ip_address: str) -> float:
         query = f'''
