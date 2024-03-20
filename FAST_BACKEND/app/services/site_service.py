@@ -1,4 +1,5 @@
 import sys
+from collections import defaultdict
 from datetime import datetime
 from typing import Dict, List, Any
 
@@ -183,8 +184,7 @@ class SiteService:
     def compare_devices_hourly_power_metrics(self, site_id: int, device_name1: str,
                                              device_name2: str) -> HourlyDevicePowerMetricsResponse:
         devices_info = self.site_repository.get_device_ips_by_names_and_site_id(site_id, [device_name1, device_name2])
-        print("DEVICESSSSSSS", devices_info, file=sys.stderr)
-        hourly_power_metrics = []
+        hourly_data: Dict[str, List[dict]] = defaultdict(list)
 
         for device in devices_info:
             ip_metrics = self.influxdb_repository.get_hourly_power_metrics_for_ip([device['ip_address']])
@@ -192,7 +192,6 @@ class SiteService:
 
             for metric in ip_metrics:
                 if device_details:
-                    # Update metric with detailed device information
                     updated_metric = {
                         "device_name": device_details.get('device_name', ''),
                         "hardware_version": device_details.get('hardware_version', None),
@@ -206,14 +205,17 @@ class SiteService:
                         "total_power": metric.get('total_power', None),
                         "max_power": metric.get('max_power', None),
                         "current_power": metric.get('total_PIn', None),
-                        # Assuming total_PIn is equivalent to current_power in your schema
                         "time": metric.get('hour', None)
                     }
-                    hourly_power_metrics.append(updated_metric)
+                    hourly_data[updated_metric["time"]].append(updated_metric)
 
-        return HourlyDevicePowerMetricsResponse(
-            metrics=[DevicePowerMetric(**metric) for metric in hourly_power_metrics])
+        # Convert the hourly_data dict to the required format for the response
+        metrics_list = []
+        for time, metrics in hourly_data.items():
+            for metric in metrics:
+                metrics_list.append(DevicePowerMetric(**metric))
 
+        return HourlyDevicePowerMetricsResponse(metrics=metrics_list)
     def get_eol_eos_counts_for_site(self, site_id: int):
         return self.site_repository.get_eol_eos_counts(site_id)
 

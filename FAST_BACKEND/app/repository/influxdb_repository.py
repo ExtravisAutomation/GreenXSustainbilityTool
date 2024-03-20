@@ -276,7 +276,7 @@ class InfluxDBRepository:
                     for index, row in result.iterrows():
                         power_metrics_per_device.append({
                             "time": row['time'],
-                            field: row['_value']
+                            field: round(row['_value'] / 1000, 2)
                         })
 
             if power_metrics_per_device:
