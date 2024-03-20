@@ -1,5 +1,6 @@
 import sys
 
+import numpy as np
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from contextlib import AbstractContextManager
 from typing import Callable, List
@@ -253,45 +254,85 @@ class InfluxDBRepository:
             "max_power": max_power
         }
 
+    # def get_energy_consumption_metrics(self, device_ips: List[str]) -> List[dict]:
+    #     # Initialize metrics
+    #     total_power_metrics = []
+    #
+    #     for ip in device_ips:
+    #
+    #         power_metrics_per_device = []
+    #
+    #         for field in ['total_PIn', 'total_POut']:
+    #             query = f'''
+    #                 from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #                 |> range(start: -7d)
+    #                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+    #                 |> filter(fn: (r) => r["_field"] == "{field}")
+    #                 |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+    #             '''
+    #             result = self.query_api1.query_data_frame(query)
+    #             if not result.empty:
+    #
+    #                 result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
+    #                 for index, row in result.iterrows():
+    #                     power_metrics_per_device.append({
+    #                         "time": row['time'],
+    #                         field: round(row['_value'] / 1000, 2)
+    #                     })
+    #
+    #         if power_metrics_per_device:
+    #             df = pd.DataFrame(power_metrics_per_device)
+    #             grouped_df = df.groupby('time').sum().reset_index()
+    #
+    #             for index, row in grouped_df.iterrows():
+    #                 total_power_metrics.append({
+    #                     "time": row['time'],
+    #                     "energy_consumption": row.get('total_PIn', 0),
+    #                     "total_POut": row.get('total_POut', 0),
+    #                     "average_energy_consumed": row.get('total_PIn', 0) / row.get('total_POut', 1) if row.get(
+    #                         'total_POut', 1) > 0 else None,
+    #                     "power_efficiency": row.get('total_POut', 0) / row.get('total_PIn', 1) * 100 if row.get(
+    #                         'total_PIn', 1) > 0 else None
+    #                 })
+    #
+    #     return total_power_metrics
+
+    def sanitize_for_json(self, obj):
+        if isinstance(obj, float) and (np.isnan(obj) or np.isinf(obj)):
+            return 0
+        return obj
     def get_energy_consumption_metrics(self, device_ips: List[str]) -> List[dict]:
-        # Initialize metrics
         total_power_metrics = []
+        all_hours = pd.date_range(start=pd.Timestamp.now() - pd.Timedelta(days=7),
+                                  end=pd.Timestamp.now(),
+                                  freq='H').strftime('%Y-%m-%d %H:%M:%S')
 
         for ip in device_ips:
+            query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: -7d)
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                |> aggregateWindow(every: 1h, fn: mean, createEmpty: true)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+            result = self.query_api1.query_data_frame(query)
+            if not result.empty:
+                result['_time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
+                result.set_index('_time', inplace=True)
+                df = result.reindex(all_hours, method='ffill').reset_index().rename(columns={'index': '_time'})
 
-            power_metrics_per_device = []
-
-            for field in ['total_PIn', 'total_POut']:
-                query = f'''
-                    from(bucket: "{configs.INFLUXDB_BUCKET}")
-                    |> range(start: -7d)
-                    |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                    |> filter(fn: (r) => r["_field"] == "{field}")
-                    |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
-                '''
-                result = self.query_api1.query_data_frame(query)
-                if not result.empty:
-
-                    result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
-                    for index, row in result.iterrows():
-                        power_metrics_per_device.append({
-                            "time": row['time'],
-                            field: round(row['_value'] / 1000, 2)
-                        })
-
-            if power_metrics_per_device:
-                df = pd.DataFrame(power_metrics_per_device)
-                grouped_df = df.groupby('time').sum().reset_index()
-
-                for index, row in grouped_df.iterrows():
+                for _, row in df.iterrows():
                     total_power_metrics.append({
-                        "time": row['time'],
-                        "energy_consumption": row.get('total_PIn', 0),
-                        "total_POut": row.get('total_POut', 0),
-                        "average_energy_consumed": row.get('total_PIn', 0) / row.get('total_POut', 1) if row.get(
-                            'total_POut', 1) > 0 else None,
-                        "power_efficiency": row.get('total_POut', 0) / row.get('total_PIn', 1) * 100 if row.get(
-                            'total_PIn', 1) > 0 else None
+                        "time": row['_time'],
+                        "energy_consumption": self.sanitize_for_json(round(row.get('total_PIn', 0) / 1000, 2)),
+                        "total_POut": self.sanitize_for_json(round(row.get('total_POut', 0) / 1000, 2)),
+                        "average_energy_consumed": self.sanitize_for_json(
+                            round(row.get('total_PIn', 0) / row.get('total_POut', 1), 2)) if row.get('total_POut',
+                                                                                                     1) > 0 else None,
+                        "power_efficiency": self.sanitize_for_json(
+                            round(row.get('total_POut', 0) / row.get('total_PIn', 1) * 100, 2)) if row.get('total_PIn',
+                                                                                                           1) > 0 else None
                     })
 
         return total_power_metrics

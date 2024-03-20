@@ -209,13 +209,14 @@ class SiteService:
                     }
                     hourly_data[updated_metric["time"]].append(updated_metric)
 
-        # Convert the hourly_data dict to the required format for the response
+
         metrics_list = []
         for time, metrics in hourly_data.items():
             for metric in metrics:
                 metrics_list.append(DevicePowerMetric(**metric))
 
         return HourlyDevicePowerMetricsResponse(metrics=metrics_list)
+
     def get_eol_eos_counts_for_site(self, site_id: int):
         return self.site_repository.get_eol_eos_counts(site_id)
 
@@ -230,7 +231,7 @@ class SiteService:
         for device_data in top_devices_data_raw:
             ip = device_data['ip']
             if ip in processed_ips:
-                continue  # Skip this device if its IP has already been processed
+                continue
 
             device_info = next((device for device in device_inventory if device['ip_address'] == ip), None)
             if device_info:
@@ -306,22 +307,18 @@ class SiteService:
         return self.site_repository.get_device_names_by_site_id2(site_id)
 
     def get_device_metrics_by_site_and_rack(self, site_id: int, rack_id: int) -> Dict[str, Any]:
-        # Get the IP address for the first device in the specified rack and site
+
         device_info = self.site_repository.get_device_by_site_and_rack(site_id, rack_id)
         if not device_info:
             raise Exception("Device not found for given site and rack ID.")
 
         ip_address = device_info['ip_address']
 
-        # Query InfluxDB for power and traffic metrics
         total_power = self.influxdb_repository.get_total_power_for_ip(ip_address)
         traffic_throughput = self.influxdb_repository.get_traffic_throughput_for_ip(ip_address)
 
-        # Calculate the cost of total PIn
-        # Assuming the cost calculation logic is defined elsewhere
         cost_of_power = self.calculate_cost_of_power(total_power)
 
-        # Assemble the response
         device_metrics = {
             "device_info": device_info,
             "total_power": total_power,
@@ -332,7 +329,7 @@ class SiteService:
         return device_metrics
 
     def calculate_cost_of_power(self, total_power: float) -> float:
-        cost_per_kwh = 0.14  # Cost per kWh in your currency
+        cost_per_kwh = 0.14  # Cost kw uae
         cost_of_power = total_power * cost_per_kwh
         return cost_of_power
 
