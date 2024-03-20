@@ -303,14 +303,14 @@ class InfluxDBRepository:
         return obj
     def get_energy_consumption_metrics(self, device_ips: List[str]) -> List[dict]:
         total_power_metrics = []
-        all_hours = pd.date_range(start=pd.Timestamp.now() - pd.Timedelta(days=7),
+        all_hours = pd.date_range(start=pd.Timestamp.now() - pd.Timedelta(days=1),
                                   end=pd.Timestamp.now(),
                                   freq='H').strftime('%Y-%m-%d %H:%M:%S')
 
         for ip in device_ips:
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
-                |> range(start: -7d)
+                |> range(start: -1d)
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
                 |> aggregateWindow(every: 1h, fn: mean, createEmpty: true)
