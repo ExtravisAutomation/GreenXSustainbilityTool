@@ -350,10 +350,10 @@ class SiteService:
         for pin_data, throughput_data in zip(hourly_total_pin_data, hourly_traffic_throughput_data):
             hourly_data.append({
                 "time": pin_data["time"],
-                "Power Usage (kW)": round(pin_data["total_PIn"] / 1000, 2),
+                "power_usage": round(pin_data["total_PIn"] / 1000, 2),
                 "device_name": device_name,
-                "Traffic Throughput (GB)": round(throughput_data["traffic_throughput"], 2),
-                "Cost": round(pin_data["total_PIn"] * 0.14 / 1000, 2)
+                "traffic_throughput": round(throughput_data["traffic_throughput"], 2),
+                "cost": round(pin_data["total_PIn"] * 0.14 / 1000, 2)
 
             })
 
