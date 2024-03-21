@@ -343,7 +343,7 @@ class InfluxDBRepository:
         total_power_metrics = []
         all_hours = pd.date_range(start=pd.Timestamp.now() - pd.Timedelta(days=1),
                                   end=pd.Timestamp.now(),
-                                  freq='H').strftime('%Y-%m-%d %H:%M:%S')
+                                  freq='H').strftime('%Y-%m-%d %H:00')
 
         for ip in device_ips:
             query = f'''
@@ -359,6 +359,7 @@ class InfluxDBRepository:
                 result['_time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
                 result.set_index('_time', inplace=True)
                 df = result.reindex(all_hours, method='ffill').reset_index().rename(columns={'index': '_time'})
+
 
                 for _, row in df.iterrows():
                     # Use random.uniform to generate random values within specified ranges
@@ -462,8 +463,8 @@ class InfluxDBRepository:
                     total_power_accumulated.append(total_power)
 
             print(f"Total power accumulated for IP {ip}: {total_power_accumulated}")
-            total_power = sum(total_power_accumulated) if total_power_accumulated else None
-            max_power = max(total_power_accumulated) if total_power_accumulated else None
+            total_power = total_power_accumulated if total_power_accumulated else 0
+            max_power = max(total_power_accumulated) if total_power_accumulated else 0
             print(f"Total power for IP {ip}: {total_power}, Max power for IP {ip}: {max_power}")
 
             for metric in ip_hourly_metrics:
