@@ -313,7 +313,7 @@ class SiteService:
 
         ip_address = device_info['ip_address']
 
-        total_power, total_pin = self.influxdb_repository.get_toleartal_power_for_ip(ip_address)
+        total_power, total_pin = self.influxdb_repository.get_total_power_for_ip(ip_address)
         traffic_throughput = self.influxdb_repository.get_traffic_throughput_for_ip(ip_address)
 
         cost_of_power = self.calculate_cost_of_power(total_power)
