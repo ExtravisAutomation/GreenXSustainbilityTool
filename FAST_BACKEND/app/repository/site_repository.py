@@ -295,8 +295,7 @@ class SiteRepository(BaseRepository):
                 }
     def get_device_details_by_name_and_site_id(self, site_id: int, device_name: str) -> dict:
         with self.session_factory() as session:
-            # Assuming `DeviceInventory` has a relationship with `APICControllers` and possibly other models for additional details
-            # Adjust the fields according to your actual database schema
+
             query_result = (
                 session.query(
                     DeviceInventory.device_name,
@@ -316,7 +315,7 @@ class SiteRepository(BaseRepository):
             )
 
             if query_result:
-                # Mapping the result to a dictionary
+
                 device_details = {
                     "device_name": query_result.device_name,
                     "hardware_version": query_result.hardware_version,
@@ -330,7 +329,7 @@ class SiteRepository(BaseRepository):
                 }
                 return device_details
             else:
-                # Return an empty dictionary or handle the case where no results are found
+
                 return {}
 
     def get_device_ip_by_id(self, site_id: int, device_id: int) -> Optional[tuple[Any, Any]]:
