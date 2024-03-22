@@ -240,6 +240,7 @@ class SiteService:
                 top_devices_data.append(DevicePowerConsumption(
                     id=device_info['id'],  # Include the device ID
                     device_name=device_info['device_name'],
+                    ip_address=device_info['ip_address'],
                     total_power=device_data['total_PIn'] / 1000,
                     average_power=average_power,
                     cost_of_power=round(cost_of_power, 2)

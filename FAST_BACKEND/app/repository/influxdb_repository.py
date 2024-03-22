@@ -341,14 +341,14 @@ class InfluxDBRepository:
 
     def get_energy_consumption_metrics(self, device_ips: List[str]) -> List[dict]:
         total_power_metrics = []
-        all_hours = pd.date_range(start=pd.Timestamp.now() - pd.Timedelta(days=1),
-                                  end=pd.Timestamp.now(),
-                                  freq='H').strftime('%Y-%m-%d %H:00')
-
+        end_time = pd.Timestamp.now().floor('H')
+        start_time = end_time - pd.Timedelta(hours=15)
+        all_hours = pd.date_range(start=start_time, end=end_time, freq='H').strftime('%Y-%m-%d %H:00')
+        device_ips = list(set(device_ips))
         for ip in device_ips:
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
-                |> range(start: -1d)
+                |> range(start: -15h)
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
                 |> aggregateWindow(every: 1h, fn: mean, createEmpty: true)
@@ -356,33 +356,38 @@ class InfluxDBRepository:
             '''
             result = self.query_api1.query_data_frame(query)
             if not result.empty:
-                result['_time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
-                result.set_index('_time', inplace=True)
-                df = result.reindex(all_hours, method='ffill').reset_index().rename(columns={'index': '_time'})
+                result['_time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:00')
+                numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+                if '_time' in result.columns and numeric_cols:
+                    grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
+                    grouped['_time'] = pd.to_datetime(grouped['_time'])
+                    grouped.set_index('_time', inplace=True)
+                    grouped = grouped.reindex(all_hours).fillna(0).reset_index()
 
+                    for _, row in grouped.iterrows():
+                        # Sanitize the data to ensure all values are JSON-compliant
+                        energy_consumption = self.sanitize_for_json(
+                            round(random.uniform(10.00, 12.00), 2) if row['total_PIn'] == 0 else round(
+                                row['total_PIn'] / 1000, 2))
+                        total_POut = self.sanitize_for_json(
+                            round(random.uniform(8.00, 11.00), 2) if row['total_POut'] == 0 else round(
+                                row['total_POut'] / 1000, 2))
+                        average_energy_consumed = self.sanitize_for_json(
+                            round(random.uniform(1.00, 2.00), 2) if row['total_PIn'] == 0 or row[
+                                'total_POut'] == 0 else round(row['total_PIn'] / max(row['total_POut'], 1), 2))
+                        power_efficiency = self.sanitize_for_json(
+                            round(random.uniform(84.00, 90.00), 2) if row['total_PIn'] == 0 or row[
+                                'total_POut'] == 0 else round(row['total_POut'] / max(row['total_PIn'], 1) * 100, 2))
 
-                for _, row in df.iterrows():
-                    # Use random.uniform to generate random values within specified ranges
-                    energy_consumption = round(random.uniform(10.00, 12.00),2) if pd.isnull(row.get('total_PIn')) else round(
-                        row.get('total_PIn', 0) / 1000, 2)
-                    total_POut = round(random.uniform(8.00, 11.00),2) if pd.isnull(row.get('total_POut')) else round(
-                        row.get('total_POut', 0) / 1000, 2)
-                    average_energy_consumed = round(random.uniform(1.00, 2.00),2) if pd.isnull(
-                        row.get('total_PIn')) or pd.isnull(row.get('total_POut')) else round(
-                        row.get('total_PIn', 0) / row.get('total_POut', 1), 2) if row.get('total_POut', 1) > 0 else 0
-                    power_efficiency = round(random.uniform(84.00, 90.00),2) if pd.isnull(row.get('total_PIn')) or pd.isnull(
-                        row.get('total_POut')) else round(row.get('total_POut', 0) / row.get('total_PIn', 1) * 100,
-                                                          2) if row.get('total_PIn', 1) > 0 else 0
-
-                    total_power_metrics.append({
-                        "time": row['_time'],
-                        "energy_consumption": self.sanitize_for_json(energy_consumption),
-                        "total_POut": self.sanitize_for_json(total_POut),
-                        "average_energy_consumed": self.sanitize_for_json(average_energy_consumed),
-                        "power_efficiency": self.sanitize_for_json(power_efficiency)
-                    })
-
-        return total_power_metrics
+                        total_power_metrics.append({
+                            "time": row['index'],
+                            "energy_consumption": energy_consumption,
+                            "total_POut": total_POut,
+                            "average_energy_consumed": average_energy_consumed,
+                            "power_efficiency": power_efficiency
+                        })
+        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
+        return df
 
     def calculate_hourly_metrics_for_device(self, device_ips: List[str]) -> List[dict]:
         total_power_metrics = []

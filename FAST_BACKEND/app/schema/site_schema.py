@@ -144,6 +144,7 @@ class DevicePowerConsumption(BaseModel):
     total_power: Optional[float] = None
     average_power: Optional[float] = None
     cost_of_power: Optional[float] = None
+    ip_address: Optional[str] = None
 
 
 class TopDevicesPowerResponse(BaseModel):
