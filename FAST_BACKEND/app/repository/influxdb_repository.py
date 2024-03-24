@@ -411,9 +411,9 @@ class InfluxDBRepository:
 
                 result = self.query_api1.query_data_frame(query)
                 if not result.empty:
-                    result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
+                    result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d H:%M:%S')
                     for _, row in result.iterrows():
-                        time_key = row['time']
+                        time_key = row['_time']
                         if time_key not in power_metrics:
                             power_metrics[time_key] = {}
                         power_metrics[time_key][field] = row['_value']
@@ -476,7 +476,8 @@ class InfluxDBRepository:
                 metric.update({
                     "apic_controller_ip": ip,
                     "total_power": total_power,
-                    "max_power": max_power
+                    "max_power": max_power,
+                    "time": pd.to_datetime(metric['hour'])
                 })
                 print(f"Metric before appending to list for IP {ip}: {metric}")
                 hourly_power_metrics.append(metric)
@@ -556,7 +557,7 @@ class InfluxDBRepository:
                     total_bytes_rate_last_gb = row['_value'] / (2 ** 30)
                     throughput_metrics.append({
                         "time": row['time'],
-                        "total_bytes_rate_last": total_bytes_rate_last_gb
+                        "total_bytes_rate_last": round(total_bytes_rate_last_gb,2)
                     })
 
         return throughput_metrics

@@ -157,9 +157,10 @@ def compare_devices_metrics(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    device_name1 = device_name1 or "RYD-SLY-00-AF14"
-    device_name2 = device_name2 or "RYD-SLY-00-AF13"
-
+    #device_name1 = device_name1 or "RYD-SLY-00-AF14"
+    #device_name2 = device_name2 or "RYD-SLY-00-AF13"
+    device_name1 = device_name1 or "Device2"
+    device_name2 = device_name2 or "Device3"
     return site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2)
 
 

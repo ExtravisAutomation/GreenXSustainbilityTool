@@ -121,7 +121,12 @@ class SiteService:
         for metric_data in total_power_metrics:
 
             device_info = next((d for d in device_inventory_data if d.get('ip_address') == metric_data.get('ip')), None)
-
+            if metric_data.get('time'):
+                # If it's not None, format it into a string with the desired format
+                formatted_time = metric_data.get('time').strftime('%Y-%m-%d %H:%M:%S')
+            else:
+                # If it's None, keep it as None
+                formatted_time = None
             if device_info:
 
                 metric = DeviceEnergyMetric(
@@ -137,9 +142,8 @@ class SiteService:
                     PE=metric_data.get('PE'),
                     PUE=metric_data.get('PUE'),
                     current_power=metric_data.get('current_power'),
-                    # time=datetime.strptime(metric_data.get('time'), '%Y-%m-%d %H:%M:%S') if metric_data.get(
-                    #     'time') else None
-                    time=metric_data.get('time')
+                    time=formatted_time
+                    # time=metric_data.get('time')
                 )
                 metrics_list.append(metric)
             else:
@@ -149,35 +153,38 @@ class SiteService:
         return HourlyEnergyMetricsResponse(metrics=metrics_list)
 
     def calculate_hourly_power_metrics_for_each_device(self, site_id: int) -> HourlyDevicePowerMetricsResponse:
+        devices_info = self.site_repository.get_apic_controller_ips_and_device_names_by_site_id(site_id)
 
-        apic_ips = self.site_repository.get_apic_controller_ips_by_site_id(site_id)
+        hourly_power_metrics = []
+        for device in devices_info:
+            ip_metrics = self.influxdb_repository.get_hourly_power_metrics_for_ip([device['ip_address']])
 
-        device_inventory_data = self.site_repository.get_device_inventory_with_apic_ips_by_site_id(site_id)
-
-        hourly_power_metrics = self.influxdb_repository.get_hourly_power_metrics_for_ip(apic_ips)
+            for metric in ip_metrics:
+                device_details = self.site_repository.get_device_details_by_name_and_site_id(site_id,
+                                                                                             device['device_name'])
+                if device_details:
+                    metric.update(device_details)
+                    metric['apic_controller_ip'] = device['ip_address']
+                    hourly_power_metrics.append(metric)
 
         metrics_list = []
-
         for metric_data in hourly_power_metrics:
-            device_info = self.site_repository.get_device_details_by_name_and_site_id(site_id,
-                                                                                      metric_data['device_name'])
-            if device_info:
-                metric = DevicePowerMetric(
-                    device_name=device_info.get('device_name'),
-                    hardware_version=device_info.get('hardware_version'),
-                    manufacturer=device_info.get('manufacturer'),
-                    pn_code=device_info.get('pn_code'),
-                    serial_number=device_info.get('serial_number'),
-                    software_version=device_info.get('software_version'),
-                    status=device_info.get('status'),
-                    site_name=device_info.get('site_name'),
-                    apic_controller_ip=metric_data.get('apic_controller_ip'),
-                    total_power=metric_data.get('total_power'),
-                    time=metric_data.get('time'),
-                    current_power=metric_data.get("total_PIn"),
-                    max_power=metric_data.get("max_power")
-                )
-                metrics_list.append(metric)
+            metric = DevicePowerMetric(
+                device_name=metric_data.get('device_name'),
+                hardware_version=metric_data.get('hardware_version'),
+                manufacturer=metric_data.get('manufacturer'),
+                pn_code=metric_data.get('pn_code'),
+                serial_number=metric_data.get('serial_number'),
+                software_version=metric_data.get('software_version'),
+                status=metric_data.get('status'),
+                site_name=metric_data.get('site_name'),
+                apic_controller_ip=metric_data.get('apic_controller_ip'),
+                total_power=metric_data.get('total_PIn'),
+                max_power=metric_data.get('max_power'),
+                current_power=metric_data.get("total_PIn"),
+                time=metric_data.get('time'),
+            )
+            metrics_list.append(metric)
 
         return HourlyDevicePowerMetricsResponse(metrics=metrics_list)
 
@@ -188,9 +195,13 @@ class SiteService:
 
         for device in devices_info:
             ip_metrics = self.influxdb_repository.get_hourly_power_metrics_for_ip([device['ip_address']])
-            device_details = self.site_repository.get_device_details_by_name_and_site_id(site_id, device['device_name'])
+            device_details = self.site_repository.get_device_details_by_name_and_site_id1(site_id,
+                                                                                          device['device_name'])
 
             for metric in ip_metrics:
+                print(
+                    f"Preparing to append metric: device_name={metric.get('device_name')}, total_power={metric.get('total_power')}, max_power={metric.get('max_power')}, current_power={metric.get('current_power')}",
+                    file=sys.stderr)
                 if device_details:
                     updated_metric = {
                         "device_name": device_details.get('device_name', ''),
@@ -202,7 +213,7 @@ class SiteService:
                         "status": device_details.get('status', None),
                         "site_name": device_details.get('site_name', ''),
                         "apic_controller_ip": device['ip_address'],
-                        "total_power": metric.get('total_power', None),
+                        "total_power": metric.get('total_PIn', None),
                         "max_power": metric.get('max_power', None),
                         "current_power": metric.get('total_PIn', None),
                         "time": metric.get('hour', None)
@@ -296,7 +307,7 @@ class SiteService:
                     status=device_info.get('status'),
                     site_name=device_info.get('site_name'),
                     apic_controller_ip=device_info.get('ip_address'),
-                    traffic_throughput=metric_data.get('traffic_throughput'),
+                    traffic_throughput=round(metric_data.get('traffic_throughput') / (2 ** 30),2),
                     time=metric_data.get('time')
                 )
                 metrics_list.append(metric)

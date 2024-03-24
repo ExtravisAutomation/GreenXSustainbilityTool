@@ -112,6 +112,21 @@ class SiteRepository(BaseRepository):
             ip_addresses = [ip[0] for ip in apic_ips]
             return ip_addresses
 
+    def get_apic_controller_ips_and_device_names_by_site_id(self, site_id: int) -> List[Dict[str, str]]:
+        with self.session_factory() as session:
+            result = (
+                session.query(
+                    APICControllers.ip_address,
+                    DeviceInventory.device_name
+                )
+                .join(DeviceInventory, DeviceInventory.apic_controller_id == APICControllers.id)
+                .filter(DeviceInventory.site_id == site_id)
+                .all()
+            )
+
+            devices_info = [{"ip_address": device.ip_address, "device_name": device.device_name} for device in result]
+            return devices_info
+
     def get_device_inventory_by_site_id(self, site_id: int) -> List[Dict[str, any]]:
         with self.session_factory() as session:
             device_inventory_data = (
@@ -119,7 +134,13 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.id,
                     DeviceInventory.device_name,
                     APICControllers.ip_address.label('ip_address'),
-                    Site.site_name
+                    Site.site_name,
+                    DeviceInventory.hardware_version,
+                    DeviceInventory.manufacturer,
+                    DeviceInventory.pn_code,
+                    DeviceInventory.serial_number,
+                    DeviceInventory.software_version,
+                    DeviceInventory.status
                 )
                 .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
@@ -134,6 +155,12 @@ class SiteRepository(BaseRepository):
                     "device_name": data.device_name,
                     "ip_address": data.ip_address,  # Ensure ip_address is directly extracted
                     "site_name": data.site_name,
+                    "hardware_version": data.hardware_version,
+                    "manufacturer": data.manufacturer,
+                    "pn_code": data.pn_code,
+                    "serial_number": data.serial_number,
+                    "software_version": data.software_version,
+                    "status": data.status,
                 }
                 device_inventory_dicts.append(device_info)
 
@@ -302,6 +329,44 @@ class SiteRepository(BaseRepository):
                     # Add other fields as necessary
                 }
     def get_device_details_by_name_and_site_id(self, site_id: int, device_name: str) -> dict:
+        with self.session_factory() as session:
+
+            query_result = (
+                session.query(
+                    DeviceInventory.device_name,
+                    DeviceInventory.hardware_version,
+                    DeviceInventory.manufacturer,
+                    DeviceInventory.pn_code,
+                    DeviceInventory.serial_number,
+                    DeviceInventory.software_version,
+                    DeviceInventory.status,
+                    APICControllers.ip_address,
+                    Site.site_name
+                )
+                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Site, DeviceInventory.site_id == Site.id)
+                .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name == device_name)
+                .first()
+            )
+
+            if query_result:
+
+                device_details = {
+                    "device_name": query_result.device_name,
+                    "hardware_version": query_result.hardware_version,
+                    "manufacturer": query_result.manufacturer,
+                    "pn_code": query_result.pn_code,
+                    "serial_number": query_result.serial_number,
+                    "software_version": query_result.software_version,
+                    "status": query_result.status,
+                    "ip_address": query_result.ip_address,
+                    "site_name": query_result.site_name,
+                }
+                return device_details
+            else:
+
+                return {}
+    def get_device_details_by_name_and_site_id1(self, site_id: int, device_name: str) -> dict:
         with self.session_factory() as session:
 
             query_result = (

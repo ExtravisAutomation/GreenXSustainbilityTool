@@ -1,5 +1,5 @@
 from app.schema.base_schema import ModelBaseInfo, FindBase, SearchOptions, FindResult, Blank
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Generic, TypeVar, Optional, List
 from pydantic.generics import GenericModel
 from datetime import datetime
@@ -132,7 +132,6 @@ class DevicePowerMetric(BaseModel):
     max_power: Optional[float] = None
     current_power: Optional[float] = None
     time: Optional[datetime] = None
-
 
 class HourlyDevicePowerMetricsResponse(BaseModel):
     metrics: List[DevicePowerMetric]
