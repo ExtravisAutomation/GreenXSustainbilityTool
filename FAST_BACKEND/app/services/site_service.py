@@ -252,7 +252,7 @@ class SiteService:
                     id=device_info['id'],  # Include the device ID
                     device_name=device_info['device_name'],
                     ip_address=device_info['ip_address'],
-                    total_power=device_data['total_PIn'] / 1000,
+                    total_power=round(device_data['total_PIn'] / 1000, 2),
                     average_power=average_power,
                     cost_of_power=round(cost_of_power, 2)
                 ))
@@ -352,8 +352,8 @@ class SiteService:
                     apic_controller_ip=device_info.get('ip_address'),
                     traffic_throughput=round(metric_data.get('traffic_throughput') / (2 ** 30), 2),
                     time=metric_data.get('time'),
-                    current_power=round(current_power,2),
-                    PE=round(PE,2)
+                    current_power=round(current_power, 2),
+                    PE=round(PE, 2)
                 )
                 metrics_list.append(metric)
 
