@@ -507,7 +507,7 @@ class InfluxDBRepository:
                 top_devices_power.append({
                     'ip': ip,
                     'total_PIn': total_power,
-                    'average_PIn': average_power,
+                    'average_PIn': round(average_power, 4),
                     'cost_of_power': cost_of_power
                     # Add other necessary data as needed
                 })
@@ -557,7 +557,7 @@ class InfluxDBRepository:
                     total_bytes_rate_last_gb = row['_value'] / (2 ** 30)
                     throughput_metrics.append({
                         "time": row['time'],
-                        "total_bytes_rate_last": round(total_bytes_rate_last_gb,2)
+                        "total_bytes_rate_last": round(total_bytes_rate_last_gb, 2)
                     })
 
         return throughput_metrics
