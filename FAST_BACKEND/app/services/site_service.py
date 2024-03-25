@@ -253,7 +253,7 @@ class SiteService:
                     device_name=device_info['device_name'],
                     ip_address=device_info['ip_address'],
                     total_power=round(device_data['total_PIn'] / 1000, 2),
-                    average_power=average_power,
+                    average_power=round(average_power,2),
                     cost_of_power=round(cost_of_power, 2)
                 ))
 
