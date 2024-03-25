@@ -451,7 +451,7 @@ class InfluxDBRepository:
 
             query_pin = f'''
                 from(bucket: "{self.bucket}")
-                |> range(start: -7d)
+                |> range(start: -1d)
                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
                 |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
@@ -568,7 +568,7 @@ class InfluxDBRepository:
         for ip in device_ips:
             query = f'''
                 from(bucket: "{self.bucket}")
-                |> range(start: -7d)
+                |> range(start: -1d)
                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
                 |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
@@ -618,17 +618,72 @@ class InfluxDBRepository:
     def fetch_hourly_total_pin(self, device_ip: str) -> List[dict]:
         query = f'''
         from(bucket: "{self.bucket}")
-        |> range(start: -7d)
-        |> filter(fn: (r) => r["ApicController_IP"] == "10.14.106.6")
+        |> range(start: -1d)
+        |> filter(fn: (r) => r["ApicController_IP"] == "{device_ip}")
         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
         |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
-        |> yield(name: "mean")
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
         result = self.query_api1.query_data_frame(query=query)
         if result.empty:
             return []
         result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
-        hourly_data = [{"time": row['time'], "total_PIn": row['_value']} for index, row in result.iterrows()]
+        return [{"time": row['time'], "total_PIn": row['total_PIn']} for index, row in result.iterrows()]
+
+    def fetch_hourly_total_pout(self, device_ip: str) -> List[dict]:
+        query = f'''
+        from(bucket: "{self.bucket}")
+        |> range(start: -1d)
+        |> filter(fn: (r) => r["ApicController_IP"] == "{device_ip}")
+        |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_POut")
+        |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        '''
+        result = self.query_api1.query_data_frame(query=query)
+        if result.empty:
+            return []
+        result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
+        return [{"time": row['time'], "total_POut": row['total_POut']} for index, row in result.iterrows()]
+
+    def fetch_hourly_power_metrics(self, device_ip: str) -> List[dict]:
+        query_pin = f'''
+        from(bucket: "{self.bucket}")
+        |> range(start: -1d)
+        |> filter(fn: (r) => r["ApicController_IP"] == "{device_ip}")
+        |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+        |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+        '''
+
+        query_pout = f'''
+        from(bucket: "{self.bucket}")
+        |> range(start: -1d)
+        |> filter(fn: (r) => r["ApicController_IP"] == "{device_ip}")
+        |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_POut")
+        |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+        '''
+
+        result_pin = self.query_api1.query_data_frame(query=query_pin)
+        result_pout = self.query_api1.query_data_frame(query=query_pout)
+
+        hourly_data = []
+        if not result_pin.empty and not result_pout.empty:
+            result_pin['time'] = pd.to_datetime(result_pin['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
+            result_pout['time'] = pd.to_datetime(result_pout['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
+
+            # Merge the dataframes on time column
+            merged_df = pd.merge(result_pin, result_pout, on='time', suffixes=('_pin', '_pout'))
+
+            for index, row in merged_df.iterrows():
+                total_PIn = row['_value_pin']
+                total_POut = row['_value_pout']
+                PE = (total_POut / total_PIn * 100) if total_PIn > 0 else None
+                hourly_data.append({
+                    "time": row['time'],
+                    "total_PIn": total_PIn,
+                    "total_POut": total_POut,
+                    "PE": PE
+                })
+
         return hourly_data
 
     def fetch_hourly_traffic_throughput(self, device_ip: str) -> List[dict]:

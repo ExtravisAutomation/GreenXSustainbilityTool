@@ -133,6 +133,7 @@ class DevicePowerMetric(BaseModel):
     current_power: Optional[float] = None
     time: Optional[datetime] = None
 
+
 class HourlyDevicePowerMetricsResponse(BaseModel):
     metrics: List[DevicePowerMetric]
 
@@ -160,17 +161,19 @@ from typing import List, Optional
 
 
 class DeviceTrafficThroughputMetric1(BaseModel):
-    device_name: Optional[str]
-    hardware_version: Optional[str]
-    manufacturer: Optional[str]
-    pn_code: Optional[str]
-    serial_number: Optional[str]
-    software_version: Optional[str]
-    status: Optional[str]
-    site_name: Optional[str]
-    apic_controller_ip: Optional[str]
-    traffic_throughput: Optional[float]
-    time: Optional[datetime]
+    device_name: Optional[str] = None
+    hardware_version: Optional[str] = None
+    manufacturer: Optional[str] = None
+    pn_code: Optional[str] = None
+    serial_number: Optional[str] = None
+    software_version: Optional[str] = None
+    status: Optional[str] = None
+    site_name: Optional[str] = None
+    apic_controller_ip: Optional[str] = None
+    traffic_throughput: Optional[float] = None
+    time: Optional[datetime] = None
+    current_power: Optional[float] = None
+    PE: Optional[float] = None
 
 
 class TrafficThroughputMetricsResponse(BaseModel):

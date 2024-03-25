@@ -139,7 +139,7 @@ class SiteService:
                     status=device_info.get('status'),
                     site_name=device_info.get('site_name'),
                     apic_controller_ip=device_info.get('ip_address'),
-                    PE=metric_data.get('PE'),
+                    PE=round(metric_data.get('PE'), 2),
                     PUE=metric_data.get('PUE'),
                     current_power=metric_data.get('current_power'),
                     time=formatted_time
@@ -286,17 +286,60 @@ class SiteService:
 
         return data_metrics
 
+    # def calculate_site_traffic_throughput_metrics(self, site_id: int) -> TrafficThroughputMetricsResponse:
+    #     device_inventory_data = self.site_repository.get_device_inventory_by_site_id(site_id)
+    #     apic_ips = [device['ip_address'] for device in device_inventory_data if 'ip_address' in device]
+    #
+    #     throughput_metrics = self.influxdb_repository.calculate_throughput_metrics_for_devices(apic_ips)
+    #     metrics_list = []
+    #
+    #     for metric_data in throughput_metrics:
+    #         device_info = next((d for d in device_inventory_data if d.get('ip_address') == metric_data.get('ip')), None)
+    #
+    #         if device_info:
+    #             metric = DeviceTrafficThroughputMetric1(
+    #                 device_name=device_info.get('device_name'),
+    #                 hardware_version=device_info.get('hardware_version'),
+    #                 manufacturer=device_info.get('manufacturer'),
+    #                 pn_code=device_info.get('pn_code'),
+    #                 serial_number=device_info.get('serial_number'),
+    #                 software_version=device_info.get('software_version'),
+    #                 status=device_info.get('status'),
+    #                 site_name=device_info.get('site_name'),
+    #                 apic_controller_ip=device_info.get('ip_address'),
+    #                 traffic_throughput=round(metric_data.get('traffic_throughput') / (2 ** 30), 2),
+    #                 time=metric_data.get('time')
+    #             )
+    #             metrics_list.append(metric)
+    #
+    #     return TrafficThroughputMetricsResponse(metrics=metrics_list)
+
     def calculate_site_traffic_throughput_metrics(self, site_id: int) -> TrafficThroughputMetricsResponse:
         device_inventory_data = self.site_repository.get_device_inventory_by_site_id(site_id)
         apic_ips = [device['ip_address'] for device in device_inventory_data if 'ip_address' in device]
 
+        # Fetch throughput metrics for devices
         throughput_metrics = self.influxdb_repository.calculate_throughput_metrics_for_devices(apic_ips)
         metrics_list = []
 
         for metric_data in throughput_metrics:
+            # Find matching device info by IP address
             device_info = next((d for d in device_inventory_data if d.get('ip_address') == metric_data.get('ip')), None)
 
             if device_info:
+                # Fetch hourly total_PIn and total_POut for the device IP
+                hourly_total_pin = self.influxdb_repository.fetch_hourly_total_pin(metric_data.get('ip'))
+                hourly_total_pout = self.influxdb_repository.fetch_hourly_total_pout(metric_data.get('ip'))
+
+                # Summarize total_PIn and total_POut
+                total_PIn_sum = sum(record.get('total_PIn', 0) for record in hourly_total_pin)
+                total_POut_sum = sum(record.get('total_POut', 0) for record in hourly_total_pout)
+                total_hours = max(len(hourly_total_pin), len(hourly_total_pout))
+
+                current_power = total_PIn_sum / total_hours if total_hours else None
+                PE = (total_POut_sum / total_PIn_sum) * 100 if total_PIn_sum else None
+
+                # Construct the metric object
                 metric = DeviceTrafficThroughputMetric1(
                     device_name=device_info.get('device_name'),
                     hardware_version=device_info.get('hardware_version'),
@@ -307,8 +350,10 @@ class SiteService:
                     status=device_info.get('status'),
                     site_name=device_info.get('site_name'),
                     apic_controller_ip=device_info.get('ip_address'),
-                    traffic_throughput=round(metric_data.get('traffic_throughput') / (2 ** 30),2),
-                    time=metric_data.get('time')
+                    traffic_throughput=round(metric_data.get('traffic_throughput') / (2 ** 30), 2),
+                    time=metric_data.get('time'),
+                    current_power=round(current_power,2),
+                    PE=round(PE,2)
                 )
                 metrics_list.append(metric)
 
