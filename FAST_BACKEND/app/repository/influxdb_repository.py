@@ -501,13 +501,13 @@ class InfluxDBRepository:
             if not result.empty:
                 total_power = result['_value'].sum()
                 count_measurements = len(result['_value'])
-                average_power = (total_power / count_measurements) * 100 if count_measurements > 0 else 0
+                average_power = (total_power / count_measurements) if count_measurements > 0 else 0
                 powerinkwh = total_power / 1000  # aed
                 cost_of_power = powerinkwh * 0.405
                 top_devices_power.append({
                     'ip': ip,
                     'total_PIn': total_power,
-                    'average_PIn': round(average_power, 4),
+                    'average_PIn': average_power,
                     'cost_of_power': cost_of_power
                     # Add other necessary data as needed
                 })
@@ -557,7 +557,7 @@ class InfluxDBRepository:
                     total_bytes_rate_last_gb = row['_value'] / (2 ** 30)
                     throughput_metrics.append({
                         "time": row['time'],
-                        "total_bytes_rate_last": round(total_bytes_rate_last_gb, 2)
+                        "total_bytes_rate_last": round(total_bytes_rate_last_gb,2)
                     })
 
         return throughput_metrics
