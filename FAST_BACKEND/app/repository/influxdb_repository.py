@@ -403,7 +403,7 @@ class InfluxDBRepository:
             aggregate_window = "1d"
             time_format = '%Y-%m-%d'
         else:  # For "last 6 months", "last year", "current year"
-            aggregate_window = "1mo"
+            aggregate_window = "1m"
             time_format = '%Y-%m'
 
         for ip in device_ips:
