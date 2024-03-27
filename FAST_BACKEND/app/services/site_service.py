@@ -1,6 +1,6 @@
 import sys
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Any
 
 from fastapi import HTTPException, status
@@ -102,6 +102,47 @@ class SiteService:
             return []
 
         energy_metrics = self.influxdb_repository.get_energy_consumption_metrics(device_ips)
+        return energy_metrics
+
+    def calculate_start_end_dates(self, duration_str: str) -> (datetime, datetime):
+        today = datetime.today()
+        if duration_str == "last 6 months":
+            start_date = (today - timedelta(days=30 * 6)).replace(day=1)
+            end_date = today
+        elif duration_str == "last 3 months":
+            start_date = (today - timedelta(days=90)).replace(day=1)
+            end_date = today
+        elif duration_str == "last year":
+            start_date = (today.replace(day=1, month=1) - timedelta(days=365)).replace(day=1)
+            end_date = start_date.replace(month=12, day=31)
+        elif duration_str == "current year":
+            start_date = today.replace(month=1, day=1)  # First day of the current year
+            end_date = today  # Today's date
+        elif duration_str == "current month":
+            start_date = today.replace(day=1)
+            end_date = today  # Adjusted to set the end date to today's date
+        elif duration_str == "last 7 days":
+            start_date = today - timedelta(days=7)
+            end_date = today
+        elif duration_str == "last 1 day":
+            start_date = today - timedelta(days=1)
+            end_date = today
+        else:
+            raise ValueError("Unsupported duration format")
+        return start_date, end_date
+
+    def calculate_energy_consumption_by_id_with_filter(self, site_id: int, duration_str: str) -> List[
+        dict]:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        if not device_ips:
+            return []
+
+        energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter(device_ips, start_date,
+                                                                                             end_date,
+                                                                                             duration_str)
         return energy_metrics
 
     def calculate_hourly_energy_metrics(self, site_id: int) -> HourlyEnergyMetricsResponse:
@@ -253,7 +294,7 @@ class SiteService:
                     device_name=device_info['device_name'],
                     ip_address=device_info['ip_address'],
                     total_power=round(device_data['total_PIn'] / 1000, 2),
-                    average_power=round(average_power,2),
+                    average_power=round(average_power, 2),
                     cost_of_power=round(cost_of_power, 2)
                 ))
 

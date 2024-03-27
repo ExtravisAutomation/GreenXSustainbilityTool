@@ -159,8 +159,8 @@ def compare_devices_metrics(
 ):
     device_name1 = device_name1 or "RYD-SLY-00-AF14"
     device_name2 = device_name2 or "RYD-SLY-00-AF13"
-    #device_name1 = device_name1 or "Device2"
-    #device_name2 = device_name2 or "Device3"
+    # device_name1 = device_name1 or "Device2"
+    # device_name2 = device_name2 or "Device3"
     return site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2)
 
 
@@ -275,3 +275,21 @@ def get_device_metrics(
         site_service: SiteService = Depends(Provide[Container.site_service])):
     metrics = site_service.fetch_hourly_device_data(site_id, device_id)
     return metrics
+
+
+@router.get("/sites/energy_consumption_metrics_WITH_FILTER/{site_id}",
+            response_model=CustomResponse[List[EnergyConsumptionMetricsDetails]])
+@inject
+def get_energy_consumption_metrics(
+        site_id: int,
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "last 1 day"
+    metrics = site_service.calculate_energy_consumption_by_id_with_filter(site_id, duration)
+    return CustomResponse(
+        message="Energy consumption metrics retrieved successfully",
+        data=metrics,
+        status_code=status.HTTP_200_OK
+    )
