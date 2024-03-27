@@ -396,10 +396,10 @@ class InfluxDBRepository:
         end_time = end_date.isoformat() + 'Z'
 
         # Adjust the aggregation window based on the duration string
-        if duration_str in ["last 1 day"]:
+        if duration_str in ["24 hours"]:
             aggregate_window = "1h"
             time_format = '%Y-%m-%d %H:00'
-        elif duration_str in ["last 7 days", "current month"]:
+        elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             aggregate_window = "1d"
             time_format = '%Y-%m-%d'
         else:  # For "last 6 months", "last year", "current year"

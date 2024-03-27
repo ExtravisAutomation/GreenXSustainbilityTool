@@ -286,7 +286,7 @@ def get_energy_consumption_metrics(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    duration = duration or "last 1 day"
+    duration = duration or "24 hours"
     metrics = site_service.calculate_energy_consumption_by_id_with_filter(site_id, duration)
     return CustomResponse(
         message="Energy consumption metrics retrieved successfully",
