@@ -484,12 +484,12 @@ class InfluxDBRepository:
             for time, metrics in power_metrics.items():
                 total_PIn = metrics.get('total_PIn', 0)
                 total_POut = metrics.get('total_POut', 0)
-                current_power = total_PIn if total_PIn else 12221
+                current_power = total_PIn if total_PIn else 0
 
-                PE = (total_POut / total_PIn * 100)
+                PE = (total_POut / total_PIn * 100) if total_PIn else 0
 
                 total_energy = total_PIn * 1.2
-                PUE = total_energy / total_PIn if total_PIn else None
+                PUE = total_energy / total_PIn if total_PIn else 0
 
                 print(f"Metrics for IP {ip} at {time}: PE={PE}, PUE={PUE}, Current Power={current_power}",
                       file=sys.stderr)
