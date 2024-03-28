@@ -148,6 +148,40 @@ class SiteService:
                                                                                              duration_str)
         return energy_metrics
 
+    def get_top_5_power_devices_with_filter(self, site_id: int, duration_str: str) -> TopDevicesPowerResponse:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+
+        device_inventory = self.site_repository.get_device_inventory_by_site_id(site_id)
+        device_ips = [device['ip_address'] for device in device_inventory]
+
+        top_devices_data_raw = self.influxdb_repository.get_top_5_devices_by_power_with_filter(device_ips, start_date,
+                                                                                               end_date, duration_str)
+        top_devices_data = []
+        processed_ips = set()
+
+        for device_data in top_devices_data_raw:
+            ip = device_data['ip']
+            if ip in processed_ips:
+                continue
+
+            device_info = next((device for device in device_inventory if device['ip_address'] == ip), None)
+            if device_info:
+                cost_of_power = device_data['cost_of_power']
+                average_power = device_data['average_PIn']
+
+                top_devices_data.append(DevicePowerConsumption(
+                    id=device_info['id'],  # Include the device ID
+                    device_name=device_info['device_name'],
+                    ip_address=device_info['ip_address'],
+                    total_power=round(device_data['total_PIn'] / 1000, 2),  # Convert to kW
+                    average_power=round(average_power, 2),  # Already in kW
+                    cost_of_power=round(cost_of_power, 2)  # Already in desired currency unit
+                ))
+
+                processed_ips.add(ip)  # Mark this IP as processed
+
+        return TopDevicesPowerResponse(top_devices=top_devices_data)
+
     def calculate_hourly_energy_metrics(self, site_id: int) -> HourlyEnergyMetricsResponse:
 
         apic_ips = self.site_repository.get_apic_controller_ips_by_site_id(site_id)
@@ -323,7 +357,8 @@ class SiteService:
 
         if not device_ips:
             return []
-        throughput_metrics = self.influxdb_repository.get_traffic_throughput_metrics12(device_ips, start_date, end_date, duration_str)
+        throughput_metrics = self.influxdb_repository.get_traffic_throughput_metrics12(device_ips, start_date, end_date,
+                                                                                       duration_str)
         print("Serviceeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", throughput_metrics, file=sys.stderr)
         return throughput_metrics
 
@@ -338,6 +373,23 @@ class SiteService:
             device_ip = device_info['ip_address']
             print("IPPPPPPPPPPPPPPP", device_ip, file=sys.stderr)
             metrics = self.influxdb_repository.get_traffic_throughput_metrics(device_ip)
+            data_metrics.extend(metrics)
+
+        return data_metrics
+
+    def calculate_device_data_by_name_with_filter(self, site_id: int, device_name: str, duration_str: str) -> List[
+        dict]:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        device_info_list = self.site_repository.get_device_ips_by_names_and_site_id(site_id, [device_name])
+
+        if not device_info_list:
+            return []
+
+        data_metrics = []
+        for device_info in device_info_list:
+            device_ip = device_info['ip_address']
+            metrics = self.influxdb_repository.get_traffic_throughput_metrics123(device_ip, start_date, end_date,
+                                                                                duration_str)
             data_metrics.extend(metrics)
 
         return data_metrics

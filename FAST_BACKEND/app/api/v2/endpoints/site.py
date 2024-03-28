@@ -313,3 +313,33 @@ def get_traffic_throughput_metrics(
         data=metrics,
         status_code=status.HTTP_200_OK
     )
+
+
+@router.get("/site/top_devices_power_cost_WITH_FILTER/{site_id}", response_model=TopDevicesPowerResponse)
+@inject
+def get_top_5_power_devices(
+        site_id: int,
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])):
+    duration = duration or "24 hours"
+    return site_service.get_top_5_power_devices_with_filter(site_id, duration)
+
+
+@router.get("/site/traffic_throughput_metrics_by_device_WITH_FILTER/{site_id}/{device_name}",
+            response_model=CustomResponse1[List[TrafficThroughputMetricsDetails]])
+@inject
+def get_device_data_metrics(
+        site_id: int,
+        device_name: str,
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+    metrics = site_service.calculate_device_data_by_name_with_filter(site_id, device_name, duration)
+    return CustomResponse1(
+        message="Device data metrics retrieved successfully",
+        data=metrics,
+        status_code=status.HTTP_200_OK
+    )

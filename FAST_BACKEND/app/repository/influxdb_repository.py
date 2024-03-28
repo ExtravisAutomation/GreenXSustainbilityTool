@@ -578,6 +578,49 @@ class InfluxDBRepository:
 
         return top_devices_power
 
+    def get_top_5_devices_by_power_with_filter(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+                                   duration_str: str) -> List[dict]:
+        top_devices_power = []
+        start_time = start_date.isoformat() + 'Z'  # Ensure timezone information is included for InfluxDB
+        end_time = end_date.isoformat() + 'Z'
+
+        # Determine the aggregation window based on the duration
+        aggregate_window, time_format = self.determine_aggregate_window(duration_str)
+
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{self.bucket}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                |> sort(columns: ["_value"], desc: true)
+                |> limit(n:5)
+            '''
+            result = self.query_api1.query_data_frame(query)
+
+            if not result.empty:
+                total_power = result['_value'].sum()
+                average_power = total_power / len(result) if len(result) > 0 else 0
+                cost_of_power = self.calculate_cost_of_power(total_power)
+
+                top_devices_power.append({
+                    'ip': ip,
+                    'total_PIn': total_power,
+                    'average_PIn': average_power,
+                    'cost_of_power': cost_of_power,
+                })
+
+        top_devices_power = sorted(top_devices_power, key=lambda x: x['total_PIn'], reverse=True)[:5]
+        return top_devices_power
+
+    def calculate_cost_of_power(self, power_in_watts):
+
+        power_in_kwh = power_in_watts / 1000
+        rate_per_kwh = 0.405
+        cost = power_in_kwh * rate_per_kwh
+        return cost
+
     def get_traffic_throughput_metrics(self, device_ips: List[str]) -> List[dict]:
         throughput_metrics = []
         print("devicesIPSSSSSSSS", type(device_ips), file=sys.stderr)
@@ -624,6 +667,51 @@ class InfluxDBRepository:
                         "total_bytes_rate_last": round(total_bytes_rate_last_gb, 2)
                     })
 
+        return throughput_metrics
+
+    def get_traffic_throughput_metrics123(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+                                         duration_str: str) -> List[dict]:
+        throughput_metrics = []
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+
+        aggregate_window, time_format = self.determine_aggregate_window(duration_str)
+        print(
+            f"Querying InfluxDB with start time: {start_time}, end time: {end_time}, aggregate window: {aggregate_window}",
+            file=sys.stderr)
+        device_ips = [device_ips]
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{self.bucket}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+            print(f"Executing query for IP: {ip}", file=sys.stderr)
+            result = self.query_api1.query_data_frame(query)
+            print(f"Result for IP: {ip} is: {result}", file=sys.stderr)
+
+            if not result.empty:
+                print(f"Data returned for IP: {ip}, processing...", file=sys.stderr)
+                result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+                print("ssssssssssssssssssssssssss", result['_time'], file=sys.stderr)
+                for _, row in result.iterrows():
+                    print("rowwwwwwwwwwwwww", row, file=sys.stderr)
+                    if pd.isna(row['total_bytesRateLast']):
+                        print(f"NaN 'total_bytesRateLast' value for IP: {ip} at time: {row['_time']}", file=sys.stderr)
+                        total_bytes_rate_last_gb = 0  # You might want to change this handling based on your needs
+                    else:
+                        print("elseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", file=sys.stderr)
+                        total_bytes_rate_last_gb = row['total_bytesRateLast'] / (2 ** 30)  # Convert to GB
+                    throughput_metrics.append({
+                        "time": row['_time'],
+                        "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2)
+                    })
+            else:
+                print(f"No data returned for IP: {ip}", file=sys.stderr)
+        print("LISTTTTTTTTTTTTTTTTTTTTTTTTTT", throughput_metrics, file=sys.stderr)
         return throughput_metrics
 
     def get_traffic_throughput_metrics12(self, device_ips: List[str], start_date: datetime, end_date: datetime,
