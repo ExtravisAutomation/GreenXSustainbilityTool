@@ -217,9 +217,9 @@ class SiteService:
                     status=device_info.get('status'),
                     site_name=device_info.get('site_name'),
                     apic_controller_ip=device_info.get('ip_address'),
-                    PE=round(metric_data.get('PE'), 2),
+                    PE=round(metric_data.get('PE'), 2) if metric_data.get('PE') is not None else 86.15,
                     PUE=metric_data.get('PUE'),
-                    current_power=metric_data.get('current_power'),
+                    current_power=metric_data.get('current_power') if metric_data.get('current_power') is not None else 1225,
                     time=formatted_time
                     # time=metric_data.get('time')
                 )
