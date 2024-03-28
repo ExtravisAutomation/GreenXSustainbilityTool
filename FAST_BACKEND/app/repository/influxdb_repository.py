@@ -416,6 +416,8 @@ class InfluxDBRepository:
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             result = self.query_api1.query_data_frame(query)
+
+            print("RESULTTTTTTTTTTTTTTTTTT", result, file=sys.stderr)
             if not result.empty:
                 result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
                 numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
@@ -623,6 +625,63 @@ class InfluxDBRepository:
                     })
 
         return throughput_metrics
+
+    def get_traffic_throughput_metrics12(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+                                         duration_str: str) -> List[dict]:
+        throughput_metrics = []
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+
+        aggregate_window, time_format = self.determine_aggregate_window(duration_str)
+        print(
+            f"Querying InfluxDB with start time: {start_time}, end time: {end_time}, aggregate window: {aggregate_window}",
+            file=sys.stderr)
+
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{self.bucket}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+            print(f"Executing query for IP: {ip}", file=sys.stderr)
+            result = self.query_api1.query_data_frame(query)
+            print(f"Result for IP: {ip} is: {result}", file=sys.stderr)
+
+            if not result.empty:
+                print(f"Data returned for IP: {ip}, processing...", file=sys.stderr)
+                result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+                print("ssssssssssssssssssssssssss", result['_time'], file=sys.stderr)
+                for _, row in result.iterrows():
+                    print("rowwwwwwwwwwwwww", row, file=sys.stderr)
+                    if pd.isna(row['total_bytesRateLast']):
+                        print(f"NaN 'total_bytesRateLast' value for IP: {ip} at time: {row['_time']}", file=sys.stderr)
+                        total_bytes_rate_last_gb = 0  # You might want to change this handling based on your needs
+                    else:
+                        print("elseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", file=sys.stderr)
+                        total_bytes_rate_last_gb = row['total_bytesRateLast'] / (2 ** 30)  # Convert to GB
+                    throughput_metrics.append({
+                        "time": row['_time'],
+                        "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2)
+                    })
+            else:
+                print(f"No data returned for IP: {ip}", file=sys.stderr)
+        print("LISTTTTTTTTTTTTTTTTTTTTTTTTTT", throughput_metrics, file=sys.stderr)
+        return throughput_metrics
+
+    def determine_aggregate_window(self, duration_str: str) -> tuple:
+        if duration_str == "24 hours":
+            return "1h", '%Y-%m-%d %H:00'
+        elif duration_str in ["7 Days", "Current Month", "Last Month"]:
+            return "1d", '%Y-%m-%d'
+        else:  # For "last 6 months", "last year", "current year"
+            return "1mo", '%Y-%m'
+
+    def handle_missing_data(self, row, field_name: str) -> float:
+        value = row.get(field_name, 0) / (2 ** 30)
+        return round(value, 2)
 
     def calculate_throughput_metrics_for_devices(self, device_ips: List[str]) -> List[dict]:
         throughput_metrics = []

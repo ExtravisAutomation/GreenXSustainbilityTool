@@ -106,25 +106,28 @@ class SiteService:
 
     def calculate_start_end_dates(self, duration_str: str) -> (datetime, datetime):
         today = datetime.today()
-        if duration_str == "last 6 months":
+        if duration_str == "Last 6 Months":
             start_date = (today - timedelta(days=30 * 6)).replace(day=1)
             end_date = today
-        elif duration_str == "last 3 months":
+        elif duration_str == "Last 3 Months":
             start_date = (today - timedelta(days=90)).replace(day=1)
             end_date = today
-        elif duration_str == "last year":
+        elif duration_str == "Last Year":
             start_date = (today.replace(day=1, month=1) - timedelta(days=365)).replace(day=1)
             end_date = start_date.replace(month=12, day=31)
-        elif duration_str == "current year":
+        elif duration_str == "Current year":
             start_date = today.replace(month=1, day=1)  # First day of the current year
             end_date = today  # Today's date
-        elif duration_str == "current month":
+        elif duration_str == "Current Month":
             start_date = today.replace(day=1)
             end_date = today  # Adjusted to set the end date to today's date
-        elif duration_str == "last 7 days":
+        elif duration_str == "Last Month":
+            start_date = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
+            end_date = (today.replace(day=1) - timedelta(days=1))
+        elif duration_str == "7 Days":
             start_date = today - timedelta(days=7)
             end_date = today
-        elif duration_str == "last 1 day":
+        elif duration_str == "24 hours":
             start_date = today - timedelta(days=1)
             end_date = today
         else:
@@ -310,6 +313,18 @@ class SiteService:
         if not device_ips:
             return []
         throughput_metrics = self.influxdb_repository.get_traffic_throughput_metrics1(device_ips)
+        return throughput_metrics
+
+    def calculate_traffic_throughput_by_id_with_filter(self, site_id: int, duration_str: str) -> List[dict]:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+        print("Device IPssssssssssssssssssssssssss:", device_ips, file=sys.stderr)
+
+        if not device_ips:
+            return []
+        throughput_metrics = self.influxdb_repository.get_traffic_throughput_metrics12(device_ips, start_date, end_date, duration_str)
+        print("Serviceeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", throughput_metrics, file=sys.stderr)
         return throughput_metrics
 
     def calculate_device_data_by_name(self, site_id: int, device_name: str) -> List[dict]:

@@ -152,8 +152,8 @@ class TopDevicesPowerResponse(BaseModel):
 
 
 class TrafficThroughputMetricsDetails(BaseModel):
-    time: Optional[datetime] = None
-    total_bytes_rate_last: Optional[float] = None
+    time: str
+    total_bytes_rate_last: Optional[float]
 
 
 from pydantic import BaseModel

@@ -1,3 +1,4 @@
+import sys
 from typing import List, Optional, Dict, Any
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
@@ -290,6 +291,25 @@ def get_energy_consumption_metrics(
     metrics = site_service.calculate_energy_consumption_by_id_with_filter(site_id, duration)
     return CustomResponse(
         message="Energy consumption metrics retrieved successfully",
+        data=metrics,
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/site/traffic_throughput_metrics_WITH_FILTER/{site_id}",
+            response_model=CustomResponse1[List[TrafficThroughputMetricsDetails]])
+@inject
+def get_traffic_throughput_metrics(
+        site_id: int,
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+    metrics = site_service.calculate_traffic_throughput_by_id_with_filter(site_id, duration)
+    print("endpointtttttttttttttttttttttttttttttttttttttt", metrics, file=sys.stderr)
+    return CustomResponse1(
+        message="Traffic throughput metrics retrieved successfully",
         data=metrics,
         status_code=status.HTTP_200_OK
     )
