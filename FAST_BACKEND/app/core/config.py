@@ -20,7 +20,7 @@ class Configs(BaseSettings):
     ENV_DATABASE_MAPPER: dict = {
         "prod": "fca",
         "stage": "stage-fca",
-        "dev": "fca",
+        "dev": "DCS_DB",
         "test": "test-fca",
     }
     DB_ENGINE_MAPPER: dict = {
@@ -70,7 +70,7 @@ class Configs(BaseSettings):
         port=DB_PORT,
         database=ENV_DATABASE_MAPPER[ENV],
     )
-    # print("Database url in config", DATABASE_URI, file=sys.stderr)
+    print("Database url in config", DATABASE_URI, file=sys.stderr)
 
     # find query
     PAGE = 1
