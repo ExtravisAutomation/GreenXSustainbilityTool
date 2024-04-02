@@ -522,7 +522,7 @@ class InfluxDBRepository:
             result_pin = self.query_api1.query_data_frame(query_pin)
             if not result_pin.empty:
                 for _, row in result_pin.iterrows():
-                    hour = pd.to_datetime(row['_time']).strftime('%Y-%m-%d %H:%M:%S')
+                    hour = pd.to_datetime(row['_time']).dt.strftime('%Y-%m-%d %H:00')
                     total_power = row['_value']
                     ip_hourly_metrics.append({
                         "hour": hour,
