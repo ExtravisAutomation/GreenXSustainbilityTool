@@ -603,11 +603,11 @@ class InfluxDBRepository:
                 total_power = result['_value'].sum()
                 average_power = total_power / len(result) if len(result) > 0 else 0
                 cost_of_power = self.calculate_cost_of_power(total_power)
-
+                average_powerkw = average_power / 1000
                 top_devices_power.append({
                     'ip': ip,
                     'total_PIn': total_power,
-                    'average_PIn': average_power,
+                    'average_PIn': average_powerkw,
                     'cost_of_power': cost_of_power,
                 })
 
