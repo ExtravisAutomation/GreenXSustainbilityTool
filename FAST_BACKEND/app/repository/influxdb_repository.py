@@ -530,7 +530,7 @@ class InfluxDBRepository:
                 total_power = row['total_PIn'] if not pd.isna(row['total_PIn']) else 0
                 power_metrics.append({
                     "time": row['_time'],
-                    "total_power": total_power
+                    "total_power": round(total_power,2)
                 })
         else:
             print(f"No data returned for IP: {device_ip}", file=sys.stderr)
