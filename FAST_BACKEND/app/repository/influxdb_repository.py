@@ -504,6 +504,39 @@ class InfluxDBRepository:
 
         return total_power_metrics
 
+    def get_comparison_metrics123(self, device_ip: str, start_date: datetime, end_date: datetime, duration_str: str) -> List[dict]:
+
+        print(f"Querying InfluxDB for IP: {device_ip}", file=sys.stderr)
+        power_metrics = []
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+        aggregate_window, time_format = self.determine_aggregate_window(duration_str)
+
+        query = f'''
+            from(bucket: "{self.bucket}")
+            |> range(start: {start_time}, stop: {end_time})
+            |> filter(fn: (r) => r["ApicController_IP"] == "{device_ip}")
+            |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+            |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        '''
+        print(f"Executing query for IP: {device_ip}: {query}", file=sys.stderr)
+        result = self.query_api1.query_data_frame(query)
+        print(f"Query result for IP: {device_ip}: {result}", file=sys.stderr)
+
+        if not result.empty:
+            result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+            for _, row in result.iterrows():
+                total_power = row['total_PIn'] if not pd.isna(row['total_PIn']) else 0
+                power_metrics.append({
+                    "time": row['_time'],
+                    "total_power": total_power
+                })
+        else:
+            print(f"No data returned for IP: {device_ip}", file=sys.stderr)
+
+        return power_metrics
+
     def get_hourly_power_metrics_for_ip(self, device_ips: List[str]) -> List[dict]:
         hourly_power_metrics = []
 

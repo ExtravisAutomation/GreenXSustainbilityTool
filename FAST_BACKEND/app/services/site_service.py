@@ -134,6 +134,41 @@ class SiteService:
             raise ValueError("Unsupported duration format")
         return start_date, end_date
 
+    def compare_device_data_by_names_and_duration(self, site_id: int, device_name1: str, device_name2: str,
+                                                  duration_str: str) -> List[dict]:
+        print(f"Comparing devices: {device_name1}, {device_name2} over duration: {duration_str}", file=sys.stderr)
+
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        print(f"Start Date: {start_date}, End Date: {end_date}", file=sys.stderr)
+
+        devices_info_list = self.site_repository.get_device_ips_by_names_and_site_id(site_id,
+                                                                                     [device_name1, device_name2])
+        if devices_info_list:
+            print(f"Devices Info List: {devices_info_list}", file=sys.stderr)
+        else:
+            print("No devices found for given names.", file=sys.stderr)
+            return []
+
+        comparison_metrics = []
+        for device_info in devices_info_list:
+            device_ip = device_info['ip_address']
+            print(f"Fetching metrics for IP: {device_ip}", file=sys.stderr)
+
+            metrics = self.influxdb_repository.get_comparison_metrics123(device_ip, start_date, end_date, duration_str)
+            if metrics:
+                print(f"Metrics received for {device_ip}: {metrics}", file=sys.stderr)
+                for metric in metrics:
+                    metric['device_name'] = device_info['device_name']
+                comparison_metrics.extend(metrics)
+            else:
+                print(f"No metrics received for IP: {device_ip}.", file=sys.stderr)
+
+        if comparison_metrics:
+            print(f"Final Comparison Metrics: {comparison_metrics}", file=sys.stderr)
+        else:
+            print("No comparison metrics generated.", file=sys.stderr)
+        return comparison_metrics
+
     def calculate_energy_consumption_by_id_with_filter(self, site_id: int, duration_str: str) -> List[
         dict]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
@@ -265,6 +300,27 @@ class SiteService:
             metrics_list.append(metric)
 
         return HourlyDevicePowerMetricsResponse(metrics=metrics_list)
+
+    # def compare_device_data_by_names_and_duration(self, site_id: int, device_name1: str, device_name2: str,
+    #                                               duration_str: str) -> List[dict]:
+    #     start_date, end_date = self.calculate_start_end_dates(duration_str)
+    #     devices_info_list = self.site_repository.get_device_ips_by_names_and_site_id(site_id,
+    #                                                                                  [device_name1, device_name2])
+    #
+    #     if not devices_info_list:
+    #         return []
+    #
+    #     comparison_metrics = []
+    #     for device_info in devices_info_list:
+    #         device_ip = device_info['ip_address']
+    #         metrics = self.influxdb_repository.get_comparison_metrics123(device_ip, start_date, end_date, duration_str)
+    #         for metric in metrics:
+    #             metric['device_name'] = device_info[
+    #                 'device_name']  # Ensure metrics are associated with correct device name
+    #         comparison_metrics.extend(metrics)
+    #
+    #     return comparison_metrics
+
 
     def compare_devices_hourly_power_metrics(self, site_id: int, device_name1: str,
                                              device_name2: str) -> HourlyDevicePowerMetricsResponse:

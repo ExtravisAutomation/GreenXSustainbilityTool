@@ -178,3 +178,9 @@ class DeviceTrafficThroughputMetric1(BaseModel):
 
 class TrafficThroughputMetricsResponse(BaseModel):
     metrics: List[DeviceTrafficThroughputMetric1]
+
+
+class ComparisonDeviceMetricsDetails(BaseModel):
+    device_name: Optional[str]
+    time: Optional[str]
+    total_power: Optional[float]

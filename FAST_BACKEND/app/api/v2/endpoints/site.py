@@ -8,7 +8,7 @@ from app.core.dependencies import get_db, get_current_active_user
 from app.model.user import User
 from app.repository.site_repository import SiteRepository
 from app.schema.site_schema import SiteCreate, SiteUpdate, Site, FindSiteResult, GetSitesResponse, SiteDetails, \
-    CustomResponse, CustomResponse1
+    CustomResponse, CustomResponse1, ComparisonDeviceMetricsDetails
 from app.services.site_service import SiteService
 from app.core.container import Container
 from dependency_injector.wiring import Provide, inject
@@ -340,6 +340,25 @@ def get_device_data_metrics(
     metrics = site_service.calculate_device_data_by_name_with_filter(site_id, device_name, duration)
     return CustomResponse1(
         message="Device data metrics retrieved successfully",
+        data=metrics,
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/site/device_specific_comparison_WITH_FILTER/{site_id}",
+            response_model=CustomResponse1[List[ComparisonDeviceMetricsDetails]])
+@inject
+def compare_two_devices_metrics(
+        site_id: int,
+        device_name1: str = Query(..., description="Name of the first device"),
+        device_name2: str = Query(..., description="Name of the second device"),
+        duration: Optional[str] = Query("24 hours", alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    metrics = site_service.compare_device_data_by_names_and_duration(site_id, device_name1, device_name2, duration)
+    return CustomResponse1(
+        message="Device comparison metrics retrieved successfully",
         data=metrics,
         status_code=status.HTTP_200_OK
     )
