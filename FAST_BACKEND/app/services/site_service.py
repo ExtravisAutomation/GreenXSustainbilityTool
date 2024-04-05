@@ -455,14 +455,13 @@ class SiteService:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices_info_list = self.site_repository.get_device_ips_by_names_and_site_id(site_id,
                                                                                      [device_name1, device_name2])
-
         if not devices_info_list:
             return []
 
         comparison_metrics = []
         for device_info in devices_info_list:
             device_ip = device_info['ip_address']
-            metrics = self.influxdb_repository.get_traffic_throughput_metrics123([device_ip], start_date, end_date,
+            metrics = self.influxdb_repository.get_traffic_throughput_metrics123(device_ip, start_date, end_date,
                                                                                  duration_str)
             for metric in metrics:
                 metric['device_name'] = device_info['device_name']
