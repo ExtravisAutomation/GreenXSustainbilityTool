@@ -115,7 +115,7 @@ class SiteService:
         elif duration_str == "Last Year":
             start_date = (today.replace(day=1, month=1) - timedelta(days=365)).replace(day=1)
             end_date = start_date.replace(month=12, day=31)
-        elif duration_str == "Current year":
+        elif duration_str == "Current Year":
             start_date = today.replace(month=1, day=1)  # First day of the current year
             end_date = today  # Today's date
         elif duration_str == "Current Month":
