@@ -556,7 +556,7 @@ class InfluxDBRepository:
             average_power = result['_value'].mean()
             return {
                 "device_name": device_ip,
-                "average_power_percentage": round((average_power / 1000) * 100, 2)
+                "average_power_percentage": round(average_power / max(result['_value']) * 100, 2)
 
             }
         return {}
