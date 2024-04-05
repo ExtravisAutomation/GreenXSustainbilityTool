@@ -184,3 +184,9 @@ class ComparisonDeviceMetricsDetails(BaseModel):
     device_name: Optional[str]
     time: Optional[str]
     total_power: Optional[float]
+
+
+class ComparisonTrafficMetricsDetails(BaseModel):
+    device_name: Optional[str]
+    time: Optional[str]
+    total_bytes_rate_last_gb: Optional[float]
