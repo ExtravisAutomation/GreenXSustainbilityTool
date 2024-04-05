@@ -8,7 +8,8 @@ from app.core.dependencies import get_db, get_current_active_user
 from app.model.user import User
 from app.repository.site_repository import SiteRepository
 from app.schema.site_schema import SiteCreate, SiteUpdate, Site, FindSiteResult, GetSitesResponse, SiteDetails, \
-    CustomResponse, CustomResponse1, ComparisonDeviceMetricsDetails, ComparisonTrafficMetricsDetails
+    CustomResponse, CustomResponse1, ComparisonDeviceMetricsDetails, ComparisonTrafficMetricsDetails, \
+    DevicePowerComparisonPercentage
 from app.services.site_service import SiteService
 from app.core.container import Container
 from dependency_injector.wiring import Provide, inject
@@ -377,5 +378,22 @@ def compare_two_devices_traffic(
     return CustomResponse1(
         message="Device traffic comparison metrics retrieved successfully",
         data=metrics,
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/site/device_power_comparison_percentage_WITH_FILTER/{site_id}",
+            response_model=CustomResponse1[List[DevicePowerComparisonPercentage]])
+def compare_two_devices_power_percentage(
+        site_id: int,
+        device_name1: str = Query(..., description="Name of the first device"),
+        device_name2: str = Query(..., description="Name of the second device"),
+        duration: Optional[str] = Query("24 hours", alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])):
+    comparison = site_service.compare_device_power_percentage_by_names_and_duration(site_id, device_name1, device_name2, duration)
+    return CustomResponse1(
+        message="Device power percentage comparison retrieved successfully",
+        data=comparison,
         status_code=status.HTTP_200_OK
     )

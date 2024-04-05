@@ -537,6 +537,30 @@ class InfluxDBRepository:
 
         return power_metrics
 
+    def get_average_power_percentage(self, device_ip: str, start_date: datetime, end_date: datetime,
+                                     duration_str: str) -> dict:
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+        aggregate_window, time_format = self.determine_aggregate_window(duration_str)
+
+        query = f'''
+            from(bucket: "{self.bucket}")
+            |> range(start: {start_time}, stop: {end_time})
+            |> filter(fn: (r) => r["ApicController_IP"] == "{device_ip}")
+            |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+            |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+        '''
+        result = self.query_api1.query_data_frame(query)
+
+        if not result.empty:
+            average_power = result['_value'].mean()
+            return {
+                "device_name": device_ip,
+                "average_power_percentage": round(average_power / max(result['_value']) * 100, 2)
+
+            }
+        return {}
+
     def get_hourly_power_metrics_for_ip(self, device_ips: List[str]) -> List[dict]:
         hourly_power_metrics = []
 
