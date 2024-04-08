@@ -203,17 +203,17 @@ class SiteService:
         comparison_metrics = {device_name1: [], device_name2: []}
         for device_info in devices_info_list:
             device_ip = device_info['ip_address']
-            metrics = self.influxdb_repository.get_average_power_percentage(device_ip, start_date, end_date,
-                                                                            duration_str)
+            metrics = self.influxdb_repository.get_average_power_percentage(device_ip, start_date, end_date, duration_str)
             if metrics:
                 device_name = device_info['device_name']
                 for metric in metrics:
-                    average_power_percentage = metric.get('average_power_percentage', None)
-                    if average_power_percentage is not None:
-                        comparison_metrics[device_name].append(DevicePowerComparisonPercentage(
-                            device_name=device_name,
-                            average_power_percentage=average_power_percentage
-                        ))
+                    if isinstance(metric, dict):
+                        average_power_percentage = metric.get('average_power_percentage', None)
+                        if average_power_percentage is not None:
+                            comparison_metrics[device_name].append(DevicePowerComparisonPercentage(
+                                device_name=device_name,
+                                average_power_percentage=average_power_percentage
+                            ))
 
         return [comparison_metrics[device_name1], comparison_metrics[device_name2]]
 
