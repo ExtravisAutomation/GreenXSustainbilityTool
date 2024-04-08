@@ -554,6 +554,7 @@ class InfluxDBRepository:
 
         if not result.empty:
             average_power = result['_value'].mean()
+            print("Average power for IPPPPPPPPPPPPPPPPPPPP: ", average_power, file=sys.stderr)
             return {
                 "device_name": device_ip,
                 "average_power_percentage": round(average_power / max(result['_value']) * 100, 2)
