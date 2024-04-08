@@ -20,6 +20,8 @@ from app.schema.site_schema import TopDevicesPowerResponse, DevicePowerConsumpti
 
 from app.schema.site_schema import DeviceTrafficThroughputMetric1, TrafficThroughputMetricsResponse
 
+from app.schema.site_schema import DevicePowerComparisonPercentage
+
 
 class SiteService:
     def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
@@ -169,8 +171,28 @@ class SiteService:
             print("No comparison metrics generated.", file=sys.stderr)
         return comparison_metrics
 
+    # def compare_device_power_percentage_by_names_and_duration(self, site_id: int, device_name1: str, device_name2: str,
+    #                                                           duration_str: str) -> List[dict]:
+    #     start_date, end_date = self.calculate_start_end_dates(duration_str)
+    #     devices_info_list = self.site_repository.get_device_ips_by_names_and_site_id(site_id,
+    #                                                                                  [device_name1, device_name2])
+    #
+    #     if not devices_info_list:
+    #         return []
+    #
+    #     comparison_metrics = []
+    #     for device_info in devices_info_list:
+    #         device_ip = device_info['ip_address']
+    #         metric = self.influxdb_repository.get_average_power_percentage(device_ip, start_date, end_date,
+    #                                                                        duration_str)
+    #         if metric:
+    #             metric['device_name'] = device_info['device_name']
+    #             comparison_metrics.append(metric)
+    #
+    #     return comparison_metrics
+
     def compare_device_power_percentage_by_names_and_duration(self, site_id: int, device_name1: str, device_name2: str,
-                                                              duration_str: str) -> List[dict]:
+                                                              duration_str: str) -> List[List[DevicePowerComparisonPercentage]]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices_info_list = self.site_repository.get_device_ips_by_names_and_site_id(site_id,
                                                                                      [device_name1, device_name2])
@@ -178,16 +200,20 @@ class SiteService:
         if not devices_info_list:
             return []
 
-        comparison_metrics = []
+        comparison_metrics = {device_name1: [], device_name2: []}
         for device_info in devices_info_list:
             device_ip = device_info['ip_address']
-            metric = self.influxdb_repository.get_average_power_percentage(device_ip, start_date, end_date,
-                                                                           duration_str)
-            if metric:
-                metric['device_name'] = device_info['device_name']
-                comparison_metrics.append(metric)
+            metrics = self.influxdb_repository.get_average_power_percentage(device_ip, start_date, end_date,
+                                                                            duration_str)
+            if metrics:
+                device_name = device_info['device_name']
+                for metric in metrics:
+                    comparison_metrics[device_name].append(DevicePowerComparisonPercentage(
+                        device_name=device_name,
+                        average_power_percentage=metric['average_power_percentage']
+                    ))
 
-        return comparison_metrics
+        return [comparison_metrics[device_name1], comparison_metrics[device_name2]]
 
     def calculate_energy_consumption_by_id_with_filter(self, site_id: int, duration_str: str) -> List[
         dict]:
@@ -341,7 +367,6 @@ class SiteService:
     #
     #     return comparison_metrics
 
-
     def compare_devices_hourly_power_metrics(self, site_id: int, device_name1: str,
                                              device_name2: str) -> HourlyDevicePowerMetricsResponse:
         devices_info = self.site_repository.get_device_ips_by_names_and_site_id(site_id, [device_name1, device_name2])
@@ -465,7 +490,7 @@ class SiteService:
         for device_info in device_info_list:
             device_ip = device_info['ip_address']
             metrics = self.influxdb_repository.get_traffic_throughput_metrics123(device_ip, start_date, end_date,
-                                                                                duration_str)
+                                                                                 duration_str)
             data_metrics.extend(metrics)
 
         return data_metrics
@@ -488,7 +513,6 @@ class SiteService:
             comparison_metrics.extend(metrics)
 
         return comparison_metrics
-
 
     # def calculate_site_traffic_throughput_metrics(self, site_id: int) -> TrafficThroughputMetricsResponse:
     #     device_inventory_data = self.site_repository.get_device_inventory_by_site_id(site_id)

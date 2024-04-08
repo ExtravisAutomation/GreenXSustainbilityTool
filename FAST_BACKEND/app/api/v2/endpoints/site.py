@@ -383,7 +383,7 @@ def compare_two_devices_traffic(
 
 
 @router.get("/site/device_power_comparison_percentage_WITH_FILTER/{site_id}",
-            response_model=CustomResponse1[List[DevicePowerComparisonPercentage]])
+            response_model=CustomResponse1[List[List[DevicePowerComparisonPercentage]]])
 @inject
 def compare_two_devices_power_percentage(
         site_id: int,
