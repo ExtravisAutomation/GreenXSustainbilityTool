@@ -171,66 +171,66 @@ class SiteService:
             print("No comparison metrics generated.", file=sys.stderr)
         return comparison_metrics
 
-    # def compare_device_power_percentage_by_names_and_duration(self, site_id: int, device_name1: str, device_name2: str,
-    #                                                           duration_str: str) -> List[dict]:
-    #     start_date, end_date = self.calculate_start_end_dates(duration_str)
-    #     devices_info_list = self.site_repository.get_device_ips_by_names_and_site_id(site_id,
-    #                                                                                  [device_name1, device_name2])
-    #
-    #     if not devices_info_list:
-    #         return []
-    #
-    #     comparison_metrics = []
-    #     for device_info in devices_info_list:
-    #         device_ip = device_info['ip_address']
-    #         metric = self.influxdb_repository.get_average_power_percentage(device_ip, start_date, end_date,
-    #                                                                        duration_str)
-    #         if metric:
-    #             metric['device_name'] = device_info['device_name']
-    #             comparison_metrics.append(metric)
-    #
-    #     return comparison_metrics
-
     def compare_device_power_percentage_by_names_and_duration(self, site_id: int, device_name1: str, device_name2: str,
-                                                              duration_str: str) -> List[List[DevicePowerComparisonPercentage]]:
+                                                              duration_str: str) -> List[dict]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
-        sys.stderr.write(f"Start date: {start_date}, End date: {end_date}\n")
-
         devices_info_list = self.site_repository.get_device_ips_by_names_and_site_id(site_id,
                                                                                      [device_name1, device_name2])
-        sys.stderr.write(f"Devices info list: {devices_info_list}\n")
 
         if not devices_info_list:
-            sys.stderr.write("No devices found\n")
             return []
 
-        comparison_metrics = {device_name1: [], device_name2: []}
+        comparison_metrics = []
         for device_info in devices_info_list:
             device_ip = device_info['ip_address']
-            sys.stderr.write(f"Processing device: {device_info}\n")
+            metric = self.influxdb_repository.get_average_power_percentage(device_ip, start_date, end_date,
+                                                                           duration_str)
+            if metric:
+                metric['device_name'] = device_info['device_name']
+                comparison_metrics.append(metric)
 
-            metrics = self.influxdb_repository.get_average_power_percentage(device_ip, start_date, end_date,
-                                                                             duration_str)
-            sys.stderr.write(f"Metrics for device {device_info['device_name']}: {metrics}\n")
+        return comparison_metrics
 
-            if metrics:
-                device_name = device_info['device_name']
-                for metric in metrics:
-                    sys.stderr.write(f"Processing metric: {metric}\n")
-                    if isinstance(metric, dict):
-                        average_power_percentage = metric.get('average_power_percentage', None)
-                        if average_power_percentage is not None:
-                            comparison_metrics[device_name].append(DevicePowerComparisonPercentage(
-                                device_name=device_name,
-                                average_power_percentage=average_power_percentage
-                            ))
-                        else:
-                            sys.stderr.write("Skipping metric as average_power_percentage is None\n")
-                    else:
-                        sys.stderr.write(f"Skipping metric as it's not a dictionary: {metric}\n")
-
-        sys.stderr.write(f"Final comparison metrics: {comparison_metrics}\n")
-        return [comparison_metrics[device_name1], comparison_metrics[device_name2]]
+    # def compare_device_power_percentage_by_names_and_duration(self, site_id: int, device_name1: str, device_name2: str,
+    #                                                           duration_str: str) -> List[List[DevicePowerComparisonPercentage]]:
+    #     start_date, end_date = self.calculate_start_end_dates(duration_str)
+    #     sys.stderr.write(f"Start date: {start_date}, End date: {end_date}\n")
+    #
+    #     devices_info_list = self.site_repository.get_device_ips_by_names_and_site_id(site_id,
+    #                                                                                  [device_name1, device_name2])
+    #     sys.stderr.write(f"Devices info list: {devices_info_list}\n")
+    #
+    #     if not devices_info_list:
+    #         sys.stderr.write("No devices found\n")
+    #         return []
+    #
+    #     comparison_metrics = {device_name1: [], device_name2: []}
+    #     for device_info in devices_info_list:
+    #         device_ip = device_info['ip_address']
+    #         sys.stderr.write(f"Processing device: {device_info}\n")
+    #
+    #         metrics = self.influxdb_repository.get_average_power_percentage(device_ip, start_date, end_date,
+    #                                                                          duration_str)
+    #         sys.stderr.write(f"Metrics for device {device_info['device_name']}: {metrics}\n")
+    #
+    #         if metrics:
+    #             device_name = device_info['device_name']
+    #             for metric in metrics:
+    #                 sys.stderr.write(f"Processing metric: {metric}\n")
+    #                 if isinstance(metric, dict):
+    #                     average_power_percentage = metric.get('average_power_percentage', None)
+    #                     if average_power_percentage is not None:
+    #                         comparison_metrics[device_name].append(DevicePowerComparisonPercentage(
+    #                             device_name=device_name,
+    #                             average_power_percentage=average_power_percentage
+    #                         ))
+    #                     else:
+    #                         sys.stderr.write("Skipping metric as average_power_percentage is None\n")
+    #                 else:
+    #                     sys.stderr.write(f"Skipping metric as it's not a dictionary: {metric}\n")
+    #
+    #     sys.stderr.write(f"Final comparison metrics: {comparison_metrics}\n")
+    #     return [comparison_metrics[device_name1], comparison_metrics[device_name2]]
 
     def calculate_energy_consumption_by_id_with_filter(self, site_id: int, duration_str: str) -> List[
         dict]:
