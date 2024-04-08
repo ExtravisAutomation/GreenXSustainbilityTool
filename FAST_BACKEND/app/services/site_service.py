@@ -208,10 +208,12 @@ class SiteService:
             if metrics:
                 device_name = device_info['device_name']
                 for metric in metrics:
-                    comparison_metrics[device_name].append(DevicePowerComparisonPercentage(
-                        device_name=device_name,
-                        average_power_percentage=metric['average_power_percentage']
-                    ))
+                    average_power_percentage = metric.get('average_power_percentage', None)
+                    if average_power_percentage is not None:
+                        comparison_metrics[device_name].append(DevicePowerComparisonPercentage(
+                            device_name=device_name,
+                            average_power_percentage=average_power_percentage
+                        ))
 
         return [comparison_metrics[device_name1], comparison_metrics[device_name2]]
 
