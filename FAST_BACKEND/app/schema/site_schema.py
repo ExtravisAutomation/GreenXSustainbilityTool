@@ -1,6 +1,6 @@
 from app.schema.base_schema import ModelBaseInfo, FindBase, SearchOptions, FindResult, Blank
 from pydantic import BaseModel, validator
-from typing import Generic, TypeVar, Optional, List
+from typing import Generic, TypeVar, Optional, List, Dict
 from pydantic.generics import GenericModel
 from datetime import datetime
 
@@ -71,6 +71,8 @@ class CustomResponse1(BaseModel, Generic[T]):
     message: str
     data: T
     status_code: int
+
+
 
 
 class SiteDetails1(BaseModel):
@@ -195,3 +197,9 @@ class ComparisonTrafficMetricsDetails(BaseModel):
 class DevicePowerComparisonPercentage(BaseModel):
     device_name: Optional[str]
     average_power_percentage: Optional[float]
+
+
+class CustomResponse100(BaseModel):
+    message: str
+    data: Dict[str, List[ComparisonDeviceMetricsDetails]]
+    status_code: int

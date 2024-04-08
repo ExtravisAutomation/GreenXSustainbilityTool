@@ -22,6 +22,8 @@ from app.schema.site_schema import DeviceTrafficThroughputMetric1, TrafficThroug
 
 from app.schema.site_schema import DevicePowerComparisonPercentage
 
+from app.schema.site_schema import ComparisonDeviceMetricsDetails
+
 
 class SiteService:
     def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
@@ -136,8 +138,43 @@ class SiteService:
             raise ValueError("Unsupported duration format")
         return start_date, end_date
 
+    # def compare_device_data_by_names_and_duration(self, site_id: int, device_name1: str, device_name2: str,
+    #                                               duration_str: str) -> List[dict]:
+    #     print(f"Comparing devices: {device_name1}, {device_name2} over duration: {duration_str}", file=sys.stderr)
+    #
+    #     start_date, end_date = self.calculate_start_end_dates(duration_str)
+    #     print(f"Start Date: {start_date}, End Date: {end_date}", file=sys.stderr)
+    #
+    #     devices_info_list = self.site_repository.get_device_ips_by_names_and_site_id(site_id,
+    #                                                                                  [device_name1, device_name2])
+    #     if devices_info_list:
+    #         print(f"Devices Info List: {devices_info_list}", file=sys.stderr)
+    #     else:
+    #         print("No devices found for given names.", file=sys.stderr)
+    #         return []
+    #
+    #     comparison_metrics = []
+    #     for device_info in devices_info_list:
+    #         device_ip = device_info['ip_address']
+    #         print(f"Fetching metrics for IP: {device_ip}", file=sys.stderr)
+    #
+    #         metrics = self.influxdb_repository.get_comparison_metrics123(device_ip, start_date, end_date, duration_str)
+    #         if metrics:
+    #             print(f"Metrics received for {device_ip}: {metrics}", file=sys.stderr)
+    #             for metric in metrics:
+    #                 metric['device_name'] = device_info['device_name']
+    #             comparison_metrics.extend(metrics)
+    #         else:
+    #             print(f"No metrics received for IP: {device_ip}.", file=sys.stderr)
+    #
+    #     if comparison_metrics:
+    #         print(f"Final Comparison Metrics: {comparison_metrics}", file=sys.stderr)
+    #     else:
+    #         print("No comparison metrics generated.", file=sys.stderr)
+    #     return comparison_metrics
+
     def compare_device_data_by_names_and_duration(self, site_id: int, device_name1: str, device_name2: str,
-                                                  duration_str: str) -> List[dict]:
+                                                  duration_str: str) -> Dict[str, List[ComparisonDeviceMetricsDetails]]:
         print(f"Comparing devices: {device_name1}, {device_name2} over duration: {duration_str}", file=sys.stderr)
 
         start_date, end_date = self.calculate_start_end_dates(duration_str)
@@ -145,13 +182,11 @@ class SiteService:
 
         devices_info_list = self.site_repository.get_device_ips_by_names_and_site_id(site_id,
                                                                                      [device_name1, device_name2])
-        if devices_info_list:
-            print(f"Devices Info List: {devices_info_list}", file=sys.stderr)
-        else:
+        if not devices_info_list:
             print("No devices found for given names.", file=sys.stderr)
-            return []
+            return {"device_name1": [], "device_name2": []}
 
-        comparison_metrics = []
+        comparison_metrics = {"device_name1": [], "device_name2": []}
         for device_info in devices_info_list:
             device_ip = device_info['ip_address']
             print(f"Fetching metrics for IP: {device_ip}", file=sys.stderr)
@@ -161,14 +196,11 @@ class SiteService:
                 print(f"Metrics received for {device_ip}: {metrics}", file=sys.stderr)
                 for metric in metrics:
                     metric['device_name'] = device_info['device_name']
-                comparison_metrics.extend(metrics)
+                comparison_metrics[f"device_name{device_info['device_name']}"].extend(metrics)
             else:
                 print(f"No metrics received for IP: {device_ip}.", file=sys.stderr)
 
-        if comparison_metrics:
-            print(f"Final Comparison Metrics: {comparison_metrics}", file=sys.stderr)
-        else:
-            print("No comparison metrics generated.", file=sys.stderr)
+        print(f"Final Comparison Metrics: {comparison_metrics}", file=sys.stderr)
         return comparison_metrics
 
     def compare_device_power_percentage_by_names_and_duration(self, site_id: int, device_name1: str, device_name2: str,

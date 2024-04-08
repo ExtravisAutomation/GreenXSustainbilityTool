@@ -29,6 +29,8 @@ from app.schema.site_schema import TrafficThroughputMetricsDetails
 
 from app.schema.site_schema import TrafficThroughputMetricsResponse
 
+from app.schema.site_schema import CustomResponse100
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 
 
@@ -346,8 +348,7 @@ def get_device_data_metrics(
     )
 
 
-@router.get("/site/device_specific_comparison_WITH_FILTER/{site_id}",
-            response_model=CustomResponse1[List[ComparisonDeviceMetricsDetails]])
+@router.get("/site/device_specific_comparison_WITH_FILTER/{site_id}")
 @inject
 def compare_two_devices_metrics(
         site_id: int,
@@ -358,11 +359,7 @@ def compare_two_devices_metrics(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     metrics = site_service.compare_device_data_by_names_and_duration(site_id, device_name1, device_name2, duration)
-    return CustomResponse1(
-        message="Device comparison metrics retrieved successfully",
-        data=metrics,
-        status_code=status.HTTP_200_OK
-    )
+    return metrics
 
 @router.get("/site/device_traffic_comparison_WITH_FILTER/{site_id}",
             response_model=CustomResponse1[List[ComparisonTrafficMetricsDetails]])
@@ -383,7 +380,7 @@ def compare_two_devices_traffic(
 
 
 @router.get("/site/device_power_comparison_percentage_WITH_FILTER/{site_id}",
-            response_model=CustomResponse1[List[List[DevicePowerComparisonPercentage]]])
+            response_model=CustomResponse1[List[DevicePowerComparisonPercentage]])
 @inject
 def compare_two_devices_power_percentage(
         site_id: int,
