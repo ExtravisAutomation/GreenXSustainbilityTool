@@ -196,7 +196,7 @@ class SiteService:
                 print(f"Metrics received for {device_ip}: {metrics}", file=sys.stderr)
                 for metric in metrics:
                     metric['device_name'] = device_info['device_name']
-                comparison_metrics[f"device_name{device_info['device_name']}"].extend(metrics)
+                comparison_metrics[device_info['device_name']].extend(metrics)
             else:
                 print(f"No metrics received for IP: {device_ip}.", file=sys.stderr)
 
