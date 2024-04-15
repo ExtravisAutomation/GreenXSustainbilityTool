@@ -351,8 +351,8 @@ def get_device_data_metrics(
 @inject
 def compare_two_devices_metrics(
         site_id: int,
-        device_name1: str = Query(..., description="Name of the first device"),
-        device_name2: str = Query(..., description="Name of the second device"),
+        device_name1: Optional[str] = Query(..., description="Name of the first device"),
+        device_name2: Optional[str] = Query(..., description="Name of the second device"),
         duration: Optional[str] = Query("24 hours", alias="duration"),
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
@@ -372,8 +372,8 @@ def compare_two_devices_metrics(
 @inject
 def compare_two_devices_traffic(
         site_id: int,
-        device_name1: str = Query(..., description="Name of the first device"),
-        device_name2: str = Query(..., description="Name of the second device"),
+        device_name1: Optional[str] = Query(..., description="Name of the first device"),
+        device_name2: Optional[str] = Query(..., description="Name of the second device"),
         duration: Optional[str] = Query("24 hours", alias="duration"),
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])):
@@ -392,8 +392,8 @@ def compare_two_devices_traffic(
 @inject
 def compare_two_devices_power_percentage(
         site_id: int,
-        device_name1: str = Query(..., description="Name of the first device"),
-        device_name2: str = Query(..., description="Name of the second device"),
+        device_name1: Optional[str] = Query(..., description="Name of the first device"),
+        device_name2: Optional[str] = Query(..., description="Name of the second device"),
         duration: Optional[str] = Query("24 hours", alias="duration"),
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])):
