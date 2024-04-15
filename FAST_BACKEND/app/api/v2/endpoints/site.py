@@ -368,7 +368,7 @@ def compare_two_devices_metrics(
 
 
 @router.get("/site/device_traffic_comparison_WITH_FILTER/{site_id}",
-            response_model=CustomResponse1[List[ComparisonTrafficMetricsDetails]])
+            response_model=CustomResponse1[List[List[ComparisonTrafficMetricsDetails]]])
 @inject
 def compare_two_devices_traffic(
         site_id: int,
