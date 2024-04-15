@@ -139,7 +139,7 @@ class SiteService:
         return start_date, end_date
 
     def compare_device_data_by_names_and_duration(self, site_id: int, device_name1: str, device_name2: str,
-                                                  duration_str: str) -> List[dict]:
+                                                  duration_str: str) -> List[List[dict]]:
         print(f"Comparing devices: {device_name1}, {device_name2} over duration: {duration_str}", file=sys.stderr)
 
         start_date, end_date = self.calculate_start_end_dates(duration_str)
@@ -153,27 +153,27 @@ class SiteService:
             print("No devices found for given names.", file=sys.stderr)
             return []
 
-        comparison_metrics = []
-        for device_info in devices_info_list:
+        comparison_metrics = [[] for _ in devices_info_list]  # Create a list of lists to store metrics for each device
+
+        for index, device_info in enumerate(devices_info_list):
             device_ip = device_info['ip_address']
             print(f"Fetching metrics for IP: {device_ip}", file=sys.stderr)
 
             metrics = self.influxdb_repository.get_comparison_metrics123(device_ip, start_date, end_date, duration_str)
             if metrics:
+                metrics = sorted(metrics, key=lambda x: x['time'])  # Sort metrics by time
                 print(f"Metrics received for {device_ip}: {metrics}", file=sys.stderr)
                 for metric in metrics:
                     metric['device_name'] = device_info['device_name']
-                comparison_metrics.extend(metrics)
+                comparison_metrics[index].extend(metrics)
             else:
                 print(f"No metrics received for IP: {device_ip}.", file=sys.stderr)
 
-        if comparison_metrics:
+        if any(comparison_metrics):
             print(f"Final Comparison Metrics: {comparison_metrics}", file=sys.stderr)
         else:
             print("No comparison metrics generated.", file=sys.stderr)
         return comparison_metrics
-
-
 
     def compare_device_power_percentage_by_names_and_duration(self, site_id: int, device_name1: str, device_name2: str,
                                                               duration_str: str) -> List[dict]:

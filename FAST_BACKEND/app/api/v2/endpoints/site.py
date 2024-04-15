@@ -347,7 +347,7 @@ def get_device_data_metrics(
 
 
 @router.get("/site/device_specific_comparison_WITH_FILTER/{site_id}",
-            response_model=CustomResponse1[List[ComparisonDeviceMetricsDetails]])
+            response_model=CustomResponse1[List[List[ComparisonDeviceMetricsDetails]]])
 @inject
 def compare_two_devices_metrics(
         site_id: int,
@@ -357,12 +357,15 @@ def compare_two_devices_metrics(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
+    device_name1 = device_name1 or "RYD-SLY-00-AF14"
+    device_name2 = device_name2 or "RYD-SLY-00-AF15"
     metrics = site_service.compare_device_data_by_names_and_duration(site_id, device_name1, device_name2, duration)
     return CustomResponse1(
         message="Device comparison metrics retrieved successfully",
         data=metrics,
         status_code=status.HTTP_200_OK
     )
+
 
 @router.get("/site/device_traffic_comparison_WITH_FILTER/{site_id}",
             response_model=CustomResponse1[List[ComparisonTrafficMetricsDetails]])
@@ -374,6 +377,8 @@ def compare_two_devices_traffic(
         duration: Optional[str] = Query("24 hours", alias="duration"),
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])):
+    device_name1 = device_name1 or "RYD-SLY-00-AF14"
+    device_name2 = device_name2 or "RYD-SLY-00-AF15"
     metrics = site_service.compare_device_traffic_by_names_and_duration(site_id, device_name1, device_name2, duration)
     return CustomResponse1(
         message="Device traffic comparison metrics retrieved successfully",
@@ -392,7 +397,10 @@ def compare_two_devices_power_percentage(
         duration: Optional[str] = Query("24 hours", alias="duration"),
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])):
-    comparison = site_service.compare_device_power_percentage_by_names_and_duration(site_id, device_name1, device_name2, duration)
+    device_name1 = device_name1 or "RYD-SLY-00-AF14"
+    device_name2 = device_name2 or "RYD-SLY-00-AF15"
+    comparison = site_service.compare_device_power_percentage_by_names_and_duration(site_id, device_name1, device_name2,
+                                                                                    duration)
     return CustomResponse1(
         message="Device power percentage comparison retrieved successfully",
         data=comparison,
