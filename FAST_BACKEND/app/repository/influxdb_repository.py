@@ -464,7 +464,7 @@ class InfluxDBRepository:
             for field in ['total_PIn', 'total_POut']:
                 query = f'''
                     from(bucket: "{configs.INFLUXDB_BUCKET}")
-                    |> range(start: -1d)
+                    |> range(start: -90d)
                     |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                     |> filter(fn: (r) => r["_field"] == "{field}")
                     |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)

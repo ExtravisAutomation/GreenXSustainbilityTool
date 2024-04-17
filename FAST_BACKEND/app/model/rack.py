@@ -11,7 +11,7 @@ class Rack(BaseModel):
     manufacture_date = Column(Date, nullable=True)
     unit_position = Column(Integer, nullable=True)
     rack_model = Column(String(255), nullable=True)
-    pn_code = Column(String(255), nullable=True)
+    #pn_code = Column(String(255), nullable=True)
     serial_number = Column(String(255), nullable=True)
     Ru = Column(Integer, nullable=True)
     RFS = Column(String(255), nullable=True)
