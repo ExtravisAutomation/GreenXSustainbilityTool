@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime
 from typing import List, Optional, Dict, Any
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
@@ -408,8 +409,19 @@ def compare_two_devices_power_percentage(
     )
 
 
-@router.get("/site/detailed_energy_metrics/{site_id}",
-            response_model=HourlyEnergyMetricsResponse)
+def parse_time(time_str):
+    # List of possible datetime formats
+    formats = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H', '%Y-%m-%d', '%Y-%m']
+
+    for fmt in formats:
+        try:
+            return datetime.strptime(time_str, fmt)
+        except ValueError:
+            continue
+    raise ValueError(f"Time format not recognized: {time_str}")
+
+
+@router.get("/site/detailed_energy_metrics/{site_id}", response_model=HourlyEnergyMetricsResponse)
 @inject
 def get_detailed_energy_metrics(
         site_id: int,
@@ -418,9 +430,15 @@ def get_detailed_energy_metrics(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])):
     try:
-        metrics = site_service.get_energy_metrics_for_timestamp(site_id, timestamp, duration)
+        # First, try to parse the timestamp
+        parsed_timestamp = parse_time(timestamp)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    try:
+        metrics = site_service.get_energy_metrics_for_timestamp(site_id, parsed_timestamp, duration)
         if not metrics.metrics:
             raise HTTPException(status_code=404, detail="No metrics found for the specified timestamp.")
         return metrics
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
