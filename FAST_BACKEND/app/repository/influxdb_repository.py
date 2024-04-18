@@ -1051,15 +1051,20 @@ class InfluxDBRepository:
 
         return total_power_metrics
 
-    def get_hourly_metrics_for_devices_at_time(self, device_ips: List[str], specific_time: str, duration_str: str) -> List[dict]:
+    def get_hourly_metrics_for_devices_at_time(self, device_ips: List[str], specific_time: str, duration_str: str) -> \
+    List[dict]:
         filtered_metrics = []
+        print(f"Fetching metrics for devices at time: {specific_time} with duration: {duration_str}", file=sys.stderr)
         for ip in device_ips:
-            print(f"Calculating hourly metrics for device IP: {ip} at {specific_time}", file=sys.stderr)
+            print(f"Calculating hourly metrics for device IP: {ip}", file=sys.stderr)
             metrics = self.calculate_hourly_metrics_for_device1(ip, duration_str)
-            filtered_metric = next((m for m in metrics if m['time'].startswith(specific_time)), None)
+            # Ensure specific_time and metric time are both strings
+            formatted_specific_time = pd.to_datetime(specific_time).strftime('%Y-%m-%d %H:%M:%S')
+            filtered_metric = next((m for m in metrics if m['time'] == formatted_specific_time), None)
             if filtered_metric:
-                print(f"Metric found for {specific_time}: {filtered_metric}", file=sys.stderr)
+                print(f"Metric found for {formatted_specific_time}: {filtered_metric}", file=sys.stderr)
                 filtered_metrics.append(filtered_metric)
             else:
-                print(f"No metric found for {specific_time} on IP {ip}", file=sys.stderr)
+                print(f"No metric found for {formatted_specific_time} on IP {ip}", file=sys.stderr)
         return filtered_metrics
+
