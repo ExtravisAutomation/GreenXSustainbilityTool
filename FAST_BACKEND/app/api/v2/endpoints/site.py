@@ -411,7 +411,7 @@ def compare_two_devices_power_percentage(
 
 def parse_time(time_str):
     # List of possible datetime formats
-    formats = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H', '%Y-%m-%d', '%Y-%m']
+    formats = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d', '%Y-%m', '%Y-%m-%d %H']
 
     for fmt in formats:
         try:
