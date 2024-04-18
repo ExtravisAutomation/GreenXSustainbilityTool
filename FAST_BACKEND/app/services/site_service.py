@@ -668,3 +668,37 @@ class SiteService:
             })
 
         return {"hourly_data": hourly_data}
+
+    def format_metric(self, metric_data):
+        # This method assumes 'metric_data' is a dictionary containing all the necessary keys
+        # and that these keys directly correspond to the fields in the DeviceEnergyMetric model.
+        formatted_metric = DeviceEnergyMetric(
+            device_name=metric_data.get('device_name'),
+            hardware_version=metric_data.get('hardware_version'),
+            manufacturer=metric_data.get('manufacturer'),
+            pn_code=metric_data.get('pn_code'),
+            serial_number=metric_data.get('serial_number'),
+            software_version=metric_data.get('software_version'),
+            status=metric_data.get('status'),
+            site_name=metric_data.get('site_name'),
+            apic_controller_ip=metric_data.get('apic_controller_ip'),
+            PE=round(metric_data.get('PE', 0), 2),  # Ensuring PE is rounded and defaults to 0 if not present
+            PUE=metric_data.get('PUE', 1.0),  # Defaulting PUE to 1.0 if not present
+            current_power=metric_data.get('current_power', 0),
+            time=metric_data.get('time')  # Assuming time is correctly formatted
+        )
+        return formatted_metric
+
+    def get_energy_metrics_for_timestamp(self, site_id: int, timestamp: str,
+                                         duration_str: str) -> HourlyEnergyMetricsResponse:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        device_ips = self.site_repository.get_apic_controller_ips_by_site_id(site_id)
+
+        # Filter to get data only for the specific timestamp
+        metrics = self.influxdb_repository.get_hourly_metrics_for_devices_at_time(device_ips, timestamp, duration_str)
+
+        formatted_metrics = []
+        for metric_data in metrics:
+            formatted_metrics.append(self.format_metric(metric_data))
+
+        return HourlyEnergyMetricsResponse(metrics=formatted_metrics)

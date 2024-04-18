@@ -406,3 +406,23 @@ def compare_two_devices_power_percentage(
         data=comparison,
         status_code=status.HTTP_200_OK
     )
+
+
+@router.get("/site/detailed_energy_metrics/{site_id}",
+            response_model=HourlyEnergyMetricsResponse)
+@inject
+def get_detailed_energy_metrics(
+        site_id: int,
+        timestamp: str,
+        duration: Optional[str] = Query("24 hours", alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])):
+    try:
+        metrics = site_service.get_energy_metrics_for_timestamp(site_id, timestamp, duration)
+        if not metrics.metrics:
+            raise HTTPException(status_code=404, detail="No metrics found for the specified timestamp.")
+        return metrics
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+

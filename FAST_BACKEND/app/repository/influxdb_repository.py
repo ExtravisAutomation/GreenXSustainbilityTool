@@ -969,3 +969,91 @@ class InfluxDBRepository:
         hourly_data = [{"time": row['time'], "traffic_throughput": row['_value'] / (1024 ** 3)} for index, row in
                        result.iterrows()]  # Convert bytes to Gigabytes
         return hourly_data
+
+    def calculate_start_end_dates(self, duration_str: str) -> (datetime, datetime):
+        today = datetime.today()
+        if duration_str == "Last 6 Months":
+            start_date = (today - timedelta(days=30 * 6)).replace(day=1)
+            end_date = today
+        elif duration_str == "Last 3 Months":
+            start_date = (today - timedelta(days=90)).replace(day=1)
+            end_date = today
+        elif duration_str == "Last Year":
+            start_date = (today.replace(day=1, month=1) - timedelta(days=365)).replace(day=1)
+            end_date = start_date.replace(month=12, day=31)
+        elif duration_str == "Current Year":
+            start_date = today.replace(month=1, day=1)  # First day of the current year
+            end_date = today  # Today's date
+        elif duration_str == "Current Month":
+            start_date = today.replace(day=1)
+            end_date = today  # Adjusted to set the end date to today's date
+        elif duration_str == "Last Month":
+            start_date = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
+            end_date = (today.replace(day=1) - timedelta(days=1))
+        elif duration_str == "7 Days":
+            start_date = today - timedelta(days=7)
+            end_date = today
+        elif duration_str == "24 hours":
+            start_date = today - timedelta(days=1)
+            end_date = today
+        else:
+            raise ValueError("Unsupported duration format")
+        return start_date, end_date
+
+    def calculate_hourly_metrics_for_device1(self, device_ip: str, duration_str: str) -> List[dict]:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        start_time = start_date.isoformat() + 'Z'  # Ensure timezone information is included for InfluxDB
+        end_time = end_date.isoformat() + 'Z'
+
+        total_power_metrics = []
+        power_metrics = {}
+
+        for field in ['total_PIn', 'total_POut']:
+            query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{device_ip}")
+                |> filter(fn: (r) => r["_field"] == "{field}")
+                |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+            '''
+            print(f"Executing query: {query}", file=sys.stderr)
+            result = self.query_api1.query_data_frame(query)
+
+            if not result.empty:
+                result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d H:%M:%S')
+                for _, row in result.iterrows():
+                    time_key = row['_time']
+                    if time_key not in power_metrics:
+                        power_metrics[time_key] = {}
+                    power_metrics[time_key][field] = row['_value']
+
+        for time, metrics in power_metrics.items():
+            total_PIn = metrics.get('total_PIn', 0)
+            total_POut = metrics.get('total_POut', 0)
+            current_power = total_PIn if total_PIn else 0
+
+            PE = (total_POut / total_PIn * 100) if total_PIn else 0
+            total_energy = total_PIn * 1.2
+            PUE = total_energy / total_PIn if total_PIn else 0
+
+            print(f"Metrics for IP {device_ip} at {time}: PE={PE}, PUE={PUE}, Current Power={current_power}",
+                  file=sys.stderr)
+
+            total_power_metrics.append({
+                "ip": device_ip,
+                "time": time,
+                "PE": PE,
+                "PUE": PUE,
+                "current_power": current_power
+            })
+
+        return total_power_metrics
+
+    def get_hourly_metrics_for_devices_at_time(self, device_ips: List[str], specific_time: str, duration_str: str) -> List[dict]:
+        filtered_metrics = []
+        for ip in device_ips:
+            metrics = self.calculate_hourly_metrics_for_device1(ip, duration_str)
+            filtered_metric = next((m for m in metrics if m['time'] == specific_time), None)
+            if filtered_metric:
+                filtered_metrics.append(filtered_metric)
+        return filtered_metrics
