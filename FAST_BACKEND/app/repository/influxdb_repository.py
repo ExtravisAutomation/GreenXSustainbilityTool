@@ -1054,14 +1054,15 @@ class InfluxDBRepository:
         return total_power_metrics
 
     def parse_time(self, time_str):
-        try:
-            return datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
+        # Add debug statement to log incoming time_str
+        print(f"Parsing time string: {time_str}", file=sys.stderr)
+        formats = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d']
+        for fmt in formats:
             try:
-                return datetime.strptime(time_str, '%Y-%m-%d %H:%M')
-            except ValueError:
-                return datetime.strptime(time_str, '%Y-%m-%d')
-
+                return datetime.strptime(time_str, fmt)
+            except ValueError as e:
+                print(f"Failed to parse '{time_str}' with format '{fmt}': {str(e)}", file=sys.stderr)
+        raise ValueError(f"Timestamp format not recognized: {time_str}")
 
     def get_hourly_metrics_for_devices_at_time(self, device_ips: List[str], specific_time: str, duration_str: str) -> List[dict]:
         filtered_metrics = []
