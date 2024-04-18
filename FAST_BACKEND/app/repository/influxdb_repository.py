@@ -1072,7 +1072,7 @@ class InfluxDBRepository:
             metrics = self.calculate_hourly_metrics_for_device1(ip, duration_str)
             # Filter metrics within the time range
             filtered_metric = next(
-                (m for m in metrics if time_lower_bound <= parse_time(m['time']) <= time_upper_bound), None)
+                (m for m in metrics if time_lower_bound <= self.parse_time(m['time']) <= time_upper_bound), None)
             if filtered_metric:
                 filtered_metrics.append(filtered_metric)
         return filtered_metrics
