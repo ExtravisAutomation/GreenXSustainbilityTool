@@ -1056,28 +1056,41 @@ class InfluxDBRepository:
 
     def calculate_metrics_for_device_at_time1(self, device_ips: List[str], exact_time: datetime) -> List[dict]:
         filtered_metrics = []
-        # Format the time for the exact query
-        time_str = exact_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+        # Expanding the query range to 1 hour before and after the exact timestamp
+        start_time = (exact_time - timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        stop_time = (exact_time + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
 
         for ip in device_ips:
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
-                |> range(start: {time_str}, stop: {time_str})
+                |> range(start: {start_time}, stop: {stop_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
                 |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             result = self.query_api1.query_data_frame(query)
+
             if not result.empty:
-                # Assume there's only one result for the specified time
-                row = result.iloc[0]
-                metric = {
-                    "ip": ip,
-                    "time": exact_time.strftime('%Y-%m-%d %H:%M:%S'),
-                    "PE": (row['total_POut'] / row['total_PIn'] * 100) if row['total_PIn'] else 0,
-                    "PUE": (row['total_PIn'] * 1.2 / row['total_PIn']) if row['total_PIn'] else 0,
-                    "current_power": row['total_PIn']
-                }
-                filtered_metrics.append(metric)
+                for _, row in result.iterrows():
+                    time_key = row['_time'].strftime('%Y-%m-%d %H:%M:%S')
+                    if exact_time.strftime(
+                            '%Y-%m-%d %H:%M:%S') == time_key:  # Ensuring it matches the exact time requested
+                        power_metrics = {
+                            'total_PIn': row.get('total_PIn', 0),
+                            'total_POut': row.get('total_POut', 0)
+                        }
+                        metric = {
+                            "ip": ip,
+                            "time": time_key,
+                            "PE": (power_metrics['total_POut'] / power_metrics['total_PIn'] * 100) if power_metrics[
+                                'total_PIn'] else 0,
+                            "PUE": (power_metrics['total_PIn'] * 1.2 / power_metrics['total_PIn']) if power_metrics[
+                                'total_PIn'] else 0,
+                            "current_power": power_metrics['total_PIn']
+                        }
+                        filtered_metrics.append(metric)
+                        break  # Stops after adding the metric for the exact time
 
         return filtered_metrics
