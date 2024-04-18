@@ -409,16 +409,14 @@ def compare_two_devices_power_percentage(
     )
 
 
-def parse_time(time_str):
-    # List of possible datetime formats
-    formats = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d', '%Y-%m', '%Y-%m-%d %H']
-
-    for fmt in formats:
+def parse_timestamp(timestamp_str):
+    # Attempt to parse the timestamp string using multiple possible formats
+    for fmt in ['%Y-%m-%d %H:%M', '%Y-%m-%d %H', '%Y-%m-%d']:
         try:
-            return datetime.strptime(time_str, fmt)
+            return datetime.strptime(timestamp_str, fmt)
         except ValueError:
             continue
-    raise ValueError(f"Time format not recognized: {time_str}")
+    raise ValueError("Timestamp format is not recognized.")
 
 
 @router.get("/site/detailed_energy_metrics/{site_id}", response_model=HourlyEnergyMetricsResponse)
@@ -431,7 +429,7 @@ def get_detailed_energy_metrics(
         site_service: SiteService = Depends(Provide[Container.site_service])):
     try:
         # First, try to parse the timestamp
-        parsed_timestamp = parse_time(timestamp)
+        parsed_timestamp = parse_timestamp(timestamp)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
