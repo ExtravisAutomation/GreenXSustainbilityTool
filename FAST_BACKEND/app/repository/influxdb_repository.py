@@ -1003,10 +1003,9 @@ class InfluxDBRepository:
 
     def calculate_hourly_metrics_for_device1(self, device_ip: str, duration_str: str) -> List[dict]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
-        start_time = start_date.isoformat() + 'Z'
+        start_time = start_date.isoformat() + 'Z'  # Ensure timezone information is included for InfluxDB
         end_time = end_date.isoformat() + 'Z'
 
-        print(f"Querying from {start_time} to {end_time} for IP {device_ip}", file=sys.stderr)
         total_power_metrics = []
         power_metrics = {}
 
@@ -1017,14 +1016,15 @@ class InfluxDBRepository:
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{device_ip}")
                 |> filter(fn: (r) => r["_field"] == "{field}")
                 |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             print(f"Executing query: {query}", file=sys.stderr)
             result = self.query_api1.query_data_frame(query)
 
             if not result.empty:
-                result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
+                result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d H:%M:%S')
                 for _, row in result.iterrows():
-                    time_key = row['_time']
+                    time_key = row['time']
                     if time_key not in power_metrics:
                         power_metrics[time_key] = {}
                     power_metrics[time_key][field] = row['_value']
