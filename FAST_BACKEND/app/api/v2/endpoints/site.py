@@ -419,10 +419,8 @@ def get_detailed_energy_metrics(
         site_service: SiteService = Depends(Provide[Container.site_service])):
     try:
         metrics = site_service.get_energy_metrics_for_timestamp(site_id, timestamp, duration)
-        if not metrics:
+        if not metrics.metrics:
             raise HTTPException(status_code=404, detail="No metrics found for the specified timestamp.")
         return metrics
-    except ValueError as e:
+    except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-

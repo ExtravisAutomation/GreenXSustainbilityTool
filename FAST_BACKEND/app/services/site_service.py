@@ -691,14 +691,19 @@ class SiteService:
 
     def get_energy_metrics_for_timestamp(self, site_id: int, timestamp: str,
                                          duration_str: str) -> HourlyEnergyMetricsResponse:
+        print(f"Calculating start and end dates for duration: {duration_str}", file=sys.stderr)
         start_date, end_date = self.calculate_start_end_dates(duration_str)
+        print(f"Start date: {start_date}, End date: {end_date}", file=sys.stderr)
+
+        print(f"Fetching device IPs for site ID: {site_id}", file=sys.stderr)
         device_ips = self.site_repository.get_apic_controller_ips_by_site_id(site_id)
+        print(f"Device IPs retrieved: {device_ips}", file=sys.stderr)
 
-        # Filter to get data only for the specific timestamp
         metrics = self.influxdb_repository.get_hourly_metrics_for_devices_at_time(device_ips, timestamp, duration_str)
+        print(f"Filtered metrics: {metrics}", file=sys.stderr)
 
-        formatted_metrics = []
-        for metric_data in metrics:
-            formatted_metrics.append(self.format_metric(metric_data))
+        formatted_metrics = [self.format_metric(metric) for metric in metrics if metric]
+        print(f"Formatted metrics: {formatted_metrics}", file=sys.stderr)
 
         return HourlyEnergyMetricsResponse(metrics=formatted_metrics)
+

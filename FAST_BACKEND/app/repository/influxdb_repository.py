@@ -504,7 +504,8 @@ class InfluxDBRepository:
 
         return total_power_metrics
 
-    def get_comparison_metrics123(self, device_ip: str, start_date: datetime, end_date: datetime, duration_str: str) -> List[dict]:
+    def get_comparison_metrics123(self, device_ip: str, start_date: datetime, end_date: datetime, duration_str: str) -> \
+    List[dict]:
 
         print(f"Querying InfluxDB for IP: {device_ip}", file=sys.stderr)
         power_metrics = []
@@ -530,7 +531,7 @@ class InfluxDBRepository:
                 total_power = row['total_PIn'] if not pd.isna(row['total_PIn']) else 0
                 power_metrics.append({
                     "time": row['_time'],
-                    "total_power": round(total_power,2)
+                    "total_power": round(total_power, 2)
                 })
         else:
             print(f"No data returned for IP: {device_ip}", file=sys.stderr)
@@ -637,7 +638,7 @@ class InfluxDBRepository:
         return top_devices_power
 
     def get_top_5_devices_by_power_with_filter(self, device_ips: List[str], start_date: datetime, end_date: datetime,
-                                   duration_str: str) -> List[dict]:
+                                               duration_str: str) -> List[dict]:
         top_devices_power = []
         start_time = start_date.isoformat() + 'Z'  # Ensure timezone information is included for InfluxDB
         end_time = end_date.isoformat() + 'Z'
@@ -728,7 +729,7 @@ class InfluxDBRepository:
         return throughput_metrics
 
     def get_traffic_throughput_metrics123(self, device_ips: List[str], start_date: datetime, end_date: datetime,
-                                         duration_str: str) -> List[dict]:
+                                          duration_str: str) -> List[dict]:
         throughput_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
@@ -1002,9 +1003,10 @@ class InfluxDBRepository:
 
     def calculate_hourly_metrics_for_device1(self, device_ip: str, duration_str: str) -> List[dict]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
-        start_time = start_date.isoformat() + 'Z'  # Ensure timezone information is included for InfluxDB
+        start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
+        print(f"Querying from {start_time} to {end_time} for IP {device_ip}", file=sys.stderr)
         total_power_metrics = []
         power_metrics = {}
 
@@ -1020,7 +1022,7 @@ class InfluxDBRepository:
             result = self.query_api1.query_data_frame(query)
 
             if not result.empty:
-                result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d H:%M:%S')
+                result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
                 for _, row in result.iterrows():
                     time_key = row['_time']
                     if time_key not in power_metrics:
@@ -1052,8 +1054,12 @@ class InfluxDBRepository:
     def get_hourly_metrics_for_devices_at_time(self, device_ips: List[str], specific_time: str, duration_str: str) -> List[dict]:
         filtered_metrics = []
         for ip in device_ips:
+            print(f"Calculating hourly metrics for device IP: {ip} at {specific_time}", file=sys.stderr)
             metrics = self.calculate_hourly_metrics_for_device1(ip, duration_str)
-            filtered_metric = next((m for m in metrics if m['time'] == specific_time), None)
+            filtered_metric = next((m for m in metrics if m['time'].startswith(specific_time)), None)
             if filtered_metric:
+                print(f"Metric found for {specific_time}: {filtered_metric}", file=sys.stderr)
                 filtered_metrics.append(filtered_metric)
+            else:
+                print(f"No metric found for {specific_time} on IP {ip}", file=sys.stderr)
         return filtered_metrics
