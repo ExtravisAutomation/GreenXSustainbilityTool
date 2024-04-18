@@ -443,3 +443,5 @@ def get_detailed_energy_metrics(
         return metrics
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+

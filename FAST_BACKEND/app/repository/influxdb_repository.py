@@ -1053,3 +1053,31 @@ class InfluxDBRepository:
                     })
 
         return total_power_metrics
+
+    def calculate_metrics_for_device_at_time1(self, device_ips: List[str], exact_time: datetime) -> List[dict]:
+        filtered_metrics = []
+        # Format the time for the exact query
+        time_str = exact_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {time_str}, stop: {time_str})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+            result = self.query_api1.query_data_frame(query)
+            if not result.empty:
+                # Assume there's only one result for the specified time
+                row = result.iloc[0]
+                metric = {
+                    "ip": ip,
+                    "time": exact_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    "PE": (row['total_POut'] / row['total_PIn'] * 100) if row['total_PIn'] else 0,
+                    "PUE": (row['total_PIn'] * 1.2 / row['total_PIn']) if row['total_PIn'] else 0,
+                    "current_power": row['total_PIn']
+                }
+                filtered_metrics.append(metric)
+
+        return filtered_metrics

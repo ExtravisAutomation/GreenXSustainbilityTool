@@ -690,8 +690,17 @@ class SiteService:
         return formatted_metric
 
     def get_energy_metrics_for_time(self, site_id: int, exact_time: datetime) -> HourlyEnergyMetricsResponse:
-        device_ips = self.site_repository.get_apic_controller_ips_by_site_id(site_id)
-        metrics = self.influxdb_repository.calculate_metrics_for_device_at_time(device_ips, exact_time)
-        formatted_metrics = [self.format_metric(metric) for metric in metrics if metric]
+        device_inventory = self.site_repository.get_device_inventory_by_site_id(site_id)
+        device_ips = [device['ip_address'] for device in device_inventory]
+        metrics = self.influxdb_repository.calculate_metrics_for_device_at_time1(device_ips, exact_time)
+        formatted_metrics = []
+
+        for metric in metrics:
+            device_details = next((item for item in device_inventory if item['ip_address'] == metric['ip']), None)
+            if device_details:
+                formatted_metric = self.format_metric({**metric, **device_details})
+                formatted_metrics.append(formatted_metric)
+
         return HourlyEnergyMetricsResponse(metrics=formatted_metrics)
+
 
