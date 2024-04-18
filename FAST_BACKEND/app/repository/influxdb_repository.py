@@ -1003,7 +1003,7 @@ class InfluxDBRepository:
 
     def calculate_hourly_metrics_for_device1(self, device_ip: str, duration_str: str) -> List[dict]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
-        start_time = start_date.isoformat() + 'Z'  # Ensure timezone information is included for InfluxDB
+        start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
         total_power_metrics = []
@@ -1020,6 +1020,7 @@ class InfluxDBRepository:
             '''
             print(f"Executing query: {query}", file=sys.stderr)
             result = self.query_api1.query_data_frame(query)
+            print("Query result dataframe:", result, file=sys.stderr)
 
             if not result.empty:
                 result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d H:%M:%S')
@@ -1027,20 +1028,21 @@ class InfluxDBRepository:
                     time_key = row['time']
                     if time_key not in power_metrics:
                         power_metrics[time_key] = {}
-                    power_metrics[time_key][field] = row['_value']
+                    if 'total_PIn' in row:
+                        power_metrics[time_key]['total_PIn'] = row['total_PIn']
+                    if 'total_POut' in row:
+                        power_metrics[time_key]['total_POut'] = row['total_POut']
 
         for time, metrics in power_metrics.items():
             total_PIn = metrics.get('total_PIn', 0)
             total_POut = metrics.get('total_POut', 0)
             current_power = total_PIn if total_PIn else 0
-
             PE = (total_POut / total_PIn * 100) if total_PIn else 0
             total_energy = total_PIn * 1.2
             PUE = total_energy / total_PIn if total_PIn else 0
 
             print(f"Metrics for IP {device_ip} at {time}: PE={PE}, PUE={PUE}, Current Power={current_power}",
                   file=sys.stderr)
-
             total_power_metrics.append({
                 "ip": device_ip,
                 "time": time,
