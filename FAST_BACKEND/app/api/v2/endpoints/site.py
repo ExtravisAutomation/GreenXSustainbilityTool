@@ -419,17 +419,25 @@ def parse_timestamp(timestamp_str):
     raise ValueError("Timestamp format is not recognized.")
 
 
+def parse_time12(time_str: str) -> datetime:
+    for fmt in ('%Y-%m-%d %H:%M', '%Y-%m-%d', '%Y-%m'):
+        try:
+            return datetime.strptime(time_str, fmt)
+        except ValueError:
+            continue
+    raise HTTPException(status_code=400, detail="Timestamp format not recognized")
+
+
 @router.get("/site/detailed_energy_metrics/{site_id}", response_model=HourlyEnergyMetricsResponse)
 @inject
 def get_detailed_energy_metrics(
         site_id: int,
         timestamp: str,
-        duration: Optional[str] = Query("24 hours", alias="duration"),
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])):
-
     try:
-        metrics = site_service.get_energy_metrics_for_timestamp(site_id, timestamp, duration)
+        exact_time = parse_time12(timestamp)
+        metrics = site_service.get_energy_metrics_for_time(site_id, exact_time)
         if not metrics.metrics:
             raise HTTPException(status_code=404, detail="No metrics found for the specified timestamp.")
         return metrics

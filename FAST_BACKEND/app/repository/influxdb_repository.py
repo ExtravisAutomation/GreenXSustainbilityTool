@@ -1001,14 +1001,29 @@ class InfluxDBRepository:
             raise ValueError("Unsupported duration format")
         return start_date, end_date
 
-    def calculate_hourly_metrics_for_device1(self, device_ip: str, duration_str: str) -> List[dict]:
-        start_date, end_date = self.calculate_start_end_dates(duration_str)
-        start_time = start_date.isoformat() + 'Z'
-        end_time = end_date.isoformat() + 'Z'
+    def calculate_metrics_for_device_at_time(self, device_ips: List[str], exact_time: datetime) -> List[dict]:
+        filtered_metrics = []
+
+        for ip in device_ips:
+            metrics = self.calculate_hourly_metrics_for_device1(ip, exact_time)
+            if metrics:
+                filtered_metrics.extend(metrics)
+        return filtered_metrics
+
+    def calculate_hourly_metrics_for_device1(self, device_ip: str, exact_time: datetime) -> List[dict]:
+        time_str = exact_time.strftime('%Y-%m-%d')
+        year_month_str = exact_time.strftime('%Y-%m')
+        day_str = exact_time.strftime('%d')
+        # Determine the granularity based on input format
+        if day_str != '01':  # implies format included day
+            start_time = f"{time_str}T00:00:00Z"
+            end_time = f"{time_str}T23:59:59Z"
+        else:  # month or year-month format
+            start_time = f"{year_month_str}-01T00:00:00Z"
+            end_time = f"{year_month_str}-31T23:59:59Z"
 
         total_power_metrics = []
         power_metrics = {}
-
         for field in ['total_PIn', 'total_POut']:
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
@@ -1018,63 +1033,23 @@ class InfluxDBRepository:
                 |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
-            print(f"Executing query: {query}", file=sys.stderr)
             result = self.query_api1.query_data_frame(query)
-            print("Query result dataframe:", result, file=sys.stderr)
 
             if not result.empty:
-                result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d H:%M:%S')
                 for _, row in result.iterrows():
-                    time_key = row['time']
-                    if time_key not in power_metrics:
-                        power_metrics[time_key] = {}
-                    if 'total_PIn' in row:
-                        power_metrics[time_key]['total_PIn'] = row['total_PIn']
-                    if 'total_POut' in row:
-                        power_metrics[time_key]['total_POut'] = row['total_POut']
-
-        for time, metrics in power_metrics.items():
-            total_PIn = metrics.get('total_PIn', 0)
-            total_POut = metrics.get('total_POut', 0)
-            current_power = total_PIn if total_PIn else 0
-            PE = (total_POut / total_PIn * 100) if total_PIn else 0
-            total_energy = total_PIn * 1.2
-            PUE = total_energy / total_PIn if total_PIn else 0
-
-            print(f"Metrics for IP {device_ip} at {time}: PE={PE}, PUE={PUE}, Current Power={current_power}",
-                  file=sys.stderr)
-            total_power_metrics.append({
-                "ip": device_ip,
-                "time": time,
-                "PE": PE,
-                "PUE": PUE,
-                "current_power": current_power
-            })
+                    time_key = row['_time'].strftime('%Y-%m-%d %H:%M:%S')
+                    power_metrics[time_key] = {
+                        'total_PIn': row.get('total_PIn', 0),
+                        'total_POut': row.get('total_POut', 0)
+                    }
+                    total_power_metrics.append({
+                        "ip": device_ip,
+                        "time": time_key,
+                        "PE": (power_metrics[time_key]['total_POut'] / power_metrics[time_key]['total_PIn'] * 100) if
+                        power_metrics[time_key]['total_PIn'] else 0,
+                        "PUE": (power_metrics[time_key]['total_PIn'] * 1.2 / power_metrics[time_key]['total_PIn']) if
+                        power_metrics[time_key]['total_PIn'] else 0,
+                        "current_power": power_metrics[time_key]['total_PIn']
+                    })
 
         return total_power_metrics
-
-    def parse_time(self, time_str):
-        # Add debug statement to log incoming time_str
-        print(f"Parsing time string: {time_str}", file=sys.stderr)
-        formats = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d']
-        for fmt in formats:
-            try:
-                return datetime.strptime(time_str, fmt)
-            except ValueError as e:
-                print(f"Failed to parse '{time_str}' with format '{fmt}': {str(e)}", file=sys.stderr)
-        raise ValueError(f"Timestamp format not recognized: {time_str}")
-
-    def get_hourly_metrics_for_devices_at_time(self, device_ips: List[str], specific_time: str, duration_str: str) -> List[dict]:
-        filtered_metrics = []
-        target_time = self.parse_time(specific_time)
-        time_lower_bound = target_time - timedelta(minutes=30)  # 30 minutes before
-        time_upper_bound = target_time + timedelta(minutes=30)  # 30 minutes after
-
-        for ip in device_ips:
-            metrics = self.calculate_hourly_metrics_for_device1(ip, duration_str)
-            # Filter metrics within the time range
-            filtered_metric = next(
-                (m for m in metrics if time_lower_bound <= self.parse_time(m['time']) <= time_upper_bound), None)
-            if filtered_metric:
-                filtered_metrics.append(filtered_metric)
-        return filtered_metrics
