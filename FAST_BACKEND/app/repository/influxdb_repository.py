@@ -1053,20 +1053,26 @@ class InfluxDBRepository:
 
         return total_power_metrics
 
-    def get_hourly_metrics_for_devices_at_time(self, device_ips: List[str], specific_time: str, duration_str: str) -> \
-    List[dict]:
-        filtered_metrics = []
-        print(f"Fetching metrics for devices at time: {specific_time} with duration: {duration_str}", file=sys.stderr)
-        for ip in device_ips:
-            print(f"Calculating hourly metrics for device IP: {ip}", file=sys.stderr)
-            metrics = self.calculate_hourly_metrics_for_device1(ip, duration_str)
-            # Ensure specific_time and metric time are both strings
-            formatted_specific_time = pd.to_datetime(specific_time).strftime('%Y-%m-%d %H:%M:%S')
-            filtered_metric = next((m for m in metrics if m['time'] == formatted_specific_time), None)
-            if filtered_metric:
-                print(f"Metric found for {formatted_specific_time}: {filtered_metric}", file=sys.stderr)
-                filtered_metrics.append(filtered_metric)
-            else:
-                print(f"No metric found for {formatted_specific_time} on IP {ip}", file=sys.stderr)
-        return filtered_metrics
+    def parse_time(self, time_str):
+        try:
+            return datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            try:
+                return datetime.strptime(time_str, '%Y-%m-%d %H')
+            except ValueError:
+                return datetime.strptime(time_str, '%Y-%m-%d')
 
+    def get_hourly_metrics_for_devices_at_time(self, device_ips: List[str], specific_time: str, duration_str: str) -> List[dict]:
+        filtered_metrics = []
+        target_time = self.parse_time(specific_time)
+        time_lower_bound = target_time - timedelta(minutes=30)  # 30 minutes before
+        time_upper_bound = target_time + timedelta(minutes=30)  # 30 minutes after
+
+        for ip in device_ips:
+            metrics = self.calculate_hourly_metrics_for_device1(ip, duration_str)
+            # Filter metrics within the time range
+            filtered_metric = next(
+                (m for m in metrics if time_lower_bound <= parse_time(m['time']) <= time_upper_bound), None)
+            if filtered_metric:
+                filtered_metrics.append(filtered_metric)
+        return filtered_metrics
