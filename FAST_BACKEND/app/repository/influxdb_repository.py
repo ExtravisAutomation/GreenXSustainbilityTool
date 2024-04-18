@@ -1058,9 +1058,10 @@ class InfluxDBRepository:
             return datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
         except ValueError:
             try:
-                return datetime.strptime(time_str, '%Y-%m-%d %H')
+                return datetime.strptime(time_str, '%Y-%m-%d %H:%M')
             except ValueError:
                 return datetime.strptime(time_str, '%Y-%m-%d')
+
 
     def get_hourly_metrics_for_devices_at_time(self, device_ips: List[str], specific_time: str, duration_str: str) -> List[dict]:
         filtered_metrics = []
