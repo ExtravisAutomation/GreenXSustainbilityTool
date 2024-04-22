@@ -538,28 +538,61 @@ class InfluxDBRepository:
 
         return power_metrics
 
+    # def get_average_power_percentage(self, device_ip: str, start_date: datetime, end_date: datetime,
+    #                                  duration_str: str) -> dict:
+    #     start_time = start_date.isoformat() + 'Z'
+    #     end_time = end_date.isoformat() + 'Z'
+    #     aggregate_window, time_format = self.determine_aggregate_window(duration_str)
+    #
+    #     query = f'''
+    #         from(bucket: "{self.bucket}")
+    #         |> range(start: {start_time}, stop: {end_time})
+    #         |> filter(fn: (r) => r["ApicController_IP"] == "{device_ip}")
+    #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+    #         |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+    #     '''
+    #     result = self.query_api1.query_data_frame(query)
+    #
+    #     if not result.empty:
+    #         average_power = result['_value'].mean()
+    #         print("Average power for IPPPPPPPPPPPPPPPPPPPP: ", average_power, file=sys.stderr)
+    #         return {
+    #             "device_name": device_ip,
+    #             "average_power_percentage": round(average_power / max(result['_value']) * 100, 2)
+    #
+    #         }
+    #     return {}
+
     def get_average_power_percentage(self, device_ip: str, start_date: datetime, end_date: datetime,
                                      duration_str: str) -> dict:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
         aggregate_window, time_format = self.determine_aggregate_window(duration_str)
 
+        # Updated query to aggregate both total_PIn and total_POut
         query = f'''
             from(bucket: "{self.bucket}")
             |> range(start: {start_time}, stop: {end_time})
             |> filter(fn: (r) => r["ApicController_IP"] == "{device_ip}")
-            |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+            |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and (r["_field"] == "total_PIn" or r["_field"] == "total_POut"))
             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
         result = self.query_api1.query_data_frame(query)
 
-        if not result.empty:
-            average_power = result['_value'].mean()
-            print("Average power for IPPPPPPPPPPPPPPPPPPPP: ", average_power, file=sys.stderr)
+        if not result.empty and 'total_PIn' in result.columns and 'total_POut' in result.columns:
+            average_pin = result['total_PIn'].mean()
+            average_pout = result['total_POut'].mean()
+
+            # Calculating the efficiency as a percentage
+            power_efficiency = (average_pout / average_pin * 100) if average_pin != 0 else 0
+            print(
+                f"Average power for IP {device_ip}: PIn = {average_pin}, POut = {average_pout}, Efficiency = {power_efficiency}%",
+                file=sys.stderr)
+
             return {
                 "device_name": device_ip,
-                "average_power_percentage": round(average_power / max(result['_value']) * 100, 2)
-
+                "power_efficiency_percentage": round(power_efficiency, 2)
             }
         return {}
 
