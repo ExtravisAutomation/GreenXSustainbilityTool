@@ -592,7 +592,7 @@ class InfluxDBRepository:
 
             return {
                 "device_name": device_ip,
-                "power_efficiency_percentage": round(power_efficiency, 2)
+                "average_power_percentage": round(power_efficiency, 2)
             }
         return {}
 
