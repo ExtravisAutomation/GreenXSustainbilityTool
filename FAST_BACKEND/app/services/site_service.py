@@ -720,7 +720,7 @@ class SiteService:
             device_details = next((item for item in device_inventory if item['ip_address'] == metric['ip']), None)
             print("device_detailssssssssssssss", device_details, file=sys.stderr)
             #if device_details:
-            formatted_metric = self.format_metric({**metric, **device_details})
+            formatted_metric = self.format_metric({**metric})
             print("formattedddddddddddddddddddddddddddddd",formatted_metric, file=sys.stderr)
             formatted_metrics.append(formatted_metric)
 
