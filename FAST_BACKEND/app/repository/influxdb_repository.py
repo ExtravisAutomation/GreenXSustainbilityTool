@@ -1234,7 +1234,7 @@ class InfluxDBRepository:
 
         return dummy_metrics
 
-    def generate_dummy_data(self, exact_time, granularity):
+    def generate_dummy_data1(self, exact_time, granularity):
         dummy_metrics = []
         periods = {
             'hourly': 1,
@@ -1300,7 +1300,7 @@ class InfluxDBRepository:
 
                 if result.empty:
                     print("dummy data startedddddddddddddd", file=sys.stderr)
-                    gb = self.generate_dummy_data(exact_time, granularity)
+                    gb = self.generate_dummy_data1(exact_time, granularity)
                     filtered_metrics.extend(gb)
                 else:
                     filtered_metrics.extend(self.parse_result1(result))
