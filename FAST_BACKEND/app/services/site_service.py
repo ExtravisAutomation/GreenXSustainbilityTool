@@ -709,6 +709,7 @@ class SiteService:
         device_inventory = self.site_repository.get_device_inventory_by_site_id(site_id)
         device_ips = [device['ip_address'] for device in device_inventory]
         metrics = self.influxdb_repository.calculate_metrics_for_device_at_timeu(device_ips, exact_time, granularity)
+        print("serviceeeeeeeeeeeeeeeeeeeeeee", metrics, file=sys.stderr)
         formatted_metrics = []
 
         if not metrics:  # If no metrics are returned from InfluxDB
