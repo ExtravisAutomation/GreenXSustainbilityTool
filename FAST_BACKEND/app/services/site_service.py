@@ -712,7 +712,7 @@ class SiteService:
         formatted_metrics = []
 
         if not metrics:  # If no metrics are returned from InfluxDB
-            metrics = generate_dummy_data(exact_time, granularity)  # Generate dummy data
+            metrics = self.generate_dummy_data(exact_time, granularity)  # Generate dummy data
 
         for metric in metrics:
             device_details = next((item for item in device_inventory if item['ip_address'] == metric['ip']), None)
@@ -721,7 +721,6 @@ class SiteService:
                 formatted_metrics.append(formatted_metric)
 
         return HourlyEnergyMetricsResponse(metrics=formatted_metrics)
-
     def generate_dummy_data(self, exact_time, granularity):
         """Generate dummy data based on the granularity required."""
         dummy_metrics = []

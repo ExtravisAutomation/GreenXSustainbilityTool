@@ -1294,19 +1294,12 @@ class InfluxDBRepository:
                     |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                     |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
                 '''
-            try:
-                result = self.query_api1.query_data_frame(query)
-                print("RESULTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT", result, file=sys.stderr)
+            result = self.query_api1.query_data_frame(query)
 
-                if result.empty:
-                    print("dummy data startedddddddddddddd", file=sys.stderr)
-                    gb = self.generate_dummy_data1(exact_time, granularity)
-                    filtered_metrics.extend(gb)
-                else:
-                    filtered_metrics.extend(self.parse_result1(result))
-
-            except Exception as e:
-                traceback.print_exc()
+            if result.empty:
+                filtered_metrics.extend(self.generate_dummy_data1(exact_time, granularity))
+            else:
+                filtered_metrics.extend(self.parse_result1(result))
 
         return filtered_metrics
 
