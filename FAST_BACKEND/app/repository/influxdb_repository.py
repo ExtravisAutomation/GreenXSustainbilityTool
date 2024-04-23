@@ -1204,6 +1204,7 @@ class InfluxDBRepository:
             periods = (exact_time.replace(month=exact_time.month % 12 + 1, day=1) - timedelta(days=1)).day * 24
 
         for i in range(periods):
+            print("IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII", i, file=sys.stderr)
             time = exact_time + timedelta(hours=i) if periods > 1 else exact_time
             energy_consumption = random.uniform(10.00, 12.00) if base_power_in == 0 else round(base_power_in / 1000, 2)
             total_POut = random.uniform(8.00, 11.00) if base_power_out == 0 else round(base_power_out / 1000, 2)
@@ -1221,6 +1222,7 @@ class InfluxDBRepository:
                 "current_power": base_power_in,
 
             })
+        print("DUMMYMETRICCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC", dummy_metrics, file=sys.stderr)
 
         return dummy_metrics
 
@@ -1246,6 +1248,7 @@ class InfluxDBRepository:
                     |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
                 '''
             result = self.query_api1.query_data_frame(query)
+            print("RESULTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT", result, file=sys.stderr)
 
             if result.empty:
                 filtered_metrics.extend(self.generate_dummy_data(exact_time, granularity))
