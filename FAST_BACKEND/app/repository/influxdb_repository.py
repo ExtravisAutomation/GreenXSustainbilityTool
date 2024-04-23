@@ -1307,6 +1307,7 @@ class InfluxDBRepository:
                 print("DUMMYMETRICCCCCCCCCCCCBEFOREEEEEE", filtered_metrics, file=sys.stderr)
                 print(f"Dummy data generated for {ip}: {dummy_data}")
                 print("DUMMYMETRICCCCCCCCCCCCAFTERRRRRRR", filtered_metrics, file=sys.stderr)
+                break
 
             else:
                 print(f"Data found for {ip}, processing results")
