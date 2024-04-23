@@ -723,8 +723,8 @@ class SiteService:
         return HourlyEnergyMetricsResponse(metrics=formatted_metrics)
 
     def generate_dummy_data(self, exact_time, granularity):
-        """ Generate dummy data based on the granularity required. """
-        data_points = []
+        """Generate dummy data based on the granularity required."""
+        dummy_metrics = []
         base_power_in = random.uniform(10.00, 12.00) * 1000  # scaling up for kWh
         base_power_out = random.uniform(8.00, 11.00) * 1000
 
@@ -745,14 +745,14 @@ class SiteService:
             power_efficiency = random.uniform(84.00, 90.00) if base_power_in == 0 or base_power_out == 0 else round(
                 base_power_out / max(base_power_in, 1) * 100, 2)
 
-            data_points.append({
+            dummy_metrics.append({
+                "ip": "dummy_ip",
                 "time": time.strftime('%Y-%m-%d %H:%M:%S'),
-                "energy_consumption": energy_consumption,
-                "total_POut": total_POut,
-                "average_energy_consumed": average_energy_consumed,
-                "power_efficiency": power_efficiency
+                "PE": power_efficiency,
+                "PUE": random.uniform(1.0, 1.2),
+                "current_power": base_power_in,
             })
 
-        return data_points
+        return dummy_metrics
 
 

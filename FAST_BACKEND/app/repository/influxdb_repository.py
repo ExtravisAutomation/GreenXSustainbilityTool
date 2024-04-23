@@ -1133,22 +1133,22 @@ class InfluxDBRepository:
         start_time, end_time = self.determine_time_range(exact_time, granularity)
         filtered_metrics = []
 
-        aggregate_window = "1h"  # Default to 1 hour, you might adjust this based on granularity
+        aggregate_window = "1h"  # Default to 1 hour, adjust based on granularity
 
         if granularity == 'daily':
             aggregate_window = "1d"  # Daily aggregates
         elif granularity == 'monthly':
-            aggregate_window = "1mo"  # Monthly aggregates
+            aggregate_window = "30d"  # Monthly aggregates, approximate
 
         for ip in device_ips:
             query = f'''
-                    from(bucket: "{configs.INFLUXDB_BUCKET}")
-                    |> range(start: {start_time}, stop: {end_time})
-                    |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                    |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                    |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-                    |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-                '''
+                       from(bucket: "{configs.INFLUXDB_BUCKET}")
+                       |> range(start: {start_time}, stop: {end_time})
+                       |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                       |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                       |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                       |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                   '''
             result = self.query_api1.query_data_frame(query)
 
             if result.empty:
@@ -1159,20 +1159,14 @@ class InfluxDBRepository:
         return filtered_metrics
 
     def determine_time_range(self, exact_time, granularity):
-        """ Adjust time range based on the granularity. """
+        """ Determine time range based on granularity. """
         if granularity == 'hourly':
-            # For hourly data, range is the exact hour
-            start_time = exact_time.strftime('%Y-%m-%dT%H:00:00Z')
-            end_time = (exact_time + timedelta(hours=1)).strftime('%Y-%m-%dT%H:00:00Z')
+            start_time = exact_time - timedelta(hours=1)
         elif granularity == 'daily':
-            # For daily data, range spans the whole day
-            start_time = exact_time.strftime('%Y-%m-%d') + "T00:00:00Z"
-            end_time = exact_time.strftime('%Y-%m-%d') + "T23:59:59Z"
+            start_time = exact_time - timedelta(days=1)
         else:  # 'monthly'
-            # For monthly data, range spans the whole month
-            start_time = exact_time.strftime('%Y-%m') + "-01T00:00:00Z"
-            last_day = (exact_time + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-            end_time = last_day.strftime('%Y-%m-%d') + "T23:59:59Z"
+            start_time = exact_time - timedelta(days=30)  # Approximate 30 days
+        end_time = exact_time
         return start_time, end_time
 
     def generate_dummy_data(self, exact_time, granularity):
@@ -1220,6 +1214,5 @@ class InfluxDBRepository:
                 "PE": (row.get('total_POut', 0) / row.get('total_PIn', 1) * 100),
                 "PUE": (row.get('total_PIn', 1) * 1.2 / row.get('total_PIn', 1)),
                 "current_power": row.get('total_PIn', 0),
-
             })
         return parsed_metrics

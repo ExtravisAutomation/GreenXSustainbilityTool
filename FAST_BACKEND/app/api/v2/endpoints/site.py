@@ -419,21 +419,22 @@ def parse_timestamp(timestamp_str):
     raise ValueError("Timestamp format is not recognized.")
 
 
-def parse_time12(time_str: str):
-    """ Parse the time and determine granularity based on the format """
-    for fmt in ('%Y-%m-%d %H:%M', '%Y-%m-%d', '%Y-%m'):
+def parse_time12(timestamp: str):
+    """Parse the timestamp and determine granularity."""
+    try:
+        exact_time = datetime.strptime(timestamp, '%Y-%m-%d %H:%M')
+        granularity = 'hourly'
+    except ValueError:
         try:
-            parsed_time = datetime.strptime(time_str, fmt)
-            if fmt == '%Y-%m-%d %H:%M':
-                granularity = 'hourly'
-            elif fmt == '%Y-%m-%d':
-                granularity = 'daily'
-            else:
-                granularity = 'monthly'
-            return parsed_time, granularity
+            exact_time = datetime.strptime(timestamp, '%Y-%m-%d')
+            granularity = 'daily'
         except ValueError:
-            continue
-    raise HTTPException(status_code=400, detail="Timestamp format not recognized")
+            try:
+                exact_time = datetime.strptime(timestamp, '%Y-%m')
+                granularity = 'monthly'
+            except ValueError:
+                raise ValueError("Invalid timestamp format. Please provide 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM' or 'YYYY-MM'.")
+    return exact_time, granularity
 
 
 @router.get("/site/detailed_energy_metrics/{site_id}", response_model=HourlyEnergyMetricsResponse)
