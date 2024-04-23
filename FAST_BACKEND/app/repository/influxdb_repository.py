@@ -1274,32 +1274,40 @@ class InfluxDBRepository:
         return parsed_metrics
 
     def calculate_metrics_for_device_at_timeu(self, device_ips: List[str], exact_time: datetime, granularity: str) -> \
-            List[dict]:
+    List[dict]:
         start_time, end_time = self.determine_time_range(exact_time, granularity)
         filtered_metrics = []
 
+        # Determine the aggregate window based on the granularity
         aggregate_window = "1h"  # Default to 1 hour, you might adjust this based on granularity
-
         if granularity == 'daily':
             aggregate_window = "1d"  # Daily aggregates
         elif granularity == 'monthly':
             aggregate_window = "1mo"  # Monthly aggregates
 
         for ip in device_ips:
-            query = f'''
+            try:
+                query = f'''
                     from(bucket: "{configs.INFLUXDB_BUCKET}")
                     |> range(start: {start_time}, stop: {end_time})
                     |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                     |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                    |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                    |> aggregateWindow(every: "{aggregate_window}", fn: mean, createEmpty: false)
                     |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
                 '''
-            result = self.query_api1.query_data_frame(query)
+                result = self.query_api1.query_data_frame(query)
+                print(f"Query executed for {ip}: {query}")
 
-            if result.empty:
-                filtered_metrics.extend(self.generate_dummy_data1(exact_time, granularity))
-            else:
-                filtered_metrics.extend(self.parse_result1(result))
+                if result.empty:
+                    print(f"No data found for {ip}, generating dummy data")
+                    filtered_metrics.extend(self.generate_dummy_data1(exact_time, granularity))
+                else:
+                    filtered_metrics.extend(self.parse_result1(result))
+
+            except Exception as e:
+                print(f"Error executing query for {ip}: {str(e)}")
+                filtered_metrics.extend(
+                    self.generate_dummy_data1(exact_time, granularity))  # Fallback to dummy data on error
 
         return filtered_metrics
 
