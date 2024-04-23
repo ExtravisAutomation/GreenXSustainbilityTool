@@ -1192,6 +1192,7 @@ class InfluxDBRepository:
         return parsed_metrics
 
     def generate_dummy_data(self, exact_time, granularity):
+        print("reachedddd dummy data", exact_time, granularity, file=sys.stderr)
         dummy_metrics = []
         base_power_in = random.uniform(10.00, 12.00) * 1000  # scaling up for kWh
         base_power_out = random.uniform(8.00, 11.00) * 1000
@@ -1251,6 +1252,7 @@ class InfluxDBRepository:
             print("RESULTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT", result, file=sys.stderr)
 
             if result.empty:
+                print("dummy data startedddddddddddddd", file=sys.stderr)
                 filtered_metrics.extend(self.generate_dummy_data(exact_time, granularity))
             else:
                 filtered_metrics.extend(self.parse_result(result))
