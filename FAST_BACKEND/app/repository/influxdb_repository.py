@@ -1142,19 +1142,22 @@ class InfluxDBRepository:
 
         for ip in device_ips:
             query = f'''
-                       from(bucket: "{configs.INFLUXDB_BUCKET}")
-                       |> range(start: {start_time}, stop: {end_time})
-                       |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                       |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                       |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-                       |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-                   '''
-            result = self.query_api1.query_data_frame(query)
-
-            if result.empty:
-                filtered_metrics.extend(self.generate_dummy_data(exact_time, granularity))
-            else:
-                filtered_metrics.extend(self.parse_result(result))
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time.strftime('%Y-%m-%dT%H:%M:%SZ')}, stop: {end_time.strftime('%Y-%m-%dT%H:%M:%SZ')})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+            try:
+                result = self.query_api1.query_data_frame(query)
+                if result.empty:
+                    filtered_metrics.extend(self.generate_dummy_data(exact_time, granularity))
+                else:
+                    filtered_metrics.extend(self.parse_result(result))
+            except Exception as e:
+                print(f"Error occurred while querying InfluxDB: {e}")
+                # Handle the error as needed, e.g., log it or raise a custom exception
 
         return filtered_metrics
 
