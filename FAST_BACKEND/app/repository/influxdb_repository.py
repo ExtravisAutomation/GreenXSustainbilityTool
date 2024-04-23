@@ -1319,9 +1319,9 @@ class InfluxDBRepository:
         #     filtered_metrics.extend(dummy_data)
         #     print(f"Error handled by generating dummy data for {ip}: {dummy_data}")
 
-        print("FILTERED METRICcccccccccccccc", dummy_data, file=sys.stderr)
+        print("FILTERED METRICcccccccccccccc", filtered_metrics, file=sys.stderr)
 
-        return dummy_data
+        return filtered_metrics
 
     def determine_time_range(self, exact_time, granularity):
         """ Adjust time range based on the granularity. """
