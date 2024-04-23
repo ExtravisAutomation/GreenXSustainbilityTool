@@ -1275,7 +1275,7 @@ class InfluxDBRepository:
         return parsed_metrics
 
     def calculate_metrics_for_device_at_timeu(self, device_ips: List[str], exact_time: datetime, granularity: str) -> \
-    List[dict]:
+            List[dict]:
         start_time, end_time = self.determine_time_range(exact_time, granularity)
         filtered_metrics = []
 
@@ -1288,8 +1288,8 @@ class InfluxDBRepository:
         print(f"Aggregate window set to {aggregate_window} for granularity: {granularity}")
 
         for ip in device_ips:
-            try:
-                query = f'''
+            # try:
+            query = f'''
                        from(bucket: "{configs.INFLUXDB_BUCKET}")
                        |> range(start: {start_time}, stop: {end_time})
                        |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
@@ -1297,26 +1297,26 @@ class InfluxDBRepository:
                        |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
                    '''
-                result = self.query_api1.query_data_frame(query)
-                print(f"Query executed for {ip}: {query}")
+            result = self.query_api1.query_data_frame(query)
+            print(f"Query executed for {ip}: {query}")
 
-                if result.empty:
-                    print(f"No data found for {ip}, generating dummy data")
-                    dummy_data = self.generate_dummy_data12(exact_time, granularity)
-                    filtered_metrics.extend(dummy_data)
-                    print("DUMMYMETRICCCCCCCCCCCCBEFOREEEEEE", filtered_metrics, file=sys.stderr)
-                    print(f"Dummy data generated for {ip}: {dummy_data}")
-                    print("DUMMYMETRICCCCCCCCCCCCAFTERRRRRRR", filtered_metrics, file=sys.stderr)
-
-                else:
-                    print(f"Data found for {ip}, processing results")
-                    filtered_metrics.extend(self.parse_result12(result))
-
-            except Exception as e:
-                print(f"Error executing query for {ip}: {str(e)}")
+            if result.empty:
+                print(f"No data found for {ip}, generating dummy data")
                 dummy_data = self.generate_dummy_data12(exact_time, granularity)
                 filtered_metrics.extend(dummy_data)
-                print(f"Error handled by generating dummy data for {ip}: {dummy_data}")
+                print("DUMMYMETRICCCCCCCCCCCCBEFOREEEEEE", filtered_metrics, file=sys.stderr)
+                print(f"Dummy data generated for {ip}: {dummy_data}")
+                print("DUMMYMETRICCCCCCCCCCCCAFTERRRRRRR", filtered_metrics, file=sys.stderr)
+
+            else:
+                print(f"Data found for {ip}, processing results")
+                filtered_metrics.extend(self.parse_result12(result))
+
+        # except Exception as e:
+        #     print(f"Error executing query for {ip}: {str(e)}")
+        #     dummy_data = self.generate_dummy_data12(exact_time, granularity)
+        #     filtered_metrics.extend(dummy_data)
+        #     print(f"Error handled by generating dummy data for {ip}: {dummy_data}")
 
         print("FILTERED METRICcccccccccccccc", filtered_metrics, file=sys.stderr)
 
