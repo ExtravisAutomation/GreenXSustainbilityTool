@@ -1131,7 +1131,7 @@ class InfluxDBRepository:
         return filtered_metrics
 
     def calculate_metrics_for_device_at_timeuu(self, device_ips: List[str], exact_time: datetime,
-                                             granularity: str) -> List[dict]:
+                                               granularity: str) -> List[dict]:
         if granularity == 'hourly':
             return self.get_hourly_metrics(device_ips, exact_time)
         elif granularity == 'daily':
@@ -1209,7 +1209,8 @@ class InfluxDBRepository:
             for i in range(periods):
                 print("IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII", i, file=sys.stderr)
                 time = exact_time + timedelta(hours=i) if periods > 1 else exact_time
-                energy_consumption = random.uniform(10.00, 12.00) if base_power_in == 0 else round(base_power_in / 1000, 2)
+                energy_consumption = random.uniform(10.00, 12.00) if base_power_in == 0 else round(base_power_in / 1000,
+                                                                                                   2)
                 total_POut = random.uniform(8.00, 11.00) if base_power_out == 0 else round(base_power_out / 1000, 2)
                 average_energy_consumed = random.uniform(1.00,
                                                          2.00) if base_power_in == 0 or base_power_out == 0 else round(
@@ -1225,15 +1226,55 @@ class InfluxDBRepository:
                     "current_power": base_power_in,
 
                 })
-            print("DUMMYMETRICCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC", dummy_metrics, file=sys.stderr)
+            print("DUMMYMETRICCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC", dummy_metrics,
+                  file=sys.stderr)
 
         except Exception as e:
             traceback.print_exc()
 
         return dummy_metrics
 
+    def generate_dummy_data(self, exact_time, granularity):
+        dummy_metrics = []
+        periods = {
+            'hourly': 1,
+            'daily': 24,
+            'monthly': (exact_time.replace(month=exact_time.month % 12 + 1, day=1) - timedelta(days=1)).day * 24
+        }
+
+        for i in range(periods.get(granularity, 24)):  # Default to daily if granularity key is not found
+            time_step = exact_time + timedelta(hours=i)
+            dummy_metrics.append({
+                "ip": "dummy_ip",
+                "time": time_step.strftime('%Y-%m-%d %H:%M:%S'),
+                "PE": random.uniform(84.00, 90.00),
+                "PUE": random.uniform(1.0, 1.2),
+                "current_power": random.uniform(10000, 12000),  # Random current power in Watts
+                "energy_consumption": random.uniform(10.00, 12.00),
+                "total_POut": random.uniform(8000, 11000),
+                "average_energy_consumed": random.uniform(1.00, 2.00),
+                "power_efficiency": random.uniform(84.00, 90.00)
+            })
+        return dummy_metrics
+
+    def parse_result1(self, result):
+        parsed_metrics = []
+        for _, row in result.iterrows():
+            parsed_metrics.append({
+                "ip": row.get("ApicController_IP", "unknown_ip"),
+                "time": row['_time'].strftime('%Y-%m-%d %H:%M:%S'),
+                "PE": (row.get('total_POut', 0) / row.get('total_PIn', 1) * 100),
+                "PUE": (row.get('total_PIn', 1) * 1.2 / row.get('total_PIn', 1)),
+                "current_power": row.get('total_PIn', 0),
+                "energy_consumption": row.get('total_PIn', 0) / 1000,
+                "total_POut": row.get('total_POut', 0) / 1000,
+                "average_energy_consumed": row.get('total_PIn', 0) / max(row.get('total_POut', 1), 1),
+                "power_efficiency": (row.get('total_POut', 0) / max(row.get('total_PIn', 1), 1) * 100)
+            })
+        return parsed_metrics
+
     def calculate_metrics_for_device_at_timeu(self, device_ips: List[str], exact_time: datetime, granularity: str) -> \
-    List[dict]:
+            List[dict]:
         start_time, end_time = self.determine_time_range(exact_time, granularity)
         filtered_metrics = []
 
@@ -1285,43 +1326,3 @@ class InfluxDBRepository:
             last_day = (exact_time + timedelta(days=32)).replace(day=1) - timedelta(days=1)
             end_time = last_day.strftime('%Y-%m-%d') + "T23:59:59Z"
         return start_time, end_time
-
-    def generate_dummy_data(self, exact_time, granularity):
-        dummy_metrics = []
-        periods = {
-            'hourly': 1,
-            'daily': 24,
-            'monthly': (exact_time.replace(month=exact_time.month % 12 + 1, day=1) - timedelta(days=1)).day * 24
-        }
-
-        for i in range(periods.get(granularity, 24)):  # Default to daily if granularity key is not found
-            time_step = exact_time + timedelta(hours=i)
-            dummy_metrics.append({
-                "ip": "dummy_ip",
-                "time": time_step.strftime('%Y-%m-%d %H:%M:%S'),
-                "PE": random.uniform(84.00, 90.00),
-                "PUE": random.uniform(1.0, 1.2),
-                "current_power": random.uniform(10000, 12000),  # Random current power in Watts
-                "energy_consumption": random.uniform(10.00, 12.00),
-                "total_POut": random.uniform(8000, 11000),
-                "average_energy_consumed": random.uniform(1.00, 2.00),
-                "power_efficiency": random.uniform(84.00, 90.00)
-            })
-        return dummy_metrics
-
-    def parse_result1(self, result):
-        parsed_metrics = []
-        for _, row in result.iterrows():
-            parsed_metrics.append({
-                "ip": row.get("ApicController_IP", "unknown_ip"),
-                "time": row['_time'].strftime('%Y-%m-%d %H:%M:%S'),
-                "PE": (row.get('total_POut', 0) / row.get('total_PIn', 1) * 100),
-                "PUE": (row.get('total_PIn', 1) * 1.2 / row.get('total_PIn', 1)),
-                "current_power": row.get('total_PIn', 0),
-                "energy_consumption": row.get('total_PIn', 0) / 1000,
-                "total_POut": row.get('total_POut', 0) / 1000,
-                "average_energy_consumed": row.get('total_PIn', 0) / max(row.get('total_POut', 1), 1),
-                "power_efficiency": (row.get('total_POut', 0) / max(row.get('total_PIn', 1), 1) * 100)
-            })
-        return parsed_metrics
-
