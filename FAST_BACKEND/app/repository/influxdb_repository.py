@@ -1304,6 +1304,7 @@ class InfluxDBRepository:
                     print(f"No data found for {ip}, generating dummy data")
                     dummy_data = self.generate_dummy_data12(exact_time, granularity)
                     filtered_metrics.extend(dummy_data)
+                    print("DUMMYMETRICCCCCCCCCCCC", filtered_metrics, file=sys.stderr)
                     print(f"Dummy data generated for {ip}: {dummy_data}")
                     print("DUMMYMETRICCCCCCCCCCCC", filtered_metrics, file=sys.stderr)
 
