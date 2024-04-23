@@ -1279,11 +1279,11 @@ class InfluxDBRepository:
         filtered_metrics = []
 
         # Determine the aggregate window based on the granularity
-        aggregate_window = "1h"  # Default to 1 hour, you might adjust this based on granularity
+        aggregate_window = "1h"  # Default to 1 hour
         if granularity == 'daily':
             aggregate_window = "1d"  # Daily aggregates
         elif granularity == 'monthly':
-            aggregate_window = "1mo"  # Monthly aggregates
+            aggregate_window = "1m"  # Monthly aggregates
 
         for ip in device_ips:
             try:
@@ -1292,7 +1292,7 @@ class InfluxDBRepository:
                     |> range(start: {start_time}, stop: {end_time})
                     |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                     |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                    |> aggregateWindow(every: "{aggregate_window}", fn: mean, createEmpty: false)
+                    |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                     |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
                 '''
                 result = self.query_api1.query_data_frame(query)
