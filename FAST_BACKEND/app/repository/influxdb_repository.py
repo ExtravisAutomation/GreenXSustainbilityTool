@@ -1152,9 +1152,9 @@ class InfluxDBRepository:
             result = self.query_api1.query_data_frame(query)
 
             if result.empty:
-                filtered_metrics.extend(generate_dummy_data(exact_time, granularity))
+                filtered_metrics.extend(self.generate_dummy_data(exact_time, granularity))
             else:
-                filtered_metrics.extend(parse_result(result))
+                filtered_metrics.extend(self.parse_result(result))
 
         return filtered_metrics
 
