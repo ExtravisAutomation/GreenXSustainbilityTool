@@ -721,6 +721,8 @@ class SiteService:
                 formatted_metric = self.format_metric({**metric, **device_details})
                 formatted_metrics.append(formatted_metric)
 
+        print("SERVICEEEEEEEEEEformatted_metricsssssssssssssssssssssssssssss", formatted_metrics, file=sys.stderr")
+
         return HourlyEnergyMetricsResponse(metrics=formatted_metrics)
     def generate_dummy_data(self, exact_time, granularity):
         """Generate dummy data based on the granularity required."""
