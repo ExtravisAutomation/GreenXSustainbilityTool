@@ -1278,6 +1278,7 @@ class InfluxDBRepository:
             List[dict]:
         start_time, end_time = self.determine_time_range(exact_time, granularity)
         filtered_metrics = []
+        dummy_data = None
 
         aggregate_window = "1h"  # Default to 1 hour
         if granularity == 'daily':
@@ -1303,10 +1304,11 @@ class InfluxDBRepository:
             if result.empty:
                 print(f"No data found for {ip}, generating dummy data")
                 dummy_data = self.generate_dummy_data12(exact_time, granularity)
-                filtered_metrics.append(dummy_data)
+                filtered_metrics.extend(dummy_data)
                 print("DUMMYMETRICCCCCCCCCCCCBEFOREEEEEE", filtered_metrics, file=sys.stderr)
                 print(f"Dummy data generated for {ip}: {dummy_data}")
                 print("DUMMYMETRICCCCCCCCCCCCAFTERRRRRRR", filtered_metrics, file=sys.stderr)
+
 
 
             else:
@@ -1319,9 +1321,9 @@ class InfluxDBRepository:
         #     filtered_metrics.extend(dummy_data)
         #     print(f"Error handled by generating dummy data for {ip}: {dummy_data}")
 
-        print("FILTERED METRICcccccccccccccc", filtered_metrics, file=sys.stderr)
+        print("FILTERED METRICcccccccccccccc", dummy_data, file=sys.stderr)
 
-        return filtered_metrics
+        return dummy_data
 
     def determine_time_range(self, exact_time, granularity):
         """ Adjust time range based on the granularity. """
