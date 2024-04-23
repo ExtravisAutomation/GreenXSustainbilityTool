@@ -1,6 +1,7 @@
 import sys
 from collections import defaultdict
 from datetime import datetime, timedelta
+from random import random
 from typing import Dict, List, Any
 
 from fastapi import HTTPException, status
@@ -689,11 +690,29 @@ class SiteService:
         )
         return formatted_metric
 
-    def get_energy_metrics_for_time(self, site_id: int, exact_time: datetime) -> HourlyEnergyMetricsResponse:
+    # def get_energy_metrics_for_time(self, site_id: int, exact_time: datetime) -> HourlyEnergyMetricsResponse:
+    #     device_inventory = self.site_repository.get_device_inventory_by_site_id(site_id)
+    #     device_ips = [device['ip_address'] for device in device_inventory]
+    #     metrics = self.influxdb_repository.calculate_metrics_for_device_at_time1(device_ips, exact_time)
+    #     formatted_metrics = []
+    #
+    #     for metric in metrics:
+    #         device_details = next((item for item in device_inventory if item['ip_address'] == metric['ip']), None)
+    #         if device_details:
+    #             formatted_metric = self.format_metric({**metric, **device_details})
+    #             formatted_metrics.append(formatted_metric)
+    #
+    #     return HourlyEnergyMetricsResponse(metrics=formatted_metrics)
+
+    def get_energy_metrics_for_time(self, site_id: int, exact_time: datetime,
+                                    granularity: str) -> HourlyEnergyMetricsResponse:
         device_inventory = self.site_repository.get_device_inventory_by_site_id(site_id)
         device_ips = [device['ip_address'] for device in device_inventory]
-        metrics = self.influxdb_repository.calculate_metrics_for_device_at_time1(device_ips, exact_time)
+        metrics = self.influxdb_repository.calculate_metrics_for_device_at_timeu(device_ips, exact_time, granularity)
         formatted_metrics = []
+
+        if not metrics:  # If no metrics are returned from InfluxDB
+            metrics = self.generate_dummy_data(exact_time, granularity)  # Generate dummy data
 
         for metric in metrics:
             device_details = next((item for item in device_inventory if item['ip_address'] == metric['ip']), None)
@@ -702,5 +721,38 @@ class SiteService:
                 formatted_metrics.append(formatted_metric)
 
         return HourlyEnergyMetricsResponse(metrics=formatted_metrics)
+
+    def generate_dummy_data(self, exact_time, granularity):
+        """ Generate dummy data based on the granularity required. """
+        data_points = []
+        base_power_in = random.uniform(10.00, 12.00) * 1000  # scaling up for kWh
+        base_power_out = random.uniform(8.00, 11.00) * 1000
+
+        if granularity == 'hourly':
+            periods = 1
+        elif granularity == 'daily':
+            periods = 24
+        else:  # 'monthly'
+            periods = (exact_time.replace(month=exact_time.month % 12 + 1, day=1) - timedelta(days=1)).day * 24
+
+        for i in range(periods):
+            time = exact_time + timedelta(hours=i) if periods > 1 else exact_time
+            energy_consumption = random.uniform(10.00, 12.00) if base_power_in == 0 else round(base_power_in / 1000, 2)
+            total_POut = random.uniform(8.00, 11.00) if base_power_out == 0 else round(base_power_out / 1000, 2)
+            average_energy_consumed = random.uniform(1.00,
+                                                     2.00) if base_power_in == 0 or base_power_out == 0 else round(
+                base_power_in / max(base_power_out, 1), 2)
+            power_efficiency = random.uniform(84.00, 90.00) if base_power_in == 0 or base_power_out == 0 else round(
+                base_power_out / max(base_power_in, 1) * 100, 2)
+
+            data_points.append({
+                "time": time.strftime('%Y-%m-%d %H:%M:%S'),
+                "energy_consumption": energy_consumption,
+                "total_POut": total_POut,
+                "average_energy_consumed": average_energy_consumed,
+                "power_efficiency": power_efficiency
+            })
+
+        return data_points
 
 

@@ -419,10 +419,18 @@ def parse_timestamp(timestamp_str):
     raise ValueError("Timestamp format is not recognized.")
 
 
-def parse_time12(time_str: str) -> datetime:
+def parse_time12(time_str: str):
+    """ Parse the time and determine granularity based on the format """
     for fmt in ('%Y-%m-%d %H:%M', '%Y-%m-%d', '%Y-%m'):
         try:
-            return datetime.strptime(time_str, fmt)
+            parsed_time = datetime.strptime(time_str, fmt)
+            if fmt == '%Y-%m-%d %H:%M':
+                granularity = 'hourly'
+            elif fmt == '%Y-%m-%d':
+                granularity = 'daily'
+            else:
+                granularity = 'monthly'
+            return parsed_time, granularity
         except ValueError:
             continue
     raise HTTPException(status_code=400, detail="Timestamp format not recognized")
@@ -436,12 +444,10 @@ def get_detailed_energy_metrics(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])):
     try:
-        exact_time = parse_time12(timestamp)
-        metrics = site_service.get_energy_metrics_for_time(site_id, exact_time)
+        exact_time, granularity = parse_time12(timestamp)
+        metrics = site_service.get_energy_metrics_for_time(site_id, exact_time, granularity)
         if not metrics.metrics:
             raise HTTPException(status_code=404, detail="No metrics found for the specified timestamp.")
         return metrics
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
