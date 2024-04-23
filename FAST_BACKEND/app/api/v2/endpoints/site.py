@@ -435,18 +435,20 @@ def parse_time12(time_str: str):
             continue
     raise HTTPException(status_code=400, detail="Timestamp format not recognized")
 
+
 @router.get("/site/detailed_energy_metrics/{site_id}", response_model=HourlyEnergyMetricsResponse)
 @inject
 def get_detailed_energy_metrics(
         site_id: int,
         timestamp: str,
         current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])):
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
     try:
-        exact_time, granularity = parse_time12(timestamp)
+        exact_time, granularity = parse_time(timestamp)
         metrics = site_service.get_energy_metrics_for_time(site_id, exact_time, granularity)
-        if not metrics.metrics:
+        if not metrics:
             raise HTTPException(status_code=404, detail="No metrics found for the specified timestamp.")
         return metrics
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))(e))

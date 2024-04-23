@@ -1258,7 +1258,7 @@ class InfluxDBRepository:
             })
         return dummy_metrics
 
-    def parse_result1(self, result):
+    def parse_result12(self, result):
         parsed_metrics = []
         for _, row in result.iterrows():
             parsed_metrics.append({
@@ -1278,6 +1278,7 @@ class InfluxDBRepository:
     List[dict]:
         start_time, end_time = self.determine_time_range(exact_time, granularity)
         filtered_metrics = []
+
         aggregate_window = "1h"  # Default to 1 hour
         if granularity == 'daily':
             aggregate_window = "1d"  # Daily aggregates
@@ -1289,13 +1290,13 @@ class InfluxDBRepository:
         for ip in device_ips:
             try:
                 query = f'''
-                    from(bucket: "{configs.INFLUXDB_BUCKET}")
-                    |> range(start: {start_time}, stop: {end_time})
-                    |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                    |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                    |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-                    |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-                '''
+                       from(bucket: "{configs.INFLUXDB_BUCKET}")
+                       |> range(start: {start_time}, stop: {end_time})
+                       |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                       |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                       |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                       |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                   '''
                 result = self.query_api1.query_data_frame(query)
                 print(f"Query executed for {ip}: {query}")
 
@@ -1306,7 +1307,7 @@ class InfluxDBRepository:
                     print(f"Dummy data generated for {ip}: {dummy_data}")
                 else:
                     print(f"Data found for {ip}, processing results")
-                    filtered_metrics.extend(self.parse_result1(result))
+                    filtered_metrics.extend(self.parse_result12(result))
 
             except Exception as e:
                 print(f"Error executing query for {ip}: {str(e)}")
