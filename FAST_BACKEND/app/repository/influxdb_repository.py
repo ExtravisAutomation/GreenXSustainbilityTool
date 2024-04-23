@@ -1259,7 +1259,8 @@ class InfluxDBRepository:
 
                 if result.empty:
                     print("dummy data startedddddddddddddd", file=sys.stderr)
-                    filtered_metrics.extend(self.generate_dummy_data(exact_time, granularity))
+                    gb = self.generate_dummy_data(exact_time, granularity)
+                    filtered_metrics.extend(gb)
                 else:
                     filtered_metrics.extend(self.parse_result(result))
 
