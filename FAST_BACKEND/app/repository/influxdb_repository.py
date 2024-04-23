@@ -1,5 +1,6 @@
 import random
 import sys
+from calendar import calendar
 
 import numpy as np
 from influxdb_client import InfluxDBClient, Point, WritePrecision
@@ -1128,52 +1129,69 @@ class InfluxDBRepository:
 
         return filtered_metrics
 
-    def calculate_metrics_for_device_at_timeu(self, device_ips: List[str], exact_time: datetime, granularity: str) -> \
-            List[dict]:
-        start_time, end_time = self.determine_time_range(exact_time, granularity)
-        filtered_metrics = []
-
-        aggregate_window = "1h"  # Default to 1 hour, adjust based on granularity
-
-        if granularity == 'daily':
-            aggregate_window = "1d"  # Daily aggregates
+    def calculate_metrics_for_device_at_timeuu(self, device_ips: List[str], exact_time: datetime,
+                                             granularity: str) -> List[dict]:
+        if granularity == 'hourly':
+            return self.get_hourly_metrics(device_ips, exact_time)
+        elif granularity == 'daily':
+            return self.get_daily_metrics(device_ips, exact_time)
         elif granularity == 'monthly':
-            aggregate_window = "30d"  # Monthly aggregates, approximate
+            return self.get_monthly_metrics(device_ips, exact_time)
+        else:
+            raise ValueError("Granularity must be 'hourly', 'daily', or 'monthly'")
 
+    def get_hourly_metrics(self, device_ips: List[str], exact_time: datetime) -> List[dict]:
+        start_time = exact_time
+        end_time = start_time + timedelta(hours=1)
+        return self.query_influxdb(device_ips, start_time, end_time)
+
+    def get_daily_metrics(self, device_ips: List[str], exact_time: datetime) -> List[dict]:
+        metrics = []
+        for hour in range(24):
+            start_time = exact_time.replace(hour=hour, minute=0, second=0)
+            end_time = start_time + timedelta(hours=1)
+            metrics.extend(self.query_influxdb(device_ips, start_time, end_time))
+        return metrics
+
+    def get_monthly_metrics(self, device_ips: List[str], exact_time: datetime) -> List[dict]:
+        metrics = []
+        days_in_month = calendar.monthrange(exact_time.year, exact_time.month)[1]
+        for day in range(1, days_in_month + 1):
+            for hour in range(24):
+                start_time = exact_time.replace(day=day, hour=hour, minute=0, second=0)
+                end_time = start_time + timedelta(hours=1)
+                metrics.extend(self.query_influxdb(device_ips, start_time, end_time))
+        return metrics
+
+    def query_influxdb(self, device_ips: List[str], start_time: datetime, end_time: datetime) -> List[dict]:
+        filtered_metrics = []
         for ip in device_ips:
             query = f'''
-                from(bucket: "{configs.INFLUXDB_BUCKET}")
-                |> range(start: {start_time.strftime('%Y-%m-%dT%H:%M:%SZ')}, stop: {end_time.strftime('%Y-%m-%dT%H:%M:%SZ')})
-                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-            '''
-            try:
-                result = self.query_api1.query_data_frame(query)
-                if result.empty:
-                    filtered_metrics.extend(self.generate_dummy_data(exact_time, granularity))
-                else:
-                    filtered_metrics.extend(self.parse_result(result))
-            except Exception as e:
-                print(f"Error occurred while querying InfluxDB: {e}")
-                # Handle the error as needed, e.g., log it or raise a custom exception
-
+                   from(bucket: "{configs.INFLUXDB_BUCKET}")
+                   |> range(start: {start_time.strftime('%Y-%m-%dT%H:%M:%SZ')}, stop: {end_time.strftime('%Y-%m-%dT%H:%M:%SZ')})
+                   |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                   |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                   |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+               '''
+            result = self.query_api1.query_data_frame(query)
+            if not result.empty:
+                filtered_metrics.extend(self.parse_result(result))
         return filtered_metrics
 
-    def determine_time_range(self, exact_time, granularity):
-        """ Determine time range based on granularity. """
-        if granularity == 'hourly':
-            start_time = exact_time - timedelta(hours=1)
-        elif granularity == 'daily':
-            start_time = exact_time - timedelta(days=1)
-        else:  # 'monthly'
-            start_time = exact_time - timedelta(days=30)  # Approximate 30 days
-        end_time = exact_time
-        return start_time, end_time
+    def parse_result(self, result):
+        parsed_metrics = []
+        for _, row in result.iterrows():
+            time_key = row['_time'].strftime('%Y-%m-%d %H:%M:%S')
+            parsed_metrics.append({
+                "ip": row.get("ApicController_IP", "unknown_ip"),
+                "time": time_key,
+                "PE": (row.get('total_POut', 0) / row.get('total_PIn', 1) * 100),
+                "PUE": (row.get('total_PIn', 1) * 1.2 / row.get('total_PIn', 1)),
+                "current_power": row.get('total_PIn', 0),
+            })
+        return parsed_metrics
 
     def generate_dummy_data(self, exact_time, granularity):
-        """Generate dummy data based on the granularity required."""
         dummy_metrics = []
         base_power_in = random.uniform(10.00, 12.00) * 1000  # scaling up for kWh
         base_power_out = random.uniform(8.00, 11.00) * 1000
@@ -1205,17 +1223,3 @@ class InfluxDBRepository:
             })
 
         return dummy_metrics
-
-    def parse_result(self, result):
-        """Parse the data frame result from InfluxDB query into a structured list of metrics."""
-        parsed_metrics = []
-        for _, row in result.iterrows():
-            time_key = row['_time'].strftime('%Y-%m-%d %H:%M:%S')
-            parsed_metrics.append({
-                "ip": row.get("ApicController_IP", "unknown_ip"),
-                "time": time_key,
-                "PE": (row.get('total_POut', 0) / row.get('total_PIn', 1) * 100),
-                "PUE": (row.get('total_PIn', 1) * 1.2 / row.get('total_PIn', 1)),
-                "current_power": row.get('total_PIn', 0),
-            })
-        return parsed_metrics

@@ -708,11 +708,11 @@ class SiteService:
                                     granularity: str) -> HourlyEnergyMetricsResponse:
         device_inventory = self.site_repository.get_device_inventory_by_site_id(site_id)
         device_ips = [device['ip_address'] for device in device_inventory]
-        metrics = self.influxdb_repository.calculate_metrics_for_device_at_timeu(device_ips, exact_time, granularity)
+        metrics = self.influxdb_repository.calculate_metrics_for_device_at_timeuu(device_ips, exact_time, granularity)
         formatted_metrics = []
 
-        if not metrics:  # If no metrics are returned from InfluxDB
-            metrics = self.generate_dummy_data(exact_time, granularity)  # Generate dummy data
+        if not metrics:
+            metrics = self.generate_dummy_data(exact_time, granularity)
 
         for metric in metrics:
             device_details = next((item for item in device_inventory if item['ip_address'] == metric['ip']), None)
