@@ -1231,7 +1231,6 @@ class InfluxDBRepository:
     List[dict]:
         start_time, end_time = self.determine_time_range(exact_time, granularity)
         filtered_metrics = []
-
         aggregate_window = "1h"  # Default to 1 hour, you might adjust this based on granularity
 
         if granularity == 'daily':
@@ -1241,21 +1240,25 @@ class InfluxDBRepository:
 
         for ip in device_ips:
             query = f'''
-                    from(bucket: "{configs.INFLUXDB_BUCKET}")
-                    |> range(start: {start_time}, stop: {end_time})
-                    |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                    |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                    |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-                    |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-                '''
-            result = self.query_api1.query_data_frame(query)
-            print("RESULTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT", result, file=sys.stderr)
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                |> aggregateWindow(every: "{aggregate_window}", fn: mean, createEmpty: false)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+            try:
+                result = self.query_api1.query_data_frame(query)
+                print(f"Query executed successfully for {ip}")
 
-            if result.empty:
-                print("dummy data startedddddddddddddd", file=sys.stderr)
-                filtered_metrics.extend(self.generate_dummy_data(exact_time, granularity))
-            else:
-                filtered_metrics.extend(self.parse_result(result))
+                if result.empty:
+                    print("No data found, generating dummy data")
+                    filtered_metrics.extend(self.generate_dummy_data1(exact_time, granularity))
+                else:
+                    filtered_metrics.extend(self.parse_result1(result))
+            except Exception as e:
+                print(f"Error executing query for {ip}: {str(e)}")
+                filtered_metrics.extend(self.generate_dummy_data1(exact_time, granularity))  # Fallback to dummy data on error
 
         return filtered_metrics
 
@@ -1276,35 +1279,36 @@ class InfluxDBRepository:
             end_time = last_day.strftime('%Y-%m-%d') + "T23:59:59Z"
         return start_time, end_time
 
-    def generate_dummy_data(self, exact_time, granularity):
-        """Generate dummy data based on the granularity required."""
+    def generate_dummy_data1(self, exact_time, granularity):
+        """ Generate dummy data based on the granularity required. """
         dummy_metrics = []
-        base_power_in = random.uniform(10.00, 12.00) * 1000  # scaling up for kWh
-        base_power_out = random.uniform(8.00, 11.00) * 1000
+        start_period = exact_time
+        end_period = exact_time
 
         if granularity == 'hourly':
-            periods = 1
+            period_count = 1
         elif granularity == 'daily':
-            periods = 24
+            start_period = datetime(exact_time.year, exact_time.month, exact_time.day)
+            end_period = start_period + timedelta(days=1)
+            period_count = 24  # One entry per hour
         else:  # 'monthly'
-            periods = (exact_time.replace(month=exact_time.month % 12 + 1, day=1) - timedelta(days=1)).day * 24
+            start_period = datetime(exact_time.year, exact_time.month, 1)
+            end_period = (start_period + timedelta(days=45)).replace(day=1) - timedelta(days=1)
+            period_count = (end_period - start_period).days * 24  # One entry per hour for each day
 
-        for i in range(periods):
-            time = exact_time + timedelta(hours=i) if periods > 1 else exact_time
-            energy_consumption = random.uniform(10.00, 12.00) if base_power_in == 0 else round(base_power_in / 1000, 2)
-            total_POut = random.uniform(8.00, 11.00) if base_power_out == 0 else round(base_power_out / 1000, 2)
-            average_energy_consumed = random.uniform(1.00,
-                                                     2.00) if base_power_in == 0 or base_power_out == 0 else round(
-                base_power_in / max(base_power_out, 1), 2)
-            power_efficiency = random.uniform(84.00, 90.00) if base_power_in == 0 or base_power_out == 0 else round(
-                base_power_out / max(base_power_in, 1) * 100, 2)
+        for i in range(period_count):
+            period_time = start_period + timedelta(hours=i)
+            energy_consumption = random.uniform(10.00, 12.00)
+            total_POut = random.uniform(8.00, 11.00)
+            average_energy_consumed = random.uniform(1.00, 2.00)
+            power_efficiency = random.uniform(84.00, 90.00)
 
             dummy_metrics.append({
                 "ip": "dummy_ip",
-                "time": time.strftime('%Y-%m-%d %H:%M:%S'),
+                "time": period_time.strftime('%Y-%m-%d %H:%M:%S'),
                 "PE": power_efficiency,
                 "PUE": random.uniform(1.0, 1.2),
-                "current_power": base_power_in,
+                "current_power": energy_consumption * 1000,  # Convert back from kWh to Watts if needed
                 "energy_consumption": energy_consumption,
                 "total_POut": total_POut,
                 "average_energy_consumed": average_energy_consumed,
@@ -1314,7 +1318,7 @@ class InfluxDBRepository:
         return dummy_metrics
 
     def parse_result1(result):
-        """Parse the data frame result from InfluxDB query into a structured list of metrics."""
+        """Parse the data frame result from InfluxDB query into structured metrics."""
         parsed_metrics = []
         for _, row in result.iterrows():
             time_key = row['_time'].strftime('%Y-%m-%d %H:%M:%S')
