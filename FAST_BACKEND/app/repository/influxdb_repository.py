@@ -1278,27 +1278,27 @@ class InfluxDBRepository:
             List[dict]:
         start_time, end_time = self.determine_time_range(exact_time, granularity)
         filtered_metrics = []
-        aggregate_window = "1h"  # Default to 1 hour
+
+        aggregate_window = "1h"  # Default to 1 hour for hourly granularity
         if granularity == 'daily':
-            aggregate_window = "1d"  # Daily aggregates
+            aggregate_window = "1h"  # Use hourly aggregates to collect 24 data points per day per device
         elif granularity == 'monthly':
-            aggregate_window = "1m"  # Monthly aggregates
+            aggregate_window = "1d"  # Use daily aggregates to collect data for each day of the month per device
 
         for ip in device_ips:
             query = f'''
-                          from(bucket: "{configs.INFLUXDB_BUCKET}")
-                          |> range(start: {start_time}, stop: {end_time})
-                          |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                          |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                          |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-                          |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-                      '''
+                           from(bucket: "{configs.INFLUXDB_BUCKET}")
+                           |> range(start: {start_time}, stop: {end_time})
+                           |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                           |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                           |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                       '''
             result = self.query_api1.query_data_frame(query)
 
             if result.empty:
-                dummy_data = self.generate_dummy_data12(exact_time, granularity)
-                for dummy in dummy_data:
-                    dummy["ip"] = ip  # Assign dummy IP for consistency
+                # Generate dummy data for the entire range based on granularity
+                dummy_data = self.generate_dummy(exact_time, granularity, ip)
                 filtered_metrics.extend(dummy_data)
             else:
                 parsed_metrics = self.parse_result12(result)
@@ -1324,3 +1324,28 @@ class InfluxDBRepository:
             last_day = (exact_time + timedelta(days=32)).replace(day=1) - timedelta(days=1)
             end_time = last_day.strftime('%Y-%m-%d') + "T23:59:59Z"
         return start_time, end_time
+
+    def generate_dummy(self, exact_time, granularity, ip):
+        dummy_metrics = []
+        periods = {
+            'hourly': 1,
+            'daily': 24,  # 24 hours for daily
+            'monthly': (exact_time.replace(month=exact_time.month % 12 + 1, day=1) - timedelta(days=1)).day
+            # days in the month
+        }
+
+        period_count = periods.get(granularity, 24)  # Default to daily if granularity key is not found
+        for i in range(period_count):
+            time_step = exact_time + timedelta(hours=i) if granularity != 'monthly' else exact_time + timedelta(days=i)
+            dummy_metrics.append({
+                "ip": ip,
+                "time": time_step.strftime('%Y-%m-%d %H:%M:%S'),
+                "PE": random.uniform(84.00, 90.00),
+                "PUE": random.uniform(1.0, 1.2),
+                "current_power": random.uniform(10000, 12000),
+                "energy_consumption": random.uniform(10.00, 12.00),
+                "total_POut": random.uniform(8000, 11000),
+                "average_energy_consumed": random.uniform(1.00, 2.00),
+                "power_efficiency": random.uniform(84.00, 90.00)
+            })
+        return dummy_metrics
