@@ -1248,9 +1248,9 @@ class InfluxDBRepository:
             dummy_metrics.append({
                 "ip": "dummy_ip",
                 "time": time_step.strftime('%Y-%m-%d %H:%M:%S'),
-                "PE": random.uniform(84.00, 90.00),
-                "PUE": random.uniform(1.0, 1.2),
-                "current_power": random.uniform(10000, 12000),  # Random current power in Watts
+                "PE": round(random.uniform(84.00, 90.00),2),
+                "PUE": round(random.uniform(1.0, 1.2),2),
+                "current_power": round(random.uniform(12200, 12300),2),  # Random current power in Watts
                 "energy_consumption": random.uniform(10.00, 12.00),
                 "total_POut": random.uniform(8000, 11000),
                 "average_energy_consumed": random.uniform(1.00, 2.00),
