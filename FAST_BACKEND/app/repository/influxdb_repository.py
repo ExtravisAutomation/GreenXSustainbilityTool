@@ -1248,9 +1248,9 @@ class InfluxDBRepository:
             dummy_metrics.append({
                 "ip": "dummy_ip",
                 "time": time_step.strftime('%Y-%m-%d %H:%M:%S'),
-                "PE": round(random.uniform(84.00, 90.00),2),
-                "PUE": round(random.uniform(1.0, 1.2),2),
-                "current_power": round(random.uniform(12200, 12300),2),  # Random current power in Watts
+                "PE": round(random.uniform(84.00, 90.00), 2),
+                "PUE": round(random.uniform(1.0, 1.2), 2),
+                "current_power": round(random.uniform(12200, 12300), 2),  # Random current power in Watts
                 "energy_consumption": random.uniform(10.00, 12.00),
                 "total_POut": random.uniform(8000, 11000),
                 "average_energy_consumed": random.uniform(1.00, 2.00),
@@ -1279,11 +1279,13 @@ class InfluxDBRepository:
         start_time, end_time = self.determine_time_range(exact_time, granularity)
         filtered_metrics = []
 
-        aggregate_window = "1h"  # Default to 1 hour for hourly granularity
+        aggregate_window = "1h"  # Default to 1 hour
         if granularity == 'daily':
-            aggregate_window = "1h"  # Use hourly aggregates to collect 24 data points per day per device
+            aggregate_window = "1h"  # Hourly aggregates for daily
         elif granularity == 'monthly':
-            aggregate_window = "1d"  # Use daily aggregates to collect data for each day of the month per device
+            aggregate_window = "1d"  # Daily aggregates for monthly
+
+        print(f"Querying from {start_time} to {end_time} with window {aggregate_window}")  # Debug print for query setup
 
         for ip in device_ips:
             query = f'''
@@ -1297,15 +1299,17 @@ class InfluxDBRepository:
             result = self.query_api1.query_data_frame(query)
 
             if result.empty:
-                # Generate dummy data for the entire range based on granularity
+                print(f"No data found for {ip}, generating dummy data.")  # Debug print when no data
                 dummy_data = self.generate_dummy(exact_time, granularity, ip)
                 filtered_metrics.extend(dummy_data)
             else:
+                print(f"Data retrieved for {ip}, processing {len(result)} entries.")  # Debug print for retrieved data
                 parsed_metrics = self.parse_result12(result)
                 for metric in parsed_metrics:
-                    metric["ip"] = ip  # Ensure IP is included in returned metrics
+                    metric["ip"] = ip  # Ensuring IP is included for device details merging
                 filtered_metrics.extend(parsed_metrics)
 
+        print(f"Total metrics processed: {len(filtered_metrics)}")  # Debug print for total processed metrics
         return filtered_metrics
 
     def determine_time_range(self, exact_time, granularity):
@@ -1348,4 +1352,6 @@ class InfluxDBRepository:
                 "average_energy_consumed": random.uniform(1.00, 2.00),
                 "power_efficiency": random.uniform(84.00, 90.00)
             })
+        print(
+            f"Generated {len(dummy_metrics)} dummy metrics for {ip} on granularity {granularity}")  # Debug print for generated dummy data
         return dummy_metrics
