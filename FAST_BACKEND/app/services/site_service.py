@@ -704,11 +704,11 @@ class SiteService:
     #
     #     return HourlyEnergyMetricsResponse(metrics=formatted_metrics)
 
-    def get_energy_metrics_for_time(self, site_id: int, exact_time,
+    def get_energy_metrics_for_time(self, site_id: int, exact_time: datetime,
                                     granularity: str) -> HourlyEnergyMetricsResponse:
         device_inventory = self.site_repository.get_device_inventory_by_site_id(site_id)
         device_ips = [device['ip_address'] for device in device_inventory]
-        metrics = self.influxdb_repository.calculate_metrics_for_device_at_time(device_ips, exact_time, granularity)
+        metrics = self.influxdb_repository.calculate_metrics_for_device_at_timeu(device_ips, exact_time, granularity)
         formatted_metrics = []
 
         for metric in metrics:
