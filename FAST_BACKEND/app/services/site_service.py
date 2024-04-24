@@ -704,7 +704,7 @@ class SiteService:
     #
     #     return HourlyEnergyMetricsResponse(metrics=formatted_metrics)
 
-    def get_energy_metrics_for_time(self, site_id: int, exact_time: datetime,
+    def get_energy_metrics_for_time(self, site_id: int, exact_time,
                                     granularity: str) -> HourlyEnergyMetricsResponse:
         device_inventory = self.site_repository.get_device_inventory_by_site_id(site_id)
         device_ips = [device['ip_address'] for device in device_inventory]
