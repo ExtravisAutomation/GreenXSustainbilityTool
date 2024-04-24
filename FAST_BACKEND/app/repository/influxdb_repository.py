@@ -1298,7 +1298,9 @@ class InfluxDBRepository:
                            |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
                        '''
+            print(f"Executing query for IP {ip}: {query}")
             result = self.query_api1.query_data_frame(query)
+            print(f"Raw data received for IP {ip}: {result}")
 
             if result.empty:
                 print(f"No data found for {ip}, generating dummy data.")  # Debug print when no data
