@@ -1278,48 +1278,33 @@ class InfluxDBRepository:
             List[dict]:
         start_time, end_time = self.determine_time_range(exact_time, granularity)
         filtered_metrics = []
-        dummy_data = None
-
         aggregate_window = "1h"  # Default to 1 hour
         if granularity == 'daily':
             aggregate_window = "1d"  # Daily aggregates
         elif granularity == 'monthly':
             aggregate_window = "1m"  # Monthly aggregates
 
-        print(f"Aggregate window set to {aggregate_window} for granularity: {granularity}")
-
         for ip in device_ips:
-            # try:
             query = f'''
-                       from(bucket: "{configs.INFLUXDB_BUCKET}")
-                       |> range(start: {start_time}, stop: {end_time})
-                       |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                       |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                       |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-                       |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-                   '''
+                          from(bucket: "{configs.INFLUXDB_BUCKET}")
+                          |> range(start: {start_time}, stop: {end_time})
+                          |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                          |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                          |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                          |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                      '''
             result = self.query_api1.query_data_frame(query)
-            print(f"Query executed for {ip}: {query}")
 
             if result.empty:
-                print(f"No data found for {ip}, generating dummy data")
                 dummy_data = self.generate_dummy_data12(exact_time, granularity)
+                for dummy in dummy_data:
+                    dummy["ip"] = ip  # Assign dummy IP for consistency
                 filtered_metrics.extend(dummy_data)
-                print("DUMMYMETRICCCCCCCCCCCCBEFOREEEEEE", filtered_metrics, file=sys.stderr)
-                print(f"Dummy data generated for {ip}: {dummy_data}")
-                print("DUMMYMETRICCCCCCCCCCCCAFTERRRRRRR", filtered_metrics, file=sys.stderr)
-
             else:
-                print(f"Data found for {ip}, processing results")
-                filtered_metrics.extend(self.parse_result12(result))
-
-        # except Exception as e:
-        #     print(f"Error executing query for {ip}: {str(e)}")
-        #     dummy_data = self.generate_dummy_data12(exact_time, granularity)
-        #     filtered_metrics.extend(dummy_data)
-        #     print(f"Error handled by generating dummy data for {ip}: {dummy_data}")
-
-        print("FILTERED METRICcccccccccccccc", filtered_metrics, file=sys.stderr)
+                parsed_metrics = self.parse_result12(result)
+                for metric in parsed_metrics:
+                    metric["ip"] = ip  # Ensure IP is included in returned metrics
+                filtered_metrics.extend(parsed_metrics)
 
         return filtered_metrics
 
