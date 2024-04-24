@@ -1260,18 +1260,20 @@ class InfluxDBRepository:
 
     def parse_result12(self, result):
         parsed_metrics = []
-        for _, row in result.iterrows():
-            parsed_metrics.append({
+        for index, row in result.iterrows():
+            metric = {
                 "ip": row.get("ApicController_IP", "unknown_ip"),
                 "time": row['_time'].strftime('%Y-%m-%d %H:%M:%S'),
-                "PE": (row.get('total_POut', 0) / row.get('total_PIn', 1) * 100),
-                "PUE": (row.get('total_PIn', 1) * 1.2 / row.get('total_PIn', 1)),
+                "PE": row.get('total_POut', 0) / max(row.get('total_PIn', 1), 1) * 100,
+                "PUE": row.get('total_PIn', 1) * 1.2 / max(row.get('total_PIn', 1), 1),
                 "current_power": row.get('total_PIn', 0),
                 "energy_consumption": row.get('total_PIn', 0) / 1000,
                 "total_POut": row.get('total_POut', 0) / 1000,
                 "average_energy_consumed": row.get('total_PIn', 0) / max(row.get('total_POut', 1), 1),
-                "power_efficiency": (row.get('total_POut', 0) / max(row.get('total_PIn', 1), 1) * 100)
-            })
+                "power_efficiency": row.get('total_POut', 0) / max(row.get('total_PIn', 1), 1) * 100
+            }
+            parsed_metrics.append(metric)
+            print(f"Parsing metric: {metric}")
         return parsed_metrics
 
     def calculate_metrics_for_device_at_timeu(self, device_ips: List[str], exact_time: datetime, granularity: str) -> \
