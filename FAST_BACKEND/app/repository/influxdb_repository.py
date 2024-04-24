@@ -1283,6 +1283,12 @@ class InfluxDBRepository:
 
         aggregate_window = "1h" if granularity == 'daily' else "1d"
 
+        # Determine all expected time points
+        expected_times = [start_time + timedelta(hours=i) for i in range(24)] if granularity == 'daily' else \
+            [start_time + timedelta(days=i) for i in range((end_time - start_time).days + 1)]
+
+        print(f"Querying from {start_time} to {end_time} with window {aggregate_window}")  # Debug print for query setup
+
         for ip in device_ips:
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
@@ -1294,56 +1300,41 @@ class InfluxDBRepository:
             '''
             result = self.query_api1.query_data_frame(query)
 
-            expected_times = {start_time + timedelta(hours=i) for i in range(24)} if granularity == 'daily' else {
-                start_time + timedelta(days=i) for i in range((end_time - start_time).days)}
+            # Set of actual times returned from the database
+            actual_times = set(pd.to_datetime(result['_time']))
 
-            times_in_result = set(pd.to_datetime(result['_time']))
-
-            # Fill each expected time point with real data or dummy data
-            for time in expected_times:
-                if time in times_in_result:
-                    metric_row = result[result['_time'] == time.isoformat()]
+            for expected_time in expected_times:
+                if expected_time in actual_times:
+                    # Filter the result for the specific time
+                    metric_row = result[result['_time'] == expected_time.isoformat()]
                     if not metric_row.empty:
                         parsed_metric = self.parse_result12(metric_row)
-                        filtered_metrics.extend(
-                            parsed_metric)  # Assuming parse_result12 handles a DataFrame and returns a list
+                        filtered_metrics.extend(parsed_metric)
+                    else:
+                        # If row is empty despite expected_time being in actual_times
+                        dummy_data = self.generate_dummy_data_for_time(expected_time, ip)
+                        filtered_metrics.append(dummy_data)
                 else:
-                    dummy_metric = self.generate_dummy_data_for_time(time, ip)
-                    filtered_metrics.append(dummy_metric)
+                    # Generate dummy data for missing times
+                    dummy_data = self.generate_dummy_data_for_time(expected_time, ip)
+                    filtered_metrics.append(dummy_data)
 
-            print(f"Total metrics processed for IP {ip}: {len(filtered_metrics)}")
+            print(f"Data retrieved and processed for IP {ip}. Total entries: {len(filtered_metrics)}")
 
+        print(f"Total metrics processed across all devices: {len(filtered_metrics)}")
         return filtered_metrics
-
-    # def determine_time_range(self, exact_time, granularity):
-    #     """ Adjust time range based on the granularity. """
-    #     if granularity == 'hourly':
-    #         # For hourly data, range is the exact hour
-    #         start_time = exact_time.strftime('%Y-%m-%dT%H:00:00Z')
-    #         end_time = (exact_time + timedelta(hours=1)).strftime('%Y-%m-%dT%H:00:00Z')
-    #     elif granularity == 'daily':
-    #         # For daily data, range spans the whole day
-    #         start_time = exact_time.strftime('%Y-%m-%d') + "T00:00:00Z"
-    #         end_time = exact_time.strftime('%Y-%m-%d') + "T23:59:59Z"
-    #     else:  # 'monthly'
-    #         # For monthly data, range spans the whole month
-    #         start_time = exact_time.strftime('%Y-%m') + "-01T00:00:00Z"
-    #         last_day = (exact_time + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-    #         end_time = last_day.strftime('%Y-%m-%d') + "T23:59:59Z"
-    #     return start_time, end_time
-
-    def determine_time_range(self,exact_time, granularity):
+    def determine_time_range(self, exact_time, granularity):
         """ Adjust time range based on the granularity. """
         if granularity == 'hourly':
-            # For hourly data, the range is the exact hour
+            # For hourly data, range is the exact hour
             start_time = exact_time.strftime('%Y-%m-%dT%H:00:00Z')
             end_time = (exact_time + timedelta(hours=1)).strftime('%Y-%m-%dT%H:00:00Z')
         elif granularity == 'daily':
-            # For daily data, the range spans the whole day
+            # For daily data, range spans the whole day
             start_time = exact_time.strftime('%Y-%m-%d') + "T00:00:00Z"
             end_time = exact_time.strftime('%Y-%m-%d') + "T23:59:59Z"
         else:  # 'monthly'
-            # For monthly data, the range spans the whole month
+            # For monthly data, range spans the whole month
             start_time = exact_time.strftime('%Y-%m') + "-01T00:00:00Z"
             last_day = (exact_time + timedelta(days=32)).replace(day=1) - timedelta(days=1)
             end_time = last_day.strftime('%Y-%m-%d') + "T23:59:59Z"
