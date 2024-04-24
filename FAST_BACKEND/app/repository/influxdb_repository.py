@@ -1277,52 +1277,43 @@ class InfluxDBRepository:
         return parsed_metrics
 
     def calculate_metrics_for_device_at_timeu(self, device_ips: List[str], exact_time: datetime, granularity: str) -> \
-    List[dict]:
+            List[dict]:
         start_time, end_time = self.determine_time_range(exact_time, granularity)
         filtered_metrics = []
 
-        aggregate_window = "1h" if granularity == 'daily' else "1d"
-
-        # Determine all expected time points
-        expected_times = [start_time + timedelta(hours=i) for i in range(24)] if granularity == 'daily' else \
-            [start_time + timedelta(days=i) for i in range((end_time - start_time).days + 1)]
+        aggregate_window = "1h"  # Default to 1 hour
+        if granularity == 'daily':
+            aggregate_window = "1h"  # Hourly aggregates for daily
+        elif granularity == 'monthly':
+            aggregate_window = "1d"  # Daily aggregates for monthly
 
         print(f"Querying from {start_time} to {end_time} with window {aggregate_window}")  # Debug print for query setup
 
         for ip in device_ips:
             query = f'''
-                from(bucket: "{configs.INFLUXDB_BUCKET}")
-                |> range(start: {start_time}, stop: {end_time})
-                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
-                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-            '''
+                           from(bucket: "{configs.INFLUXDB_BUCKET}")
+                           |> range(start: {start_time}, stop: {end_time})
+                           |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                           |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                           |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                       '''
             result = self.query_api1.query_data_frame(query)
 
-            # Set of actual times returned from the database
-            actual_times = set(pd.to_datetime(result['_time']))
+            if result.empty:
+                print(f"No data found for {ip}, generating dummy data.")  # Debug print when no data
+                dummy_data = self.generate_dummy(exact_time, granularity, ip)
+                filtered_metrics.extend(dummy_data)
+            else:
+                print(f"Data retrieved for {ip}, processing {len(result)} entries.")  # Debug print for retrieved data
+                parsed_metrics = self.parse_result12(result)
+                for metric in parsed_metrics:
+                    metric["ip"] = ip  # Ensuring IP is included for device details merging
+                filtered_metrics.extend(parsed_metrics)
 
-            for expected_time in expected_times:
-                if expected_time in actual_times:
-                    # Filter the result for the specific time
-                    metric_row = result[result['_time'] == expected_time.isoformat()]
-                    if not metric_row.empty:
-                        parsed_metric = self.parse_result12(metric_row)
-                        filtered_metrics.extend(parsed_metric)
-                    else:
-                        # If row is empty despite expected_time being in actual_times
-                        dummy_data = self.generate_dummy_data_for_time(expected_time, ip)
-                        filtered_metrics.append(dummy_data)
-                else:
-                    # Generate dummy data for missing times
-                    dummy_data = self.generate_dummy_data_for_time(expected_time, ip)
-                    filtered_metrics.append(dummy_data)
-
-            print(f"Data retrieved and processed for IP {ip}. Total entries: {len(filtered_metrics)}")
-
-        print(f"Total metrics processed across all devices: {len(filtered_metrics)}")
+        print(f"Total metrics processed: {len(filtered_metrics)}")  # Debug print for total processed metrics
         return filtered_metrics
+
     def determine_time_range(self, exact_time, granularity):
         """ Adjust time range based on the granularity. """
         if granularity == 'hourly':
@@ -1366,16 +1357,3 @@ class InfluxDBRepository:
         print(
             f"Generated {len(dummy_metrics)} dummy metrics for {ip} on granularity {granularity}")  # Debug print for generated dummy data
         return dummy_metrics
-
-    def generate_dummy_data_for_time(self, time, ip):
-        return {
-            "ip": ip,
-            "time": time.strftime('%Y-%m-%d %H:%M:%S'),
-            "PE": random.uniform(84.00, 90.00),
-            "PUE": random.uniform(1.0, 1.2),
-            "current_power": random.uniform(10000, 12000),
-            "energy_consumption": random.uniform(10.00, 12.00),
-            "total_POut": random.uniform(8000, 11000),
-            "average_energy_consumed": random.uniform(1.00, 2.00),
-            "power_efficiency": random.uniform(84.00, 90.00)
-        }
