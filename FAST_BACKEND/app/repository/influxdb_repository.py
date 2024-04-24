@@ -1315,18 +1315,35 @@ class InfluxDBRepository:
 
         return filtered_metrics
 
-    def determine_time_range(self, exact_time, granularity):
+    # def determine_time_range(self, exact_time, granularity):
+    #     """ Adjust time range based on the granularity. """
+    #     if granularity == 'hourly':
+    #         # For hourly data, range is the exact hour
+    #         start_time = exact_time.strftime('%Y-%m-%dT%H:00:00Z')
+    #         end_time = (exact_time + timedelta(hours=1)).strftime('%Y-%m-%dT%H:00:00Z')
+    #     elif granularity == 'daily':
+    #         # For daily data, range spans the whole day
+    #         start_time = exact_time.strftime('%Y-%m-%d') + "T00:00:00Z"
+    #         end_time = exact_time.strftime('%Y-%m-%d') + "T23:59:59Z"
+    #     else:  # 'monthly'
+    #         # For monthly data, range spans the whole month
+    #         start_time = exact_time.strftime('%Y-%m') + "-01T00:00:00Z"
+    #         last_day = (exact_time + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+    #         end_time = last_day.strftime('%Y-%m-%d') + "T23:59:59Z"
+    #     return start_time, end_time
+
+    def determine_time_range(self,exact_time, granularity):
         """ Adjust time range based on the granularity. """
         if granularity == 'hourly':
-            # For hourly data, range is the exact hour
+            # For hourly data, the range is the exact hour
             start_time = exact_time.strftime('%Y-%m-%dT%H:00:00Z')
             end_time = (exact_time + timedelta(hours=1)).strftime('%Y-%m-%dT%H:00:00Z')
         elif granularity == 'daily':
-            # For daily data, range spans the whole day
+            # For daily data, the range spans the whole day
             start_time = exact_time.strftime('%Y-%m-%d') + "T00:00:00Z"
             end_time = exact_time.strftime('%Y-%m-%d') + "T23:59:59Z"
         else:  # 'monthly'
-            # For monthly data, range spans the whole month
+            # For monthly data, the range spans the whole month
             start_time = exact_time.strftime('%Y-%m') + "-01T00:00:00Z"
             last_day = (exact_time + timedelta(days=32)).replace(day=1) - timedelta(days=1)
             end_time = last_day.strftime('%Y-%m-%d') + "T23:59:59Z"
