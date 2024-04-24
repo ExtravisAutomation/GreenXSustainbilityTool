@@ -1287,20 +1287,20 @@ class InfluxDBRepository:
         elif granularity == 'monthly':
             aggregate_window = "1d"  # Daily aggregates for monthly
 
-        hours_needed = {start_time + timedelta(hours=i): False for i in range(24)}  # Track needed hours
+        # Initialize hours_needed with datetime objects, intended for internal use
+        hours_needed = {start_time + timedelta(hours=i): False for i in range(24)}
 
         for ip in device_ips:
             query = f'''
-                from(bucket: "{configs.INFLUXDB_BUCKET}")
-                |> range(start: {start_time}, stop: {end_time})
-                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
-                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-            '''
+                   from(bucket: "{configs.INFLUXDB_BUCKET}")
+                   |> range(start: {start_time}, stop: {end_time})
+                   |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                   |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                   |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                   |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+               '''
             result = self.query_api1.query_data_frame(query)
             if result.empty or result.shape[0] < 24:
-                # Fill in missing data with dummy data
                 times_in_result = set(pd.to_datetime(result['_time']))
                 for time, filled in hours_needed.items():
                     if time not in times_in_result:
@@ -1314,7 +1314,7 @@ class InfluxDBRepository:
                 parsed_metrics = self.parse_result12(result)
                 for metric in parsed_metrics:
                     metric["ip"] = ip  # Ensuring IP is included for device details merging
-                filtered_metrics.extend(parsed_metrics)
+                    filtered_metrics.extend(parsed_metrics)
 
         return filtered_metrics
 
