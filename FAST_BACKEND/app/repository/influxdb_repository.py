@@ -1348,7 +1348,7 @@ class InfluxDBRepository:
                 "time": time_step.strftime('%Y-%m-%d %H:%M:%S'),
                 "PE": random.uniform(84.00, 90.00),
                 "PUE": round(random.uniform(1.0, 1.2),2),
-                "current_power": random.uniform(12220, 12230),
+                "current_power": round(random.uniform(12220, 12230),2),
                 "energy_consumption": random.uniform(10.00, 12.00),
                 "total_POut": random.uniform(8000, 11000),
                 "average_energy_consumed": random.uniform(1.00, 2.00),
