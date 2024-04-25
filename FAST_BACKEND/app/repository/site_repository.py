@@ -21,6 +21,8 @@ from app.model.device_inventory import DeviceInventory
 
 from app.model.rack import Rack
 
+from app.model.apic_controller import APICController
+
 
 class SiteRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
@@ -127,13 +129,52 @@ class SiteRepository(BaseRepository):
             devices_info = [{"ip_address": device.ip_address, "device_name": device.device_name} for device in result]
             return devices_info
 
+    # def get_device_inventory_by_site_id(self, site_id: int) -> List[Dict[str, any]]:
+    #     with self.session_factory() as session:
+    #         device_inventory_data = (
+    #             session.query(
+    #                 DeviceInventory.id,
+    #                 DeviceInventory.device_name,
+    #                 APICControllers.ip_address.label('ip_address'),
+    #                 Site.site_name,
+    #                 DeviceInventory.hardware_version,
+    #                 DeviceInventory.manufacturer,
+    #                 DeviceInventory.pn_code,
+    #                 DeviceInventory.serial_number,
+    #                 DeviceInventory.software_version,
+    #                 DeviceInventory.status
+    #             )
+    #             .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+    #             .join(Site, DeviceInventory.site_id == Site.id)
+    #             .filter(DeviceInventory.site_id == site_id)
+    #             .all()
+    #         )
+    #
+    #         device_inventory_dicts = []
+    #         for data in device_inventory_data:
+    #             device_info = {
+    #                 "id": data.id,
+    #                 "device_name": data.device_name,
+    #                 "ip_address": data.ip_address,  # Ensure ip_address is directly extracted
+    #                 "site_name": data.site_name,
+    #                 "hardware_version": data.hardware_version,
+    #                 "manufacturer": data.manufacturer,
+    #                 "pn_code": data.pn_code,
+    #                 "serial_number": data.serial_number,
+    #                 "software_version": data.software_version,
+    #                 "status": data.status,
+    #             }
+    #             device_inventory_dicts.append(device_info)
+    #
+    #         return device_inventory_dicts
+
     def get_device_inventory_by_site_id(self, site_id: int) -> List[Dict[str, any]]:
         with self.session_factory() as session:
             device_inventory_data = (
                 session.query(
                     DeviceInventory.id,
                     DeviceInventory.device_name,
-                    APICControllers.ip_address.label('ip_address'),
+                    APICController.ip_address.label('ip_address'),  # Use APICController class for IP address
                     Site.site_name,
                     DeviceInventory.hardware_version,
                     DeviceInventory.manufacturer,
@@ -142,7 +183,8 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.software_version,
                     DeviceInventory.status
                 )
-                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(APICController,
+                      DeviceInventory.apic_controller_id == APICController.id)  # Correct join to APICController
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id)
                 .all()
