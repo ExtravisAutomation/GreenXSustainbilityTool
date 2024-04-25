@@ -256,6 +256,7 @@ class SiteService:
 
         device_inventory = self.site_repository.get_device_inventory_by_site_id(site_id)
         device_ips = [device['ip_address'] for device in device_inventory]
+        print("DEVIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII", device_ips, file=sys.stderr)
 
         top_devices_data_raw = self.influxdb_repository.get_top_5_devices_by_power_with_filter(device_ips, start_date,
                                                                                                end_date, duration_str)

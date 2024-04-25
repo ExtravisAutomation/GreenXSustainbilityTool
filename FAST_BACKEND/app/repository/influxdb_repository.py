@@ -682,6 +682,7 @@ class InfluxDBRepository:
         aggregate_window, time_format = self.determine_aggregate_window(duration_str)
 
         for ip in device_ips:
+            print("IPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP", ip, file=sys.stderr)
             query = f'''
                 from(bucket: "{self.bucket}")
                 |> range(start: {start_time}, stop: {end_time})
