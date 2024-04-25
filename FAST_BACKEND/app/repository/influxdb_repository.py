@@ -692,7 +692,7 @@ class InfluxDBRepository:
                 |> limit(n:5)
             '''
             result = self.query_api1.query_data_frame(query)
-            print(f"Query result for IP: {ip} is: {result}", file=sys.stderr)
+            print(f"Query result for IPPPPPPPPPPPP: {ip} is: {result}", file=sys.stderr)
 
             if not result.empty:
                 total_power = result['_value'].sum()
