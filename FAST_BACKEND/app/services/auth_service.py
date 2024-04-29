@@ -33,14 +33,18 @@ class AuthService(BaseService):
         users: List[User] = self.user_repository.read_by_options(find_user)["founds"]
         print("USERS FOUND", users, file=sys.stderr)
 
-        # Filter active users that match the password
-        active_users = [user for user in users if
-                        user.is_active and verify_password(sign_in_info.password, user.password)]
+        if not users:
+            raise AuthError(detail="Incorrect username or password")
 
-        if not active_users:
-            raise AuthError(detail="Incorrect username or password or account not active")
+        found_user = None
+        for user in users:
+            if user.is_active and verify_password(sign_in_info.password, user.password):
+                found_user = user
+                break
 
-        found_user = active_users[0]  # Assuming the first match is acceptable if multiple are found
+        if not found_user:
+            raise AuthError(detail="Incorrect username or password")
+
         print("FOUND_USER", found_user.name, file=sys.stderr)
 
         delattr(found_user, "password")
