@@ -60,7 +60,7 @@ class AuthService(BaseService):
         user = User(
             **user_data,
             is_active=True,
-            is_superuser=True,
+            is_superuser=False,
             user_token=user_token,
             role=role
         )
