@@ -30,7 +30,7 @@ class AuthService(BaseService):
     def sign_in(self, sign_in_info: SignInNew):
         find_user = FindUser()
         find_user.user_name = sign_in_info.user_name
-        users: List[User] = self.user_repository.read_by_options(find_user)["founds"]
+        users: List[User] = self.user_repository.read_by_options(find_user.user_name)["founds"]
         print("USERS FOUND", users, file=sys.stderr)
 
         if not users:
@@ -38,7 +38,7 @@ class AuthService(BaseService):
 
         found_user = None
         for user in users:
-            if user.is_active and verify_password(sign_in_info.password, user.password):
+            if user.is_active and user.name ==  verify_password(sign_in_info.password, user.password):
                 found_user = user
                 break
 
