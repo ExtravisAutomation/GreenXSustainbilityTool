@@ -35,6 +35,7 @@ class AuthService(BaseService):
         if len(user) < 1:
             raise AuthError(detail="Incorrect username or password")
         found_user = user[0]
+        print("FOUND_USER", found_user.name, file=sys.stderr)
         if not found_user.is_active:
             raise AuthError(detail="Account is not active")
         if not verify_password(sign_in_info.password, found_user.password):
