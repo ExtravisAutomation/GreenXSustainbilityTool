@@ -30,23 +30,18 @@ class AuthService(BaseService):
     def sign_in(self, sign_in_info: SignInNew):
         find_user = FindUser()
         find_user.user_name = sign_in_info.user_name
-        users: List[User] = self.user_repository.read_by_options(find_user)["founds"]
-        print("USERS FOUND", users, file=sys.stderr)
-
-        if not users:
+        user: List[User] = self.user_repository.read_by_options(find_user)["founds"]
+        print("USERRRRRRRRRRRR", user, file=sys.stderr)
+        if len(user) < 1:
             raise AuthError(detail="Incorrect username or password")
-
-        found_user = None
-        for user in users:
-            if user.is_active and user.username == sign_in_info.user_name and verify_password(sign_in_info.password, user.password):
-                found_user = user
-                break
-
-        if not found_user:
-            raise AuthError(detail="Incorrect username or password")
-
+        found_user = user[0]
         print("FOUND_USER", found_user.name, file=sys.stderr)
-
+        if not found_user.is_active:
+            raise AuthError(detail="Account is not active")
+        if not verify_password(sign_in_info.password, found_user.password):
+            raise AuthError(detail="Incorrect username or password")
+        if not found_user.name == sign_in_info.user_name:
+            raise AuthError(detail="Incorrect username or password")
         delattr(found_user, "password")
         payload = Payload(
             id=found_user.id,
