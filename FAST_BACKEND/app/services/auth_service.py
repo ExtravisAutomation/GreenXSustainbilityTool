@@ -1,3 +1,4 @@
+import sys
 from datetime import timedelta
 from typing import List
 
@@ -30,6 +31,7 @@ class AuthService(BaseService):
         find_user = FindUser()
         find_user.user_name = sign_in_info.user_name
         user: User = self.user_repository.read_by_options(find_user)["found"]
+        print("USER", user, file=sys.stderr)
         if user is None:
             raise AuthError(detail="Incorrect username or password")
         if not user.is_active:
