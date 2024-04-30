@@ -29,27 +29,26 @@ class AuthService(BaseService):
     def sign_in(self, sign_in_info: SignInNew):
         find_user = FindUser()
         find_user.user_name = sign_in_info.user_name
-        user: List[User] = self.user_repository.read_by_options(find_user)["found"]
-        if len(user) < 1:
+        user: User = self.user_repository.read_by_options(find_user)["found"]
+        if user is None:
             raise AuthError(detail="Incorrect username or password")
-        found_user = user[0]
-        if not found_user.is_active:
+        if not user.is_active:
             raise AuthError(detail="Account is not active")
-        if not verify_password(sign_in_info.password, found_user.password):
+        if not verify_password(sign_in_info.password, user.password):
             raise AuthError(detail="Incorrect username or password")
-        delattr(found_user, "password")
+        delattr(user, "password")
         payload = Payload(
-            id=found_user.id,
-            email=found_user.email,
-            name=found_user.name,
-            is_superuser=found_user.is_superuser,
+            id=user.id,
+            email=user.email,
+            name=user.name,
+            is_superuser=user.is_superuser,
         )
         token_lifespan = timedelta(minutes=configs.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token, expiration_datetime = create_access_token(payload.dict(), token_lifespan)
         sign_in_result = {
             "access_token": access_token,
             "expiration": expiration_datetime,
-            "user_info": found_user,
+            "user_info": user,
         }
         return sign_in_result
 
