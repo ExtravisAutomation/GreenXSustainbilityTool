@@ -23,8 +23,6 @@ class BaseRepository:
                 if ordering.startswith("-")
                 else getattr(self.model, ordering).asc()
             )
-            page = schema_as_dict.get("page", configs.PAGE)
-            page_size = schema_as_dict.get("page_size", configs.PAGE_SIZE)
             filter_options = dict_to_sqlalchemy_filter_options(self.model, schema.dict(exclude_none=True))
             query = session.query(self.model)
             if eager:
@@ -32,16 +30,11 @@ class BaseRepository:
                     query = query.options(joinedload(getattr(self.model, eager)))
             filtered_query = query.filter(filter_options)
             query = filtered_query.order_by(order_query)
-            if page_size == "all":
-                query = query.all()
-            else:
-                query = query.limit(page_size).offset((page - 1) * page_size).all()
-            total_count = filtered_query.count()
+            user = query.first()  # Get the first matched user
+            total_count = filtered_query.count() if user else 0
             return {
-                "founds": query,
+                "found": user,
                 "search_options": {
-                    "page": page,
-                    "page_size": page_size,
                     "ordering": ordering,
                     "total_count": total_count,
                 },
