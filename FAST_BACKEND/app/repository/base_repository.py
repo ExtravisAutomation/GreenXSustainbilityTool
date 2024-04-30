@@ -23,7 +23,13 @@ class BaseRepository:
                 if ordering.startswith("-")
                 else getattr(self.model, ordering).asc()
             )
+            # Ensure we include a username filter if provided
             filter_options = dict_to_sqlalchemy_filter_options(self.model, schema.dict(exclude_none=True))
+
+            if "user_name" in schema_as_dict:
+                # Assuming 'name' is the column for username in the User model
+                filter_options = filter_options & (self.model.name == schema_as_dict['user_name'])
+
             query = session.query(self.model)
             if eager:
                 for eager in getattr(self.model, "eagers", []):
