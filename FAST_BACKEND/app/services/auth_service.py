@@ -29,7 +29,7 @@ class AuthService(BaseService):
     def sign_in(self, sign_in_info: SignInNew):
         find_user = FindUser()
         find_user.user_name = sign_in_info.user_name
-        user: List[User] = self.user_repository.read_by_options(find_user)["founds"]
+        user: List[User] = self.user_repository.read_by_options(find_user)["found"]
         if len(user) < 1:
             raise AuthError(detail="Incorrect username or password")
         found_user = user[0]
