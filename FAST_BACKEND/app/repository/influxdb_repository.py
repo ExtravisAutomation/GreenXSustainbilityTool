@@ -257,14 +257,10 @@ class InfluxDBRepository:
             "max_power": max_power
         }
 
-
-
     def sanitize_for_json(self, obj):
         if isinstance(obj, float) and (np.isnan(obj) or np.isinf(obj)):
             return 0
         return obj
-
-
 
     def get_energy_consumption_metrics(self, device_ips: List[str]) -> List[dict]:
         total_power_metrics = []
@@ -322,7 +318,6 @@ class InfluxDBRepository:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
-
         if duration_str in ["24 hours"]:
             aggregate_window = "1h"
             time_format = '%Y-%m-%d %H:00'
@@ -366,7 +361,7 @@ class InfluxDBRepository:
                         average_energy_consumed = random.uniform(1.00, 2.00) if row['total_PIn'] == 0 or row[
                             'total_POut'] == 0 else round(row['total_PIn'] / max(row['total_POut'], 1), 2)
                         power_efficiency = random.uniform(84.00, 90.00) if row['total_PIn'] == 0 or row[
-                            'total_POut'] == 0 else round(row['total_POut'] / max(row['total_PIn'], 1) * 100, 2)
+                            'total_POut'] == 0 else round(row['total_POut'] / max(row['total_PIn'] - 1, 1) * 100, 2)
 
                         total_power_metrics.append({
                             "time": row['index'],
@@ -464,7 +459,6 @@ class InfluxDBRepository:
             print(f"No data returned for IP: {device_ip}", file=sys.stderr)
 
         return power_metrics
-
 
     def get_average_power_percentage(self, device_ip: str, start_date: datetime, end_date: datetime,
                                      duration_str: str) -> dict:
@@ -578,7 +572,6 @@ class InfluxDBRepository:
         top_devices_power = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
-
 
         aggregate_window, time_format = self.determine_aggregate_window(duration_str)
 
@@ -1250,8 +1243,8 @@ class InfluxDBRepository:
                 "ip": ip,
                 "time": time_step.strftime('%Y-%m-%d %H:%M:%S'),
                 "PE": random.uniform(84.00, 90.00),
-                "PUE": round(random.uniform(1.0, 1.2),2),
-                "current_power": round(random.uniform(12220, 12230),2),
+                "PUE": round(random.uniform(1.0, 1.2), 2),
+                "current_power": round(random.uniform(12220, 12230), 2),
                 "energy_consumption": random.uniform(10.00, 12.00),
                 "total_POut": random.uniform(8000, 11000),
                 "average_energy_consumed": random.uniform(1.00, 2.00),
