@@ -464,7 +464,7 @@ class InfluxDBRepository:
             for time, metrics in power_metrics.items():
                 total_PIn = metrics.get('total_PIn', 0)
                 total_POut = metrics.get('total_POut', 0)
-                current_power = total_PIn if total_PIn else 0
+                current_power = ((total_PIn / total_POut) - 1) * 100 if total_PIn else 0
 
                 PE = (total_POut / total_PIn * 100) if total_PIn else 0
 
@@ -820,7 +820,6 @@ class InfluxDBRepository:
                     })
 
         return throughput_metrics
-
 
     def get_traffic_throughput_metrics12(self, device_ips: List[str], start_date: datetime, end_date: datetime,
                                          duration_str: str) -> List[dict]:
