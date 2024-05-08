@@ -770,7 +770,7 @@ class InfluxDBRepository:
 
         aggregate_window, time_format = self.determine_aggregate_window(duration_str)
         print(f"Aggregate window: {aggregate_window}, Time format: {time_format}", file=sys.stderr)
-
+        device_ips = [device_ips]
         for ip in device_ips:
             # Query for traffic data
             traffic_query = f'''
@@ -789,8 +789,8 @@ class InfluxDBRepository:
             power_query = f'''
                 from(bucket: "{self.bucket}")
                 |> range(start: {start_time}, stop: {end_time})
-                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and (r["_field"] == "total_PIn" or r["_field"] == "total_POut"))
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
                 |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
