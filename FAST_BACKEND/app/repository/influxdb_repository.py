@@ -1274,20 +1274,64 @@ class InfluxDBRepository:
     def parse_result12(self, result):
         parsed_metrics = []
         for index, row in result.iterrows():
+            pin = row.get('total_PIn', 0)
+            pout = row.get('total_POut', 1)  # Ensure pout isn't zero to avoid division by zero
+
+            current_power = ((
+                                         pin / pout) - 1) * 100 if pout != 0 else 0  # Calculate current power based on your formula
+
             metric = {
                 "ip": row.get("ApicController_IP", "unknown_ip"),
                 "time": row['_time'].strftime('%Y-%m-%d %H:%M:%S'),
-                "PE": row.get('total_POut', 0) / max(row.get('total_PIn', 1), 1) * 100,
-                "PUE": row.get('total_PIn', 1) * 1.2 / max(row.get('total_PIn', 1), 1),
-                "current_power": row.get('total_PIn', 0),
-                "energy_consumption": row.get('total_PIn', 0) / 1000,
-                "total_POut": row.get('total_POut', 0) / 1000,
-                "average_energy_consumed": row.get('total_PIn', 0) / max(row.get('total_POut', 1), 1),
-                "power_efficiency": row.get('total_POut', 0) / max(row.get('total_PIn', 1), 1) * 100
+                "PE": row.get('total_POut', 0) / max(pin, 1) * 100,
+                "PUE": pin * 1.2 / max(pin, 1),
+                "current_power": round(current_power, 2),  # Rounded for better display
+                "energy_consumption": pin / 1000,
+                "total_POut": pout / 1000,
+                "average_energy_consumed": pin / max(pout, 1),
+                "power_efficiency": pout / max(pin, 1) * 100
             }
             parsed_metrics.append(metric)
-            print(f"Parsing metric: {metric}")
+            print(f"Parsing metric: {metric}", file=sys.stderr)
         return parsed_metrics
+
+    # def calculate_metrics_for_device_at_timeu(self, device_ips: List[str], exact_time: datetime, granularity: str) -> \
+    #         List[dict]:
+    #     start_time, end_time = self.determine_time_range(exact_time, granularity)
+    #     filtered_metrics = []
+    #
+    #     aggregate_window = "1h"  # Default to 1 hour
+    #     if granularity == 'daily':
+    #         aggregate_window = "1h"  # Hourly aggregates for daily
+    #     elif granularity == 'monthly':
+    #         aggregate_window = "1d"  # Daily aggregates for monthly
+    #
+    #     print(f"Querying from {start_time} to {end_time} with window {aggregate_window}")  # Debug print for query setup
+    #
+    #     for ip in device_ips:
+    #         query = f'''
+    #                        from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #                        |> range(start: {start_time}, stop: {end_time})
+    #                        |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+    #                        |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+    #                        |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+    #                        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #                    '''
+    #         result = self.query_api1.query_data_frame(query)
+    #
+    #         if result.empty:
+    #             print(f"No data found for {ip}, generating dummy data.")  # Debug print when no data
+    #             dummy_data = self.generate_dummy(exact_time, granularity, ip)
+    #             filtered_metrics.extend(dummy_data)
+    #         else:
+    #             print(f"Data retrieved for {ip}, processing {len(result)} entries.")  # Debug print for retrieved data
+    #             parsed_metrics = self.parse_result12(result)
+    #             for metric in parsed_metrics:
+    #                 metric["ip"] = ip  # Ensuring IP is included for device details merging
+    #             filtered_metrics.extend(parsed_metrics)
+    #
+    #     print(f"Total metrics processed: {len(filtered_metrics)}")  # Debug print for total processed metrics
+    #     return filtered_metrics
 
     def calculate_metrics_for_device_at_timeu(self, device_ips: List[str], exact_time: datetime, granularity: str) -> \
             List[dict]:
@@ -1300,31 +1344,32 @@ class InfluxDBRepository:
         elif granularity == 'monthly':
             aggregate_window = "1d"  # Daily aggregates for monthly
 
-        print(f"Querying from {start_time} to {end_time} with window {aggregate_window}")  # Debug print for query setup
+        print(f"Querying from {start_time} to {end_time} with window {aggregate_window}",
+              file=sys.stderr)  # Debug print for query setup
 
         for ip in device_ips:
             query = f'''
                            from(bucket: "{configs.INFLUXDB_BUCKET}")
                            |> range(start: {start_time}, stop: {end_time})
-                           |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                           |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                           |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                           |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and (r["_field"] == "total_PIn" or r["_field"] == "total_POut"))
                            |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
                        '''
             result = self.query_api1.query_data_frame(query)
 
             if result.empty:
-                print(f"No data found for {ip}, generating dummy data.")  # Debug print when no data
-                dummy_data = self.generate_dummy(exact_time, granularity, ip)
-                filtered_metrics.extend(dummy_data)
+                print(f"No data found for {ip}. Skipping data generation.", file=sys.stderr)  # Debug print when no data
             else:
-                print(f"Data retrieved for {ip}, processing {len(result)} entries.")  # Debug print for retrieved data
+                print(f"Data retrieved for {ip}, processing {len(result)} entries.",
+                      file=sys.stderr)  # Debug print for retrieved data
                 parsed_metrics = self.parse_result12(result)
                 for metric in parsed_metrics:
                     metric["ip"] = ip  # Ensuring IP is included for device details merging
                 filtered_metrics.extend(parsed_metrics)
 
-        print(f"Total metrics processed: {len(filtered_metrics)}")  # Debug print for total processed metrics
+        print(f"Total metrics processed: {len(filtered_metrics)}",
+              file=sys.stderr)  # Debug print for total processed metrics
         return filtered_metrics
 
     def determine_time_range(self, exact_time, granularity):
