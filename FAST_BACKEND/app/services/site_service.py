@@ -443,15 +443,18 @@ class SiteService:
         dict]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         device_info_list = self.site_repository.get_device_ips_by_names_and_site_id(site_id, [device_name])
-
+        print("Device Info List:", device_info_list, file=sys.stderr)
         if not device_info_list:
             return []
 
         data_metrics = []
         for device_info in device_info_list:
+            print("devvvvvvvvvvv", device_info, file=sys.stderr)
             device_ip = device_info['ip_address']
+            print("IPPPPPPPPPPPPPPPPPPPPPP", device_ip, file=sys.stderr)
             metrics = self.influxdb_repository.get_traffic_throughput_metrics_with_ener(device_ip, start_date, end_date,
                                                                                  duration_str)
+            print("FINAL_MATRICSSSSSSSSSS", metrics, file=sys.stderr)
             data_metrics.extend(metrics)
 
         return data_metrics
