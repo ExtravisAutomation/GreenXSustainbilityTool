@@ -450,7 +450,7 @@ class SiteService:
         data_metrics = []
         for device_info in device_info_list:
             device_ip = device_info['ip_address']
-            metrics = self.influxdb_repository.get_traffic_throughput_metrics123(device_ip, start_date, end_date,
+            metrics = self.influxdb_repository.get_traffic_throughput_metrics_with_ener(device_ip, start_date, end_date,
                                                                                  duration_str)
             data_metrics.extend(metrics)
 
