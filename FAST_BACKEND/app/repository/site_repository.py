@@ -22,7 +22,7 @@ from app.model.device_inventory import DeviceInventory
 from app.model.rack import Rack
 
 from app.model.apic_controller import APICController
-
+from app.model.DevicesSntc import DevicesSntc
 
 class SiteRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
