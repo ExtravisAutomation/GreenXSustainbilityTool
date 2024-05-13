@@ -273,23 +273,28 @@ class SiteRepository(BaseRepository):
     def get_eol_eos_counts(self, site_id: int) -> dict:
         with self.session_factory() as session:
             current_date = datetime.now()
-            hw_eol_count = session.query(DeviceInventory).filter(
-                DeviceInventory.site_id == site_id,
+
+            # Join DeviceInventory with devices_sntc using pn_code and model_name
+            join_query = session.query(DeviceInventory). \
+                join(DevicesSntc, DeviceInventory.pn_code == DevicesSntc.model_name). \
+                filter(DeviceInventory.site_id == site_id)
+
+            hw_eol_count = join_query.filter(
                 DeviceInventory.hw_eol_date != None,
                 DeviceInventory.hw_eol_date < current_date
             ).count()
-            hw_eos_count = session.query(DeviceInventory).filter(
-                DeviceInventory.site_id == site_id,
+
+            hw_eos_count = join_query.filter(
                 DeviceInventory.hw_eos_date != None,
                 DeviceInventory.hw_eos_date < current_date
             ).count()
-            sw_eol_count = session.query(DeviceInventory).filter(
-                DeviceInventory.site_id == site_id,
+
+            sw_eol_count = join_query.filter(
                 DeviceInventory.sw_eol_date != None,
                 DeviceInventory.sw_eol_date < current_date
             ).count()
-            sw_eos_count = session.query(DeviceInventory).filter(
-                DeviceInventory.site_id == site_id,
+
+            sw_eos_count = join_query.filter(
                 DeviceInventory.sw_eos_date != None,
                 DeviceInventory.sw_eos_date < current_date
             ).count()
