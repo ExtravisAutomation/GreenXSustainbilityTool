@@ -334,7 +334,7 @@ def get_top_5_power_devices(
 def get_device_data_metrics(
         site_id: int,
         duration: Optional[str] = Query("24 hours", alias="duration"),
-        device_name: Optional[str] = Query(None, alias="device_name"),
+        device_name: Optional[str] = None,
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service]),
         site_repository: SiteRepository = Depends(Provide[Container.site_repo])):
