@@ -279,24 +279,28 @@ class SiteRepository(BaseRepository):
                 join(DevicesSntc, DeviceInventory.pn_code == DevicesSntc.model_name). \
                 filter(DeviceInventory.site_id == site_id)
 
+            # Count based on the dates from devices_sntc table
             hw_eol_count = join_query.filter(
-                DeviceInventory.hw_eol_date != None,
-                DeviceInventory.hw_eol_date < current_date
+                DevicesSntc.hw_eol_ad != None,
+                DevicesSntc.hw_eol_ad < current_date
             ).count()
 
             hw_eos_count = join_query.filter(
-                DeviceInventory.hw_eos_date != None,
-                DeviceInventory.hw_eos_date < current_date
+                DevicesSntc.hw_eos != None,
+                DevicesSntc.hw_eos < current_date
             ).count()
 
             sw_eol_count = join_query.filter(
-                DeviceInventory.sw_eol_date != None,
-                DeviceInventory.sw_eol_date < current_date
+                DevicesSntc.sw_EoSWM != None,
+                DevicesSntc.sw_EoSWM < current_date
             ).count()
 
+            # Assuming hw_EoSCR and sw_EoVSS are also EoS dates for hardware and software respectively
             sw_eos_count = join_query.filter(
-                DeviceInventory.sw_eos_date != None,
-                DeviceInventory.sw_eos_date < current_date
+                DevicesSntc.hw_EoSCR != None,
+                DevicesSntc.hw_EoSCR < current_date,
+                DevicesSntc.sw_EoVSS != None,
+                DevicesSntc.sw_EoVSS < current_date
             ).count()
 
             return {
