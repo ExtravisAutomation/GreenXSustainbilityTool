@@ -333,17 +333,16 @@ def get_top_5_power_devices(
 @inject
 def get_device_data_metrics(
         site_id: int,
-        device_name: Optional[str] = None,
-        duration: Optional[str] = Query(None, alias="duration"),
+        device_name: Optional[str] = Query(None, description="Name of the device"),
+        duration: Optional[str] = Query("24 hours", alias="duration"),
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service]),
-        site_repository: SiteRepository = Depends(Provide[Container.site_repo])):  # Ensure site_repository is injected
+        site_repository: SiteRepository = Depends(Provide[Container.site_repo])):
     if not device_name:
         device_name = site_repository.get_first_device_name(site_id)
         if not device_name:
             raise HTTPException(status_code=404, detail="No devices found for the given site.")
 
-    duration = duration or "24 hours"
     metrics = site_service.calculate_device_data_by_name_with_filter(site_id, device_name, duration)
     return CustomResponse1(
         message="Device data metrics retrieved successfully",
