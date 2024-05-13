@@ -333,7 +333,7 @@ def get_top_5_power_devices(
 @inject
 def get_device_data_metrics(
         site_id: int,
-        device_name: Optional[str] = Query(None, description="Name of the device"),
+        device_name: Optional[str] = Query(None, description="Name of the device", example="SULY-ELEF-CI-COM-317"),
         duration: Optional[str] = Query("24 hours", alias="duration"),
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service]),
