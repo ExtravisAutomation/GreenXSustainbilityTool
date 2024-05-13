@@ -397,9 +397,15 @@ def compare_two_devices_power_percentage(
         device_name2: Optional[str] = Query(..., description="Name of the second device"),
         duration: Optional[str] = Query("24 hours", alias="duration"),
         current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])):
-    device_name1 = device_name1 or "RYD-SLY-00-AF14"
-    device_name2 = device_name2 or "RYD-SLY-00-AF15"
+        site_service: SiteService = Depends(Provide[Container.site_service]),
+        site_repository: SiteRepository = Depends(Provide[Container.site_repository])):
+    if not device_name1 or not device_name2:
+        default_device_names = site_repository.get_first_two_device_names(site_id)
+        if len(default_device_names) < 2:
+            raise HTTPException(status_code=404, detail="Not enough devices found in the database.")
+        device_name1 = device_name1 or default_device_names[0]
+        device_name2 = device_name2 or default_device_names[1]
+
     comparison = site_service.compare_device_power_percentage_by_names_and_duration(site_id, device_name1, device_name2,
                                                                                     duration)
     return CustomResponse1(

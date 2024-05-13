@@ -248,6 +248,17 @@ class SiteRepository(BaseRepository):
 
             return devices_info
 
+    def get_first_two_device_names(self, site_id: int) -> List[str]:
+        with self.session_factory() as session:
+            device_names = (
+                session.query(DeviceInventory.device_name)
+                .filter(DeviceInventory.site_id == site_id)
+                .order_by(DeviceInventory.id)  # Assuming ordering by ID or another column
+                .limit(2)
+                .all()
+            )
+        return [name for (name,) in device_names]
+
     def get_eol_eos_counts(self, site_id: int) -> dict:
         with self.session_factory() as session:
             current_date = datetime.now()
