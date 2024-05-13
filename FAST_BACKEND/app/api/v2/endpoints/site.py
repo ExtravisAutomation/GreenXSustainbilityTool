@@ -333,11 +333,16 @@ def get_top_5_power_devices(
 @inject
 def get_device_data_metrics(
         site_id: int,
-        device_name: str,
+        device_name: Optional[str] = None,
         duration: Optional[str] = Query(None, alias="duration"),
         current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
+        site_service: SiteService = Depends(Provide[Container.site_service]),
+        site_repository: SiteRepository = Depends(Provide[Container.site_repo])):  # Ensure site_repository is injected
+    if not device_name:
+        device_name = site_repository.get_first_device_name(site_id)
+        if not device_name:
+            raise HTTPException(status_code=404, detail="No devices found for the given site.")
+
     duration = duration or "24 hours"
     metrics = site_service.calculate_device_data_by_name_with_filter(site_id, device_name, duration)
     return CustomResponse1(
@@ -345,7 +350,6 @@ def get_device_data_metrics(
         data=metrics,
         status_code=status.HTTP_200_OK
     )
-
 
 @router.get("/site/device_specific_comparison_WITH_FILTER/{site_id}",
             response_model=CustomResponse1[List[List[ComparisonDeviceMetricsDetails]]])
