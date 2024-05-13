@@ -398,7 +398,7 @@ def compare_two_devices_power_percentage(
         duration: Optional[str] = Query("24 hours", alias="duration"),
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service]),
-        site_repository: SiteRepository = Depends(Provide[Container.site_repository])):
+        site_repository: SiteRepository = Depends(Provide[Container.site_repo])):
     if not device_name1 or not device_name2:
         default_device_names = site_repository.get_first_two_device_names(site_id)
         if len(default_device_names) < 2:
