@@ -328,7 +328,7 @@ def get_top_5_power_devices(
     return site_service.get_top_5_power_devices_with_filter(site_id, duration)
 
 
-@router.get("/site/traffic_throughput_metrics_by_device_WITH_FILTER/{site_id}/{device_name}",
+@router.get("/site/traffic_throughput_metrics_by_device_WITH_FILTER/{site_id}",
             response_model=CustomResponse1[List[TrafficThroughputMetricsDetails]])
 @inject
 def get_device_data_metrics(
