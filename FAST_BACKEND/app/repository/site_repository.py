@@ -303,9 +303,15 @@ class SiteRepository(BaseRepository):
                 DevicesSntc.sw_EoVSS < current_date
             ).count()
 
+            hw_eosup_count = join_query.filter(
+                DevicesSntc.hw_ldos != None,
+                DevicesSntc.hw_ldos < current_date
+            ).count()
+
             return {
                 "hardware_eol_count": hw_eol_count,
                 "hardware_eos_count": hw_eos_count,
+                "hardware_eosup_count": hw_eosup_count,
                 "software_eol_count": sw_eol_count,
                 "software_eos_count": sw_eos_count
             }
