@@ -370,19 +370,47 @@ def get_device_data_metrics(
         site_id: int,
         device_name: Optional[str] = None,
         duration: Optional[str] = Query("24 hours", alias="duration"),
-
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service]),
         site_repository: SiteRepository = Depends(Provide[Container.site_repo])):
+    global issue_detected
     if not device_name:
         device_name = site_repository.get_first_device_name(site_id)
         if not device_name:
             raise HTTPException(status_code=404, detail="No devices found for the given site.")
 
     metrics = site_service.calculate_device_data_by_name_with_filter(site_id, device_name, duration)
+    response_data = []
+    message = "Device data metrics retrieved successfully."
+    issue_detected = False
+
+    for metric in metrics:
+        energy_consumption = metric.get('energy_consumption', 0)
+        total_bytes_rate_last_gb = metric.get('total_bytes_rate_last_gb', 0)
+        time_stamp = metric['time']
+
+        if energy_consumption == 0 and total_bytes_rate_last_gb == 0:
+            continue
+
+        if energy_consumption < 50:
+            message = (f"At {time_stamp}, the energy efficiency ratio recorded was {energy_consumption}%, "
+                       "which is unusually low and may indicate hardware malfunctions or inefficiencies. ")
+            issue_detected = True
+        elif 50 <= energy_consumption < 80:
+            message = (f"Overall, the energy efficiency ratio measured was average, "
+                       "which indicates that the hardware is generally performing well. ")
+        elif energy_consumption >= 80:
+            message = (f"Overall, the energy efficiency ratio is high, "
+                       "demonstrating excellent performance and optimal operation of the hardware. ")
+
+        # response_data.append(metric)  # Append metric data that was checked
+
+    # if not issue_detected and not response_data:
+    #     message = "No metrics available for the specified period or all metrics are within normal parameters."
+
     return CustomResponse1(
-        message="Device data metrics retrieved successfully",
-        data=metrics,
+        message=message,
+        data=response_data,
         status_code=status.HTTP_200_OK
     )
 
