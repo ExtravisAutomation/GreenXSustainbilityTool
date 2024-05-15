@@ -292,8 +292,7 @@ def get_energy_consumption_metrics(
     duration = duration or "24 hours"
     metrics = site_service.calculate_energy_consumption_by_id_with_filter(site_id, duration)
 
-    message = "Energy consumption metrics retrieved successfully."
-    issue_detected = False
+    messages = []
 
     for metric in metrics:
         energy_consumption = metric['energy_consumption']
@@ -301,28 +300,43 @@ def get_energy_consumption_metrics(
         time_stamp = metric['time']
 
         if energy_consumption < 50:
-            message = f"Hardware may have some problem at {time_stamp}, please check."
-            issue_detected = True
+            message = (
+                f"At {time_stamp}, the energy consumption recorded was {energy_consumption} kWh, "
+                "which is unusually low and may indicate hardware malfunctions or inefficiencies. "
+                f"Additionally, a power efficiency rating of {power_efficiency}% at this time suggests potential issues, "
+                "requiring immediate investigation to prevent further inefficiencies or failures."
+            )
         elif 50 <= energy_consumption < 80:
-            message = f"Hardware is performing good at {time_stamp}."
+            message = (
+                f"At {time_stamp}, the energy consumption measured was {energy_consumption} kWh. "
+                "This level of consumption indicates that the hardware is generally performing well, "
+                f"though the power efficiency of {power_efficiency}% should be monitored to ensure it remains within acceptable limits."
+            )
         elif 80 <= energy_consumption <= 100:
-            message = f"Hardware is performing excellent at {time_stamp}."
+            message = (
+                f"At {time_stamp}, the energy consumption peaked at {energy_consumption} kWh, "
+                "demonstrating excellent performance and optimal operation of the hardware. "
+                f"The corresponding power efficiency of {power_efficiency}% is within an ideal range, "
+                "indicating highly effective power use."
+            )
+        else:
+            message = (
+                f"At {time_stamp}, recorded energy consumption was {energy_consumption} kWh with a power efficiency of {power_efficiency}%. "
+                "This data needs further analysis to understand the implications fully."
+            )
 
-        if power_efficiency > 5:  # Assuming a threshold for "high" power efficiency indicating issues
-            message += f" However, power efficiency is high at {time_stamp}, indicating potential issues."
-            issue_detected = True
-        elif power_efficiency <= 5:  # Assuming a threshold for "low" power efficiency indicating positive performance
-            message += f" Power Usage Effectiveness is low at {time_stamp}, indicating positive performance."
+        messages.append(message)
 
-    if not issue_detected and not metrics:
-        message = "No metrics available for the specified period or all metrics are within normal parameters."
+    if not messages:
+        message = "No metrics available for the specified period, or all metrics are within normal parameters."
+    else:
+        message = " ".join(messages)
 
     return CustomResponse(
         message=message,
         data=metrics,
         status_code=status.HTTP_200_OK
     )
-
 
 @router.get("/site/traffic_throughput_metrics_WITH_FILTER/{site_id}",
             response_model=CustomResponse1[List[TrafficThroughputMetricsDetails]])
