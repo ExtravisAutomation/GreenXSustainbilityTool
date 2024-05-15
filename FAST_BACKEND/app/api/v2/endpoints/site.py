@@ -291,7 +291,7 @@ def get_energy_consumption_metrics(
 ):
     duration = duration or "24 hours"
     metrics = site_service.calculate_energy_consumption_by_id_with_filter(site_id, duration)
-
+    response_data = []
     message = "Energy consumption metrics retrieved successfully."
     issue_detected = False
 
@@ -300,36 +300,35 @@ def get_energy_consumption_metrics(
         power_efficiency = metric['power_efficiency']
         time_stamp = metric['time']
 
+        if energy_consumption == 0 and power_efficiency == 0:
+            continue  # Skip metrics with zero values for energy consumption and power efficiency
+
         if energy_consumption < 50:
-            message = f"At {time_stamp}, the energy efficiency ratio recorded was {energy_consumption} %, "
-            "which is unusually low and may indicate hardware malfunctions or inefficiencies. "
-            f"Additionally, a power usage effectiveness rating of {power_efficiency}% at this time suggests potential issues, "
-            "requiring immediate investigation to prevent further inefficiencies or failures."
+            message = (f"At {time_stamp}, the energy efficiency ratio recorded was {energy_consumption}%, "
+                       "which is unusually low and may indicate hardware malfunctions or inefficiencies. ")
             issue_detected = True
         elif 50 <= energy_consumption < 80:
-            message = f"At {time_stamp}, the energy efficiency ratio  measured was {energy_consumption}%, "
-            "This level of consumption indicates that the hardware is generally performing well, "
-            f"though the power usage effectiveness of {power_efficiency}% should be monitored to ensure it remains within acceptable limits."
-        elif 80 <= energy_consumption <= 100:
-            message = (
-                f"At {time_stamp}, the energy efficiency ratio peaked at {energy_consumption} kWh, "
-                "demonstrating excellent performance and optimal operation of the hardware. "
-                f"The corresponding power usage effectiveness of {power_efficiency}% is within an ideal range, "
-                "indicating highly effective power usage."
-            )
+            message = (f"Overall, the energy efficiency ratio measured was average, "
+                       "which indicates that the hardware is generally performing well. ")
+        elif energy_consumption >= 80:
+            message = (f"Overall, the energy efficiency ratio is high, "
+                       "demonstrating excellent performance and optimal operation of the hardware. ")
 
-        if power_efficiency > 20:  # Assuming a threshold for "high" power efficiency indicating issues
-            message += f"However, a high power efficiency of {power_efficiency}% at this time suggests potential problems with power usage effectiveness, warranting further checks."
+        if power_efficiency > 20:
+            message += (f"However, a high power efficiency of {power_efficiency}% at this time suggests potential problems with power usage effectiveness, "
+                        "warranting further checks.")
             issue_detected = True
-        elif power_efficiency <= 20:  # Assuming a threshold for "low" power efficiency indicating positive performance
+        elif power_efficiency <= 20 and power_efficiency > 0:
             message += f" Power usage effectiveness is low at {power_efficiency}%, which is ideal and indicates positive performance."
 
-    if not issue_detected and not metrics:
+        response_data.append(metric)
+
+    if not issue_detected and not response_data:
         message = "No metrics available for the specified period or all metrics are within normal parameters."
 
     return CustomResponse(
         message=message,
-        data=metrics,
+        data=response_data,
         status_code=status.HTTP_200_OK
     )
 
