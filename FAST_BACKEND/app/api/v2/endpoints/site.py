@@ -321,14 +321,14 @@ def get_energy_consumption_metrics(
         elif power_efficiency <= 20 and power_efficiency > 0:
             message += f" Power usage effectiveness is low at {power_efficiency}%, which is ideal and indicates positive performance."
 
-        response_data.append(metric)
+        # response_data.append(metric)
 
     if not issue_detected and not response_data:
         message = "No metrics available for the specified period or all metrics are within normal parameters."
 
     return CustomResponse(
         message=message,
-        data=response_data,
+        data=metrics,
         status_code=status.HTTP_200_OK
     )
 
