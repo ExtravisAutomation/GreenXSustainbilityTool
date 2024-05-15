@@ -319,7 +319,7 @@ def get_energy_consumption_metrics(
                         "warranting further checks.")
             issue_detected = True
         elif power_efficiency <= 20 and power_efficiency > 0:
-            message += f" Power usage effectiveness is low at {power_efficiency}%, which is ideal and indicates positive performance."
+            message += f" Power usage effectiveness is low which is ideal and indicates positive performance."
 
         # response_data.append(metric)
 
