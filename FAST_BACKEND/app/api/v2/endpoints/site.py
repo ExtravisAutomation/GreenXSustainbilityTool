@@ -289,32 +289,33 @@ def get_energy_consumption_metrics(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    global message
     duration = duration or "24 hours"
     metrics = site_service.calculate_energy_consumption_by_id_with_filter(site_id, duration)
 
-    # Assume metrics are sorted by time and last one is the latest
-    latest_metric = metrics[-1] if metrics else None
+    message = "Energy consumption metrics retrieved successfully."
+    issue_detected = False
 
-    # Determine the message based on the latest metrics
-    if latest_metric:
-        energy_consumption = latest_metric['energy_consumption']
-        power_efficiency = latest_metric['power_efficiency']
+    for metric in metrics:
+        energy_consumption = metric['energy_consumption']
+        power_efficiency = metric['power_efficiency']
+        time_stamp = metric['time']
 
         if energy_consumption < 50:
-            message = "Hardware may have some problem, please check."
+            message = f"Hardware may have some problem at {time_stamp}, please check."
+            issue_detected = True
         elif 50 <= energy_consumption < 80:
-            message = "Hardware is performing good."
+            message = f"Hardware is performing good at {time_stamp}."
         elif 80 <= energy_consumption <= 100:
-            message = "Hardware is performing excellent."
+            message = f"Hardware is performing excellent at {time_stamp}."
 
-        # Adjust message further based on power efficiency
-        if power_efficiency > 20:  # Assuming a threshold for "high" power efficiency
-            message += " However, power efficiency is high, indicating potential issues."
-        elif power_efficiency <= 20:  # Assuming a threshold for "low" power efficiency
-            message += " Power Usage Effectiveness is low, indicating positive performance."
-    else:
-        message = "No metrics available for the specified period."
+        if power_efficiency > 5:  # Assuming a threshold for "high" power efficiency indicating issues
+            message += f" However, power efficiency is high at {time_stamp}, indicating potential issues."
+            issue_detected = True
+        elif power_efficiency <= 5:  # Assuming a threshold for "low" power efficiency indicating positive performance
+            message += f" Power Usage Effectiveness is low at {time_stamp}, indicating positive performance."
+
+    if not issue_detected and not metrics:
+        message = "No metrics available for the specified period or all metrics are within normal parameters."
 
     return CustomResponse(
         message=message,
