@@ -410,7 +410,7 @@ def get_device_data_metrics(
 
     return CustomResponse1(
         message=message,
-        data=response_data,
+        data=metrics,
         status_code=status.HTTP_200_OK
     )
 
