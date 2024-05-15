@@ -274,12 +274,11 @@ class SiteRepository(BaseRepository):
         with self.session_factory() as session:
             current_date = datetime.now()
 
-            # Join DeviceInventory with devices_sntc using pn_code and model_name
             join_query = session.query(DeviceInventory). \
                 join(DevicesSntc, DeviceInventory.pn_code == DevicesSntc.model_name). \
                 filter(DeviceInventory.site_id == site_id)
 
-            # Count based on the dates from devices_sntc table
+
             hw_eol_count = join_query.filter(
                 DevicesSntc.hw_eol_ad != None,
                 DevicesSntc.hw_eol_ad < current_date
@@ -295,7 +294,7 @@ class SiteRepository(BaseRepository):
                 DevicesSntc.sw_EoSWM < current_date
             ).count()
 
-            # Assuming hw_EoSCR and sw_EoVSS are also EoS dates for hardware and software respectively
+
             sw_eos_count = join_query.filter(
                 DevicesSntc.hw_EoSCR != None,
                 DevicesSntc.hw_EoSCR < current_date,

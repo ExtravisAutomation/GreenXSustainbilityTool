@@ -289,10 +289,35 @@ def get_energy_consumption_metrics(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
+    global message
     duration = duration or "24 hours"
     metrics = site_service.calculate_energy_consumption_by_id_with_filter(site_id, duration)
+
+    # Assume metrics are sorted by time and last one is the latest
+    latest_metric = metrics[-1] if metrics else None
+
+    # Determine the message based on the latest metrics
+    if latest_metric:
+        energy_consumption = latest_metric['energy_consumption']
+        power_efficiency = latest_metric['power_efficiency']
+
+        if energy_consumption < 50:
+            message = "Hardware may have some problem, please check."
+        elif 50 <= energy_consumption < 80:
+            message = "Hardware is performing good."
+        elif 80 <= energy_consumption <= 100:
+            message = "Hardware is performing excellent."
+
+        # Adjust message further based on power efficiency
+        if power_efficiency > 20:  # Assuming a threshold for "high" power efficiency
+            message += " However, power efficiency is high, indicating potential issues."
+        elif power_efficiency <= 20:  # Assuming a threshold for "low" power efficiency
+            message += " Power Usage Effectiveness is low, indicating positive performance."
+    else:
+        message = "No metrics available for the specified period."
+
     return CustomResponse(
-        message="Energy consumption metrics retrieved successfully",
+        message=message,
         data=metrics,
         status_code=status.HTTP_200_OK
     )
