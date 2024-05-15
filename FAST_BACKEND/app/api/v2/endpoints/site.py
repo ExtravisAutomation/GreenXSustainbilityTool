@@ -289,11 +289,12 @@ def get_energy_consumption_metrics(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
+    global issue_detected1
     duration = duration or "24 hours"
     metrics = site_service.calculate_energy_consumption_by_id_with_filter(site_id, duration)
     response_data = []
     message = "Energy consumption metrics retrieved successfully."
-    issue_detected = False
+    issue_detected1 = False
 
     for metric in metrics:
         energy_consumption = metric['energy_consumption']
@@ -306,7 +307,7 @@ def get_energy_consumption_metrics(
         if energy_consumption < 50:
             message = (f"At {time_stamp}, the energy efficiency ratio recorded was {energy_consumption}%, "
                        "which is unusually low and may indicate hardware malfunctions or inefficiencies. ")
-            issue_detected = True
+            issue_detected1 = True
         elif 50 <= energy_consumption < 80:
             message = (f"Overall, the energy efficiency ratio measured was average, "
                        "which indicates that the hardware is generally performing well. ")
@@ -317,7 +318,7 @@ def get_energy_consumption_metrics(
         if power_efficiency > 20:
             message += (f"However, a high power efficiency of {power_efficiency}% at this time suggests potential problems with power usage effectiveness, "
                         "warranting further checks.")
-            issue_detected = True
+            issue_detected1 = True
         elif power_efficiency <= 20 and power_efficiency > 0:
             message += f" Power usage effectiveness is low which is ideal and indicates positive performance."
 
@@ -380,7 +381,7 @@ def get_device_data_metrics(
             raise HTTPException(status_code=404, detail="No devices found for the given site.")
 
     metrics = site_service.calculate_device_data_by_name_with_filter(site_id, device_name, duration)
-    response_data = []
+    # response_data = []
     message = "Device data metrics retrieved successfully."
     issue_detected = False
 
