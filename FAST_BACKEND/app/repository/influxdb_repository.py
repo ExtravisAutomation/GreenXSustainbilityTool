@@ -872,7 +872,7 @@ class InfluxDBRepository:
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             return "1d", '%Y-%m-%d'
         else:  # For "last 6 months", "last year", "current year"
-            return "1mo", '%Y-%m'
+            return "1m", '%Y-%m'
 
     def handle_missing_data(self, row, field_name: str) -> float:
         value = row.get(field_name, 0) / (2 ** 30)
