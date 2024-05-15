@@ -323,8 +323,8 @@ def get_energy_consumption_metrics(
 
         # response_data.append(metric)
 
-    if not issue_detected and not response_data:
-        message = "No metrics available for the specified period or all metrics are within normal parameters."
+    # if not issue_detected and not response_data:
+    #     message = "No metrics available for the specified period or all metrics are within normal parameters."
 
     return CustomResponse(
         message=message,
