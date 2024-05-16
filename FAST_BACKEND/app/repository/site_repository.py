@@ -24,7 +24,6 @@ from app.model.rack import Rack
 from app.model.apic_controller import APICController
 from app.model.DevicesSntc import DevicesSntc
 
-
 class SiteRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
         self.session_factory = session_factory
@@ -271,7 +270,52 @@ class SiteRepository(BaseRepository):
             )
             return device_name[0] if device_name else None
 
-    def get_eol_eos_counts(self, site_id: int, start_date: datetime, end_date: datetime) -> dict:
+    def get_eol_eos_counts(self, site_id: int) -> dict:
+        with self.session_factory() as session:
+            current_date = datetime.now()
+
+            join_query = session.query(DeviceInventory). \
+                join(DevicesSntc, DeviceInventory.pn_code == DevicesSntc.model_name). \
+                filter(DeviceInventory.site_id == site_id)
+
+
+            hw_eol_count = join_query.filter(
+                DevicesSntc.hw_eol_ad != None,
+                DevicesSntc.hw_eol_ad < current_date
+            ).count()
+
+            hw_eos_count = join_query.filter(
+                DevicesSntc.hw_eos != None,
+                DevicesSntc.hw_eos < current_date
+            ).count()
+
+            sw_eol_count = join_query.filter(
+                DevicesSntc.sw_EoSWM != None,
+                DevicesSntc.sw_EoSWM < current_date
+            ).count()
+
+
+            sw_eos_count = join_query.filter(
+                DevicesSntc.hw_EoSCR != None,
+                DevicesSntc.hw_EoSCR < current_date,
+                DevicesSntc.sw_EoVSS != None,
+                DevicesSntc.sw_EoVSS < current_date
+            ).count()
+
+            hw_eosup_count = join_query.filter(
+                DevicesSntc.hw_ldos != None,
+                DevicesSntc.hw_ldos < current_date
+            ).count()
+
+            return {
+                "hardware_eol_count": hw_eol_count,
+                "hardware_eos_count": hw_eos_count,
+                "hardware_eosup_count": hw_eosup_count,
+                "software_eol_count": sw_eol_count,
+                "software_eos_count": sw_eos_count
+            }
+
+    def get_eol_eos_counts1(self, site_id: int, start_date: datetime, end_date: datetime) -> dict:
         with self.session_factory() as session:
             join_query = session.query(DeviceInventory). \
                 join(DevicesSntc, DeviceInventory.pn_code == DevicesSntc.model_name). \
@@ -311,7 +355,6 @@ class SiteRepository(BaseRepository):
                 "software_eol_count": sw_eol_count,
                 "software_eos_count": sw_eos_count
             }
-
     def get_device_ip_by_name(self, site_id: int, device_name: str) -> str:
         with self.session_factory() as session:
             device = (
@@ -403,7 +446,6 @@ class SiteRepository(BaseRepository):
 
                     # Add other fields as necessary
                 }
-
     def get_device_details_by_name_and_site_id(self, site_id: int, device_name: str) -> dict:
         with self.session_factory() as session:
 
@@ -442,7 +484,6 @@ class SiteRepository(BaseRepository):
             else:
 
                 return {}
-
     def get_device_details_by_name_and_site_id1(self, site_id: int, device_name: str) -> dict:
         with self.session_factory() as session:
 

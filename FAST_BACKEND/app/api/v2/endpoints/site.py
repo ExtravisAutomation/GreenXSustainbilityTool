@@ -170,15 +170,27 @@ def compare_devices_metrics(
 @router.get("/site/pie_chart/{site_id}", response_model=dict[str, int])
 @inject
 def read_eol_eos_counts(site_id: int,
+                        current_user: User = Depends(get_current_active_user),
+                        site_service: SiteService = Depends(Provide[Container.site_service])):
+    try:
+        eol_eos_counts = site_service.get_eol_eos_counts_for_site(site_id)
+        return eol_eos_counts
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/site/hardware_life_cycle_WITH_FILTER/{site_id}", response_model=dict[str, int])
+@inject
+def read_eol_eos_counts(site_id: int,
                         duration: Optional[str] = Query(None, alias="duration"),
                         current_user: User = Depends(get_current_active_user),
                         site_service: SiteService = Depends(Provide[Container.site_service])):
     duration = duration or "24 hours"
     try:
-        eol_eos_counts = site_service.get_eol_eos_counts_for_site(site_id, duration)
+        eol_eos_counts = site_service.get_eol_eos_counts_for_site1(site_id, duration)
         return eol_eos_counts
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
 @router.get("/site/top_devices_power_cost/{site_id}", response_model=TopDevicesPowerResponse)

@@ -368,9 +368,12 @@ class SiteService:
 
         return HourlyDevicePowerMetricsResponse(metrics=metrics_list)
 
-    def get_eol_eos_counts_for_site(self, site_id: int, duration_str: str) -> dict:
+    def get_eol_eos_counts_for_site(self, site_id: int):
+        return self.site_repository.get_eol_eos_counts(site_id)
+
+    def get_eol_eos_counts_for_site1(self, site_id: int, duration_str: str) -> dict:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
-        return self.site_repository.get_eol_eos_counts(site_id, start_date, end_date)
+        return self.site_repository.get_eol_eos_counts1(site_id, start_date, end_date)
 
     def get_top_5_power_devices(self, site_id: int) -> TopDevicesPowerResponse:
         device_inventory = self.site_repository.get_device_inventory_by_site_id(site_id)
