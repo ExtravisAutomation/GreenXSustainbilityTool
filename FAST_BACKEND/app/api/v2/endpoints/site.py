@@ -170,10 +170,12 @@ def compare_devices_metrics(
 @router.get("/site/pie_chart/{site_id}", response_model=dict[str, int])
 @inject
 def read_eol_eos_counts(site_id: int,
+                        duration: Optional[str] = Query(None, alias="duration"),
                         current_user: User = Depends(get_current_active_user),
                         site_service: SiteService = Depends(Provide[Container.site_service])):
+    duration = duration or "24 hours"
     try:
-        eol_eos_counts = site_service.get_eol_eos_counts_for_site(site_id)
+        eol_eos_counts = site_service.get_eol_eos_counts_for_site(site_id, duration)
         return eol_eos_counts
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
