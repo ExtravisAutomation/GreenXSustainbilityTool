@@ -25,6 +25,8 @@ from app.schema.site_schema import DevicePowerComparisonPercentage
 
 from app.schema.site_schema import ComparisonDeviceMetricsDetails
 
+from app.schema.site_schema import SiteDetails_get
+
 
 class SiteService:
     def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
