@@ -686,7 +686,7 @@ class SiteService:
                     site.pue = round(average_pue, 2)
 
                 if Power_Input:
-                    site.power_input = round(sum(Power_Input), 2)
+                    site.power_input = round(Power_Input[0], 2)
                 else:
                     site.power_input = 0  # Or set to None, depending on what you expect
 
