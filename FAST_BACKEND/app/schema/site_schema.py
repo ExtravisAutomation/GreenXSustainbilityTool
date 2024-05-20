@@ -15,7 +15,7 @@ class SiteBase(BaseModel):
     latitude: str
     longitude: str
     status: str
-    total_devices: str
+    total_devices: Optional[str] = None
 
 
 class SiteDetails(SiteBase):
@@ -28,6 +28,14 @@ class GetSitesResponse(BaseModel):
 
 class SiteCreate(SiteBase):
     pass
+
+
+class SiteDetails_get(SiteBase):
+    id: int
+    power_utilization: Optional[float] = None
+    power_input: Optional[float] = None
+    pue: Optional[float] = None
+    datatraffic: Optional[float] = None
 
 
 class SiteUpdate(BaseModel):
@@ -71,8 +79,6 @@ class CustomResponse1(BaseModel, Generic[T]):
     message: str
     data: T
     status_code: int
-
-
 
 
 class SiteDetails1(BaseModel):
@@ -205,3 +211,5 @@ class CustomResponse100(BaseModel):
     message: str
     data: Dict[str, List[ComparisonDeviceMetricsDetails]]
     status_code: int
+
+

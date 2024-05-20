@@ -37,16 +37,16 @@ class DeleteRequest(BaseModel):
     site_ids: List[int]
 
 
-@router.get("/getallsites", response_model=CustomResponse1[GetSitesResponse])
-@inject
-def get_sites(current_user: User = Depends(get_current_active_user),
-              site_service: SiteService = Depends(Provide[Container.site_service])):
-    sites = site_service.get_sites()
-    return CustomResponse(
-        message="Fetched all sites successfully",
-        data=sites,
-        status_code=status.HTTP_200_OK
-    )
+# @router.get("/getallsites", response_model=CustomResponse1[GetSitesResponse])
+# @inject
+# def get_sites(current_user: User = Depends(get_current_active_user),
+#               site_service: SiteService = Depends(Provide[Container.site_service])):
+#     sites = site_service.get_sites()
+#     return CustomResponse(
+#         message="Fetched all sites successfully",
+#         data=sites,
+#         status_code=status.HTTP_200_OK
+#     )
 
 
 @router.post("/addsite", response_model=CustomResponse[SiteDetails])
@@ -550,3 +550,15 @@ def get_detailed_energy_metrics(
         return metrics
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/getallsites", response_model=CustomResponse1[GetSitesResponse])
+@inject
+def get_sites(current_user: User = Depends(get_current_active_user),
+              site_service: SiteService = Depends(Provide[Container.site_service])):
+    sites = site_service.get_extended_sites()
+    return CustomResponse(
+        message="Fetched all sites successfully",
+        data=sites,
+        status_code=status.HTTP_200_OK
+    )

@@ -665,4 +665,34 @@ class SiteService:
 
         return dummy_metrics
 
+    def get_extended_sites(self) -> List[SiteDetails_get]:
+        sites = self.site_repository.get_all_sites()
+        for site in sites:
+            device_inventory = self.site_repository.get_device_inventory_by_site_id(site.id)
+            apic_ips = [device['ip_address'] for device in device_inventory if device['ip_address']]
+
+            # Fetch power and traffic data from InfluxDB using the ips
+            site.power_data = self.influxdb_repository.get_24hsite_power(apic_ips, site.id)
+            site.traffic_data = self.influxdb_repository.get_24hsite_datatraffic(apic_ips, site.id)
+
+            # Aggregate power and traffic data and set them to site object
+            if site.power_data:
+                power_utilization_values = [data['power_utilization'] for data in site.power_data]
+                total_power_utilization = sum(power_utilization_values)
+                average_power_utilization = total_power_utilization / len(
+                    power_utilization_values) if power_utilization_values else 0
+                site.power_utilization = average_power_utilization
+
+                pue_values = [data['pue'] for data in site.power_data]
+                average_pue = sum(pue_values) / len(pue_values) if pue_values else 0
+                site.pue = average_pue
+
+            if site.traffic_data:
+                traffic_throughput_values = [data['traffic_through'] for data in site.traffic_data]
+                total_traffic_throughput = sum(traffic_throughput_values)
+                datatraffic = total_traffic_throughput / (1024 ** 3)
+                site.datatraffic = datatraffic
+
+        return [SiteDetails_get(**site.__dict__) for site in sites]
+
 

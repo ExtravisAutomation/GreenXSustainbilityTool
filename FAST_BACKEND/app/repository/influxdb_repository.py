@@ -1415,3 +1415,99 @@ class InfluxDBRepository:
         print(
             f"Generated {len(dummy_metrics)} dummy metrics for {ip} on granularity {granularity}")  # Debug print for generated dummy data
         return dummy_metrics
+
+    def get_24hsite_power(self, apic_ips, site_id) -> List[dict]:
+        apic_ip_list = [ip[0] for ip in apic_ips if ip[0]]
+        print(apic_ip_list)
+        if not apic_ip_list:
+            return []
+        start_range = "-24h"
+        site_data = []
+        total_drawn, total_supplied = 0, 0
+        data_gb = 0
+        for apic_ip in apic_ip_list:
+            print(apic_ip)
+            query = f'''from(bucket: "Dcs_db")
+                  |> range(start: {start_range})
+                  |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
+                  |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
+                  |> sum()
+                  |> yield(name: "total_sum")'''
+            try:
+                result = self.query_api1.query(query)
+
+                drawnAvg, suppliedAvg = None, None
+
+                for table in result:
+                    for record in table.records:
+                        if record.get_field() == "total_POut":
+                            drawnAvg = record.get_value()
+                        elif record.get_field() == "total_PIn":
+                            suppliedAvg = record.get_value()
+
+                        if drawnAvg is not None and suppliedAvg is not None:
+                            total_drawn += drawnAvg
+                            total_supplied += suppliedAvg
+
+                power_utilization = None
+                pue = None
+                if total_supplied > 0:
+                    power_utilization = (total_drawn / total_supplied) * 100
+                if total_drawn > 0:
+                    pue = ((total_supplied / total_drawn) - 1) * 100
+
+                site_data.append({
+                    "site_id": site_id,
+                    "power_utilization": round(power_utilization, 2) if power_utilization is not None else 0,
+                    "power_input": total_supplied,
+                    "pue": round(pue, 2) if pue is not None else 0
+                })
+
+            except Exception as e:
+                print(f"Error querying InfluxDB for {apic_ip}: {e}")
+                # Handle exception or continue
+
+        return site_data
+
+    def get_24hsite_datatraffic(apic_ips, site_id) -> List[dict]:
+        apic_ip_list = [ip[0] for ip in apic_ips if ip[0]]
+        print(apic_ip_list)
+        if not apic_ip_list:
+            return []
+
+        start_range = "-24h"
+        site_data = []
+        total_byterate = 0
+
+        for apic_ip in apic_ip_list:
+            print(apic_ip)
+            query = f'''from(bucket: "Dcs_db")
+                  |> range(start: {start_range})
+                  |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic")
+                  |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
+                  |> sum()
+                  |> yield(name: "total_sum")'''
+            try:
+                result = self.query_api1.query(query)
+                byterate = None
+
+                for table in result:
+                    for record in table.records:
+                        if record.get_field() == "total_bytesRateLast":
+                            byterate = record.get_value()
+                        else:
+                            byterate = 0
+                        total_byterate += byterate
+                print(total_byterate, "total_bytesRateLast")
+
+                # data_gb = total_byterate/ (1024 ** 3)
+                # print(data_gb,"data_gb")
+
+                site_data.append({
+                    "site_id": site_id,
+                    "traffic_through": total_byterate})
+            except Exception as e:
+                print(f"Error querying InfluxDB for {apic_ip}: {e}")
+                # Handle exception or continue
+
+        return site_data
