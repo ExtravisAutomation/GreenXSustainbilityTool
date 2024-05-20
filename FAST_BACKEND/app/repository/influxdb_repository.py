@@ -1469,7 +1469,7 @@ class InfluxDBRepository:
 
         return site_data
 
-    def get_24hsite_datatraffic(apic_ips, site_id) -> List[dict]:
+    def get_24hsite_datatraffic(self, apic_ips, site_id) -> List[dict]:
         apic_ip_list = [ip[0] for ip in apic_ips if ip[0]]
         print(apic_ip_list)
         if not apic_ip_list:
