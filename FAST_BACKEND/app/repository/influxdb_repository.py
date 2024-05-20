@@ -1421,7 +1421,7 @@ class InfluxDBRepository:
         print(apic_ip_list)
         if not apic_ip_list:
             return []
-        start_range = "-24h"
+        start_range = "-7d"
         site_data = []
         total_drawn, total_supplied = 0, 0
         data_gb = 0
