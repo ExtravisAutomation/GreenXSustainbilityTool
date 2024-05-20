@@ -1460,45 +1460,34 @@ class InfluxDBRepository:
 
         return site_data
 
-    def get_24hsite_datatraffic(self, apic_ips, site_id) -> List[dict]:
-        apic_ip_list = [ip[0] for ip in apic_ips if ip[0]]
-        print(apic_ip_list)
-        if not apic_ip_list:
+    def get_24hsite_datatraffic(self, apic_ips: List[str], site_id: int) -> List[dict]:
+        if not apic_ips:
             return []
 
-        start_range = "-7d"
+        start_range = "-24h"
         site_data = []
-        total_byterate = 0
-
-        for apic_ip in apic_ip_list:
-            print(apic_ip)
-            query = f'''from(bucket: "Dcs_db")
-                  |> range(start: {start_range})
-                  |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic")
-                  |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
-                  |> sum()
-                  |> yield(name: "total_sum")'''
+        for apic_ip in apic_ips:
+            query = f'''
+                from(bucket: "Dcs_db")
+                |> range(start: {start_range})
+                |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic")
+                |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
+                |> sum()
+            '''
             try:
                 result = self.query_api1.query(query)
-                byterate = None
+                total_byterate = 0
 
                 for table in result:
                     for record in table.records:
                         if record.get_field() == "total_bytesRateLast":
-                            byterate = record.get_value()
-                        else:
-                            byterate = 0
-                        total_byterate += byterate
-                print(total_byterate, "total_bytesRateLast")
-
-                # data_gb = total_byterate/ (1024 ** 3)
-                # print(data_gb,"data_gb")
+                            total_byterate += record.get_value()
 
                 site_data.append({
                     "site_id": site_id,
-                    "traffic_through": total_byterate})
+                    "traffic_through": total_byterate
+                })
             except Exception as e:
                 print(f"Error querying InfluxDB for {apic_ip}: {e}")
-                # Handle exception or continue
 
         return site_data
