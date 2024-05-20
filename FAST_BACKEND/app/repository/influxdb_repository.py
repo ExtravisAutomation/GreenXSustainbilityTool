@@ -1420,7 +1420,7 @@ class InfluxDBRepository:
         if not apic_ips:
             return []
 
-        start_range = "-7d"
+        start_range = "-24h"
         site_data = []
         for apic_ip in apic_ips:
             query = f'''
