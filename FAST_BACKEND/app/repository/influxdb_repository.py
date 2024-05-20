@@ -1416,56 +1416,47 @@ class InfluxDBRepository:
             f"Generated {len(dummy_metrics)} dummy metrics for {ip} on granularity {granularity}")  # Debug print for generated dummy data
         return dummy_metrics
 
-    def get_24hsite_power(self, apic_ips, site_id) -> List[dict]:
-        apic_ip_list = [ip[0] for ip in apic_ips if ip[0]]
-        print(apic_ip_list)
-        if not apic_ip_list:
+    def get_24hsite_power(self, apic_ips: List[str], site_id: int) -> List[dict]:
+        if not apic_ips:
             return []
+
         start_range = "-7d"
         site_data = []
-        total_drawn, total_supplied = 0, 0
-        data_gb = 0
-        for apic_ip in apic_ip_list:
-            print(apic_ip)
-            query = f'''from(bucket: "Dcs_db")
-                  |> range(start: {start_range})
-                  |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
-                  |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
-                  |> sum()
-                  |> yield(name: "total_sum")'''
+        for apic_ip in apic_ips:
+            query = f'''
+                from(bucket: "Dcs_db")
+                |> range(start: {start_range})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
+                |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
+                |> group(columns: ["_field"])
+                |> sum()
+            '''
             try:
                 result = self.query_api1.query(query)
-
-                drawnAvg, suppliedAvg = None, None
+                power_utilization = None
+                pue = None
+                total_supplied = 0
+                total_drawn = 0
 
                 for table in result:
                     for record in table.records:
                         if record.get_field() == "total_POut":
-                            drawnAvg = record.get_value()
+                            total_drawn += record.get_value()
                         elif record.get_field() == "total_PIn":
-                            suppliedAvg = record.get_value()
+                            total_supplied += record.get_value()
 
-                        if drawnAvg is not None and suppliedAvg is not None:
-                            total_drawn += drawnAvg
-                            total_supplied += suppliedAvg
-
-                power_utilization = None
-                pue = None
                 if total_supplied > 0:
                     power_utilization = (total_drawn / total_supplied) * 100
-                if total_drawn > 0:
-                    pue = ((total_supplied / total_drawn) - 1) * 100
+                    pue = ((total_supplied / total_drawn) - 1) * 100 if total_drawn > 0 else None
 
                 site_data.append({
                     "site_id": site_id,
                     "power_utilization": round(power_utilization, 2) if power_utilization is not None else 0,
-                    "power_input": total_supplied,
+                    "power_input": round(total_supplied, 2),
                     "pue": round(pue, 2) if pue is not None else 0
                 })
-
             except Exception as e:
                 print(f"Error querying InfluxDB for {apic_ip}: {e}")
-                # Handle exception or continue
 
         return site_data
 
@@ -1475,7 +1466,7 @@ class InfluxDBRepository:
         if not apic_ip_list:
             return []
 
-        start_range = "-24h"
+        start_range = "-7d"
         site_data = []
         total_byterate = 0
 
