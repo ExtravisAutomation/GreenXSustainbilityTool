@@ -42,7 +42,6 @@ class SiteService:
         site = self.site_repository.add_site(site_data)
         return SiteDetails(**site.__dict__)
 
-
     def update_site(self, id: int, site_data: SiteUpdate) -> SiteDetails1:
         updated_site = self.site_repository.update_site(id, site_data)
         return SiteDetails1(
@@ -194,7 +193,6 @@ class SiteService:
 
         return comparison_metrics
 
-
     def calculate_energy_consumption_by_id_with_filter(self, site_id: int, duration_str: str) -> List[
         dict]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
@@ -329,8 +327,6 @@ class SiteService:
 
         return HourlyDevicePowerMetricsResponse(metrics=metrics_list)
 
-
-
     def compare_devices_hourly_power_metrics(self, site_id: int, device_name1: str,
                                              device_name2: str) -> HourlyDevicePowerMetricsResponse:
         devices_info = self.site_repository.get_device_ips_by_names_and_site_id(site_id, [device_name1, device_name2])
@@ -460,7 +456,7 @@ class SiteService:
             device_ip = device_info['ip_address']
             print("IPPPPPPPPPPPPPPPPPPPPPP", device_ip, file=sys.stderr)
             metrics = self.influxdb_repository.get_traffic_throughput_metrics_with_ener(device_ip, start_date, end_date,
-                                                                                 duration_str)
+                                                                                        duration_str)
             print("FINAL_MATRICSSSSSSSSSS", metrics, file=sys.stderr)
             data_metrics.extend(metrics)
 
@@ -489,8 +485,6 @@ class SiteService:
                 comparison_metrics[index].extend(metrics)
 
         return comparison_metrics
-
-
 
     def calculate_site_traffic_throughput_metrics(self, site_id: int) -> TrafficThroughputMetricsResponse:
         device_inventory_data = self.site_repository.get_device_inventory_by_site_id(site_id)
@@ -612,8 +606,6 @@ class SiteService:
         )
         return formatted_metric
 
-
-
     def get_energy_metrics_for_time(self, site_id: int, exact_time: datetime,
                                     granularity: str) -> HourlyEnergyMetricsResponse:
         device_inventory = self.site_repository.get_device_inventory_by_site_id(site_id)
@@ -680,6 +672,7 @@ class SiteService:
             # Aggregate power and traffic data and set them to site object
             if site.power_data:
                 power_utilization_values = [data['power_utilization'] for data in site.power_data]
+                Power_Input = [data['power_input'] for data in site.power_data]
                 total_power_utilization = sum(power_utilization_values)
                 average_power_utilization = total_power_utilization / len(
                     power_utilization_values) if power_utilization_values else 0
@@ -688,6 +681,7 @@ class SiteService:
                 pue_values = [data['pue'] for data in site.power_data]
                 average_pue = sum(pue_values) / len(pue_values) if pue_values else 0
                 site.pue = round(average_pue, 2)
+                site.power_input = round(sum(Power_Input), 2)
 
             if site.traffic_data:
                 traffic_throughput_values = [data['traffic_through'] for data in site.traffic_data]
@@ -696,6 +690,3 @@ class SiteService:
                 site.datatraffic = round(datatraffic, 2)
 
         return [SiteDetails_get(**site.__dict__) for site in sites]
-
-
-

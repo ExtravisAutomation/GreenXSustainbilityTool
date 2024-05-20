@@ -1433,6 +1433,8 @@ class InfluxDBRepository:
             '''
             try:
                 result = self.query_api1.query(query)
+                print(f"Debug: Results for {apic_ip} - {result}")
+
                 power_utilization = None
                 pue = None
                 total_supplied = 0
@@ -1440,6 +1442,8 @@ class InfluxDBRepository:
 
                 for table in result:
                     for record in table.records:
+                        print(
+                            f"Debug: Record - {record.get_field()}={record.get_value()}")  # More detailed debug output
                         if record.get_field() == "total_POut":
                             total_drawn += record.get_value()
                         elif record.get_field() == "total_PIn":
@@ -1452,7 +1456,7 @@ class InfluxDBRepository:
                 site_data.append({
                     "site_id": site_id,
                     "power_utilization": round(power_utilization, 2) if power_utilization is not None else 0,
-                    "power_input": round(total_supplied, 2),
+                    "power_input": round(total_supplied, 2) if total_supplied != 0 else None,
                     "pue": round(pue, 2) if pue is not None else 0
                 })
             except Exception as e:
