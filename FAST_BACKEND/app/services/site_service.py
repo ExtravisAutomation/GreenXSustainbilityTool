@@ -671,22 +671,34 @@ class SiteService:
 
             # Aggregate power and traffic data and set them to site object
             if site.power_data:
-                power_utilization_values = [data['power_utilization'] for data in site.power_data]
-                Power_Input = [data['power_input'] for data in site.power_data]
-                total_power_utilization = sum(power_utilization_values)
-                average_power_utilization = total_power_utilization / len(
-                    power_utilization_values) if power_utilization_values else 0
-                site.power_utilization = round(average_power_utilization, 2)
+                power_utilization_values = [data['power_utilization'] for data in site.power_data if
+                                            data['power_utilization'] is not None]
+                Power_Input = [data['power_input'] for data in site.power_data if data['power_input'] is not None]
+                pue_values = [data['pue'] for data in site.power_data if data['pue'] is not None]
 
-                pue_values = [data['pue'] for data in site.power_data]
-                average_pue = sum(pue_values) / len(pue_values) if pue_values else 0
-                site.pue = round(average_pue, 2)
-                site.power_input = round(sum(Power_Input), 2)
+                if power_utilization_values:
+                    total_power_utilization = sum(power_utilization_values)
+                    average_power_utilization = total_power_utilization / len(power_utilization_values)
+                    site.power_utilization = round(average_power_utilization, 2)
+
+                if pue_values:
+                    average_pue = sum(pue_values) / len(pue_values)
+                    site.pue = round(average_pue, 2)
+
+                if Power_Input:
+                    site.power_input = round(sum(Power_Input), 2)
+                else:
+                    site.power_input = 0  # Or set to None, depending on what you expect
 
             if site.traffic_data:
-                traffic_throughput_values = [data['traffic_through'] for data in site.traffic_data]
-                total_traffic_throughput = sum(traffic_throughput_values)
-                datatraffic = total_traffic_throughput / (1024 ** 3)  # Convert from bytes to GB
-                site.datatraffic = round(datatraffic, 2)
+                traffic_throughput_values = [data['traffic_through'] for data in site.traffic_data if
+                                             data['traffic_through'] is not None]
+                if traffic_throughput_values:
+                    total_traffic_throughput = sum(traffic_throughput_values)
+                    datatraffic = total_traffic_throughput / (1024 ** 3)  # Convert from bytes to GB
+                    site.datatraffic = round(datatraffic, 2)
+                else:
+                    site.datatraffic = 0  # Or set to None, depending on what you expect
 
         return [SiteDetails_get(**site.__dict__) for site in sites]
+
