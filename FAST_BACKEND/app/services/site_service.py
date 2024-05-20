@@ -683,18 +683,19 @@ class SiteService:
                 total_power_utilization = sum(power_utilization_values)
                 average_power_utilization = total_power_utilization / len(
                     power_utilization_values) if power_utilization_values else 0
-                site.power_utilization = average_power_utilization
+                site.power_utilization = round(average_power_utilization, 2)
 
                 pue_values = [data['pue'] for data in site.power_data]
                 average_pue = sum(pue_values) / len(pue_values) if pue_values else 0
-                site.pue = average_pue
+                site.pue = round(average_pue, 2)
 
             if site.traffic_data:
                 traffic_throughput_values = [data['traffic_through'] for data in site.traffic_data]
                 total_traffic_throughput = sum(traffic_throughput_values)
-                datatraffic = total_traffic_throughput / (1024 ** 3)
-                site.datatraffic = datatraffic
+                datatraffic = total_traffic_throughput / (1024 ** 3)  # Convert from bytes to GB
+                site.datatraffic = round(datatraffic, 2)
 
         return [SiteDetails_get(**site.__dict__) for site in sites]
+
 
 
