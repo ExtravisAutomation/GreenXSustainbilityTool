@@ -1600,7 +1600,7 @@ class InfluxDBRepository:
 
     def get_power_required(self, device_ips: List[str], site_id: int) -> List[dict]:
         power_required_data = []
-        start_range = "-2h"
+        start_range = "-24h"
         for ip in device_ips:
             # Query for Power Input and Output
             power_in_query = self.build_query(ip, "total_PIn", start_range)
