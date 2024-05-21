@@ -682,18 +682,26 @@ class SiteService:
                 power_input_values = [data['power_input'] for data in site.power_data if
                                       data['power_input'] is not None]
                 pue_values = [data['pue'] for data in site.power_data if data['pue'] is not None]
-
-                site.power_utilization = self.calculate_average(power_utilization_values)
-                site.power_input = sum(power_input_values) if power_input_values else 0
-                site.pue = self.calculate_average(pue_values)
+                total_power_util = sum(power_utilization_values) if power_utilization_values else 0
+                average_power_util = total_power_util / len(power_utilization_values) if power_utilization_values else 0
+                site.power_utilization = round(average_power_util, 2)
+                #site.power_utilization = self.calculate_average(power_utilization_values)
+                #site.power_input = sum(power_input_values) if power_input_values else 0
+                total_pue = sum(pue_values) if pue_values else 0
+                average_pue = total_pue / len(pue_values) if pue_values else 0
+                site.pue = round(average_pue, 2)
+                #site.pue = self.calculate_average(pue_values)
+                total_power_input = sum(power_input_values) if power_input_values else 0
+                site.power_input = round(total_power_input/1000, 2)
 
             # Aggregate traffic data
             if site.traffic_data:
                 traffic_throughput_values = [data['traffic_through'] for data in site.traffic_data if
                                              data['traffic_through'] is not None]
                 total_traffic_throughput = sum(traffic_throughput_values)
-                site.datatraffic = total_traffic_throughput / (1024 ** 3)  # Convert from bytes to GB
-
+                site.datatraffic = round(total_traffic_throughput / (1024 ** 3), 2)
+            else:
+                site.datatraffic = 0
         return [SiteDetails_get(**site.__dict__) for site in sites]
 
     def calculate_average(self, values):
