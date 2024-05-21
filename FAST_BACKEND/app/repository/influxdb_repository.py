@@ -1529,10 +1529,10 @@ class InfluxDBRepository:
 
         # Aggregating data as per hour
         aggregated_data = {}
-        now = datetime.datetime.utcnow()
+        now = datetime.utcnow()
 
         for i in range(24):
-            hour = (now - datetime.timedelta(hours=i)).strftime('%Y-%m-%d %H:00')
+            hour = (now - timedelta(hours=i)).strftime('%Y-%m-%d %H:00')
             aggregated_data[hour] = {
                 "total_power_utilization": 0,
                 "count": 0
