@@ -737,3 +737,16 @@ class SiteService:
                                        reverse=True)
         # Return the top 4
         return sorted_power_required[:4]
+
+    def calculate_co2_emission_by_id(self, site_id: int) -> List[dict]:
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        devices = devices[:4]  # Limit to the first 4 devices
+
+        # Extracting device details for emissions calculation
+        device_details = [{'ip_address': device.ip_address, 'device_name': device.device_name} for device in devices if
+                          device.ip_address]
+
+        if not device_details:
+            return []
+
+        return self.influxdb_repository.calculate_co2_emission(device_details, site_id)

@@ -591,7 +591,7 @@ def site_power_efficiency(site_id: int,
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/sites/sitePowerRequired/{site_id}")
+@router.post("/site/sitePowerRequired/{site_id}")
 @inject
 def site_power_required(site_id: int,
                         current_user: User = Depends(get_current_active_user),
@@ -599,5 +599,17 @@ def site_power_required(site_id: int,
     try:
         power_required = site_service.calculate_power_requirement_by_id(site_id)
         return power_required
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/sites/Co2emission/{site_id}")
+@inject
+def site_co2_emission(site_id: int,
+                      current_user: User = Depends(get_current_active_user),
+                      site_service: SiteService = Depends(Provide[Container.site_service])):
+    try:
+        co2_emission = site_service.calculate_co2_emission_by_id(site_id)
+        return co2_emission
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -1278,7 +1278,7 @@ class InfluxDBRepository:
             pout = row.get('total_POut', 1)  # Ensure pout isn't zero to avoid division by zero
 
             current_power = ((
-                                         pin / pout) - 1) * 100 if pout != 0 else 0  # Calculate current power based on your formula
+                                     pin / pout) - 1) * 100 if pout != 0 else 0  # Calculate current power based on your formula
 
             metric = {
                 "ip": row.get("ApicController_IP", "unknown_ip"),
@@ -1600,7 +1600,7 @@ class InfluxDBRepository:
 
     def get_power_required(self, device_ips: List[str], site_id: int) -> List[dict]:
         power_required_data = []
-        start_range = "-24h"
+        start_range = "-2h"
         for ip in device_ips:
             # Query for Power Input and Output
             power_in_query = self.build_query(ip, "total_PIn", start_range)
@@ -1636,3 +1636,25 @@ class InfluxDBRepository:
             for record in table.records:
                 return record.get_value()
         return None
+
+    def calculate_co2_emission(self, device_details: List[dict], site_id: int) -> List[dict]:
+        co2_emission_data = []
+
+        for device in device_details:
+            ip = device['ip_address']
+            device_name = device['device_name']
+
+            # Use some static data for demonstration
+            annual_electricity_usage_mwh = 10000
+            emission_factor_kg_per_mwh = 100
+            annual_co2_emissions_kg = annual_electricity_usage_mwh * emission_factor_kg_per_mwh
+            daily_co2_emissions_kg = annual_co2_emissions_kg / 365
+
+            co2_emission_data.append({
+                "site_id": site_id,
+                "apic_controller_ip": ip,
+                "apic_controller_name": device_name,
+                "co2emission": round(daily_co2_emissions_kg, 2)
+            })
+
+        return co2_emission_data
