@@ -525,7 +525,7 @@ def parse_time12(time_str: str):
     for fmt in ('%Y-%m-%d %H:%M', '%Y-%m-%d', '%Y-%m'):
         try:
             parsed_time = datetime.strptime(time_str, fmt)
-            if fmt == '%Y-%m-%d %H:%M':
+            if fmt == '%Y-%m-%d %H:00':
                 granularity = 'hourly'
             elif fmt == '%Y-%m-%d':
                 granularity = 'daily'
