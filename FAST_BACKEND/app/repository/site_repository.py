@@ -537,3 +537,12 @@ class SiteRepository(BaseRepository):
                 return result.ip_address, result.device_name
             else:
                 return None
+
+    def get_rack_and_device_counts(self, site_id: int) -> dict:
+        with self.session_factory() as session:
+            num_racks = session.query(func.count(Rack.id)).filter(Rack.site_id == site_id).scalar()
+            num_devices = session.query(func.count(APICControllers.id)).filter(APICControllers.site_id == site_id).scalar()
+            return {
+                "num_racks": num_racks or 0,
+                "num_devices": num_devices or 0
+            }

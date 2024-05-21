@@ -603,7 +603,7 @@ def site_power_required(site_id: int,
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/sites/Co2emission/{site_id}")
+@router.post("/site/Co2emission/{site_id}")
 @inject
 def site_co2_emission(site_id: int,
                       current_user: User = Depends(get_current_active_user),

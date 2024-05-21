@@ -662,45 +662,42 @@ class SiteService:
     def get_extended_sites(self) -> List[SiteDetails_get]:
         sites = self.site_repository.get_all_sites()
         for site in sites:
+            # Fetch device inventory and count racks and devices
             device_inventory = self.site_repository.get_device_inventory_by_site_id(site.id)
             apic_ips = [device['ip_address'] for device in device_inventory if device['ip_address']]
+
+            # Fetch the number of racks and devices
+            counts = self.site_repository.get_rack_and_device_counts(site.id)
+            site.num_racks = counts['num_racks']
+            site.num_devices = counts['num_devices']
 
             # Fetch power and traffic data from InfluxDB using the ips
             site.power_data = self.influxdb_repository.get_24hsite_power(apic_ips, site.id)
             site.traffic_data = self.influxdb_repository.get_24hsite_datatraffic(apic_ips, site.id)
 
-            # Aggregate power and traffic data and set them to site object
+            # Aggregate power data
             if site.power_data:
                 power_utilization_values = [data['power_utilization'] for data in site.power_data if
                                             data['power_utilization'] is not None]
-                Power_Input = [data['power_input'] for data in site.power_data if data['power_input'] is not None]
+                power_input_values = [data['power_input'] for data in site.power_data if
+                                      data['power_input'] is not None]
                 pue_values = [data['pue'] for data in site.power_data if data['pue'] is not None]
 
-                if power_utilization_values:
-                    total_power_utilization = sum(power_utilization_values)
-                    average_power_utilization = total_power_utilization / len(power_utilization_values)
-                    site.power_utilization = round(average_power_utilization, 2)
+                site.power_utilization = self.calculate_average(power_utilization_values)
+                site.power_input = sum(power_input_values) if power_input_values else 0
+                site.pue = self.calculate_average(pue_values)
 
-                if pue_values:
-                    average_pue = sum(pue_values) / len(pue_values)
-                    site.pue = round(average_pue, 2)
-
-                if Power_Input:
-                    site.power_input = round(sum(Power_Input), 2)
-                else:
-                    site.power_input = 0  # Or set to None, depending on what you expect
-
+            # Aggregate traffic data
             if site.traffic_data:
                 traffic_throughput_values = [data['traffic_through'] for data in site.traffic_data if
                                              data['traffic_through'] is not None]
-                if traffic_throughput_values:
-                    total_traffic_throughput = sum(traffic_throughput_values)
-                    datatraffic = total_traffic_throughput / (1024 ** 3)  # Convert from bytes to GB
-                    site.datatraffic = round(datatraffic, 2)
-                else:
-                    site.datatraffic = 0  # Or set to None, depending on what you expect
+                total_traffic_throughput = sum(traffic_throughput_values)
+                site.datatraffic = total_traffic_throughput / (1024 ** 3)  # Convert from bytes to GB
 
         return [SiteDetails_get(**site.__dict__) for site in sites]
+
+    def calculate_average(self, values):
+        return round(sum(values) / len(values), 2) if values else 0
 
     def calculate_power_utilization_by_id(self, site_id: int) -> List[dict]:
         devices = self.site_repository.get_devices_by_site_id(site_id)

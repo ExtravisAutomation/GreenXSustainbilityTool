@@ -36,6 +36,9 @@ class SiteDetails_get(SiteBase):
     power_input: Optional[float] = None
     pue: Optional[float] = None
     datatraffic: Optional[float] = None
+    num_racks: Optional[int] = None
+    num_devices: Optional[int] = None
+
 
 
 class SiteUpdate(BaseModel):
