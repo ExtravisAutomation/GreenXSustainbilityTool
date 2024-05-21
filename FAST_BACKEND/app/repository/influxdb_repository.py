@@ -1348,6 +1348,7 @@ class InfluxDBRepository:
               file=sys.stderr)  # Debug print for query setup
 
         for ip in device_ips:
+            print("IP QQQQ", ip, file=sys.stderr)
             query = f'''
                            from(bucket: "{configs.INFLUXDB_BUCKET}")
                            |> range(start: {start_time}, stop: {end_time})
@@ -1357,6 +1358,7 @@ class InfluxDBRepository:
                            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
                        '''
             result = self.query_api1.query_data_frame(query)
+            print("resultttttttttttttttttt", result, file=sys.stderr)
 
             if result.empty:
                 print(f"No data found for {ip}. Skipping data generation.", file=sys.stderr)  # Debug print when no data
@@ -1487,20 +1489,19 @@ class InfluxDBRepository:
             '''
             try:
                 result = self.query_api1.query(query)
-                global byterate
-                byterate = None
+                total_byterate = 0
 
                 for table in result:
                     for record in table.records:
                         if record.get_field() == "total_bytesRateLast":
-                            byterate = record.get_value()
+                            total_byterate = record.get_value()
                         else:
-                            byterate = 0
-                            t += byterate
+                            total_byterate = 0
+                            t += total_byterate
 
                 site_data.append({
                     "site_id": site_id,
-                    "traffic_through": t
+                    "traffic_through": total_byterate
                 })
             except Exception as e:
                 print(f"Error querying InfluxDB for {apic_ip}: {e}")
