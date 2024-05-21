@@ -711,3 +711,14 @@ class SiteService:
 
         return self.influxdb_repository.get_power_utilization_metrics(device_ips, site_id)
 
+    def calculate_power_efficiency_by_id(self, site_id: int) -> List[dict]:
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        if not device_ips:
+            return []
+
+        power_efficiency = self.influxdb_repository.get_power_efficiency(device_ips, site_id)
+        # Sort and limit to top 4 most efficient readings
+        sorted_efficiency = sorted(power_efficiency, key=lambda x: x['power_efficiency'], reverse=True)[:4]
+        return sorted_efficiency

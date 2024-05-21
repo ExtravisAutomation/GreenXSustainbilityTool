@@ -577,3 +577,16 @@ def site_power_utilization(site_id: int,
         return power_metrix
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@router.post("/site/sitePowerEfficiency/{site_id}")
+@inject
+def site_power_efficiency(site_id: int,
+                          current_user: User = Depends(get_current_active_user),
+                          site_service: SiteService = Depends(Provide[Container.site_service])):
+    try:
+        efficiency_data = site_service.calculate_power_efficiency_by_id(site_id)
+        return efficiency_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

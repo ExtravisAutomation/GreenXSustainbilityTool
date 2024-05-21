@@ -1566,3 +1566,34 @@ class InfluxDBRepository:
         final_data.sort(key=lambda x: x["hour"], reverse=True)
 
         return final_data
+
+    def get_power_efficiency(self, device_ips: List[str], site_id: int) -> List[dict]:
+        power_efficiency_data = []
+        start_range = "-2h"
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "Dcs_db")
+                |> range(start: {start_range})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> sort(columns: ["_time"], desc: true)
+                |> last()
+                |> yield(name: "last_result")
+                '''
+            result = query_api1.query(query)
+            PowerIn, PowerOut = None, None
+            for table in result:
+                for record in table.records:
+                    if record.get_field() == "total_PIn":
+                        PowerIn = record.get_value()
+                    elif record.get_field() == "total_POut":
+                        PowerOut = record.get_value()
+
+                    if PowerIn and PowerOut and PowerIn > 0:
+                        power_efficiency = (PowerOut / PowerIn) * 100
+                        power_efficiency_data.append({
+                            "site_id": site_id,
+                            "apic_controller_ip": ip,
+                            "PowerInput": PowerIn,
+                            "power_efficiency": round(power_efficiency, 2)
+                        })
+        return power_efficiency_data
