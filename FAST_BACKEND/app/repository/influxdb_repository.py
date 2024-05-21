@@ -1579,7 +1579,7 @@ class InfluxDBRepository:
                 |> last()
                 |> yield(name: "last_result")
                 '''
-            result = query_api1.query(query)
+            result = self.query_api1.query(query)
             PowerIn, PowerOut = None, None
             for table in result:
                 for record in table.records:
