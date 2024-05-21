@@ -1597,3 +1597,42 @@ class InfluxDBRepository:
                             "power_efficiency": round(power_efficiency, 2)
                         })
         return power_efficiency_data
+
+    def get_power_required(self, device_ips: List[str], site_id: int) -> List[dict]:
+        power_required_data = []
+        start_range = "-2h"
+        for ip in device_ips:
+            # Query for Power Input and Output
+            power_in_query = self.build_query(ip, "total_PIn", start_range)
+            power_out_query = self.build_query(ip, "total_POut", start_range)
+            total_power_query = self.build_query(ip, "total_Power", start_range)
+
+            PowerIn = self.query_last_value(power_in_query)
+            PowerOut = self.query_last_value(power_out_query)
+            TotalPower = self.query_last_value(total_power_query)
+
+            power_required_data.append({
+                "site_id": site_id,
+                "apic_controller_ip": ip,
+                "PowerInput": PowerIn,
+                "TotalPower": TotalPower,
+            })
+
+        return power_required_data
+
+    def build_query(self, ip, field, range_start):
+        return f'''
+            from(bucket: "Dcs_db")
+            |> range(start: {range_start})
+            |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+            |> filter(fn: (r) => r["_field"] == "{field}")
+            |> sort(columns: ["_time"], desc: true)
+            |> last()
+        '''
+
+    def query_last_value(self, query):
+        result = self.query_api1.query(query)
+        for table in result:
+            for record in table.records:
+                return record.get_value()
+        return None

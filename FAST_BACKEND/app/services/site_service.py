@@ -722,3 +722,18 @@ class SiteService:
         # Sort and limit to top 4 most efficient readings
         sorted_efficiency = sorted(power_efficiency, key=lambda x: x['power_efficiency'], reverse=True)[:4]
         return sorted_efficiency
+
+    def calculate_power_requirement_by_id(self, site_id: int) -> List[dict]:
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        if not device_ips:
+            return []
+
+        power_required_data = self.influxdb_repository.get_power_required(device_ips, site_id)
+        # Sort data based on 'TotalPower' descending, handle None values with float('-inf')
+        sorted_power_required = sorted(power_required_data,
+                                       key=lambda x: x['TotalPower'] if x['TotalPower'] is not None else float('-inf'),
+                                       reverse=True)
+        # Return the top 4
+        return sorted_power_required[:4]
