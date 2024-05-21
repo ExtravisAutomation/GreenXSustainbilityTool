@@ -1428,8 +1428,8 @@ class InfluxDBRepository:
                 |> range(start: {start_range})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
                 |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
-                |> group(columns: ["_field"])
                 |> sum()
+                |> yield(name: "total_sum") 
             '''
             try:
                 result = self.query_api1.query(query)
@@ -1439,19 +1439,25 @@ class InfluxDBRepository:
                 pue = None
                 total_supplied = 0
                 total_drawn = 0
+                drawnAvg, suppliedAvg = None, None
 
                 for table in result:
                     for record in table.records:
                         print(
                             f"Debug: Record - {record.get_field()}={record.get_value()}")  # More detailed debug output
                         if record.get_field() == "total_POut":
-                            total_drawn += record.get_value()
+                            drawnAvg = record.get_value()
                         elif record.get_field() == "total_PIn":
-                            total_supplied += record.get_value()
+                            suppliedAvg = record.get_value()
+
+                        if drawnAvg is not None and suppliedAvg is not None:
+                            total_drawn += drawnAvg
+                            total_supplied += suppliedAvg
 
                 if total_supplied > 0:
                     power_utilization = (total_drawn / total_supplied) * 100
-                    pue = ((total_supplied / total_drawn) - 1) * 100 if total_drawn > 0 else None
+                if total_drawn > 0:
+                    pue = ((total_supplied / total_drawn) - 1) * 100
 
                 site_data.append({
                     "site_id": site_id,
@@ -1477,19 +1483,24 @@ class InfluxDBRepository:
                 |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic")
                 |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
                 |> sum()
+                |> yield(name: "total_sum")
             '''
             try:
                 result = self.query_api1.query(query)
-                total_byterate = 0
+                global byterate
+                byterate = None
 
                 for table in result:
                     for record in table.records:
                         if record.get_field() == "total_bytesRateLast":
-                            total_byterate += record.get_value()
+                            byterate = record.get_value()
+                        else:
+                            byterate = 0
+                            t += byterate
 
                 site_data.append({
                     "site_id": site_id,
-                    "traffic_through": total_byterate
+                    "traffic_through": t
                 })
             except Exception as e:
                 print(f"Error querying InfluxDB for {apic_ip}: {e}")
