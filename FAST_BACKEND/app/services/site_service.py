@@ -702,3 +702,12 @@ class SiteService:
 
         return [SiteDetails_get(**site.__dict__) for site in sites]
 
+    def calculate_power_utilization_by_id(self, site_id: int) -> List[dict]:
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        if not device_ips:
+            return []
+
+        return self.influxdb_repository.get_power_utilization_metrics(device_ips, site_id)
+

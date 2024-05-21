@@ -1495,3 +1495,32 @@ class InfluxDBRepository:
                 print(f"Error querying InfluxDB for {apic_ip}: {e}")
 
         return site_data
+
+    def get_power_utilization_metrics(self, device_ips: List[str], site_id: int) -> List[dict]:
+        total_power_metrics = []
+        start_range = "-24h"
+
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "Dcs_db")
+                |> range(start: {start_range})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+            result = self.query_api1.query(query)
+            for table in result:
+                for record in table.records:
+                    hour = record.get_time().strftime('%Y-%m-%d %H:00')
+                    power_utilization = 0  # Default to 0 to avoid division by zero
+                    if record.values.get('total_PIn', 0) > 0:
+                        power_utilization = (record.values.get('total_POut', 0) / record.values.get('total_PIn',
+                                                                                                    1)) * 100
+
+                    total_power_metrics.append({
+                        "Site_id": site_id,
+                        "hour": hour,
+                        "power_utilization": round(power_utilization, 2)
+                    })
+
+        return total_power_metrics

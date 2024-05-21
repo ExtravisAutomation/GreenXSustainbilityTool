@@ -178,6 +178,7 @@ def read_eol_eos_counts(site_id: int,
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/site/hardware_life_cycle_WITH_FILTER/{site_id}", response_model=dict[str, int])
 @inject
 def read_eol_eos_counts(site_id: int,
@@ -190,7 +191,6 @@ def read_eol_eos_counts(site_id: int,
         return eol_eos_counts
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 
 @router.get("/site/top_devices_power_cost/{site_id}", response_model=TopDevicesPowerResponse)
@@ -330,8 +330,9 @@ def get_energy_consumption_metrics(
                        "demonstrating excellent performance and optimal operation of the hardware. ")
 
         if power_efficiency > 20:
-            message += (f"However, a high power efficiency of {power_efficiency}% at this time suggests potential problems with power usage effectiveness, "
-                        "warranting further checks.")
+            message += (
+                f"However, a high power efficiency of {power_efficiency}% at this time suggests potential problems with power usage effectiveness, "
+                "warranting further checks.")
             issue_detected1 = True
         elif power_efficiency <= 20 and power_efficiency > 0:
             message += f" Power usage effectiveness is low which is ideal and indicates positive performance."
@@ -429,6 +430,7 @@ def get_device_data_metrics(
         status_code=status.HTTP_200_OK
     )
 
+
 @router.get("/site/device_specific_comparison_WITH_FILTER/{site_id}",
             response_model=CustomResponse1[List[List[ComparisonDeviceMetricsDetails]]])
 @inject
@@ -453,6 +455,7 @@ def compare_two_devices_metrics(
         data=metrics,
         status_code=status.HTTP_200_OK
     )
+
 
 @router.get("/site/device_traffic_comparison_WITH_FILTER/{site_id}",
             response_model=CustomResponse1[List[List[ComparisonTrafficMetricsDetails]]])
@@ -552,7 +555,7 @@ def get_detailed_energy_metrics(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/getallsites", response_model=CustomResponse1[GetSitesResponse])
+@router.get("/site/getallsites", response_model=CustomResponse1[GetSitesResponse])
 @inject
 def get_sites(current_user: User = Depends(get_current_active_user),
               site_service: SiteService = Depends(Provide[Container.site_service])):
@@ -562,3 +565,15 @@ def get_sites(current_user: User = Depends(get_current_active_user),
         data=sites,
         status_code=status.HTTP_200_OK
     )
+
+
+@router.post("/site/sitePowerUtilization/{site_id}")
+@inject
+def site_power_utilization(site_id: int,
+                           current_user: User = Depends(get_current_active_user),
+                           site_service: SiteService = Depends(Provide[Container.site_service])):
+    try:
+        power_metrix = site_service.calculate_power_utilization_by_id(site_id)
+        return power_metrix
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
