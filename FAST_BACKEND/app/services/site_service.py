@@ -764,12 +764,12 @@ class SiteService:
         total_pin_value = self.influxdb_repository.get_total_pin_value(device_ips, start_date, end_date, duration_str)
         consumption_percentages = self.influxdb_repository.get_consumption_percentages(start_date, end_date,
                                                                                        duration_str)
-
+        total_pin_value_KW = total_pin_value / 1000
         # Calculate the kW values from the percentages and total PIn value
-        totalpin_kws = {field: round((percentage / 100) * total_pin_value, 2) for field, percentage in
+        totalpin_kws = {field: round((percentage / 100) * total_pin_value_KW, 2) for field, percentage in
                         consumption_percentages.items()}
 
-        return total_pin_value, consumption_percentages, totalpin_kws
+        return total_pin_value_KW, consumption_percentages, totalpin_kws
 
     def calculate_carbon_emission(self, site_id: int, duration_str: str) -> (float, float):
         start_date, end_date = self.calculate_start_end_dates(duration_str)
