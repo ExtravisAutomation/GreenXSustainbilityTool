@@ -781,6 +781,7 @@ class SiteService:
 
         # Calculate carbon emissions
         carbon_emission = int(total_pin_value) * float(carbon_intensity)
+        print("Emissionsssssssss", carbon_emission, file=sys.stderr)
 
         return int(total_pin_value), carbon_emission
 
