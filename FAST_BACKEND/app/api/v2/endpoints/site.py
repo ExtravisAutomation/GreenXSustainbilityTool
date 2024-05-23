@@ -615,7 +615,7 @@ def site_co2_emission(site_id: int,
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/sites/electricity_map_piechart/{site_id}")
+@router.get("/sites/electricity_map_piechart/{site_id}", response_model=CustomResponse[dict])
 @inject
 def get_total_power_consumption(
         site_id: int,
@@ -624,5 +624,9 @@ def get_total_power_consumption(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     duration = duration or "24 hours"
-    percent = site_service.calculate_total_power_consumption(site_id, duration)
-    return percent
+    pin_value, consumption_percentages = site_service.calculate_total_power_consumption(site_id, duration)
+    return CustomResponse(
+        message="Energy and power consumption metrics retrieved successfully.",
+        data={"total_PIn": pin_value, "consumption_percentages": consumption_percentages},
+        status_code=200
+    )
