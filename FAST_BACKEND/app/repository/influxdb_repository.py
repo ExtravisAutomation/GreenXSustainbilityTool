@@ -1728,35 +1728,48 @@ class InfluxDBRepository:
     #
     #     return percentages
 
-    def get_consumption_percentages(self, start_date: datetime, end_date: datetime,
-                                    duration_str: str) -> dict:
+    def get_consumption_percentages(self, start_date: datetime, end_date: datetime, duration_str: str) -> dict:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
         aggregate_window = "1h" if duration_str == "24 hours" else "1d"
+        zone = "AE"
 
         fields = [
-            "nuclear_consumption", "geothermal_consumption", "biomass_consumption",
-            "coal_consumption", "wind_consumption", "solar_consumption",
-            "hydro_consumption", "gas_consumption", "oil_consumption",
-            "unknown_consumption", "battery_discharge_consumption"
+            "nuclear", "geothermal", "biomass", "coal", "wind", "solar",
+            "hydro", "gas", "oil", "unknown", "battery_discharge"
         ]
 
         # Initialize the consumption totals dictionary.
         consumption_totals = {field: 0 for field in fields}
-        zone = "AE"
-        # Construct the query for each energy consumption field.
-        for field in fields:
-            query = f'''
-                from(bucket: "{configs.INFLUXDB_BUCKET}")
-                |> range(start: {start_time}, stop: {end_time})
-                |> filter(fn: (r) => r["_measurement"] == "electricitymap_power" and r["zone"] == "{zone}")
-                |> filter(fn: (r) => r["_field"] == "{field}_consumption")
-                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
-            '''
-            result = self.query_api1.query_data_frame(query)
-            print("resultttttttttttttttttt", result , file=sys.stderr)
-            if not result.empty:
-                consumption_totals[field] = result['_value'].sum()
+
+        # Construct the query for all energy consumption fields and execute it.
+        query = f'''
+            from(bucket: "Dcs_db")
+            |> range(start: {start_time}, stop: {end_time})
+            |> filter(fn: (r) => r["_measurement"] == "electricitymap_power")
+            |> filter(fn: (r) => r["zone"] == "{zone}")
+            |> filter(fn: (r) => 
+                r["_field"] == "nuclear_consumption" or
+                r["_field"] == "geothermal_consumption" or
+                r["_field"] == "biomass_consumption" or
+                r["_field"] == "coal_consumption" or
+                r["_field"] == "wind_consumption" or
+                r["_field"] == "solar_consumption" or
+                r["_field"] == "hydro_consumption" or
+                r["_field"] == "gas_consumption" or
+                r["_field"] == "oil_consumption" or
+                r["_field"] == "unknown_consumption" or
+                r["_field"] == "battery_discharge_consumption")
+            |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+            |> sum()  // Sum the total consumption for each field over the selected range
+        '''
+        result = self.query_api1.query_data_frame(query)
+        if not result.empty:
+            # Extract the sums from the query result and calculate total power consumption
+            for field in fields:
+                field_name = f"{field}_consumption"
+                if field_name in result.columns:
+                    consumption_totals[field] = result[field_name].iloc[0]
 
         # Calculate the total power consumption from the retrieved data.
         powerConsumptionTotal = sum(consumption_totals.values())
@@ -1766,3 +1779,4 @@ class InfluxDBRepository:
                        for field, value in consumption_totals.items()}
 
         return percentages
+
