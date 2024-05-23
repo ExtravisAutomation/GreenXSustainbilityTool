@@ -1734,13 +1734,6 @@ class InfluxDBRepository:
         aggregate_window = "1h" if duration_str == "24 hours" else "1d"
         zone = "AE"
 
-        # Initialize the consumption totals dictionary with specific fields.
-        consumption_totals = {
-            "nuclear": 0, "geothermal": 0, "biomass": 0, "coal": 0, "wind": 0,
-            "solar": 0, "hydro": 0, "gas": 0, "oil": 0, "unknown": 0, "battery_discharge": 0
-        }
-
-        # Construct the query for all energy consumption fields and execute it.
         query = f'''
             from(bucket: "Dcs_db")
             |> range(start: {start_time}, stop: {end_time})
@@ -1758,15 +1751,23 @@ class InfluxDBRepository:
                 r["_field"] == "unknown_consumption" or 
                 r["_field"] == "battery_discharge_consumption")
             |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
-            |> sum()  // Sum the total consumption for each field over the selected range
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
         result = self.query_api1.query_data_frame(query)
+        print("RESULT", result, file=sys.stderr)
+
+        # Initialize the consumption totals dictionary with specific fields.
+        consumption_totals = {
+            "nuclear": 0, "geothermal": 0, "biomass": 0, "coal": 0, "wind": 0,
+            "solar": 0, "hydro": 0, "gas": 0, "oil": 0, "unknown": 0, "battery_discharge": 0
+        }
+
         if not result.empty:
-            # Extract the sums from the query result and calculate total power consumption
+            # Extract the sums from the query result for each field.
             for field in consumption_totals.keys():
                 field_name = f"{field}_consumption"
                 if field_name in result.columns:
-                    consumption_totals[field] = result[field_name].iloc[0]
+                    consumption_totals[field] = result[field_name].sum()
 
         # Calculate the total power consumption from the retrieved data.
         powerConsumptionTotal = sum(consumption_totals.values())
