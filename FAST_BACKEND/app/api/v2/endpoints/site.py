@@ -630,3 +630,20 @@ def get_total_power_consumption(
         data={"total_PIn": pin_value, "consumption_percentages": consumption_percentages, "totalpin_kws": totalpin_kws},
         status_code=200
     )
+
+
+@router.get("/sites/carbon_emission_details/{site_id}", response_model=CustomResponse[dict])
+@inject
+def get_carbon_emission_metrics(
+        site_id: int,
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+    pin_value, carbon_emission = site_service.calculate_carbon_emission(site_id, duration)
+    return CustomResponse(
+        message="Carbon emission metrics retrieved successfully.",
+        data={"total_PIn": pin_value, "carbon_emission": carbon_emission},
+        status_code=200
+    )

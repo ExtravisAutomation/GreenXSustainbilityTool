@@ -770,3 +770,17 @@ class SiteService:
                         consumption_percentages.items()}
 
         return total_pin_value, consumption_percentages, totalpin_kws
+
+    def calculate_carbon_emission(self, site_id: int, duration_str: str) -> (float, float):
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        total_pin_value = self.influxdb_repository.get_total_pin_value(device_ips, start_date, end_date, duration_str)
+        carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
+
+        # Calculate carbon emissions
+        carbon_emission = total_pin_value * carbon_intensity
+
+        return total_pin_value, carbon_emission
+
