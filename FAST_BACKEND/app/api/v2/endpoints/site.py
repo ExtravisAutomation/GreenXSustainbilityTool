@@ -613,3 +613,16 @@ def site_co2_emission(site_id: int,
         return co2_emission
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/sites/electricity_map_piechart/{site_id}")
+@inject
+def get_total_power_consumption(
+        site_id: int,
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+    percent = site_service.calculate_total_power_consumption(site_id, duration)
+    return percent

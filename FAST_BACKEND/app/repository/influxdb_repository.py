@@ -1670,3 +1670,98 @@ class InfluxDBRepository:
             })
 
         return co2_emission_data
+
+    def get_total_pin_value(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+                            duration_str: str) -> float:
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+        aggregate_window = "1h" if duration_str == "24 hours" else "1d"
+
+        total_pin = 0
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_PIn")
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+            '''
+            result = self.query_api1.query_data_frame(query)
+            if not result.empty:
+                total_pin += result['_value'].sum()
+
+        return total_pin
+
+    # def get_consumption_percentages(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+    #                                 duration_str: str) -> dict:
+    #     start_time = start_date.isoformat() + 'Z'
+    #     end_time = end_date.isoformat() + 'Z'
+    #     aggregate_window = "1h" if duration_str == "24 hours" else "1d"
+    #
+    #     fields = [
+    #         "nuclear_consumption", "geothermal_consumption", "biomass_consumption",
+    #         "coal_consumption", "wind_consumption", "solar_consumption",
+    #         "hydro_consumption", "gas_consumption", "oil_consumption",
+    #         "unknown_consumption", "battery_discharge_consumption"
+    #     ]
+    #     consumption_totals = {field: 0 for field in fields}
+    #
+    #     for ip in device_ips:
+    #         for field in fields:
+    #             query = f'''
+    #                 from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #                 |> range(start: {start_time}, stop: {end_time})
+    #                 |> filter(fn: (r) => r["_measurement"] == "electricitymap_power" and r["ApicController_IP"] == "{ip}")
+    #                 |> filter(fn: (r) => r["_field"] == "{field}")
+    #                 |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+    #             '''
+    #             result = self.query_api1.query_data_frame(query)
+    #             if not result.empty:
+    #                 consumption_totals[field] += result['_value'].sum()
+    #
+    #     # Calculate total power consumption
+    #     powerConsumptionTotal = sum(consumption_totals.values())
+    #
+    #     # Calculate percentages
+    #     percentages = {field: round((value / powerConsumptionTotal) * 100, 2) if powerConsumptionTotal > 0 else 0 for
+    #                    field, value in consumption_totals.items()}
+    #
+    #     return percentages
+
+    def get_consumption_percentages(self, start_date: datetime, end_date: datetime,
+                                    duration_str: str) -> dict:
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+        aggregate_window = "1h" if duration_str == "24 hours" else "1d"
+
+        fields = [
+            "nuclear_consumption", "geothermal_consumption", "biomass_consumption",
+            "coal_consumption", "wind_consumption", "solar_consumption",
+            "hydro_consumption", "gas_consumption", "oil_consumption",
+            "unknown_consumption", "battery_discharge_consumption"
+        ]
+
+        # Initialize the consumption totals dictionary.
+        consumption_totals = {field: 0 for field in fields}
+        zone = "AE"
+        # Construct the query for each energy consumption field.
+        for field in fields:
+            query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "electricitymap_power" and r["zone"] == "{zone}")
+                |> filter(fn: (r) => r["_field"] == "{field}_consumption")
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+            '''
+            result = self.query_api1.query_data_frame(query)
+            if not result.empty:
+                consumption_totals[field] = result['_value'].sum()
+
+        # Calculate the total power consumption from the retrieved data.
+        powerConsumptionTotal = sum(consumption_totals.values())
+
+        # Compute the percentage of total power consumption for each field.
+        percentages = {field: round((value / powerConsumptionTotal) * 100, 2) if powerConsumptionTotal > 0 else 0
+                       for field, value in consumption_totals.items()}
+
+        return percentages
