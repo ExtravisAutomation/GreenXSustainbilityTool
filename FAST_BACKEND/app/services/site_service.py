@@ -685,14 +685,14 @@ class SiteService:
                 total_power_util = sum(power_utilization_values) if power_utilization_values else 0
                 average_power_util = total_power_util / len(power_utilization_values) if power_utilization_values else 0
                 site.power_utilization = round(average_power_util, 2)
-                #site.power_utilization = self.calculate_average(power_utilization_values)
-                #site.power_input = sum(power_input_values) if power_input_values else 0
+                # site.power_utilization = self.calculate_average(power_utilization_values)
+                # site.power_input = sum(power_input_values) if power_input_values else 0
                 total_pue = sum(pue_values) if pue_values else 0
                 average_pue = total_pue / len(pue_values) if pue_values else 0
                 site.pue = round(average_pue, 2)
-                #site.pue = self.calculate_average(pue_values)
+                # site.pue = self.calculate_average(pue_values)
                 total_power_input = sum(power_input_values) if power_input_values else 0
-                site.power_input = round(total_power_input/1000, 2)
+                site.power_input = round(total_power_input / 1000, 2)
 
             # Aggregate traffic data
             if site.traffic_data:
@@ -781,7 +781,8 @@ class SiteService:
 
         # Calculate carbon emissions
         carbon_emission = int(total_pin_value) * float(carbon_intensity)
-        print("Emissionsssssssss", carbon_emission, file=sys.stderr)
+        carbon_emission_KG = carbon_emission / 1000
+        print("Emissionsssssssss", carbon_emission_KG, file=sys.stderr)
+        total_pin_value_KW = total_pin_value / 1000
 
-        return int(total_pin_value), carbon_emission
-
+        return float(total_pin_value_KW), carbon_emission_KG
