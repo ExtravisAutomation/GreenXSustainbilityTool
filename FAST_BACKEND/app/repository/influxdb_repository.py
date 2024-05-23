@@ -1754,6 +1754,7 @@ class InfluxDBRepository:
                 |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
             '''
             result = self.query_api1.query_data_frame(query)
+            print("resultttttttttttttttttt", result , file=sys.stderr)
             if not result.empty:
                 consumption_totals[field] = result['_value'].sum()
 
