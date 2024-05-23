@@ -1734,40 +1734,36 @@ class InfluxDBRepository:
         aggregate_window = "1h" if duration_str == "24 hours" else "1d"
         zone = "AE"
 
-        # fields = [
-        #     "nuclear", "geothermal", "biomass", "coal", "wind", "solar",
-        #     "hydro", "gas", "oil", "unknown", "battery_discharge"
-        # ]
-
-        # Initialize the consumption totals dictionary.
-        consumption_totals = {field: 0 for field in fields}
+        # Initialize the consumption totals dictionary with specific fields.
+        consumption_totals = {
+            "nuclear": 0, "geothermal": 0, "biomass": 0, "coal": 0, "wind": 0,
+            "solar": 0, "hydro": 0, "gas": 0, "oil": 0, "unknown": 0, "battery_discharge": 0
+        }
 
         # Construct the query for all energy consumption fields and execute it.
         query = f'''
             from(bucket: "Dcs_db")
             |> range(start: {start_time}, stop: {end_time})
-            |> filter(fn: (r) => r["_measurement"] == "electricitymap_power")
-            |> filter(fn: (r) => r["zone"] == "{zone}")
+            |> filter(fn: (r) => r["_measurement"] == "electricitymap_power" and r["zone"] == "{zone}")
             |> filter(fn: (r) => 
-                r["_field"] == "nuclear_consumption" 
-                r["_field"] == "geothermal_consumption" 
-                r["_field"] == "biomass_consumption" 
-                r["_field"] == "coal_consumption" 
-                r["_field"] == "wind_consumption" 
-                r["_field"] == "solar_consumption" 
-                r["_field"] == "hydro_consumption" 
-                r["_field"] == "gas_consumption" 
-                r["_field"] == "oil_consumption" 
-                r["_field"] == "unknown_consumption" 
+                r["_field"] == "nuclear_consumption" or 
+                r["_field"] == "geothermal_consumption" or 
+                r["_field"] == "biomass_consumption" or 
+                r["_field"] == "coal_consumption" or 
+                r["_field"] == "wind_consumption" or 
+                r["_field"] == "solar_consumption" or 
+                r["_field"] == "hydro_consumption" or 
+                r["_field"] == "gas_consumption" or 
+                r["_field"] == "oil_consumption" or 
+                r["_field"] == "unknown_consumption" or 
                 r["_field"] == "battery_discharge_consumption")
             |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
             |> sum()  // Sum the total consumption for each field over the selected range
         '''
         result = self.query_api1.query_data_frame(query)
-        print("RESULTTTTT", result)
         if not result.empty:
             # Extract the sums from the query result and calculate total power consumption
-            for field in fields:
+            for field in consumption_totals.keys():
                 field_name = f"{field}_consumption"
                 if field_name in result.columns:
                     consumption_totals[field] = result[field_name].iloc[0]
@@ -1780,4 +1776,5 @@ class InfluxDBRepository:
                        for field, value in consumption_totals.items()}
 
         return percentages
+
 
