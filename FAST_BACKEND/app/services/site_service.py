@@ -780,7 +780,7 @@ class SiteService:
         carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
 
         # Calculate carbon emissions
-        carbon_emission = total_pin_value * carbon_intensity
+        carbon_emission = int(total_pin_value) * float(carbon_intensity)
 
-        return total_pin_value, carbon_emission
+        return int(total_pin_value), carbon_emission
 
