@@ -1764,6 +1764,7 @@ class InfluxDBRepository:
             |> sum()  // Sum the total consumption for each field over the selected range
         '''
         result = self.query_api1.query_data_frame(query)
+        print("RESULTTTTT", result)
         if not result.empty:
             # Extract the sums from the query result and calculate total power consumption
             for field in fields:
