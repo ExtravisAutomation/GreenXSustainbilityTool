@@ -1734,10 +1734,10 @@ class InfluxDBRepository:
         aggregate_window = "1h" if duration_str == "24 hours" else "1d"
         zone = "AE"
 
-        fields = [
-            "nuclear", "geothermal", "biomass", "coal", "wind", "solar",
-            "hydro", "gas", "oil", "unknown", "battery_discharge"
-        ]
+        # fields = [
+        #     "nuclear", "geothermal", "biomass", "coal", "wind", "solar",
+        #     "hydro", "gas", "oil", "unknown", "battery_discharge"
+        # ]
 
         # Initialize the consumption totals dictionary.
         consumption_totals = {field: 0 for field in fields}
@@ -1749,16 +1749,16 @@ class InfluxDBRepository:
             |> filter(fn: (r) => r["_measurement"] == "electricitymap_power")
             |> filter(fn: (r) => r["zone"] == "{zone}")
             |> filter(fn: (r) => 
-                r["_field"] == "nuclear_consumption" or
-                r["_field"] == "geothermal_consumption" or
-                r["_field"] == "biomass_consumption" or
-                r["_field"] == "coal_consumption" or
-                r["_field"] == "wind_consumption" or
-                r["_field"] == "solar_consumption" or
-                r["_field"] == "hydro_consumption" or
-                r["_field"] == "gas_consumption" or
-                r["_field"] == "oil_consumption" or
-                r["_field"] == "unknown_consumption" or
+                r["_field"] == "nuclear_consumption" 
+                r["_field"] == "geothermal_consumption" 
+                r["_field"] == "biomass_consumption" 
+                r["_field"] == "coal_consumption" 
+                r["_field"] == "wind_consumption" 
+                r["_field"] == "solar_consumption" 
+                r["_field"] == "hydro_consumption" 
+                r["_field"] == "gas_consumption" 
+                r["_field"] == "oil_consumption" 
+                r["_field"] == "unknown_consumption" 
                 r["_field"] == "battery_discharge_consumption")
             |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
             |> sum()  // Sum the total consumption for each field over the selected range
