@@ -756,7 +756,7 @@ class SiteService:
 
         return self.influxdb_repository.calculate_co2_emission(device_details, site_id)
 
-    def calculate_total_power_consumption(self, site_id: int, duration_str: str) -> (float, dict):
+    def calculate_total_power_consumption(self, site_id: int, duration_str: str) -> (float, dict, dict):
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
@@ -765,4 +765,8 @@ class SiteService:
         consumption_percentages = self.influxdb_repository.get_consumption_percentages(start_date, end_date,
                                                                                        duration_str)
 
-        return total_pin_value, consumption_percentages
+        # Calculate the kW values from the percentages and total PIn value
+        totalpin_kws = {field: round((percentage / 100) * total_pin_value, 2) for field, percentage in
+                        consumption_percentages.items()}
+
+        return total_pin_value, consumption_percentages, totalpin_kws

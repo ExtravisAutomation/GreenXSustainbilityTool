@@ -624,9 +624,9 @@ def get_total_power_consumption(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     duration = duration or "24 hours"
-    pin_value, consumption_percentages = site_service.calculate_total_power_consumption(site_id, duration)
+    pin_value, consumption_percentages, totalpin_kws = site_service.calculate_total_power_consumption(site_id, duration)
     return CustomResponse(
         message="Energy and power consumption metrics retrieved successfully.",
-        data={"total_PIn": pin_value, "consumption_percentages": consumption_percentages},
+        data={"total_PIn": pin_value, "consumption_percentages": consumption_percentages, "totalpin_kws": totalpin_kws},
         status_code=200
     )
