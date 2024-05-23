@@ -1793,6 +1793,7 @@ class InfluxDBRepository:
             |> sum()  // Sum the carbon intensity over the time period
         '''
         result = self.query_api1.query_data_frame(query)
+        print("RESULT", result, file=sys.stderr)
         carbon_intensity = result['_value'].sum() if not result.empty else 0
 
         return carbon_intensity
