@@ -778,11 +778,11 @@ class SiteService:
 
         total_pin_value = self.influxdb_repository.get_total_pin_value(device_ips, start_date, end_date, duration_str)
         carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
-
+        total_pin_value_KW = total_pin_value / 1000
         # Calculate carbon emissions
-        carbon_emission = int(total_pin_value) * float(carbon_intensity)
+        carbon_emission = float(total_pin_value_KW) * float(carbon_intensity)
         carbon_emission_KG = carbon_emission / 1000
         print("Emissionsssssssss", carbon_emission_KG, file=sys.stderr)
-        total_pin_value_KW = total_pin_value / 1000
+
 
         return float(total_pin_value_KW), carbon_emission_KG
