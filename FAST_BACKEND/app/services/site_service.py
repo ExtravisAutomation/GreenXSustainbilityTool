@@ -810,7 +810,7 @@ class SiteService:
         # Example calculations (adjust these according to realistic models or data)
         car_trips = carbon_emission_KG * 1.39  # example conversion factor
         flights = carbon_emission_KG * 0.11  # example conversion factor
-        return f"{carbon_emission_KG * 1000}g is Equivalent of {int(car_trips)} car trips of 1070 km each in a gas-powered passenger vehicle and {int(flights)} Airplane Flights of 1 hour, 50 minutes each."
+        return f"{carbon_emission_KG}g is Equivalent of {int(car_trips)} car trips of 1070 km each in a gas-powered passenger vehicle and {int(flights)} Airplane Flights of 1 hour, 50 minutes each."
 
     def calculate_carbon_solution(self, carbon_emission_KG):
         # Example: One tree absorbs about 21 KG of CO2 per year (this is an illustrative figure)
