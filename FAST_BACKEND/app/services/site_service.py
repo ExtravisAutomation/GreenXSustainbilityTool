@@ -26,7 +26,7 @@ from app.schema.site_schema import DevicePowerComparisonPercentage
 from app.schema.site_schema import ComparisonDeviceMetricsDetails
 
 from app.schema.site_schema import SiteDetails_get
-
+import math
 
 class SiteService:
     def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
@@ -783,6 +783,7 @@ class SiteService:
         carbon_emission = float(total_pin_value_KW) * float(carbon_intensity)
         carbon_emission_KG = carbon_emission / 1000
         print("Emissionsssssssss", carbon_emission_KG, file=sys.stderr)
+        carbon_emission_KG = math.floor(carbon_emission_KG)
 
 
         return float(total_pin_value_KW), carbon_emission_KG
