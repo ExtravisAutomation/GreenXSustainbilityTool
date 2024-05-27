@@ -771,7 +771,25 @@ class SiteService:
 
         return total_pin_value_KW, consumption_percentages, totalpin_kws
 
-    def calculate_carbon_emission(self, site_id: int, duration_str: str) -> (float, float):
+    # def calculate_carbon_emission(self, site_id: int, duration_str: str) -> (float, float):
+    #     start_date, end_date = self.calculate_start_end_dates(duration_str)
+    #     devices = self.site_repository.get_devices_by_site_id(site_id)
+    #     device_ips = [device.ip_address for device in devices if device.ip_address]
+    #
+    #     total_pin_value = self.influxdb_repository.get_total_pin_value(device_ips, start_date, end_date, duration_str)
+    #     carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
+    #     total_pin_value_KW = total_pin_value / 1000
+    #     # Calculate carbon emissions
+    #     carbon_emission = float(total_pin_value_KW) * float(carbon_intensity)
+    #     carbon_emission_KG = carbon_emission / 1000
+    #     print("Emissionsssssssss", carbon_emission_KG, file=sys.stderr)
+    #     #carbon_emission_KG1 = math.floor(carbon_emission_KG)
+    #     #print("CARRBONNNNNNNNNN", carbon_emission_KG1, file=sys.stderr)
+    #
+    #
+    #     return float(total_pin_value_KW), carbon_emission_KG
+
+    def calculate_carbon_emission(self, site_id: int, duration_str: str) -> (float, float, str, str):
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
@@ -779,12 +797,22 @@ class SiteService:
         total_pin_value = self.influxdb_repository.get_total_pin_value(device_ips, start_date, end_date, duration_str)
         carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
         total_pin_value_KW = total_pin_value / 1000
-        # Calculate carbon emissions
         carbon_emission = float(total_pin_value_KW) * float(carbon_intensity)
         carbon_emission_KG = carbon_emission / 1000
-        print("Emissionsssssssss", carbon_emission_KG, file=sys.stderr)
-        #carbon_emission_KG1 = math.floor(carbon_emission_KG)
-        #print("CARRBONNNNNNNNNN", carbon_emission_KG1, file=sys.stderr)
 
+        # Calculating carbon effects and solutions
+        carbon_effect = self.calculate_carbon_effect(carbon_emission_KG)
+        carbon_solution = self.calculate_carbon_solution(carbon_emission_KG)
 
-        return float(total_pin_value_KW), carbon_emission_KG
+        return float(total_pin_value_KW), carbon_emission_KG, carbon_effect, carbon_solution
+
+    def calculate_carbon_effect(self, carbon_emission_KG):
+        # Example calculations (adjust these according to realistic models or data)
+        car_trips = carbon_emission_KG * 1.39  # example conversion factor
+        flights = carbon_emission_KG * 0.11  # example conversion factor
+        return f"{carbon_emission_KG * 1000}g is Equivalent of {int(car_trips)} car trips of 1070 km each in a gas-powered passenger vehicle and {int(flights)} Airplane Flights of 1 hour, 50 minutes each."
+
+    def calculate_carbon_solution(self, carbon_emission_KG):
+        # Example: One tree absorbs about 21 KG of CO2 per year (this is an illustrative figure)
+        trees_needed = carbon_emission_KG / 0.021 / 12  # Trees needed per month
+        return f"Plant approximately {int(trees_needed)} trees per month to offset these emissions to net zero."
