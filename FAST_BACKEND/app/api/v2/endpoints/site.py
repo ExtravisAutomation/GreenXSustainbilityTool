@@ -641,13 +641,14 @@ def get_carbon_emission_metrics(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     duration = duration or "24 hours"
-    pin_value, carbon_emission, carbon_effect, carbon_solution = site_service.calculate_carbon_emission(site_id, duration)
+    pin_value, carbon_emission, carbon_car, carbon_flight, carbon_solution = site_service.calculate_carbon_emission(site_id, duration)
     return CustomResponse(
         message="Carbon emission metrics retrieved successfully.",
         data={
             "total_PIn": pin_value,
             "carbon_emission": carbon_emission,
-            "carbon_effect": carbon_effect,
+            "carbon_effect_car": carbon_car,
+            "carbon_effect_flight": carbon_flight,
             "carbon_solution": carbon_solution
         },
         status_code=200
