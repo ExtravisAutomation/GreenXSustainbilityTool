@@ -799,7 +799,7 @@ class SiteService:
         carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
         total_pin_value_KW = total_pin_value / 1000
         carbon_emission = float(total_pin_value_KW) * float(carbon_intensity)
-        carbon_emission_KG = carbon_emission / 1000
+        carbon_emission_KG = round(carbon_emission / 1000)
 
         # Calculating carbon effects and solutions
         carbon_car = self.calculate_carbon_car(carbon_emission_KG)
@@ -811,20 +811,24 @@ class SiteService:
     def calculate_carbon_car(self, carbon_emission_KG):
         # Example calculations (adjust these according to realistic models or data)
         car_trips = carbon_emission_KG * 1.39  # example conversion factor
-        flights = carbon_emission_KG * 0.11  # example conversion factor
-        return f"{carbon_emission_KG}g is Equivalent of {int(car_trips)} car trips of 1070 km each in a gas-powered passenger vehicle"
+        # Dynamically calculate the distance per trip
+        # Let's say each kg of CO2 represents a trip of 1000 km modified by some factor of the emissions
+        base_distance = 1000  # base distance in km
+        distance_per_trip = base_distance + (carbon_emission_KG * 10)  # Example dynamic adjustment
+
+        return f"{round(carbon_emission_KG)}kg is Equivalent of {int(car_trips)} car trips of {int(distance_per_trip)} km each in a gas-powered passenger vehicle"
 
     def calculate_carbon_solution(self, carbon_emission_KG):
         trees_needed = carbon_emission_KG / 0.021 / 12  # Trees needed per month calculated dynamically
         return {
-            "Plant Trees to Offset Emissions": f"Planting about {int(trees_needed)} trees can help offset carbon emissions. Trees absorb CO2 from the atmosphere, making this a natural way to balance out emissions.",
-            "Consolidation and Decommissioning": "Regularly assess server usage, decommission outdated or underutilized servers, and consolidate workloads to optimize resource usage.",
-            "High-Efficiency Power Supplies": "Use power supplies with high-efficiency ratings (e.g., 80 PLUS Platinum or Titanium).",
-            "Regular Maintenance": "Conduct regular maintenance of IT equipment and cooling systems to ensure optimal performance."
+            "plant_trees": f"Planting about {int(trees_needed)} trees can help offset carbon emissions. Trees absorb CO2 from the atmosphere, making this a natural way to balance out emissions.",
+            "consolidation": "Regularly assess server usage, decommission outdated or underutilized servers, and consolidate workloads to optimize resource usage.",
+            "high_efficiency": "Use power supplies with high-efficiency ratings (e.g., 80 PLUS Platinum or Titanium).",
+            "regular_maintenance": "Conduct regular maintenance of IT equipment and cooling systems to ensure optimal performance."
         }
 
     def calculate_carbon_flight(self, carbon_emission_KG):
         flight_hours = carbon_emission_KG * 0.11 * 5.5
         hours = int(flight_hours)
         minutes = int((flight_hours - hours) * 60)
-        return f"{carbon_emission_KG}g is equivalent to {hours} hours and {minutes} minutes of flight time."
+        return f"{carbon_emission_KG}kg is equivalent to {hours} hours and {minutes} minutes of flight time."
