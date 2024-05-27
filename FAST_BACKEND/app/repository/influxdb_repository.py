@@ -1,3 +1,4 @@
+import math
 import random
 import sys
 import traceback
@@ -1728,6 +1729,56 @@ class InfluxDBRepository:
     #
     #     return percentages
 
+    # def get_consumption_percentages(self, start_date: datetime, end_date: datetime, duration_str: str) -> dict:
+    #     start_time = start_date.isoformat() + 'Z'
+    #     end_time = end_date.isoformat() + 'Z'
+    #     aggregate_window = "1h" if duration_str == "24 hours" else "1d"
+    #     zone = "AE"
+    #
+    #     query = f'''
+    #         from(bucket: "Dcs_db")
+    #         |> range(start: {start_time}, stop: {end_time})
+    #         |> filter(fn: (r) => r["_measurement"] == "electricitymap_power" and r["zone"] == "{zone}")
+    #         |> filter(fn: (r) =>
+    #             r["_field"] == "nuclear_consumption" or
+    #             r["_field"] == "geothermal_consumption" or
+    #             r["_field"] == "biomass_consumption" or
+    #             r["_field"] == "coal_consumption" or
+    #             r["_field"] == "wind_consumption" or
+    #             r["_field"] == "solar_consumption" or
+    #             r["_field"] == "hydro_consumption" or
+    #             r["_field"] == "gas_consumption" or
+    #             r["_field"] == "oil_consumption" or
+    #             r["_field"] == "unknown_consumption" or
+    #             r["_field"] == "battery_discharge_consumption")
+    #         |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+    #         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #     '''
+    #     result = self.query_api1.query_data_frame(query)
+    #     print("RESULT", result, file=sys.stderr)
+    #
+    #     # Initialize the consumption totals dictionary with specific fields.
+    #     consumption_totals = {
+    #         "nuclear": 0, "geothermal": 0, "biomass": 0, "coal": 0, "wind": 0,
+    #         "solar": 0, "hydro": 0, "gas": 0, "oil": 0, "unknown": 0, "battery_discharge": 0
+    #     }
+    #
+    #     if not result.empty:
+    #         # Extract the sums from the query result for each field.
+    #         for field in consumption_totals.keys():
+    #             field_name = f"{field}_consumption"
+    #             if field_name in result.columns:
+    #                 consumption_totals[field] = result[field_name].sum()
+    #
+    #     # Calculate the total power consumption from the retrieved data.
+    #     powerConsumptionTotal = sum(consumption_totals.values())
+    #
+    #     # Compute the percentage of total power consumption for each field.
+    #     percentages = {field: round((value / powerConsumptionTotal) * 100, 2) if powerConsumptionTotal > 0 else 0
+    #                    for field, value in consumption_totals.items()}
+    #
+    #     return percentages
+
     def get_consumption_percentages(self, start_date: datetime, end_date: datetime, duration_str: str) -> dict:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
@@ -1773,7 +1824,7 @@ class InfluxDBRepository:
         powerConsumptionTotal = sum(consumption_totals.values())
 
         # Compute the percentage of total power consumption for each field.
-        percentages = {field: round((value / powerConsumptionTotal) * 100, 2) if powerConsumptionTotal > 0 else 0
+        percentages = {field: math.floor((value / powerConsumptionTotal) * 100) if powerConsumptionTotal > 0 else 0
                        for field, value in consumption_totals.items()}
 
         return percentages
