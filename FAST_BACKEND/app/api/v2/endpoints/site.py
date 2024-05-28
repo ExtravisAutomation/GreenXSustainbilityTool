@@ -158,12 +158,14 @@ def compare_devices_metrics(
         device_name1: Optional[str] = Query(None, alias="device_name1"),
         device_name2: Optional[str] = Query(None, alias="device_name2"),
         current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    device_name1 = device_name1 or "RYD-SLY-00-AF14"
-    device_name2 = device_name2 or "RYD-SLY-00-AF15"
-    # device_name1 = device_name1 or "Device2"
-    # device_name2 = device_name2 or "Device3"
+        site_service: SiteService = Depends(Provide[Container.site_service]),
+        site_repository: SiteRepository = Depends(Provide[Container.site_repo])):
+    if not device_name1 or not device_name2:
+        default_device_names = site_repository.get_first_two_device_names(site_id)
+        if len(default_device_names) < 2:
+            raise HTTPException(status_code=404, detail="Not enough devices found in the database.")
+        device_name1 = device_name1 or default_device_names[0]
+        device_name2 = device_name2 or default_device_names[1]
     return site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2)
 
 
