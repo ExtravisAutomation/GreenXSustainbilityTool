@@ -174,7 +174,7 @@ class SiteRepository(BaseRepository):
                 session.query(
                     DeviceInventory.id,
                     DeviceInventory.device_name,
-                    APICController.ip_address.label('ip_address'),  # Use APICController class for IP address
+                    APICControllers.ip_address.label('ip_address'),  # Use APICController class for IP address
                     Site.site_name,
                     DeviceInventory.hardware_version,
                     DeviceInventory.manufacturer,
@@ -183,8 +183,8 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.software_version,
                     DeviceInventory.status
                 )
-                .join(APICController,
-                      DeviceInventory.apic_controller_id == APICController.id)  # Correct join to APICController
+                .join(APICControllers,
+                      DeviceInventory.apic_controller_id == APICControllers.id)  # Correct join to APICController
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id)
                 .all()
