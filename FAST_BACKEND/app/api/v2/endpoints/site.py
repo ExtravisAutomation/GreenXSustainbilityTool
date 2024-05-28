@@ -151,7 +151,7 @@ def get_detailed_hourly_power_metrics_for_site(
     return site_service.calculate_hourly_power_metrics_for_each_device(site_id)
 
 
-@router.get("/site/device_specific_comparison/{site_id}", response_model=HourlyDevicePowerMetricsResponse)
+@router.get("/site/device_specific_comparison/{site_id}")
 @inject
 def compare_devices_metrics(
         site_id: int,
