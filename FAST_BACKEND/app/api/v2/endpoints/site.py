@@ -166,7 +166,8 @@ def compare_devices_metrics(
             raise HTTPException(status_code=404, detail="Not enough devices found in the database.")
         device_name1 = device_name1 or default_device_names[0]
         device_name2 = device_name2 or default_device_names[1]
-    return site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2)
+    response = site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2)
+    return {"device_name1": response[device_name1], "device_name2": response[device_name2]}
 
 
 @router.get("/site/pie_chart/{site_id}", response_model=dict[str, int])
