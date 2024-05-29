@@ -823,7 +823,7 @@ class InfluxDBRepository:
     #     return throughput_metrics
 
     def get_traffic_throughput_metrics_with_ener(self, device_ips: List[str], start_date: datetime, end_date: datetime,
-                                                 duration_str: str) -> List[Dict]:
+                                                 duration_str: str) -> List[dict]:
         throughput_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
