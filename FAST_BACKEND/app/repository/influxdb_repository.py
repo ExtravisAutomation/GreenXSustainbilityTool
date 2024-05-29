@@ -763,6 +763,65 @@ class InfluxDBRepository:
         print("LISTTTTTTTTTTTTTTTTTTTTTTTTTT", throughput_metrics, file=sys.stderr)
         return throughput_metrics
 
+    # def get_traffic_throughput_metrics_with_ener(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+    #                                              duration_str: str) -> List[dict]:
+    #     throughput_metrics = []
+    #     start_time = start_date.isoformat() + 'Z'
+    #     end_time = end_date.isoformat() + 'Z'
+    #
+    #     aggregate_window, time_format = self.determine_aggregate_window(duration_str)
+    #     print(f"Aggregate window: {aggregate_window}, Time format: {time_format}", file=sys.stderr)
+    #     device_ips = [device_ips]
+    #     for ip in device_ips:
+    #         # Query for traffic data
+    #         traffic_query = f'''
+    #             from(bucket: "{self.bucket}")
+    #             |> range(start: {start_time}, stop: {end_time})
+    #             |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+    #             |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
+    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+    #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #         '''
+    #         print(f"Executing traffic query for IP: {ip}", file=sys.stderr)
+    #         traffic_result = self.query_api1.query_data_frame(traffic_query)
+    #         print(f"Traffic data for IP: {ip}: {traffic_result}", file=sys.stderr)
+    #
+    #         # Query for power data
+    #         power_query = f'''
+    #             from(bucket: "{self.bucket}")
+    #             |> range(start: {start_time}, stop: {end_time})
+    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+    #             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+    #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #         '''
+    #         print(f"Executing power query for IP: {ip}", file=sys.stderr)
+    #         power_result = self.query_api1.query_data_frame(power_query)
+    #         print(f"Power data for IP: {ip}: {power_result}", file=sys.stderr)
+    #
+    #         if not traffic_result.empty and not power_result.empty:
+    #             traffic_result['_time'] = pd.to_datetime(traffic_result['_time']).dt.strftime(time_format)
+    #             power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
+    #
+    #             # Combine results by '_time'
+    #             combined_result = pd.merge(traffic_result, power_result, on='_time', how='outer').fillna(0)
+    #             print(f"Combined results for IP: {ip}: {combined_result}", file=sys.stderr)
+    #
+    #             for _, row in combined_result.iterrows():
+    #                 total_bytes_rate_last_gb = row['total_bytesRateLast'] / (2 ** 30) if row[
+    #                                                                                          'total_bytesRateLast'] > 0 else 0
+    #                 pin = row['total_PIn'] if row['total_PIn'] > 0 else 1  # Avoid division by zero
+    #                 pout = row['total_POut'] if row['total_POut'] > 0 else 0
+    #
+    #                 energy_consumption = (pout / pin) * 100  # Calculate energy consumption
+    #                 throughput_metrics.append({
+    #                     "time": row['_time'],
+    #                     "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2),
+    #                     "energy_consumption": round(energy_consumption, 2)  # Add energy consumption
+    #                 })
+    #
+    #     return throughput_metrics
+
     def get_traffic_throughput_metrics_with_ener(self, device_ips: List[str], start_date: datetime, end_date: datetime,
                                                  duration_str: str) -> List[dict]:
         throughput_metrics = []
@@ -771,9 +830,12 @@ class InfluxDBRepository:
 
         aggregate_window, time_format = self.determine_aggregate_window(duration_str)
         print(f"Aggregate window: {aggregate_window}, Time format: {time_format}", file=sys.stderr)
-        device_ips = [device_ips]
+
         for ip in device_ips:
-            # Query for traffic data
+            # Debugging statement to check IP being processed
+            print(f"Processing metrics for IP: {ip}", file=sys.stderr)
+
+            # Construct and execute the traffic query
             traffic_query = f'''
                 from(bucket: "{self.bucket}")
                 |> range(start: {start_time}, stop: {end_time})
@@ -784,9 +846,11 @@ class InfluxDBRepository:
             '''
             print(f"Executing traffic query for IP: {ip}", file=sys.stderr)
             traffic_result = self.query_api1.query_data_frame(traffic_query)
-            print(f"Traffic data for IP: {ip}: {traffic_result}", file=sys.stderr)
+            if traffic_result.empty:
+                print(f"No traffic data found for IP: {ip}", file=sys.stderr)
+                continue
 
-            # Query for power data
+            # Construct and execute the power query
             power_query = f'''
                 from(bucket: "{self.bucket}")
                 |> range(start: {start_time}, stop: {end_time})
@@ -797,28 +861,29 @@ class InfluxDBRepository:
             '''
             print(f"Executing power query for IP: {ip}", file=sys.stderr)
             power_result = self.query_api1.query_data_frame(power_query)
-            print(f"Power data for IP: {ip}: {power_result}", file=sys.stderr)
+            if power_result.empty:
+                print(f"No power data found for IP: {ip}", file=sys.stderr)
+                continue
 
-            if not traffic_result.empty and not power_result.empty:
-                traffic_result['_time'] = pd.to_datetime(traffic_result['_time']).dt.strftime(time_format)
-                power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
+            # Combine and process results
+            traffic_result['_time'] = pd.to_datetime(traffic_result['_time']).dt.strftime(time_format)
+            power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
 
-                # Combine results by '_time'
-                combined_result = pd.merge(traffic_result, power_result, on='_time', how='outer').fillna(0)
-                print(f"Combined results for IP: {ip}: {combined_result}", file=sys.stderr)
+            combined_result = pd.merge(traffic_result, power_result, on='_time', how='outer').fillna(0)
+            print(f"Combined results for IP: {ip}: {combined_result}", file=sys.stderr)
 
-                for _, row in combined_result.iterrows():
-                    total_bytes_rate_last_gb = row['total_bytesRateLast'] / (2 ** 30) if row[
-                                                                                             'total_bytesRateLast'] > 0 else 0
-                    pin = row['total_PIn'] if row['total_PIn'] > 0 else 1  # Avoid division by zero
-                    pout = row['total_POut'] if row['total_POut'] > 0 else 0
+            for _, row in combined_result.iterrows():
+                total_bytes_rate_last_gb = row['total_bytesRateLast'] / (2 ** 30) if row[
+                                                                                         'total_bytesRateLast'] > 0 else 0
+                pin = row['total_PIn'] if row['total_PIn'] > 0 else 1  # Avoid division by zero
+                pout = row['total_POut'] if row['total_POut'] > 0 else 0
 
-                    energy_consumption = (pout / pin) * 100  # Calculate energy consumption
-                    throughput_metrics.append({
-                        "time": row['_time'],
-                        "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2),
-                        "energy_consumption": round(energy_consumption, 2)  # Add energy consumption
-                    })
+                energy_consumption = (pout / pin) * 100  # Calculate energy consumption
+                throughput_metrics.append({
+                    "time": row['_time'],
+                    "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2),
+                    "energy_consumption": round(energy_consumption, 2)
+                })
 
         return throughput_metrics
 
