@@ -823,7 +823,7 @@ class InfluxDBRepository:
     #     return throughput_metrics
 
     def get_traffic_throughput_metrics_with_ener(self, device_ips: List[str], start_date: datetime, end_date: datetime,
-                                                 duration_str: str) -> List[dict]:
+                                                 duration_str: str) -> List[Dict]:
         throughput_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
@@ -832,10 +832,9 @@ class InfluxDBRepository:
         print(f"Aggregate window: {aggregate_window}, Time format: {time_format}", file=sys.stderr)
 
         for ip in device_ips:
-            # Debugging statement to check IP being processed
             print(f"Processing metrics for IP: {ip}", file=sys.stderr)
 
-            # Construct and execute the traffic query
+            # Traffic Query
             traffic_query = f'''
                 from(bucket: "{self.bucket}")
                 |> range(start: {start_time}, stop: {end_time})
@@ -850,7 +849,7 @@ class InfluxDBRepository:
                 print(f"No traffic data found for IP: {ip}", file=sys.stderr)
                 continue
 
-            # Construct and execute the power query
+            # Power Query
             power_query = f'''
                 from(bucket: "{self.bucket}")
                 |> range(start: {start_time}, stop: {end_time})
@@ -865,10 +864,9 @@ class InfluxDBRepository:
                 print(f"No power data found for IP: {ip}", file=sys.stderr)
                 continue
 
-            # Combine and process results
+            # Combining Traffic and Power results
             traffic_result['_time'] = pd.to_datetime(traffic_result['_time']).dt.strftime(time_format)
             power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
-
             combined_result = pd.merge(traffic_result, power_result, on='_time', how='outer').fillna(0)
             print(f"Combined results for IP: {ip}: {combined_result}", file=sys.stderr)
 
@@ -877,8 +875,8 @@ class InfluxDBRepository:
                                                                                          'total_bytesRateLast'] > 0 else 0
                 pin = row['total_PIn'] if row['total_PIn'] > 0 else 1  # Avoid division by zero
                 pout = row['total_POut'] if row['total_POut'] > 0 else 0
-
                 energy_consumption = (pout / pin) * 100  # Calculate energy consumption
+
                 throughput_metrics.append({
                     "time": row['_time'],
                     "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2),
