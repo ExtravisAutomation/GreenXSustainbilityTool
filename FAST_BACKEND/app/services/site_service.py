@@ -452,6 +452,9 @@ class SiteService:
                                                                                         duration_str)
             print("FINAL_MATRICSSSSSSSSSS", metrics, file=sys.stderr)
             data_metrics.extend(metrics)
+            if len(data_metrics) >= 23:
+                print("Limiting the number of metrics to 24 records.", file=sys.stderr)
+                return data_metrics[:23]
 
         return data_metrics
 
