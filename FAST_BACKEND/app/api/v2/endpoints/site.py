@@ -656,3 +656,21 @@ def get_carbon_emission_metrics(
         },
         status_code=200
     )
+
+
+@router.get("/sites/location_and_carbon/{site_id}", response_model=CustomResponse[dict])
+@inject
+def get_site_emission_details(
+    site_id: int,
+    current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        data = site_service.get_emission_details(site_id)
+        return CustomResponse(
+            message="Emission details retrieved successfully.",
+            data=data,
+            status_code=200
+        )
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))

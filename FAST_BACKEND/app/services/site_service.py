@@ -827,3 +827,39 @@ class SiteService:
         hours = int(flight_hours)
         minutes = int((flight_hours - hours) * 60)
         return f"{carbon_emission_KG}kg is equivalent to {hours} hours and {minutes} minutes of flight time."
+
+    def get_emission_details(self, site_id: int) -> dict:
+        # Get site location
+        latitude, longitude = self.site_repository.get_site_location(site_id)
+        if latitude is None or longitude is None:
+            raise ValueError("location not found")
+
+        # Get devices and their IPs
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+        print("Device IPSSSSSSSSSSSSSSSSSSSSS", device_ips, file=sys.stderr)
+
+        # Calculate time range for the last 30 days
+        end_date = datetime.utcnow()
+        start_date = end_date - timedelta(days=30)
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+
+        # Get total pin value and carbon intensity
+        total_pin = self.influxdb_repository.get_total_pin_value1(device_ips, start_time, end_time)
+        print("Total Pin Value:", total_pin, file=sys.stderr)
+        carbon_intensity = self.influxdb_repository.get_carbon_intensity1(start_time, end_time)
+        print("Carbon Intensity:", carbon_intensity, file=sys.stderr)
+
+        # Calculate metrics
+        total_pin_KW = total_pin / 1000
+        carbon_emission_KG = round((total_pin_KW * carbon_intensity) / 1000, 2)
+        print("Carbon Emission:", carbon_emission_KG, file=sys.stderr)
+        print("Total Pin KW:", total_pin_KW, file=sys.stderr)
+        return {
+            "site_id": site_id,
+            "latitude": latitude,
+            "longitude": longitude,
+            "total_pin_value_KW": total_pin_KW,
+            "carbon_emission_KG": carbon_emission_KG
+        }
