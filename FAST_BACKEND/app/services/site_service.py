@@ -844,13 +844,14 @@ class SiteService:
         print("Device IPSSSSSSSSSSSSSSSSSSSSS", device_ips, file=sys.stderr)
 
         # Calculate time range for the last 30 days
-        end_date = datetime.utcnow()
-        start_date = end_date - timedelta(days=30)
-        start_time = start_date.isoformat() + 'Z'
-        end_time = end_date.isoformat() + 'Z'
-
+        # end_date = datetime.utcnow()
+        # start_date = end_date - timedelta(days=30)
+        # start_time = start_date.isoformat() + 'Z'
+        # end_time = end_date.isoformat() + 'Z'
+        duration_str = "Current Month"
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
         # Get total pin value and carbon intensity
-        total_pin = self.influxdb_repository.get_total_pin_value1(device_ips, start_time, end_time)
+        total_pin = self.influxdb_repository.get_total_pin_value22(device_ips, start_date, end_date, duration_str)
         print("Total Pin Value:", total_pin, file=sys.stderr)
         # carbon_intensity = self.influxdb_repository.get_carbon_intensity1(start_time, end_time)
         # print("Carbon Intensity:", carbon_intensity, file=sys.stderr)

@@ -1946,4 +1946,25 @@ class InfluxDBRepository:
         return carbon_intensity
 
 
+    def get_total_pin_value22(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+                            duration_str: str) -> float:
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+        aggregate_window = "1h" if duration_str == "24 hours" else "1d"
+
+        total_pin = 0
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_PIn")
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+            '''
+            result = self.query_api1.query_data_frame(query)
+            if not result.empty:
+                total_pin += result['_value'].sum()
+
+        return total_pin
+
 
