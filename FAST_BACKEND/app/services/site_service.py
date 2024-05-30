@@ -852,13 +852,13 @@ class SiteService:
         # Get total pin value and carbon intensity
         total_pin = self.influxdb_repository.get_total_pin_value1(device_ips, start_time, end_time)
         print("Total Pin Value:", total_pin, file=sys.stderr)
-        carbon_intensity = self.influxdb_repository.get_carbon_intensity1(start_time, end_time)
-        print("Carbon Intensity:", carbon_intensity, file=sys.stderr)
+        # carbon_intensity = self.influxdb_repository.get_carbon_intensity1(start_time, end_time)
+        # print("Carbon Intensity:", carbon_intensity, file=sys.stderr)
 
         # Calculate metrics
         total_pin_KW = total_pin / 1000
-        carbon_emission_KG = round((total_pin_KW * carbon_intensity) / 1000, 2)
-        print("Carbon Emission:", carbon_emission_KG, file=sys.stderr)
+        # carbon_emission_KG = round((total_pin_KW * carbon_intensity) / 1000, 2)
+        # print("Carbon Emission:", carbon_emission_KG, file=sys.stderr)
         print("Total Pin KW:", total_pin_KW, file=sys.stderr)
         return {
             "id": site_id,
@@ -866,7 +866,7 @@ class SiteService:
             "latitude": latitude,
             "longitude": longitude,
             "energy_consumption_KW": total_pin_KW,
-            "carbon_emission_KG": carbon_emission_KG,
+            "carbon_emission_KG": 0,
             "total_devices": num_devices,
             "total_cost": int(1450),
             #"total_pin_value_KW": total_pin_KW,
