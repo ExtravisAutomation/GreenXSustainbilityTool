@@ -858,8 +858,10 @@ class SiteService:
 
         # Calculate metrics
         total_pin_KW = total_pin / 1000
-        carbon_emission_KG = round((total_pin_KW * carbon_intensity) / 1000, 2)
-        print("Carbon Emission:", carbon_emission_KG, file=sys.stderr)
+        carbon_emission = float(total_pin_KW) * float(carbon_intensity)
+        carbon_emission_KG = (carbon_emission / 1000, 2)
+        carbon_emission_KG1 = round(carbon_emission_KG, 2)
+        print("Carbon Emission:", carbon_emission_KG1, file=sys.stderr)
         print("Total Pin KW:", total_pin_KW, file=sys.stderr)
         return {
             "id": site_id,
@@ -867,9 +869,9 @@ class SiteService:
             "latitude": latitude,
             "longitude": longitude,
             "energy_consumption_KW": total_pin_KW,
-            "carbon_emission_KG": carbon_emission_KG,
+            "carbon_emission_KG": carbon_emission_KG1,
             "total_devices": num_devices,
-            "total_cost": int(1450),
+            "total_cost": 0.5 * total_pin_KW,
             #"total_pin_value_KW": total_pin_KW,
             #"carbon_emission_KG": carbon_emission_KG
         }
