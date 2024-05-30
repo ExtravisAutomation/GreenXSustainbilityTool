@@ -1930,6 +1930,7 @@ class InfluxDBRepository:
             |> filter(fn: (r) => r["_measurement"] == "electricitymap_carbonIntensity" and r["zone"] == "{zone}")
             |> filter(fn: (r) => r["_field"] == "carbonIntensity")
             |> aggregateWindow(every: "1h", fn: sum, createEmpty: false)
+            
             |> sum()  // Sum the carbon intensity over the period
         '''
         result = self.query_api1.query_data_frame(query)
