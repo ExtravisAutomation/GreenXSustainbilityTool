@@ -1908,12 +1908,17 @@ class InfluxDBRepository:
         for ip in device_ips:
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
-                |> range(start: {start_time}, stop: {end_time})
-                |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
-                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-                |> filter(fn: (r) => r["_field"] == "total_PIn")
-                |> aggregateWindow(every: "1h", fn: sum, createEmpty: false)
-                |> sum()  // Sum the total pin over the period for each IP
+                  |> range(start: {start_time}, stop: {end_time})
+                  |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
+                  |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                  |> filter(fn: (r) => r["_field"] == "total_PIn")
+                  |> aggregateWindow(every: "1h", fn: sum, createEmpty: false)
+                  |> sum()  // Sum the total pin over the period for each IP
+                  |> pivot(
+                      rowKey:["_time"],
+                      columnKey: ["_field"],
+                      valueColumn: "_value"
+    )
             '''
             result = self.query_api1.query_data_frame(query)
             if not result.empty:
