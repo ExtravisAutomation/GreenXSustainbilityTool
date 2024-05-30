@@ -550,8 +550,9 @@ class SiteRepository(BaseRepository):
     def get_site_location(self, site_id: int) -> Tuple[float, float]:
         with self.session_factory() as session:
             site = session.query(Site).filter(Site.id == site_id).one_or_none()
+            num_devices=session.query(func.count(APICControllers.id)).filter(APICControllers.site_id == site_id).scalar()
             if site:
                 print("SITE LATITUDE AND LONGITUDE:", site.latitude, site.longitude, file=sys.stderr)
-                return site.latitude, site.longitude
+                return site.latitude, site.longitude,site.site_name,num_devices
             else:
                 return None, None

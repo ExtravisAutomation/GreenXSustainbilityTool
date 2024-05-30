@@ -830,9 +830,11 @@ class SiteService:
 
     def get_emission_details(self, site_id: int) -> dict:
         # Get site location
-        latitude, longitude = self.site_repository.get_site_location(site_id)
+        latitude, longitude,site_name,num_devices = self.site_repository.get_site_location(site_id)
         print("latitude", latitude, file=sys.stderr)
         print("longitude", longitude, file=sys.stderr)
+        print("site_name", site_name, file=sys.stderr)
+        print("num_devices", num_devices, file=sys.stderr)
         if latitude is None or longitude is None:
             raise ValueError("location not found")
 
@@ -860,12 +862,12 @@ class SiteService:
         #print("Total Pin KW:", total_pin_KW, file=sys.stderr)
         return {
             "id": site_id,
-            "site_name": "Sulay",
+            "site_name": site_name,
             "latitude": latitude,
             "longitude": longitude,
             "energy_consumption_KW": int(140),
             "carbon_emission_KG": int(18),
-            "total_devices": int(10),
+            "total_devices": num_devices,
             "total_cost": int(1450),
             #"total_pin_value_KW": total_pin_KW,
             #"carbon_emission_KG": carbon_emission_KG
