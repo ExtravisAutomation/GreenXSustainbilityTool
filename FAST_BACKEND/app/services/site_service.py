@@ -860,8 +860,13 @@ class SiteService:
         #print("Total Pin KW:", total_pin_KW, file=sys.stderr)
         return {
             "id": site_id,
-            "site_name": "Site Name",
-            "value":[float(latitude),float(longitude),float(98)],
+            "site_name": "Sulay",
+            "latitude": latitude,
+            "longitude": longitude,
+            "energy_consumption_KW": int(140),
+            "carbon_emission_KG": int(18),
+            "total_devices": int(10),
+            "total_cost": int(1450),
             #"total_pin_value_KW": total_pin_KW,
             #"carbon_emission_KG": carbon_emission_KG
         }
