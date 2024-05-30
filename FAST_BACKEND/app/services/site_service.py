@@ -853,7 +853,7 @@ class SiteService:
         # Get total pin value and carbon intensity
         total_pin = self.influxdb_repository.get_total_pin_value22(device_ips, start_date, end_date, duration_str)
         print("Total Pin Value:", total_pin, file=sys.stderr)
-        carbon_intensity = self.influxdb_repository.get_carbon_intensity22(start_date, start_date, duration_str)
+        carbon_intensity = self.influxdb_repository.get_carbon_intensity22(start_date, end_date, duration_str)
         print("Carbon Intensity:", carbon_intensity, file=sys.stderr)
 
         # Calculate metrics
