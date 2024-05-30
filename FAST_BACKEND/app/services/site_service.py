@@ -861,7 +861,7 @@ class SiteService:
         return {
             "id": site_id,
             "site_name": "Site Name",
-            "value":[latitude,longitude],
+            "value":[float(latitude),float(longitude),float(98)],
             #"total_pin_value_KW": total_pin_KW,
             #"carbon_emission_KG": carbon_emission_KG
         }
