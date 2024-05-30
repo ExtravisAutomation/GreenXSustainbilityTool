@@ -831,7 +831,7 @@ class SiteService:
 
     def get_emission_details(self, site_id: int) -> dict:
         # Get site location and additional details
-        latitude, longitude, site_name, num_devices = self.site_repository.get_site_location(site_id)
+        latitude, longitude, site_name, num_devices ,site_Region= self.site_repository.get_site_location(site_id)
         if None in [latitude, longitude, site_name, num_devices]:
             raise ValueError("Location or site details not found.")
 
@@ -855,11 +855,12 @@ class SiteService:
 
         return {
             "id": site_id,
+            "site_region": site_Region,
             "site_name": site_name,
             "latitude": latitude,
             "longitude": longitude,
             "energy_consumption_KW": total_pin_KW,
             "carbon_emission_KG": carbon_emission_KG,
             "total_devices": num_devices,
-            "total_cost": 0.5 * total_pin_KW
+            "total_cost": round(0.5 * total_pin_KW)
         }

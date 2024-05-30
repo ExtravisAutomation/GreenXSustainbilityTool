@@ -272,6 +272,8 @@ class SiteRepository(BaseRepository):
 
     def get_eol_eos_counts(self, site_id: int) -> dict:
         with self.session_factory() as session:
+            num_devices = session.query(func.count(APICControllers.id)).filter(
+                APICControllers.site_id == site_id).scalar()
             current_date = datetime.now()
 
             join_query = session.query(DeviceInventory). \
@@ -308,6 +310,7 @@ class SiteRepository(BaseRepository):
             ).count()
 
             return {
+                "num_devices": num_devices,
                 "hardware_eol_count": hw_eol_count,
                 "hardware_eos_count": hw_eos_count,
                 "hardware_eosup_count": hw_eosup_count,
@@ -553,6 +556,6 @@ class SiteRepository(BaseRepository):
             num_devices=session.query(func.count(APICControllers.id)).filter(APICControllers.site_id == site_id).scalar()
             if site:
                 print("SITE LATITUDE AND LONGITUDE:", site.latitude, site.longitude, file=sys.stderr)
-                return site.latitude, site.longitude,site.site_name,num_devices
+                return site.latitude, site.longitude,site.site_name,num_devices,site.region
             else:
                 return None, None
