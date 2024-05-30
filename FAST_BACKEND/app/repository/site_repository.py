@@ -549,7 +549,7 @@ class SiteRepository(BaseRepository):
 
     def get_site_location(self, site_id: int) -> Tuple[float, float]:
         with self.session_factory() as session:
-            site = session.query(Site).filter(Site.site_id == site_id).one_or_none()
+            site = session.query(Site).filter(Site.id == site_id).one_or_none()
             if site:
                 print("SITE LATITUDE AND LONGITUDE:", site.latitude, site.longitude, file=sys.stderr)
                 return site.latitude, site.longitude
