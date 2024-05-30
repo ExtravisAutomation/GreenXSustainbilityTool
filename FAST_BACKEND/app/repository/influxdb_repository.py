@@ -1985,6 +1985,7 @@ class InfluxDBRepository:
         result = self.query_api1.query_data_frame(query)
         print("RESULT", result, file=sys.stderr)
         carbon_intensity = result['_value'] if not result.empty else 0
+        print("typeeeeeeeeeeeeeee", type(carbon_intensity), file=sys.stderr
         print("carbon_intensity", carbon_intensity, file=sys.stderr)
 
         return carbon_intensity
