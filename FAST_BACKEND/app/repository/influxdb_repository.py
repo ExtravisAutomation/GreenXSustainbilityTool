@@ -1908,7 +1908,7 @@ class InfluxDBRepository:
         for ip in device_ips:
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
-                |> range(start: {start_time}, stop: {end_time})
+                |> range)
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn")

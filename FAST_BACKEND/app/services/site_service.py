@@ -831,6 +831,8 @@ class SiteService:
     def get_emission_details(self, site_id: int) -> dict:
         # Get site location
         latitude, longitude = self.site_repository.get_site_location(site_id)
+        print("latitude", latitude, file=sys.stderr)
+        print("longitude", longitude, file=sys.stderr)
         if latitude is None or longitude is None:
             raise ValueError("location not found")
 
