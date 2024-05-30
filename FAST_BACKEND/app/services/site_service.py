@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from random import random
 from typing import Dict, List, Any
 
+import pandas as pd
 from fastapi import HTTPException, status
 from sqlalchemy.engine import Row
 from sqlalchemy.orm import Session
@@ -829,49 +830,36 @@ class SiteService:
         return f"{carbon_emission_KG}kg is equivalent to {hours} hours and {minutes} minutes of flight time."
 
     def get_emission_details(self, site_id: int) -> dict:
-        # Get site location
-        latitude, longitude,site_name,num_devices = self.site_repository.get_site_location(site_id)
-        print("latitude", latitude, file=sys.stderr)
-        print("longitude", longitude, file=sys.stderr)
-        print("site_name", site_name, file=sys.stderr)
-        print("num_devices", num_devices, file=sys.stderr)
-        if latitude is None or longitude is None:
-            raise ValueError("location not found")
+        # Get site location and additional details
+        latitude, longitude, site_name, num_devices = self.site_repository.get_site_location(site_id)
+        if None in [latitude, longitude, site_name, num_devices]:
+            raise ValueError("Location or site details not found.")
 
-        # Get devices and their IPs
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
-        print("Device IPSSSSSSSSSSSSSSSSSSSSS", device_ips, file=sys.stderr)
 
         # Calculate time range for the last 30 days
-        # end_date = datetime.utcnow()
-        # start_date = end_date - timedelta(days=30)
-        # start_time = start_date.isoformat() + 'Z'
-        # end_time = end_date.isoformat() + 'Z'
         duration_str = "Current Month"
         start_date, end_date = self.calculate_start_end_dates(duration_str)
-        # Get total pin value and carbon intensity
-        total_pin = self.influxdb_repository.get_total_pin_value22(device_ips, start_date, end_date, duration_str)
-        print("Total Pin Value:", total_pin, file=sys.stderr)
-        carbon_intensity = self.influxdb_repository.get_carbon_intensity22(start_date, end_date, duration_str)
-        print("Carbon Intensity:", carbon_intensity, file=sys.stderr)
 
-        # Calculate metrics
+        total_pin = self.influxdb_repository.get_total_pin_value22(device_ips, start_date, end_date, duration_str)
+        carbon_intensity = self.influxdb_repository.get_carbon_intensity22(start_date, end_date, duration_str)
+
+        # Ensure carbon_intensity is a single float, not a Series or DataFrame
+        if isinstance(carbon_intensity, pd.Series):
+            carbon_intensity = carbon_intensity.iloc[0] if not carbon_intensity.empty else 0
+
         total_pin_KW = total_pin / 1000
-        carbon_emission = float(total_pin_KW) * float(carbon_intensity)
-        carbon_emission_KG = (carbon_emission / 1000, 2)
-        carbon_emission_KG1 = round(carbon_emission_KG, 2)
-        print("Carbon Emission:", carbon_emission_KG1, file=sys.stderr)
-        print("Total Pin KW:", total_pin_KW, file=sys.stderr)
+        carbon_emission = total_pin_KW * carbon_intensity
+        carbon_emission_KG = round(carbon_emission / 1000, 2)
+
         return {
             "id": site_id,
             "site_name": site_name,
             "latitude": latitude,
             "longitude": longitude,
             "energy_consumption_KW": total_pin_KW,
-            "carbon_emission_KG": carbon_emission_KG1,
+            "carbon_emission_KG": carbon_emission_KG,
             "total_devices": num_devices,
-            "total_cost": 0.5 * total_pin_KW,
-            #"total_pin_value_KW": total_pin_KW,
-            #"carbon_emission_KG": carbon_emission_KG
+            "total_cost": 0.5 * total_pin_KW
         }
