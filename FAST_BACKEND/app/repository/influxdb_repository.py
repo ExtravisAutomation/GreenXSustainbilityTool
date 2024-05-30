@@ -1905,10 +1905,11 @@ class InfluxDBRepository:
 
     def get_total_pin_value1(self, device_ips: List[str], start_time: str, end_time: str) -> float:
         total_pin = 0
+        start_range = "-30d"
         for ip in device_ips:
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
-                  |> range(start: {start_time}, stop: {end_time})
+                  |> range(start: {start_range})
                   |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
                   |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
                   |> filter(fn: (r) => r["_field"] == "total_PIn")
@@ -1929,9 +1930,10 @@ class InfluxDBRepository:
     def get_carbon_intensity1(self, start_time: str, end_time: str) -> float:
         carbon_intensity = 0
         zone = "AE"
+        start_range = "-30d"
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
-            |> range(start: {start_time}, stop: {end_time})
+            |> range(start: {start_range})
             |> filter(fn: (r) => r["_measurement"] == "electricitymap_carbonIntensity" and r["zone"] == "{zone}")
             |> filter(fn: (r) => r["_field"] == "carbonIntensity")
             |> aggregateWindow(every: "1h", fn: sum, createEmpty: false)
