@@ -1968,3 +1968,24 @@ class InfluxDBRepository:
         return total_pin
 
 
+    def get_carbon_intensity22(self, start_date: datetime, end_date: datetime, duration_str: str) -> float:
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+        aggregate_window = "1h" if duration_str == "24 hours" else "1d"
+        zone = "AE"
+
+        query = f'''
+            from(bucket: "{configs.INFLUXDB_BUCKET}")
+            |> range(start: {start_time}, stop: {end_time})
+            |> filter(fn: (r) => r["_measurement"] == "electricitymap_carbonIntensity" and r["zone"] == "{zone}")
+            |> filter(fn: (r) => r["_field"] == "carbonIntensity")
+            |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+            |> sum()  // Sum the carbon intensity over the time period
+        '''
+        result = self.query_api1.query_data_frame(query)
+        print("RESULT", result, file=sys.stderr)
+        carbon_intensity = result['_value'] if not result.empty else 0
+        print("carbon_intensity", carbon_intensity, file=sys.stderr)
+
+        return carbon_intensity
+
