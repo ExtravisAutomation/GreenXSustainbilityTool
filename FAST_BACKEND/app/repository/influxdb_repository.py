@@ -1904,29 +1904,39 @@ class InfluxDBRepository:
         return carbon_intensity
 
     def get_total_pin_value1(self, device_ips: List[str], start_time: str, end_time: str) -> float:
-        query = f'''
-               from(bucket: "{configs.INFLUXDB_BUCKET}")
-               |> range(start: {start_time}, stop: {end_time})
-               |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
-               |> filter(fn: (r) => r["ApicController_IP"] in {tuple(device_ips)})
-               |> filter(fn: (r) => r["_field"] == "total_PIn")
-               |> aggregateWindow(every: "1h", fn: sum, createEmpty: false)
-               |> sum()  // Sum the total pin over the period
-           '''
-        result = self.query_api1.query_data_frame(query)
-        return result['_value'].sum() if not result.empty else 0
+        total_pin = 0
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_PIn")
+                |> aggregateWindow(every: "1h", fn: sum, createEmpty: false)
+                |> sum()  // Sum the total pin over the period for each IP
+            '''
+            result = self.query_api1.query_data_frame(query)
+            if not result.empty:
+                total_pin += result['_value'].sum()
 
-    def get_carbon_intensity(self, start_time: str, end_time: str) -> float:
+        return total_pin
+
+    def get_carbon_intensity1(self, start_time: str, end_time: str) -> float:
+        carbon_intensity = 0
+        zone = "AE"
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
             |> range(start: {start_time}, stop: {end_time})
-            |> filter(fn: (r) => r["_measurement"] == "electricitymap_carbonIntensity")
+            |> filter(fn: (r) => r["_measurement"] == "electricitymap_carbonIntensity" and r["zone"] == "{zone}")
             |> filter(fn: (r) => r["_field"] == "carbonIntensity")
             |> aggregateWindow(every: "1h", fn: sum, createEmpty: false)
             |> sum()  // Sum the carbon intensity over the period
         '''
         result = self.query_api1.query_data_frame(query)
-        return result['_value'] if not result.empty else 0
+        if not result.empty:
+            carbon_intensity = result['_value'].sum()
+
+        return carbon_intensity
 
 
 
