@@ -859,9 +859,9 @@ class SiteService:
         #print("Carbon Emission:", carbon_emission_KG, file=sys.stderr)
         #print("Total Pin KW:", total_pin_KW, file=sys.stderr)
         return {
-            "site_id": site_id,
-            "latitude": latitude,
-            "longitude": longitude,
+            "id": site_id,
+            "site_name": "Site Name",
+            "value":[latitude,longitude],
             #"total_pin_value_KW": total_pin_KW,
             #"carbon_emission_KG": carbon_emission_KG
         }
