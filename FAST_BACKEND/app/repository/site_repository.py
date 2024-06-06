@@ -24,6 +24,10 @@ from app.model.rack import Rack
 from app.model.apic_controller import APICController
 from app.model.DevicesSntc import DevicesSntc
 
+from app.model.site import PasswordGroup
+from app.schema.site_schema import PasswordGroupCreate
+
+
 class SiteRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
         self.session_factory = session_factory
@@ -280,7 +284,6 @@ class SiteRepository(BaseRepository):
                 join(DevicesSntc, DeviceInventory.pn_code == DevicesSntc.model_name). \
                 filter(DeviceInventory.site_id == site_id)
 
-
             hw_eol_count = join_query.filter(
                 DevicesSntc.hw_eol_ad != None,
                 DevicesSntc.hw_eol_ad < current_date
@@ -295,7 +298,6 @@ class SiteRepository(BaseRepository):
                 DevicesSntc.sw_EoSWM != None,
                 DevicesSntc.sw_EoSWM < current_date
             ).count()
-
 
             sw_eos_count = join_query.filter(
                 DevicesSntc.hw_EoSCR != None,
@@ -358,6 +360,7 @@ class SiteRepository(BaseRepository):
                 "software_eol_count": sw_eol_count,
                 "software_eos_count": sw_eos_count
             }
+
     def get_device_ip_by_name(self, site_id: int, device_name: str) -> str:
         with self.session_factory() as session:
             device = (
@@ -449,6 +452,7 @@ class SiteRepository(BaseRepository):
 
                     # Add other fields as necessary
                 }
+
     def get_device_details_by_name_and_site_id(self, site_id: int, device_name: str) -> dict:
         with self.session_factory() as session:
 
@@ -487,6 +491,7 @@ class SiteRepository(BaseRepository):
             else:
 
                 return {}
+
     def get_device_details_by_name_and_site_id1(self, site_id: int, device_name: str) -> dict:
         with self.session_factory() as session:
 
@@ -544,7 +549,8 @@ class SiteRepository(BaseRepository):
     def get_rack_and_device_counts(self, site_id: int) -> dict:
         with self.session_factory() as session:
             num_racks = session.query(func.count(Rack.id)).filter(Rack.site_id == site_id).scalar()
-            num_devices = session.query(func.count(APICControllers.id)).filter(APICControllers.site_id == site_id).scalar()
+            num_devices = session.query(func.count(APICControllers.id)).filter(
+                APICControllers.site_id == site_id).scalar()
             return {
                 "num_racks": num_racks or 0,
                 "num_devices": num_devices or 0
@@ -553,9 +559,30 @@ class SiteRepository(BaseRepository):
     def get_site_location(self, site_id: int) -> Tuple[float, float]:
         with self.session_factory() as session:
             site = session.query(Site).filter(Site.id == site_id).one_or_none()
-            num_devices=session.query(func.count(APICControllers.id)).filter(APICControllers.site_id == site_id).scalar()
+            num_devices = session.query(func.count(APICControllers.id)).filter(
+                APICControllers.site_id == site_id).scalar()
             if site:
                 print("SITE LATITUDE AND LONGITUDE:", site.latitude, site.longitude, file=sys.stderr)
-                return site.latitude, site.longitude,site.site_name,num_devices,site.region
+                return site.latitude, site.longitude, site.site_name, num_devices, site.region
             else:
                 return None, None
+
+    def create_password_group(self, password_group: PasswordGroupCreate) -> PasswordGroup:
+        db_password_group = PasswordGroup(**password_group.dict())
+        self.db.add(db_password_group)
+        self.db.commit()
+        self.db.refresh(db_password_group)
+        return db_password_group
+
+    def get_password_group(self, password_group_id: int) -> PasswordGroup:
+        return self.db.query(PasswordGroup).filter(PasswordGroup.id == password_group_id).first()
+
+    def get_all_password_groups(self) -> List[PasswordGroup]:
+        return self.db.query(PasswordGroup).all()
+
+    def delete_password_group(self, password_group_id: int):
+        password_group = self.db.query(PasswordGroup).filter(PasswordGroup.id == password_group_id).first()
+        if password_group:
+            self.db.delete(password_group)
+            self.db.commit()
+        return password_group

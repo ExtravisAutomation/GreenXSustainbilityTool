@@ -40,7 +40,6 @@ class SiteDetails_get(SiteBase):
     num_devices: Optional[int] = None
 
 
-
 class SiteUpdate(BaseModel):
     site_name: Optional[str] = None
     site_type: Optional[str] = None
@@ -216,3 +215,19 @@ class CustomResponse100(BaseModel):
     status_code: int
 
 
+class PasswordGroupCreate(BaseModel):
+    password_group_name: str
+    password_group_type: str
+    username: str
+    password: str
+
+
+class PasswordGroupResponse(BaseModel):
+    id: int
+    password_group_name: str
+    password_group_type: str
+    username: str
+    password: str
+
+    class Config:
+        orm_mode = True

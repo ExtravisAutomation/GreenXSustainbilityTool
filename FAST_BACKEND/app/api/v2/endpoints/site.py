@@ -30,6 +30,8 @@ from app.schema.site_schema import TrafficThroughputMetricsDetails
 
 from app.schema.site_schema import TrafficThroughputMetricsResponse
 
+from app.schema.site_schema import PasswordGroupResponse, PasswordGroupCreate
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 
 
@@ -644,7 +646,8 @@ def get_carbon_emission_metrics(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     duration = duration or "24 hours"
-    pin_value, carbon_emission, carbon_car, carbon_flight, carbon_solution = site_service.calculate_carbon_emission(site_id, duration)
+    pin_value, carbon_emission, carbon_car, carbon_flight, carbon_solution = site_service.calculate_carbon_emission(
+        site_id, duration)
     return CustomResponse(
         message="Carbon emission metrics retrieved successfully.",
         data={
@@ -661,9 +664,9 @@ def get_carbon_emission_metrics(
 @router.get("/sites/location_and_carbon/{site_id}", response_model=CustomResponse[dict])
 @inject
 def get_site_emission_details(
-    site_id: int,
-    current_user: User = Depends(get_current_active_user),
-    site_service: SiteService = Depends(Provide[Container.site_service])
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
         data = site_service.get_emission_details(site_id)
@@ -674,3 +677,48 @@ def get_site_emission_details(
         )
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.post("/sites/create_password_groups", response_model=PasswordGroupResponse)
+@inject
+def create_password_group(
+        password_group: PasswordGroupCreate,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        return site_service.create_password_group(password_group)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/sites/get_password_group_by_id/{password_group_id}", response_model=PasswordGroupResponse)
+def get_password_group(
+        password_group_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    password_group = site_service.get_password_group(password_group_id)
+    if not password_group:
+        raise HTTPException(status_code=404, detail="PasswordGroup not found")
+    return password_group
+
+
+@router.get("/sites/get_all_password_groups/", response_model=List[PasswordGroupResponse])
+def get_all_password_groups(
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    return site_service.get_all_password_groups()
+
+
+@router.delete("/sites/delete_password_groups_by_id/{password_group_id}", response_model=PasswordGroupResponse)
+def delete_password_group(
+        password_group_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    password_group = site_service.delete_password_group(password_group_id)
+    if not password_group:
+        raise HTTPException(status_code=404, detail="PasswordGroup not found")
+    return password_group

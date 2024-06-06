@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, Integer
 from app.model.base_model import BaseModel
 from typing import List
 from sqlalchemy.orm import relationship
@@ -18,3 +18,11 @@ class Site(BaseModel):
     racks = relationship("Rack", back_populates="site")
     devices = relationship("APICControllers", back_populates="site")
     #racks = relationship("Rack", order_by="Rack.id", back_populates="site")
+
+
+class PasswordGroup(BaseModel):
+    __tablename__ = "password_groups"
+    password_group_name = Column(String, index=True, nullable=True)
+    password_group_type = Column(String, index=True, nullable=True)
+    username = Column(String, nullable=True)
+    password = Column(String, nullable=True)

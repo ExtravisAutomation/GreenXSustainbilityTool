@@ -29,6 +29,9 @@ from app.schema.site_schema import ComparisonDeviceMetricsDetails
 from app.schema.site_schema import SiteDetails_get
 import math
 
+from app.model.site import PasswordGroup
+from app.schema.site_schema import PasswordGroupCreate
+
 
 class SiteService:
     def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
@@ -864,3 +867,15 @@ class SiteService:
             "total_devices": num_devices,
             "total_cost": round(0.5 * total_pin_KW)
         }
+
+    def create_password_group(self, password_group: PasswordGroupCreate) -> PasswordGroup:
+        return self.site_repository.create_password_group(password_group)
+
+    def get_password_group(self, password_group_id: int) -> PasswordGroup:
+        return self.site_repository.get_password_group(password_group_id)
+
+    def get_all_password_groups(self) -> List[PasswordGroup]:
+        return self.site_repository.get_all_password_groups()
+
+    def delete_password_group(self, password_group_id: int):
+        return self.site_repository.delete_password_group(password_group_id)
