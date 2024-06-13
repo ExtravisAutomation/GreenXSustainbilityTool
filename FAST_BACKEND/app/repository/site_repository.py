@@ -609,8 +609,8 @@ class SiteRepository(BaseRepository):
 
             # Fetch the related PasswordGroup to include in the response
             if db_device.password_group_id:
-                db_device.password_group = session.query(PasswordGroup).filter_by(
-                    id=db_device.password_group_id).first()
+                db_device = session.query(APICControllers).options(joinedload(APICControllers.password_group)).filter(
+                    APICControllers.id == db_device.id).first()
 
             return db_device
 
