@@ -14,6 +14,7 @@ class APICControllers(BaseModel):
     site_id = Column(Integer, ForeignKey('site.id'), nullable=True)
     rack_id = Column(Integer, ForeignKey('rack.id'), nullable=True)
     credential_id = Column(Integer, ForeignKey('Device_Credential.id'), unique=True, nullable=True)
+    password_group_id = Column(Integer, ForeignKey('password_groups.id'), nullable=True)
 
     # Correcting the relationship definition for credentials
     #credential = relationship("DeviceCredential", back_populates="device", uselist=False)

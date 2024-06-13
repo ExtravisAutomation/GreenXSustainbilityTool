@@ -26,3 +26,4 @@ class PasswordGroup(BaseModel):
     password_group_type = Column(String, index=True, nullable=True)
     username = Column(String, nullable=True)
     password = Column(String, nullable=True)
+    devices = relationship("APICControllers", back_populates="password_group")

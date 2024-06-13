@@ -32,6 +32,9 @@ import math
 from app.model.site import PasswordGroup
 from app.schema.site_schema import PasswordGroupCreate
 
+from app.model.APIC_controllers import APICControllers
+from app.schema.site_schema import APICControllersCreate, APICControllersUpdate
+
 
 class SiteService:
     def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
@@ -834,7 +837,7 @@ class SiteService:
 
     def get_emission_details(self, site_id: int) -> dict:
         # Get site location and additional details
-        latitude, longitude, site_name, num_devices ,site_Region= self.site_repository.get_site_location(site_id)
+        latitude, longitude, site_name, num_devices, site_Region = self.site_repository.get_site_location(site_id)
         if None in [latitude, longitude, site_name, num_devices]:
             raise ValueError("Location or site details not found.")
 
@@ -882,3 +885,15 @@ class SiteService:
 
     def delete_password_groups1(self, password_group_ids: List[int]):
         return self.site_repository.delete_password_groups12(password_group_ids)
+
+    def create_device1(self, device_data: APICControllersCreate) -> APICControllers:
+        return self.site_repository.create_device2(device_data)
+
+    def get_all_devices1(self) -> List[APICControllers]:
+        return self.site_repository.get_all_devices2()
+
+    def update_device1(self, device_id: int, device_data: APICControllersUpdate) -> APICControllers:
+        return self.site_repository.update_device2(device_id, device_data)
+
+    def delete_devices1(self, device_ids: List[int]) -> None:
+        self.site_repository.delete_devices2(device_ids)

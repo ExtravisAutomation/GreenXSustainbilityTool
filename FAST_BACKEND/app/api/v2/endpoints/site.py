@@ -32,6 +32,8 @@ from app.schema.site_schema import TrafficThroughputMetricsResponse
 
 from app.schema.site_schema import PasswordGroupResponse, PasswordGroupCreate
 
+from app.schema.site_schema import APICControllersResponse, APICControllersUpdate, APICControllersCreate
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 
 
@@ -401,6 +403,7 @@ def get_device_data_metrics(
             raise HTTPException(status_code=404, detail="No devices found for the given site.")
 
     metrics = site_service.calculate_device_data_by_name_with_filter(site_id, device_name, duration)
+    print("ENDPOINTTTTTTTT METRIXXXXXXXX", metrics, file=sys.stderr)
     # response_data = []
     message = "Device data metrics retrieved successfully."
     issue_detected = False
@@ -737,3 +740,72 @@ def delete_password_groups(
         data=None,
         status_code=200
     )
+
+
+@router.post("sites/create_devices", response_model=CustomResponse[APICControllersResponse])
+@inject
+def create_device(
+        device_data: APICControllersCreate,
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        device = site_service.create_device1(device_data)
+        return CustomResponse(
+            message="Device created successfully.",
+            data=device,
+            status_code=200
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("sites/get_all_devices", response_model=CustomResponse[List[APICControllersResponse]])
+@inject
+def get_all_devices(
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        devices = site_service.get_all_devices1()
+        return CustomResponse(
+            message="Devices fetched successfully.",
+            data=devices,
+            status_code=200
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("sites/update_device/{device_id}", response_model=CustomResponse[APICControllersResponse])
+@inject
+def update_device(
+        device_id: int,
+        device_data: APICControllersUpdate,
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        device = site_service.update_device1(device_id, device_data)
+        return CustomResponse(
+            message="Device updated successfully.",
+            data=device,
+            status_code=200
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete("site/delete_devices", response_model=CustomResponse[None])
+@inject
+def delete_devices(
+        device_ids: List[int],
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        site_service.delete_devices1(device_ids)
+        return CustomResponse(
+            message="Devices deleted successfully.",
+            data=None,
+            status_code=200
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
