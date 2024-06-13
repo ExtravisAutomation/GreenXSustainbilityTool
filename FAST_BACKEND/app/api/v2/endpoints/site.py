@@ -797,7 +797,7 @@ def update_device(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("/sites/delete_devices", response_model=CustomResponse[None])
+@router.post("/sites/delete_devices", response_model=CustomResponse[None])
 @inject
 def delete_devices(
         device_ids: List[int],
