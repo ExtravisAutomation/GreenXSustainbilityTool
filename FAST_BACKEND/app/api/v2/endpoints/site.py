@@ -742,7 +742,7 @@ def delete_password_groups(
     )
 
 
-@router.post("sites/create_devices", response_model=CustomResponse[APICControllersResponse])
+@router.post("sites/create_devices", response_model=CustomResponse[dict])
 @inject
 def create_device(
         device_data: APICControllersCreate,
