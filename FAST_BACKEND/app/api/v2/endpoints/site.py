@@ -724,14 +724,16 @@ def get_all_password_groups(
     )
 
 
-@router.delete("/sites/delete_password_groups_by_id/{password_group_id}", response_model=PasswordGroupResponse)
+@router.delete("/sites/delete_password_groups_by_ids/", response_model=CustomResponse[None])
 @inject
-def delete_password_group(
-        password_group_id: int,
+def delete_password_groups(
+        password_group_ids: List[int],
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    password_group = site_service.delete_password_group(password_group_id)
-    if not password_group:
-        raise HTTPException(status_code=404, detail="PasswordGroup not found")
-    return password_group
+    delet = site_service.delete_password_groups1(password_group_ids)
+    return CustomResponse(
+        message="Password groups deleted successfully.",
+        data=None,
+        status_code=200
+    )

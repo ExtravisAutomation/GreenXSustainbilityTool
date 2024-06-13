@@ -588,3 +588,12 @@ class SiteRepository(BaseRepository):
             self.db.delete(password_group)
             self.db.commit()
         return password_group
+
+    def delete_password_groups12(self, password_group_ids: List[int]):
+        with self.session_factory() as session:
+            password_groups = session.query(PasswordGroup).filter(PasswordGroup.id.in_(password_group_ids)).all()
+            if password_groups:
+                session.query(PasswordGroup).filter(PasswordGroup.id.in_(password_group_ids)).delete(
+                    synchronize_session='fetch')
+                session.commit()
+            return password_groups
