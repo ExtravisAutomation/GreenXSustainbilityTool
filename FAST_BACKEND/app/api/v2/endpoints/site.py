@@ -693,6 +693,7 @@ def create_password_group(
 
 
 @router.get("/sites/get_password_group_by_id/{password_group_id}", response_model=PasswordGroupResponse)
+@inject
 def get_password_group(
         password_group_id: int,
         current_user: User = Depends(get_current_active_user),
@@ -705,6 +706,7 @@ def get_password_group(
 
 
 @router.get("/sites/get_all_password_groups/", response_model=List[PasswordGroupResponse])
+@inject
 def get_all_password_groups(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
@@ -713,6 +715,7 @@ def get_all_password_groups(
 
 
 @router.delete("/sites/delete_password_groups_by_id/{password_group_id}", response_model=PasswordGroupResponse)
+@inject
 def delete_password_group(
         password_group_id: int,
         current_user: User = Depends(get_current_active_user),
