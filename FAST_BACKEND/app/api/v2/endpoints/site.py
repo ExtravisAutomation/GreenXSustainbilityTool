@@ -724,7 +724,7 @@ def get_all_password_groups(
     )
 
 
-@router.delete("/sites/delete_password_groups_by_ids/", response_model=CustomResponse[None])
+@router.post("/sites/delete_password_groups_by_ids/", response_model=CustomResponse[None])
 @inject
 def delete_password_groups(
         password_group_ids: List[int],
