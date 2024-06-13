@@ -27,6 +27,8 @@ from app.model.DevicesSntc import DevicesSntc
 from app.model.site import PasswordGroup
 from app.schema.site_schema import PasswordGroupCreate
 
+from app.schema.site_schema import APICControllersCreate, APICControllersUpdate
+
 
 class SiteRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
@@ -597,3 +599,40 @@ class SiteRepository(BaseRepository):
                     synchronize_session='fetch')
                 session.commit()
             return password_groups
+
+    def create_device2(self, device_data: APICControllersCreate) -> APICControllers:
+        with self.session_factory() as session:
+            db_device = APICControllers(**device_data.dict())
+            session.add(db_device)
+            session.commit()
+            session.refresh(db_device)
+            return db_device
+
+    def get_all_devices2(self) -> List[APICControllers]:
+        with self.session_factory() as session:
+            devices = session.query(
+                APICControllers,
+                PasswordGroup.password_group_name
+            ).outerjoin(PasswordGroup, APICControllers.password_group_id == PasswordGroup.id).all()
+
+            result = []
+            for device, password_group_name in devices:
+                device_data = device.__dict__
+                device_data["password_group_name"] = password_group_name
+                result.append(device_data)
+
+            return result
+
+    def update_device2(self, device_id: int, device_data: APICControllersUpdate) -> APICControllers:
+        with self.session_factory() as session:
+            db_device = session.query(APICControllers).filter(APICControllers.id == device_id).first()
+            for key, value in device_data.dict().items():
+                setattr(db_device, key, value)
+            session.commit()
+            session.refresh(db_device)
+            return db_device
+
+    def delete_devices2(self, device_ids: List[int]) -> None:
+        with self.session_factory() as session:
+            session.query(APICControllers).filter(APICControllers.id.in_(device_ids)).delete(synchronize_session=False)
+            session.commit()

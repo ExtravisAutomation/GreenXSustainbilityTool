@@ -746,6 +746,7 @@ def delete_password_groups(
 @inject
 def create_device(
         device_data: APICControllersCreate,
+        current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
@@ -762,6 +763,7 @@ def create_device(
 @router.get("sites/get_all_devices", response_model=CustomResponse[List[APICControllersResponse]])
 @inject
 def get_all_devices(
+        current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
@@ -780,6 +782,7 @@ def get_all_devices(
 def update_device(
         device_id: int,
         device_data: APICControllersUpdate,
+        current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
@@ -797,6 +800,7 @@ def update_device(
 @inject
 def delete_devices(
         device_ids: List[int],
+        current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
