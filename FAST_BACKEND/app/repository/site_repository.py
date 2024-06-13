@@ -606,6 +606,12 @@ class SiteRepository(BaseRepository):
             session.add(db_device)
             session.commit()
             session.refresh(db_device)
+
+            # Fetch the related PasswordGroup to include in the response
+            if db_device.password_group_id:
+                db_device.password_group = session.query(PasswordGroup).filter_by(
+                    id=db_device.password_group_id).first()
+
             return db_device
 
     def get_all_devices2(self) -> List[APICControllers]:
