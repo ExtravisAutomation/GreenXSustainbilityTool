@@ -891,12 +891,10 @@ class SiteService:
     def create_device1(self, device_data: APICControllersCreate) -> APICControllers:
         device = self.site_repository.create_device2(device_data)
 
-        # Manually fetch the password_group_name
         password_group_name = None
         if device.password_group_id:
-            password_group = self.site_repository.get_password_group_by_id(device.password_group_id)
-            if password_group:
-                password_group_name = password_group.password_group_name
+            if device.password_group:
+                password_group_name = device.password_group.password_group_name
 
         # Create response data
         response_data = APICControllersResponse.from_orm(device)
