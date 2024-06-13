@@ -568,11 +568,12 @@ class SiteRepository(BaseRepository):
                 return None, None
 
     def create_password_group(self, password_group: PasswordGroupCreate) -> PasswordGroup:
-        db_password_group = PasswordGroup(**password_group.dict())
-        self.db.add(db_password_group)
-        self.db.commit()
-        self.db.refresh(db_password_group)
-        return db_password_group
+        with self.session_factory() as session:
+            db_password_group = PasswordGroup(**password_group.dict())
+            session.add(db_password_group)
+            session.commit()
+            session.refresh(db_password_group)
+            return db_password_group
 
     def get_password_group(self, password_group_id: int) -> PasswordGroup:
         return self.db.query(PasswordGroup).filter(PasswordGroup.id == password_group_id).first()

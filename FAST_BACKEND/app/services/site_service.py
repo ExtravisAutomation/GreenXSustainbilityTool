@@ -868,7 +868,7 @@ class SiteService:
             "total_cost": round(0.5 * total_pin_KW)
         }
 
-    def create_password_group(self, password_group: PasswordGroupCreate) -> PasswordGroup:
+    def create_password_group1(self, password_group: PasswordGroupCreate) -> PasswordGroup:
         return self.site_repository.create_password_group(password_group)
 
     def get_password_group(self, password_group_id: int) -> PasswordGroup:
