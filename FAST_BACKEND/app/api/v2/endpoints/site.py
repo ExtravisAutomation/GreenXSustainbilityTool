@@ -687,7 +687,12 @@ def create_password_group(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
-        return site_service.create_password_group1(password_group)
+        dt = site_service.create_password_group1(password_group)
+        return CustomResponse(
+            message="Password group created successfully.",
+            data=dt,
+            status_code=200
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
