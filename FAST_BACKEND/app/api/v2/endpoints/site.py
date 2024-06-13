@@ -679,7 +679,7 @@ def get_site_emission_details(
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.post("/sites/create_password_groups", response_model=CustomResponse[PasswordGroupResponse])
+@router.post("/sites/create_password_groups", response_model=CustomResponse[dict])
 @inject
 def create_password_group(
         password_group: PasswordGroupCreate,
