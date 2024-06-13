@@ -579,7 +579,8 @@ class SiteRepository(BaseRepository):
         return self.db.query(PasswordGroup).filter(PasswordGroup.id == password_group_id).first()
 
     def get_all_password_groups(self) -> List[PasswordGroup]:
-        return self.db.query(PasswordGroup).all()
+        with self.session_factory() as session:
+            return session.query(PasswordGroup).all()
 
     def delete_password_group(self, password_group_id: int):
         password_group = self.db.query(PasswordGroup).filter(PasswordGroup.id == password_group_id).first()

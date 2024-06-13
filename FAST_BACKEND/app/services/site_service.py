@@ -874,7 +874,7 @@ class SiteService:
     def get_password_group(self, password_group_id: int) -> PasswordGroup:
         return self.site_repository.get_password_group(password_group_id)
 
-    def get_all_password_groups(self) -> List[PasswordGroup]:
+    def get_all_password_groups1(self) -> List[PasswordGroup]:
         return self.site_repository.get_all_password_groups()
 
     def delete_password_group(self, password_group_id: int):
