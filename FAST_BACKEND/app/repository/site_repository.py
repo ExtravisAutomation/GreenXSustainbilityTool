@@ -633,7 +633,7 @@ class SiteRepository(BaseRepository):
         with self.session_factory() as session:
             db_device = session.query(APICControllers).filter(APICControllers.id == device_id).first()
             for key, value in device_data.dict().items():
-                if value is not None and value != '' and value != 'string':
+                if value is not None and value != '' and value != 'string' and value != 0:
                     setattr(db_device, key, value)
             session.commit()
             session.refresh(db_device)
