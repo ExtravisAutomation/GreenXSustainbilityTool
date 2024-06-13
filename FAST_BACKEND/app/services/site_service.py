@@ -35,6 +35,8 @@ from app.schema.site_schema import PasswordGroupCreate
 from app.model.APIC_controllers import APICControllers
 from app.schema.site_schema import APICControllersCreate, APICControllersUpdate
 
+from app.schema.site_schema import APICControllersResponse
+
 
 class SiteService:
     def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
@@ -887,7 +889,19 @@ class SiteService:
         return self.site_repository.delete_password_groups12(password_group_ids)
 
     def create_device1(self, device_data: APICControllersCreate) -> APICControllers:
-        return self.site_repository.create_device2(device_data)
+        device = self.site_repository.create_device(device_data)
+
+        # Manually fetch the password_group_name
+        password_group_name = None
+        if device.password_group_id:
+            password_group = self.site_repository.get_password_group_by_id(device.password_group_id)
+            if password_group:
+                password_group_name = password_group.password_group_name
+
+        # Create response data
+        response_data = APICControllersResponse.from_orm(device)
+        response_data.password_group_name = password_group_name
+        return response_data
 
     def get_all_devices1(self) -> List[APICControllers]:
         return self.site_repository.get_all_devices2()
