@@ -889,7 +889,7 @@ class SiteService:
         return self.site_repository.delete_password_groups12(password_group_ids)
 
     def create_device1(self, device_data: APICControllersCreate) -> APICControllers:
-        device = self.site_repository.create_device(device_data)
+        device = self.site_repository.create_device2(device_data)
 
         # Manually fetch the password_group_name
         password_group_name = None
