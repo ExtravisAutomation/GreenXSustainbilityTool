@@ -742,7 +742,7 @@ def delete_password_groups(
     )
 
 
-@router.post("sites/create_devices", response_model=CustomResponse[APICControllersResponse])
+@router.post("/sites/create_devices", response_model=CustomResponse[APICControllersResponse])
 @inject
 def create_device(
         device_data: APICControllersCreate,
@@ -761,7 +761,7 @@ def create_device(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("sites/get_all_devices", response_model=CustomResponse[List[APICControllersResponse]])
+@router.get("/sites/get_all_devices", response_model=CustomResponse[List[APICControllersResponse]])
 @inject
 def get_all_devices(
         current_user: User = Depends(get_current_active_user),
@@ -778,7 +778,7 @@ def get_all_devices(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("sites/update_device/{device_id}", response_model=CustomResponse[APICControllersResponse])
+@router.post("/sites/update_device/{device_id}", response_model=CustomResponse[APICControllersResponse])
 @inject
 def update_device(
         device_id: int,
@@ -797,7 +797,7 @@ def update_device(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("site/delete_devices", response_model=CustomResponse[None])
+@router.delete("/sites/delete_devices", response_model=CustomResponse[None])
 @inject
 def delete_devices(
         device_ids: List[int],
