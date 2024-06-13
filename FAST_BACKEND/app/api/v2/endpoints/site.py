@@ -742,7 +742,7 @@ def delete_password_groups(
     )
 
 
-@router.post("sites/create_devices", response_model=CustomResponse[dict])
+@router.post("sites/create_devices", response_model=CustomResponse[APICControllersResponse])
 @inject
 def create_device(
         device_data: APICControllersCreate,
@@ -751,9 +751,10 @@ def create_device(
 ):
     try:
         device = site_service.create_device1(device_data)
+        response_data = APICControllersResponse.from_orm(device)
         return CustomResponse(
             message="Device created successfully.",
-            data=device,
+            data=response_data,
             status_code=200
         )
     except Exception as e:
