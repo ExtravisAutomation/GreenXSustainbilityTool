@@ -22,4 +22,5 @@ class APICControllers(BaseModel):
 
     rack = relationship("Rack", back_populates="devices")
     site = relationship("Site", back_populates="devices")
+    password_group = relationship("PasswordGroup", back_populates="devices")
     #inventories = relationship("DeviceInventories", back_populates="device")
