@@ -716,7 +716,12 @@ def get_all_password_groups(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    return site_service.get_all_password_groups1()
+    dta = site_service.get_all_password_groups1()
+    return CustomResponse(
+        message="Password groups fetched successfully.",
+        data=dta,
+        status_code=200
+    )
 
 
 @router.delete("/sites/delete_password_groups_by_id/{password_group_id}", response_model=PasswordGroupResponse)
