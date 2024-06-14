@@ -1,5 +1,5 @@
 from app.schema.base_schema import ModelBaseInfo, FindBase, SearchOptions, FindResult, Blank
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, Field
 from typing import Generic, TypeVar, Optional, List, Dict
 from pydantic.generics import GenericModel
 from datetime import datetime
@@ -239,8 +239,11 @@ class APICControllersCreate(BaseModel):
     device_name: Optional[str]
     site_id: Optional[int]
     rack_id: Optional[int]
-    ru: Optional[int]
+    ru: Optional[int] = Field(None, alias='rack_unit')
     password_group_id: Optional[int]
+
+    class Config:
+        allow_population_by_field_name = True
 
 
 class APICControllersUpdate(BaseModel):
@@ -249,8 +252,11 @@ class APICControllersUpdate(BaseModel):
     device_name: Optional[str]
     site_id: Optional[int]
     rack_id: Optional[int]
-    ru: Optional[int]
+    ru: Optional[int] = Field(None, alias='rack_unit')
     password_group_id: Optional[int]
+
+    class Config:
+        allow_population_by_field_name = True
 
 
 class APICControllersResponse(BaseModel):
@@ -260,9 +266,10 @@ class APICControllersResponse(BaseModel):
     device_name: Optional[str]
     site_name: Optional[str]
     rack_name: Optional[str]
-    ru: Optional[int]
+    ru: Optional[int] = Field(None, alias='rack_unit')
     password_group_id: Optional[int]
     password_group_name: Optional[str]
 
     class Config:
         orm_mode = True
+        allow_population_by_field_name = True
