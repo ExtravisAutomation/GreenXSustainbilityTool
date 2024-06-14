@@ -750,8 +750,7 @@ def create_device(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
-        device = site_service.create_device1(device_data)
-        response_data = APICControllersResponse.from_orm(device)
+        response_data = site_service.create_device1(device_data)
         return CustomResponse(
             message="Device created successfully.",
             data=response_data,
@@ -759,7 +758,6 @@ def create_device(
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
 
 @router.get("/sites/get_all_devices", response_model=CustomResponse[List[APICControllersResponse]])
 @inject

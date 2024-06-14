@@ -233,16 +233,13 @@ class PasswordGroupResponse(BaseModel):
         orm_mode = True
 
 
-
-
 class APICControllersCreate(BaseModel):
     ip_address: str
     device_type: Optional[str]
     device_name: Optional[str]
-    #OnBoardingStatus: Optional[bool]
     site_id: Optional[int]
     rack_id: Optional[int]
-    #credential_id: Optional[int]
+    ru: Optional[int]
     password_group_id: Optional[int]
 
 
@@ -250,10 +247,9 @@ class APICControllersUpdate(BaseModel):
     ip_address: Optional[str]
     device_type: Optional[str]
     device_name: Optional[str]
-    #OnBoardingStatus: Optional[bool]
     site_id: Optional[int]
     rack_id: Optional[int]
-    #credential_id: Optional[int]
+    ru: Optional[int]
     password_group_id: Optional[int]
 
 
@@ -262,15 +258,11 @@ class APICControllersResponse(BaseModel):
     ip_address: str
     device_type: Optional[str]
     device_name: Optional[str]
-    #OnBoardingStatus: Optional[bool]
-    site_id: Optional[int]
-    rack_id: Optional[int]
-    #credential_id: Optional[int]
+    site_name: Optional[str]
+    rack_name: Optional[str]
+    ru: Optional[int]
     password_group_id: Optional[int]
     password_group_name: Optional[str]
 
     class Config:
         orm_mode = True
-
-
-

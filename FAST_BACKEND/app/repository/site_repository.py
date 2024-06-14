@@ -600,6 +600,19 @@ class SiteRepository(BaseRepository):
                 session.commit()
             return password_groups
 
+    # def create_device2(self, device_data: APICControllersCreate) -> APICControllers:
+    #     with self.session_factory() as session:
+    #         db_device = APICControllers(**device_data.dict())
+    #         session.add(db_device)
+    #         session.commit()
+    #         session.refresh(db_device)
+    #
+    #         # Fetch the related PasswordGroup to include in the response
+    #         if db_device.password_group_id:
+    #             db_device = session.query(APICControllers).options(joinedload(APICControllers.password_group)).filter(
+    #                 APICControllers.id == db_device.id).first()
+    #
+    #         return db_device
     def create_device2(self, device_data: APICControllersCreate) -> APICControllers:
         with self.session_factory() as session:
             db_device = APICControllers(**device_data.dict())
@@ -607,12 +620,16 @@ class SiteRepository(BaseRepository):
             session.commit()
             session.refresh(db_device)
 
-            # Fetch the related PasswordGroup to include in the response
-            if db_device.password_group_id:
-                db_device = session.query(APICControllers).options(joinedload(APICControllers.password_group)).filter(
-                    APICControllers.id == db_device.id).first()
+            # Fetch the related PasswordGroup, Site, and Rack to include in the response
+            if db_device.password_group_id or db_device.site_id or db_device.rack_id:
+                db_device = session.query(APICControllers).options(
+                    joinedload(APICControllers.password_group),
+                    joinedload(APICControllers.site),
+                    joinedload(APICControllers.rack)
+                ).filter(APICControllers.id == db_device.id).first()
 
             return db_device
+
 
     def get_all_devices2(self) -> List[APICControllers]:
         with self.session_factory() as session:

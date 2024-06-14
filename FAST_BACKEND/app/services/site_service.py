@@ -888,18 +888,43 @@ class SiteService:
     def delete_password_groups1(self, password_group_ids: List[int]):
         return self.site_repository.delete_password_groups12(password_group_ids)
 
-    def create_device1(self, device_data: APICControllersCreate) -> APICControllers:
+    # def create_device1(self, device_data: APICControllersCreate) -> APICControllers:
+    #     device = self.site_repository.create_device2(device_data)
+    #
+    #     password_group_name = None
+    #     if device.password_group_id:
+    #         if device.password_group:
+    #             password_group_name = device.password_group.password_group_name
+    #
+    #     # Create response data
+    #     response_data = APICControllersResponse.from_orm(device)
+    #     response_data.password_group_name = password_group_name
+    #     return response_data
+
+    def create_device1(self, device_data: APICControllersCreate) -> APICControllersResponse:
         device = self.site_repository.create_device2(device_data)
 
         password_group_name = None
+        site_name = None
+        rack_name = None
         if device.password_group_id:
             if device.password_group:
                 password_group_name = device.password_group.password_group_name
+        if device.site_id:
+            if device.site:
+                site_name = device.site.site_name  # Correct column name for site name
+        if device.rack_id:
+            if device.rack:
+                rack_name = device.rack.rack_name  # Correct column name for rack name
 
         # Create response data
         response_data = APICControllersResponse.from_orm(device)
         response_data.password_group_name = password_group_name
+        response_data.site_name = site_name
+        response_data.rack_name = rack_name
+        response_data.ru = device.rack_unit  # Corresponding to ru
         return response_data
+
 
     def get_all_devices1(self) -> List[APICControllers]:
         return self.site_repository.get_all_devices2()
