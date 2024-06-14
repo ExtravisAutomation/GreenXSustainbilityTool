@@ -646,6 +646,16 @@ class SiteRepository(BaseRepository):
 
             return result
 
+    # def update_device2(self, device_id: int, device_data: APICControllersUpdate) -> APICControllers:
+    #     with self.session_factory() as session:
+    #         db_device = session.query(APICControllers).filter(APICControllers.id == device_id).first()
+    #         for key, value in device_data.dict().items():
+    #             if value is not None and value != '' and value != 'string' and value != 0:
+    #                 setattr(db_device, key, value)
+    #         session.commit()
+    #         session.refresh(db_device)
+    #         return db_device
+
     def update_device2(self, device_id: int, device_data: APICControllersUpdate) -> APICControllers:
         with self.session_factory() as session:
             db_device = session.query(APICControllers).filter(APICControllers.id == device_id).first()
@@ -654,7 +664,17 @@ class SiteRepository(BaseRepository):
                     setattr(db_device, key, value)
             session.commit()
             session.refresh(db_device)
+
+            # Fetch the related PasswordGroup, Site, and Rack to include in the response
+            if db_device.password_group_id or db_device.site_id or db_device.rack_id:
+                db_device = session.query(APICControllers).options(
+                    joinedload(APICControllers.password_group),
+                    joinedload(APICControllers.site),
+                    joinedload(APICControllers.rack)
+                ).filter(APICControllers.id == db_device.id).first()
+
             return db_device
+
 
     def delete_devices2(self, device_ids: List[int]) -> None:
         with self.session_factory() as session:

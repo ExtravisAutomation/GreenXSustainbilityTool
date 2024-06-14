@@ -785,10 +785,10 @@ def update_device(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
-        device = site_service.update_device1(device_id, device_data)
+        response_data = site_service.update_device1(device_id, device_data)
         return CustomResponse(
             message="Device updated successfully.",
-            data=device,
+            data=response_data,
             status_code=200
         )
     except Exception as e:
