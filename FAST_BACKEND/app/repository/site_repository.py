@@ -642,6 +642,9 @@ class SiteRepository(BaseRepository):
             for device, password_group_name in devices:
                 device_data = device.__dict__
                 device_data["password_group_name"] = password_group_name
+                device_data["site_name"] = device.site.site_name if device.site else None
+                device_data["rack_name"] = device.rack.rack_name if device.rack else None
+                device_data["rack_unit"] = device.rack_unit
                 result.append(device_data)
 
             return result
