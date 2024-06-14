@@ -922,7 +922,7 @@ class SiteService:
         response_data.password_group_name = password_group_name
         response_data.site_name = site_name
         response_data.rack_name = rack_name
-        response_data.ru = device.rack_unit  # Corresponding to ru
+        response_data.rack_unit = device.rack_unit  # Corresponding to rack_unit
         return response_data
 
 
