@@ -33,7 +33,7 @@ from app.schema.site_schema import TrafficThroughputMetricsResponse
 from app.schema.site_schema import PasswordGroupResponse, PasswordGroupCreate
 
 from app.schema.site_schema import APICControllersResponse, APICControllersUpdate, APICControllersCreate
-
+import subprocess
 router = APIRouter(prefix="/sites", tags=["SITES"])
 
 
@@ -751,13 +751,48 @@ def create_device(
 ):
     try:
         response_data = site_service.create_device1(device_data)
+
+        # Call the main.py script with the device ID
+        device_id = response_data.id
+        main_py_path = "C:\\Users\\Hp\\PycharmProjects\\EXTRAVIS\\ONBOARDING\\main.py"
+
+        try:
+            result = subprocess.run(
+                ["python", main_py_path, str([device_id])],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            if result.returncode != 0:
+                raise HTTPException(status_code=400, detail="Failed to process device in main.py")
+        except subprocess.CalledProcessError as e:
+            raise HTTPException(status_code=400, detail=f"Failed to process device in main.py: {e.stderr}")
+
         return CustomResponse(
-            message="Device created successfully.",
+            message="Device created and processed successfully.",
             data=response_data,
             status_code=200
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+
+
+# def create_device(
+#         device_data: APICControllersCreate,
+#         current_user: User = Depends(get_current_active_user),
+#         site_service: SiteService = Depends(Provide[Container.site_service])
+# ):
+#     try:
+#         response_data = site_service.create_device1(device_data)
+#         return CustomResponse(
+#             message="Device created successfully.",
+#             data=response_data,
+#             status_code=200
+#         )
+#     except Exception as e:
+#         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/sites/get_all_devices", response_model=CustomResponse[List[APICControllersResponse]])
 @inject
