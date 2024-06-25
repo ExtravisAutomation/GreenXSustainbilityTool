@@ -1,7 +1,7 @@
 import sys
 from datetime import datetime
 from typing import List, Optional, Dict, Any
-
+from app.api.v2.endpoints.test_script import main
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -34,6 +34,10 @@ from app.schema.site_schema import PasswordGroupResponse, PasswordGroupCreate
 
 from app.schema.site_schema import APICControllersResponse, APICControllersUpdate, APICControllersCreate
 import subprocess
+import logging
+import os
+from app.ONBOARDING.main import DeviceProcessor
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 
 
@@ -750,35 +754,29 @@ def create_device(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
+        # Create the device and get the response data
         response_data = site_service.create_device1(device_data)
-
-        # Call the main.py script with the device ID
-        device_id = response_data.id
-        main_py_path = "C:\\Users\\Hp\\PycharmProjects\\EXTRAVIS\\ONBOARDING\\main.py"
-
-        try:
-            result = subprocess.run(
-                ["python", main_py_path, str([device_id])],
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            if result.returncode != 0:
-                raise HTTPException(status_code=400, detail="Failed to process device in main.py")
-        except subprocess.CalledProcessError as e:
-            raise HTTPException(status_code=400, detail=f"Failed to process device in main.py: {e.stderr}")
-
+        
+        # Extract the device ID from the response data
+        if hasattr(response_data, "id"):
+            device_id = response_data.id
+        else:
+            logging.error("Device ID not found in response data")
+            raise HTTPException(status_code=400, detail="Device ID not found in response data")
+        
+        # Initialize the DeviceProcessor and process the device by ID
+        processor = DeviceProcessor()
+        processor.get_devices_by_ids([device_id])
+ 
         return CustomResponse(
             message="Device created and processed successfully.",
             data=response_data,
             status_code=200
         )
     except Exception as e:
+        logging.error(f"Exception: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
-
-
-
-
+        
 # def create_device(
 #         device_data: APICControllersCreate,
 #         current_user: User = Depends(get_current_active_user),

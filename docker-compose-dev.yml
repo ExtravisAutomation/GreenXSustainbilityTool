@@ -46,6 +46,7 @@ services:
   influxdb_dcs_dev:
     image: influxdb:latest
     container_name: INFLUXDB_CONTAINER_DCS_dev
+    restart: always
     ports:
       - "8088:8086"
     volumes:
