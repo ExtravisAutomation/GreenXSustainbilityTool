@@ -867,8 +867,8 @@ class SiteService:
             "site_name": site_name,
             "latitude": latitude,
             "longitude": longitude,
-            "energy_consumption_KW": total_pin_KW,
-            "carbon_emission_KG": carbon_emission_KG,
+            "energy_consumption_KW": round(total_pin_KW),
+            "carbon_emission_KG": round(carbon_emission_KG),
             "total_devices": num_devices,
             "total_cost": round(0.5 * total_pin_KW)
         }
