@@ -879,9 +879,9 @@ class InfluxDBRepository:
 
     def convert_bytes(self, value):
         if value < 2 ** 30:  # Less than 1 GB
-            return f"{value / (2 ** 20):.2f}"
+            return {value / (2 ** 20)}
         else:  # 1 GB or more
-            return f"{value / (2 ** 30):.2f}"
+            return {value / (2 ** 30)}
     def get_traffic_throughput_metrics12(self, device_ips: List[str], start_date: datetime, end_date: datetime,
                                          duration_str: str) -> List[dict]:
         throughput_metrics = []
@@ -917,7 +917,7 @@ class InfluxDBRepository:
                         total_bytes_rate_last_gb = 0  # You might want to change this handling based on your needs
                     else:
                         print("elseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", file=sys.stderr)
-                        total_bytes_rate_last_gb = row['total_bytesRateLast'].apply(self.convert_bytes)  # Convert to GB
+                        total_bytes_rate_last_gb =self.convert_bytes(row['total_bytesRateLast']) # Convert to GB
                     throughput_metrics.append({
                         "time": row['_time'],
                         "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2)
