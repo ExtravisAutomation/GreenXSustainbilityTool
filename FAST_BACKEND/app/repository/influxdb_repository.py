@@ -247,15 +247,20 @@ class InfluxDBRepository:
                 power_measurements.append(power)
 
         average_power = total_power / len(power_measurements) if power_measurements else 0
+        global total_pff
 
-        total_power = int(total_power)
+        total_pff = int(total_power)
         average_power = int(average_power)
         max_power = int(max_power)
+        total_price = total_pff * 0.027
+        total_price = round(total_price)
 
         return {
-            "total_power": total_power,
+            "total_power": total_pff,
+            "total_cost": total_price,
             "average_power": average_power,
-            "max_power": max_power
+            "max_power": max_power,
+            "total_power_duration": 10,
         }
 
     def sanitize_for_json(self, obj):

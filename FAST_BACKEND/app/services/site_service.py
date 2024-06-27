@@ -101,7 +101,7 @@ class SiteService:
         device_ips = [device.ip_address for device in devices if device.ip_address]
 
         if not device_ips:
-            return {"total_power": 0, "average_power": 0, "max_power": 0}
+            return {"total_power": 0, "average_power": 0, "max_power": 0, "total_cost": 0, "total_power_duration": 0}
 
         power_metrics = self.influxdb_repository.get_site_power_metrics(device_ips)
         return power_metrics
@@ -925,7 +925,6 @@ class SiteService:
         response_data.rack_unit = device.rack_unit  # Corresponding to rack_unit
         return response_data
 
-
     def get_all_devices1(self) -> List[APICControllers]:
         return self.site_repository.get_all_devices2()
 
@@ -954,7 +953,6 @@ class SiteService:
         response_data.rack_name = rack_name
         response_data.rack_unit = device.rack_unit  # Corresponding to rack_unit
         return response_data
-
 
     def delete_devices1(self, device_ids: List[int]) -> None:
         self.site_repository.delete_devices2(device_ids)
