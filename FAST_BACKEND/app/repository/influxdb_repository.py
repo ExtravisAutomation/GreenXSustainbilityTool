@@ -246,7 +246,7 @@ class InfluxDBRepository:
             duration = result['_time'].iloc[-1] - result['_time'].iloc[0]
             duration_hours = duration.total_seconds() // 3600
             duration_minutes = (duration.total_seconds() % 3600) // 60
-            duration=f"{round(duration_hours)} h {duration_minutes} m"
+            duration=f"{round(duration_hours)} h {round(duration_minutes)} m"
             return duration
         else:
             return 0
