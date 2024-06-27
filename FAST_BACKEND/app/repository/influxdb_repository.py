@@ -224,11 +224,37 @@ class InfluxDBRepository:
         except Exception as e:
             print(f"Error executing query in InfluxDB: {e}", file=sys.stderr)
             raise
+    def get_total_duration(self,ip):
 
+        query = f'''
+            from(bucket: "{configs.INFLUXDB_BUCKET}")
+            |> range(start: -30d)
+            |> filter(fn: (r) => r["_measurement"] == "device_Total_Power" and r["ApicController_IP"] == "{ip}")
+            |> filter(fn: (r) => r["_field"] == "total_Power")
+            |> sort(columns: ["_time"])
+        '''
+
+        # Execute the query and get the result as a DataFrame
+        result = self.query_api1.query_data_frame(query)
+
+        # Ensure the result is not empty
+        if not result.empty:
+            # Convert the '_time' column to datetime if it's not already
+            result['_time'] = pd.to_datetime(result['_time'])
+
+            # Calculate the duration between the first and last timestamps
+            duration = result['_time'].iloc[-1] - result['_time'].iloc[0]
+            duration_hours = duration.total_seconds() // 3600
+            duration_minutes = (duration.total_seconds() % 3600) // 60
+            duration=f"{round(duration_hours)} h {duration_minutes} m"
+            return duration
+        else:
+            return 0
     def get_site_power_metrics(self, device_ips: List[str]) -> dict:
         total_power = 0
         max_power = 0
         power_measurements = []
+        total_power_duration=0
 
         for ip in device_ips:
             query = f'''
@@ -240,6 +266,7 @@ class InfluxDBRepository:
             '''
             result = self.query_api1.query_data_frame(query)
             print("RESULTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT", result, file=sys.stderr)
+            total_power_duration = self.get_total_duration(ip)
             if not result.empty:
                 power = result.loc[result['_field'] == 'total_Power', '_value'].values[0]
                 total_power += power
@@ -257,7 +284,7 @@ class InfluxDBRepository:
             "average_power": average_power,
             "max_power": max_power,
             "total_cost": total_price,
-            "total_power_duration":'10'
+            "total_power_duration":total_power_duration
 
         }
 
