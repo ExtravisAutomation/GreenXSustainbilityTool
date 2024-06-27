@@ -880,9 +880,9 @@ class InfluxDBRepository:
 
     def convert_bytes(self, value):
         if value < 2 ** 30:  # Less than 1 GB
-            return {value / (2 ** 20)}
+            return value / (2 ** 20)
         else:  # 1 GB or more
-            return {value / (2 ** 30)}
+            return value / (2 ** 30)
     def get_traffic_throughput_metrics12(self, device_ips: List[str], start_date: datetime, end_date: datetime,
                                          duration_str: str) -> List[dict]:
         throughput_metrics = []
