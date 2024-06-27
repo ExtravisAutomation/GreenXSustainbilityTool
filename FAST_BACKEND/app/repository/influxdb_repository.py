@@ -256,7 +256,9 @@ class InfluxDBRepository:
             "total_power": total_power,
             "average_power": average_power,
             "max_power": max_power,
-            "cost_power": total_price,
+            "total_cost": total_price,
+            "total_power_duration":'10'
+
         }
 
     def sanitize_for_json(self, obj):

@@ -97,7 +97,9 @@ class SiteDetails1(BaseModel):
 class SitePowerConsumptionResponse(BaseModel):
     total_power: Optional[float]
     average_power: Optional[float]
+    total_cost: Optional[float]
     max_power: Optional[float]
+    total_power_duration: Optional[str]
 
 
 class EnergyConsumptionMetricsDetails(BaseModel):
