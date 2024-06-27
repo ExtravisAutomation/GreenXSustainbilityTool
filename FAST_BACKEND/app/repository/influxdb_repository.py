@@ -865,7 +865,7 @@ class InfluxDBRepository:
         combined_result = pd.merge(traffic_result, power_result, on='_time', how='outer').fillna(0)
 
         for _, row in combined_result.iterrows():
-            total_bytes_rate_last_gb = row['total_bytesRateLast'] / (2 ** 30) if row['total_bytesRateLast'] > 0 else 0
+            total_bytes_rate_last_gb = row['total_bytesRateLast'].apply(self.convert_bytes) if row['total_bytesRateLast'] > 0 else 0
             pin = row['total_PIn'] if row['total_PIn'] > 0 else 1  # Avoid division by zero
             pout = row['total_POut'] if row['total_POut'] > 0 else 0
             energy_consumption = (pout / pin) * 100  # Calculate energy consumption
