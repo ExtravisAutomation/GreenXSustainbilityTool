@@ -251,7 +251,7 @@ class InfluxDBRepository:
         total_power = int(total_power)
         average_power = int(average_power)
         max_power = int(max_power)
-        total_price=total_power * 0.027 #(6.7fils/kWh)
+        total_price=round(total_power * 0.027) #(6.7fils/kWh)
         return {
             "total_power": total_power,
             "average_power": average_power,
