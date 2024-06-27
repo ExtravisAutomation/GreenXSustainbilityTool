@@ -251,11 +251,12 @@ class InfluxDBRepository:
         total_power = int(total_power)
         average_power = int(average_power)
         max_power = int(max_power)
-
+        total_price=total_power * 0.027 #(6.7fils/kWh)
         return {
             "total_power": total_power,
             "average_power": average_power,
-            "max_power": max_power
+            "max_power": max_power,
+            "cost_power": total_price,
         }
 
     def sanitize_for_json(self, obj):
@@ -872,9 +873,13 @@ class InfluxDBRepository:
                 "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2),
                 "energy_consumption": round(energy_consumption, 2)
             })
-
         return throughput_metrics
 
+    def convert_bytes(self, value):
+        if value < 2 ** 30:  # Less than 1 GB
+            return f"{value / (2 ** 20):.2f}"
+        else:  # 1 GB or more
+            return f"{value / (2 ** 30):.2f}"
     def get_traffic_throughput_metrics12(self, device_ips: List[str], start_date: datetime, end_date: datetime,
                                          duration_str: str) -> List[dict]:
         throughput_metrics = []
@@ -910,7 +915,7 @@ class InfluxDBRepository:
                         total_bytes_rate_last_gb = 0  # You might want to change this handling based on your needs
                     else:
                         print("elseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", file=sys.stderr)
-                        total_bytes_rate_last_gb = row['total_bytesRateLast'] / (2 ** 30)  # Convert to GB
+                        total_bytes_rate_last_gb = row['total_bytesRateLast'].apply(self.convert_bytes)  # Convert to GB
                     throughput_metrics.append({
                         "time": row['_time'],
                         "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2)
