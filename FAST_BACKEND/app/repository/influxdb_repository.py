@@ -279,25 +279,20 @@ class InfluxDBRepository:
         total_pff = int(total_power)
         average_power = int(average_power)
         max_power = int(max_power)
-<<<<<<< HEAD
         total_price = total_pff * 0.027
         total_price = round(total_price)
 
-=======
         total_price=round(total_power * 0.027) #(6.7fils/kWh)
->>>>>>> 5ea5686a3bbb4136da4ab68615338fd866057965
         return {
             "total_power": total_pff,
             "total_cost": total_price,
             "average_power": average_power,
             "max_power": max_power,
-<<<<<<< HEAD
             "total_power_duration": 10,
-=======
             "total_cost": total_price,
             "total_power_duration":total_power_duration
 
->>>>>>> 5ea5686a3bbb4136da4ab68615338fd866057965
+
         }
 
     def sanitize_for_json(self, obj):
