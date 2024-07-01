@@ -959,5 +959,7 @@ class SiteService:
         self.site_repository.delete_devices2(device_ids)
 
     def get_all_device_types(self) -> List[str]:
-        return self.site_repository.get_all_device_types1()
+        device_types = self.site_repository.get_all_device_types1()
+        # Ensure it returns a valid list even if empty
+        return device_types if device_types else []
 
