@@ -671,6 +671,11 @@ class SiteRepository(BaseRepository):
 
             return result
 
+    def get_all_device_types1(self) -> List[str]:
+        with self.session_factory() as session:
+            device_types = session.query(APICControllers.device_type).distinct().all()
+            return [device_type[0] for device_type in device_types]
+
     # def update_device2(self, device_id: int, device_data: APICControllersUpdate) -> APICControllers:
     #     with self.session_factory() as session:
     #         db_device = session.query(APICControllers).filter(APICControllers.id == device_id).first()

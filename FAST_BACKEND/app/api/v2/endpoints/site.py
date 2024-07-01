@@ -756,18 +756,18 @@ def create_device(
     try:
         # Create the device and get the response data
         response_data = site_service.create_device1(device_data)
-        
+
         # Extract the device ID from the response data
         if hasattr(response_data, "id"):
             device_id = response_data.id
         else:
             logging.error("Device ID not found in response data")
             raise HTTPException(status_code=400, detail="Device ID not found in response data")
-        
+
         # Initialize the DeviceProcessor and process the device by ID
         processor = DeviceProcessor()
         processor.get_devices_by_ids([device_id])
- 
+
         return CustomResponse(
             message="Device created and processed successfully.",
             data=response_data,
@@ -776,7 +776,8 @@ def create_device(
     except Exception as e:
         logging.error(f"Exception: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
-        
+
+
 # def create_device(
 #         device_data: APICControllersCreate,
 #         current_user: User = Depends(get_current_active_user),
@@ -845,3 +846,19 @@ def delete_devices(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
+@router.get("/sites/get_all_device_types", response_model=CustomResponse[List[str]])
+@inject
+def get_all_device_types(
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        device_types = site_service.get_all_device_types()
+        return CustomResponse(
+            message="Device types fetched successfully.",
+            data=device_types,
+            status_code=200
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
