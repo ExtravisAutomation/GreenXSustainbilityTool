@@ -6,7 +6,7 @@ from app.ONBOARDING.Models.model import Device, PasswordGroup,APICController,Dev
 from app.ONBOARDING.Database.db_connector import DBConnection
 import random
 from datetime import datetime
-from datastorage.datastore import DataStorage
+from app.ONBOARDING.datastorage.datastore import DataStorage
 # Setup logging
 import re
 logging.basicConfig(
