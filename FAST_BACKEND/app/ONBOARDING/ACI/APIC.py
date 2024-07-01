@@ -2,8 +2,8 @@ import logging
 from sqlalchemy.exc import SQLAlchemyError
 import requests
 from sqlalchemy.orm import sessionmaker
-from app.Models.model import Device, PasswordGroup,APICController,DeviceInventory
-from app.Database.db_connector import DBConnection
+from app.ONBOARDING.Models.model import Device, PasswordGroup,APICController,DeviceInventory
+from app.ONBOARDING.Database.db_connector import DBConnection
 import random
 from datetime import datetime
 from datastorage.datastore import DataStorage

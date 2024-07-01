@@ -1,8 +1,8 @@
 import logging
-from app.Database.db_connector import DBConnection  # Import DBConnection correctly based on your project structure
-from app.Models.model import Device, PasswordGroup
-from app.ACI.APIC import APIClient
-from app.NXos.nxos import NXOS
+from app.ONBOARDING.Database.db_connector import DBConnection  # Import DBConnection correctly based on your project structure
+from app.ONBOARDING.Models.model import Device, PasswordGroup
+from app.ONBOARDING.ACI.APIC import APIClient
+from app.ONBOARDING.NXos.nxos import NXOS
 import sys
 import ast
 

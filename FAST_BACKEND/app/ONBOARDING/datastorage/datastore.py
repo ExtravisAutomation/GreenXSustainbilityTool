@@ -4,7 +4,7 @@ from datetime import datetime
 import re
 import logging
 
-from app.Models.model import Device, DeviceInventory, APICController
+from app.ONBOARDING.Models.model import Device, DeviceInventory, APICController
 
 logging.basicConfig(
     level=logging.INFO,

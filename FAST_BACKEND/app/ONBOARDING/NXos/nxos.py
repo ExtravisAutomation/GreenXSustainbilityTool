@@ -1,14 +1,14 @@
 import logging
 from sqlalchemy.exc import SQLAlchemyError
 import requests
-from app.sqlalchemy.orm import sessionmaker
-from app.Models.model import Device, PasswordGroup, APICController, DeviceInventory
-from app.Database.db_connector import DBConnection
+from app.ONBOARDING.sqlalchemy.orm import sessionmaker
+from app.ONBOARDING.Models.model import Device, PasswordGroup, APICController, DeviceInventory
+from app.ONBOARDING.Database.db_connector import DBConnection
 import random
 from datetime import datetime
 
-from app.datastorage import DataStorage
-from ssh_command.ssh_cli import sshCommand  # Assuming sshCommand class implementation
+from app.ONBOARDING.datastorage import DataStorage
+from app.ONBOARDING.ssh_command.ssh_cli import sshCommand  # Assuming sshCommand class implementation
 import re
 
 # Setup logging
