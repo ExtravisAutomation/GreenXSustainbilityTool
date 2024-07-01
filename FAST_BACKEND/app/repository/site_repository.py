@@ -650,24 +650,32 @@ class SiteRepository(BaseRepository):
 
     def get_all_devices2(self) -> List[APICControllers]:
         with self.session_factory() as session:
-            # Create an alias for DeviceInventory to avoid conflicts
+            # Alias the DeviceInventory table
             device_inventory_alias = aliased(DeviceInventory)
 
-            # Update the query to include a join with DeviceInventory and filter out leaf and spine roles
+            # Manually join the APICControllers, PasswordGroup, and DeviceInventory tables
             devices = session.query(
                 APICControllers,
                 PasswordGroup.password_group_name
             ).outerjoin(PasswordGroup, APICControllers.password_group_id == PasswordGroup.id) \
                 .outerjoin(device_inventory_alias, APICControllers.id == device_inventory_alias.apic_controller_id) \
-                .filter(device_inventory_alias.role.notin_(["leaf", "spine"])).all()
+                .filter(and_(
+                device_inventory_alias.role != 'leaf',
+                device_inventory_alias.role != 'spine'
+            )).all()
 
             result = []
             for device, password_group_name in devices:
-                device_data = device.__dict__.copy()  # Create a copy to avoid modifying the original object
-                device_data["password_group_name"] = password_group_name
-                device_data["site_name"] = device.site.site_name if device.site else None
-                device_data["rack_name"] = device.rack.rack_name if device.rack else None
-                device_data["rack_unit"] = device.rack_unit
+                device_data = {
+                    "ip_address": device.ip_address,
+                    "device_type": device.device_type,
+                    "device_name": device.device_name,
+                    "OnBoardingStatus": device.OnBoardingStatus,
+                    "site_name": device.site.site_name if device.site else None,
+                    "rack_name": device.rack.rack_name if device.rack else None,
+                    "rack_unit": device.rack_unit,
+                    "password_group_name": password_group_name
+                }
                 result.append(device_data)
 
             return result
