@@ -7,6 +7,7 @@ from .device_credentials import DeviceCredential  # Importing the DeviceCredenti
 class APICControllers(BaseModel):
     __tablename__ = "Devices"
 
+    id = Column(Integer, primary_key=True)
     ip_address = Column(String(255), unique=False, index=True)
     device_type = Column(String(200), nullable=True)
     device_name = Column(String(200), nullable=True)
@@ -16,12 +17,8 @@ class APICControllers(BaseModel):
     rack_unit = Column(Integer, nullable=True)
     credential_id = Column(Integer, ForeignKey('Device_Credential.id'), unique=True, nullable=True)
     password_group_id = Column(Integer, ForeignKey('password_groups.id'), nullable=True)
-
-    # Correcting the relationship definition for credentials
-    #credential = relationship("DeviceCredential", back_populates="device", uselist=False)
-    #credential = relationship("DeviceCredential", back_populates="device", foreign_keys=[credential_id], uselist=False)
-
+    node_id = Column(Integer)
     rack = relationship("Rack", back_populates="devices")
     site = relationship("Site", back_populates="devices")
     password_group = relationship("PasswordGroup", back_populates="devices")
-    #inventories = relationship("DeviceInventories", back_populates="device")
+    deviceInventory = relationship("DeviceInventory", back_populates="apic_controller")
