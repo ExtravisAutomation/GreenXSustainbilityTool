@@ -41,4 +41,4 @@ class DeviceInventory(BaseModel):
     tag_id = Column(String(255), nullable=True)
     power_utilization = None
     apic_controller_id = Column(Integer, ForeignKey('apic_controllers.id'))
-    apic_controller = relationship("APICController", back_populates="deviceInventory")
+    apic_controller = relationship("APICControllers", back_populates="deviceInventory")

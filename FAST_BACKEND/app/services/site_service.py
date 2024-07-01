@@ -101,7 +101,11 @@ class SiteService:
         device_ips = [device.ip_address for device in devices if device.ip_address]
 
         if not device_ips:
+<<<<<<< HEAD
             return {"total_power": 0, "average_power": 0, "max_power": 0, "total_cost": 0, "total_power_duration": 0}
+=======
+            return {"total_power": 0, "average_power": 0, "max_power": 0,"total_cost": 0, "total_power_duration":0}
+>>>>>>> 5ea5686a3bbb4136da4ab68615338fd866057965
 
         power_metrics = self.influxdb_repository.get_site_power_metrics(device_ips)
         return power_metrics
@@ -867,8 +871,8 @@ class SiteService:
             "site_name": site_name,
             "latitude": latitude,
             "longitude": longitude,
-            "energy_consumption_KW": total_pin_KW,
-            "carbon_emission_KG": carbon_emission_KG,
+            "energy_consumption_KW": round(total_pin_KW),
+            "carbon_emission_KG": round(carbon_emission_KG),
             "total_devices": num_devices,
             "total_cost": round(0.5 * total_pin_KW)
         }

@@ -5,7 +5,7 @@ from typing import Callable, Dict, List, Optional, Any, Tuple
 
 from sqlalchemy import func
 from sqlalchemy.engine import Row
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, aliased
 from fastapi import HTTPException, status
 from app.model.site import Site
 from app.repository.base_repository import BaseRepository
@@ -631,12 +631,36 @@ class SiteRepository(BaseRepository):
             return db_device
 
 
+    # def get_all_devices2(self) -> List[APICControllers]:
+    #     with self.session_factory() as session:
+    #         devices = session.query(
+    #             APICControllers,
+    #             PasswordGroup.password_group_name
+    #         ).outerjoin(PasswordGroup, APICControllers.password_group_id == PasswordGroup.id).all()
+    #
+    #         result = []
+    #         for device, password_group_name in devices:
+    #             device_data = device.__dict__
+    #             device_data["password_group_name"] = password_group_name
+    #             device_data["site_name"] = device.site.site_name if device.site else None
+    #             device_data["rack_name"] = device.rack.rack_name if device.rack else None
+    #             device_data["rack_unit"] = device.rack_unit
+    #             result.append(device_data)
+    #
+    #         return result
+
     def get_all_devices2(self) -> List[APICControllers]:
         with self.session_factory() as session:
+            # Create an alias for DeviceInventory to avoid conflicts
+            device_inventory_alias = aliased(DeviceInventory)
+
+            # Update the query to include a join with DeviceInventory and filter out leaf and spine roles
             devices = session.query(
                 APICControllers,
                 PasswordGroup.password_group_name
-            ).outerjoin(PasswordGroup, APICControllers.password_group_id == PasswordGroup.id).all()
+            ).outerjoin(PasswordGroup, APICControllers.password_group_id == PasswordGroup.id) \
+                .outerjoin(device_inventory_alias, APICControllers.id == device_inventory_alias.apic_controller_id) \
+                .filter(device_inventory_alias.role.notin_(["leaf", "spine"])).all()
 
             result = []
             for device, password_group_name in devices:
@@ -648,6 +672,7 @@ class SiteRepository(BaseRepository):
                 result.append(device_data)
 
             return result
+
 
     # def update_device2(self, device_id: int, device_data: APICControllersUpdate) -> APICControllers:
     #     with self.session_factory() as session:
