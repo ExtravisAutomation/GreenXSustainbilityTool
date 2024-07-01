@@ -274,24 +274,17 @@ class InfluxDBRepository:
                 power_measurements.append(power)
 
         average_power = total_power / len(power_measurements) if power_measurements else 0
-        global total_pff
 
-        total_pff = int(total_power)
+        total_power = int(total_power)
         average_power = int(average_power)
         max_power = int(max_power)
-        total_price = total_pff * 0.027
-        total_price = round(total_price)
-
         total_price=round(total_power * 0.027) #(6.7fils/kWh)
         return {
-            "total_power": total_pff,
-            "total_cost": total_price,
+            "total_power": total_power,
             "average_power": average_power,
             "max_power": max_power,
-            "total_power_duration": 10,
             "total_cost": total_price,
             "total_power_duration":total_power_duration
-
 
         }
 

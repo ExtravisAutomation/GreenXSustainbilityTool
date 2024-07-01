@@ -101,11 +101,8 @@ class SiteService:
         device_ips = [device.ip_address for device in devices if device.ip_address]
 
         if not device_ips:
-<<<<<<< HEAD
             return {"total_power": 0, "average_power": 0, "max_power": 0, "total_cost": 0, "total_power_duration": 0}
-=======
-            return {"total_power": 0, "average_power": 0, "max_power": 0,"total_cost": 0, "total_power_duration":0}
->>>>>>> 5ea5686a3bbb4136da4ab68615338fd866057965
+            #return {"total_power": 0, "average_power": 0, "max_power": 0,"total_cost": 0, "total_power_duration":0}
 
         power_metrics = self.influxdb_repository.get_site_power_metrics(device_ips)
         return power_metrics
