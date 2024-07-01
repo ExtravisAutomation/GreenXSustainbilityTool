@@ -1,1 +1,1 @@
-from datastorage.datastore import DataStorage
+from app.ONBOARDING.datastorage.datastore import DataStorage
