@@ -1,7 +1,7 @@
 import logging
 from sqlalchemy.exc import SQLAlchemyError
 import requests
-from app.ONBOARDING.sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker
 from app.ONBOARDING.Models.model import Device, PasswordGroup, APICController, DeviceInventory
 from app.ONBOARDING.Database.db_connector import DBConnection
 import random
