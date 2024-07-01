@@ -265,6 +265,7 @@ class APICControllersResponse(BaseModel):
     rack_unit: Optional[int]
     password_group_id: Optional[int]
     password_group_name: Optional[str]
+    OnBoardingStatus: Optional[bool]
 
     class Config:
         orm_mode = True

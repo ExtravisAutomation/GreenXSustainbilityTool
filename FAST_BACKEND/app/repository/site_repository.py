@@ -666,6 +666,7 @@ class SiteRepository(BaseRepository):
                 device_data["site_name"] = device.site.site_name if device.site else None
                 device_data["rack_name"] = device.rack.rack_name if device.rack else None
                 device_data["rack_unit"] = device.rack_unit
+                device_data["OnBoardingStatus"] = device.OnBoardingStatus
                 result.append(device_data)
 
             return result
