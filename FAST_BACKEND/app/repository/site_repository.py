@@ -663,7 +663,7 @@ class SiteRepository(BaseRepository):
 
             result = []
             for device, password_group_name in devices:
-                device_data = device.__dict__
+                device_data = device.__dict__.copy()  # Create a copy to avoid modifying the original object
                 device_data["password_group_name"] = password_group_name
                 device_data["site_name"] = device.site.site_name if device.site else None
                 device_data["rack_name"] = device.rack.rack_name if device.rack else None
