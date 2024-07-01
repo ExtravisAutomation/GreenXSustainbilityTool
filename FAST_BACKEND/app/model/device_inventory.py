@@ -40,5 +40,6 @@ class DeviceInventory(BaseModel):
     sw_eos_date = Column(DateTime, nullable=True)
     tag_id = Column(String(255), nullable=True)
     power_utilization = None
+    role = Column(String(255), nullable=True)
     apic_controller_id = Column(Integer, ForeignKey('apic_controllers.id'))
     apic_controller = relationship("APICControllers", back_populates="deviceInventory")
