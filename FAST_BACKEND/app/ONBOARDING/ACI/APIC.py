@@ -2,10 +2,11 @@ import logging
 from sqlalchemy.exc import SQLAlchemyError
 import requests
 from sqlalchemy.orm import sessionmaker
-from app.ONBOARDING.Models.model import Device, PasswordGroup,APICController,DeviceInventory
-from app.ONBOARDING.Database.db_connector import DBConnection
+from app.Models.model import Device, PasswordGroup,APICController,DeviceInventory
+from app.Database.db_connector import DBConnection
 import random
 from datetime import datetime
+from datastorage.datastore import DataStorage
 # Setup logging
 import re
 logging.basicConfig(
@@ -90,7 +91,7 @@ class APIClient:
     #     except Exception as e:
     #         logging.error(f"Error fetching fabric nodes: {e}")
     #         raise
-    def get_fabricNodes(self):
+    def get_inventory(self):
         try:
             print("Fetching fabric nodes")
             path = '/node/class/fabricNode.json'
@@ -105,7 +106,7 @@ class APIClient:
             node = 0
             for node in nodes:
                 attributes = node["fabricNode"]["attributes"]
-                print(attributes)
+
 
                 node_id = attributes.get("id")
 
@@ -124,8 +125,12 @@ class APIClient:
 
                 node_ips[node_id] = node_info
 
-                print(node_info)
-            self.save_data(node_ips)
+
+
+            # self.save_data(node_ips)
+            dataStorage=DataStorage(node_ips,self.device, self.password_group.id)
+            dataStorage.save_data()
+
             return f"Device Onboarded {self.device.ip_address} successfully"
         except Exception as e:
             logging.error(f"Error fetching fabric nodes: {e}")
@@ -149,7 +154,7 @@ class APIClient:
                 addr = node_info['addr'].split('/')[0]
                 node_number = dn.split('/node-')[-1].strip(']')
                 node_address_map[node_number] = addr
-            print(node_address_map)
+
             return node_address_map
         except Exception as e:
             logging.error(f"Error fetching management out-of-band state node response: {e}")
@@ -328,5 +333,4 @@ class APIClient:
         except Exception as e:
                 logging.error(f"Error in add_deviceinventory: {e}")
                 raise  # Raise the exception to handle it in the caller or let it propagate
-
 

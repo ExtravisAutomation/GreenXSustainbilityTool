@@ -1,9 +1,11 @@
 import logging
-from app.ONBOARDING.Database.db_connector import DBConnection  # Import DBConnection correctly based on your project structure
-from app.ONBOARDING.Models.model import Device, PasswordGroup
-from app.ONBOARDING.ACI.APIC import APIClient
+from app.Database.db_connector import DBConnection  # Import DBConnection correctly based on your project structure
+from app.Models.model import Device, PasswordGroup
+from app.ACI.APIC import APIClient
+from app.NXos.nxos import NXOS
 import sys
 import ast
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -11,6 +13,7 @@ logging.basicConfig(
     filename='main.log',  # Specify the file to save the logs
     filemode='a'  # Use 'a' to append to the file or 'w' to write over it
 )
+
 class DeviceProcessor:
     def __init__(self):
         """Initialize the DeviceProcessor with a DBConnection instance."""
@@ -21,13 +24,13 @@ class DeviceProcessor:
         with self.db_connection.session_scope() as session:
             try:
                 if device_ids:
-                    logging.info(f"Fetching devices for IDs: {device_ids}")
+                    print(f"Fetching devices for IDs: {device_ids}")
                     devices = session.query(Device).filter(Device.id.in_(device_ids)).all()
+                    print(len(devices)," devices")
                     if devices:
                         for device in devices:
                             print("Device")
-                            self.process_device(device, session)
-
+                            self.handle_device_type(device, session)
                     else:
                         logging.warning("No devices found for the provided IDs.")
                 else:
@@ -35,32 +38,44 @@ class DeviceProcessor:
             except Exception as e:
                 logging.error(f"An error occurred while fetching devices: {e}")
 
-    def process_device(self, device, session):
+    def get_password(self, device, session):
         """Process individual devices by fetching associated password group and handling based on device type."""
         try:
-            print("Processing device")
-            password_group = session.query(PasswordGroup).filter(Device.password_group_id == PasswordGroup.id).first()
+            print("Processing device",device.password_group_id )
+            password_group = session.query(PasswordGroup).filter(PasswordGroup.id==device.password_group_id).first()
             if password_group:
                 print("Processing password",)
                 logging.info(f"Processing device ID {device.id} with type {device.device_type}")
-                self.handle_device_type(device, password_group)
+                return password_group
             else:
                 logging.warning(f"No password group found for device ID {device.id}")
         except Exception as e:
             logging.error(f"Error processing device ID {device.id}: {e}")
 
-    def handle_device_type(self, device, password_group):
+    def handle_device_type(self, device, session):
         """Handle specific actions based on device type."""
         print("Handling device type",(device.device_type).lower())
-        if (device.device_type).lower() == 'apic':
+        deviceType=(device.device_type).lower()
+        if deviceType == 'apic':
             print("Device type")
+            password_group=self.get_password(device, session)
+
             aci=APIClient(device, password_group)
-            data=aci.get_fabricNodes()
 
-            print(data)
+            aci.get_inventory()
+
+            print(f"Device type is {deviceType} and password is {password_group.username}")
             logging.info(f"Handling APIC device: {device.id}")
+        elif deviceType=="cisco_nxos":
 
-# Example usage
+            password_group = self.get_password(device, session)
+            print(f"Device type is {deviceType} and password is {password_group.password_group_type}")
+            nx=NXOS(device, password_group)
+            print("Wokring")
+            nx.main()
+            logging.info(f"Handling NX-os device: {device.id}")
+
+
 processor = DeviceProcessor()
 if len(sys.argv) > 1:
     try:

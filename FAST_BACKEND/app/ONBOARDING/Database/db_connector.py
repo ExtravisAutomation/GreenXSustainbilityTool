@@ -149,5 +149,3 @@ class DBConnection:
 #         for row in db_connection.cursor:
 #             print(row)
 #     db_connection.close()
-
-
