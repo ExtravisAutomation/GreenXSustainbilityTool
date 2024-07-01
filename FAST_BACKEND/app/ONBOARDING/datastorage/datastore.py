@@ -12,7 +12,7 @@ logging.basicConfig(
     filename='onboardingDevicesApIC.log',  # Specify the file to save the logs
     filemode='a'  # Use 'a' to append to the file or 'w' to write over it
 )
-from Database.db_connector import DBConnection
+from app.ONBOARDING.Database.db_connector import DBConnection
 class DataStorage:
 
     def __init__(self, inventorydata,device, passwordID):
