@@ -648,14 +648,43 @@ class SiteRepository(BaseRepository):
     #
     #         return result
 
+    # def get_all_devices2(self) -> List[APICControllers]:
+    #     with self.session_factory() as session:
+    #         devices = session.query(
+    #             APICControllers,
+    #             PasswordGroup.password_group_name
+    #         ).outerjoin(PasswordGroup, APICControllers.password_group_id == PasswordGroup.id) \
+    #             .outerjoin(DeviceInventory, APICControllers.id == DeviceInventory.apic_controller_id) \
+    #             .filter(DeviceInventory.role.notin_(["leaf", "spine"])) \
+    #             .options(joinedload(APICControllers.site), joinedload(APICControllers.rack)) \
+    #             .all()
+    #
+    #         result = []
+    #         for device, password_group_name in devices:
+    #             device_data = device.__dict__
+    #             device_data["password_group_name"] = password_group_name
+    #             device_data["site_name"] = device.site.site_name if device.site else None
+    #             device_data["rack_name"] = device.rack.rack_name if device.rack else None
+    #             device_data["rack_unit"] = device.rack_unit
+    #             device_data["OnBoardingStatus"] = device.OnBoardingStatus
+    #             result.append(device_data)
+    #
+    #         return result
+
     def get_all_devices2(self) -> List[APICControllers]:
         with self.session_factory() as session:
+            # Subquery to filter devices with role 'leaf' or 'spine'
+            subquery = session.query(DeviceInventory.apic_controller_id).filter(
+                DeviceInventory.role.in_(["leaf", "spine"])
+            ).subquery()
+
+            # Main query to get devices not in the subquery
             devices = session.query(
                 APICControllers,
                 PasswordGroup.password_group_name
             ).outerjoin(PasswordGroup, APICControllers.password_group_id == PasswordGroup.id) \
                 .outerjoin(DeviceInventory, APICControllers.id == DeviceInventory.apic_controller_id) \
-                .filter(DeviceInventory.role.notin_(["leaf", "spine"])) \
+                .filter(~APICControllers.id.in_(subquery)) \
                 .options(joinedload(APICControllers.site), joinedload(APICControllers.rack)) \
                 .all()
 
@@ -670,6 +699,9 @@ class SiteRepository(BaseRepository):
                 result.append(device_data)
 
             return result
+
+
+
 
     def get_all_device_types1(self) -> List[str]:
         with self.session_factory() as session:
