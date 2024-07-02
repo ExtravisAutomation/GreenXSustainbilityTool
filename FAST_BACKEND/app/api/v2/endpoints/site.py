@@ -866,7 +866,7 @@ def get_all_device_types(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.put("/sites/update_password_groups/{group_id}", response_model=CustomResponse[PasswordGroupResponse])
+@router.post("/sites/update_password_groups/{group_id}", response_model=CustomResponse[PasswordGroupResponse])
 @inject
 def update_password_group(
         group_id: int,
