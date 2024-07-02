@@ -38,6 +38,8 @@ import logging
 import os
 from app.ONBOARDING.main import DeviceProcessor
 
+from app.schema.site_schema import PasswordGroupUpdate
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 
 
@@ -858,6 +860,25 @@ def get_all_device_types(
         return CustomResponse(
             message="Device types fetched successfully.",
             data=device_types,
+            status_code=200
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.put("/sites/update_password_groups/{group_id}", response_model=CustomResponse[PasswordGroupResponse])
+@inject
+def update_password_group(
+        group_id: int,
+        password_group: PasswordGroupUpdate,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        dt = site_service.update_password_group(group_id, password_group)
+        return CustomResponse(
+            message="Password group updated successfully.",
+            data=dt,
             status_code=200
         )
     except Exception as e:

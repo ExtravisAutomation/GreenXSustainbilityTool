@@ -29,6 +29,8 @@ from app.schema.site_schema import PasswordGroupCreate
 
 from app.schema.site_schema import APICControllersCreate, APICControllersUpdate
 
+from app.schema.site_schema import PasswordGroupUpdate
+
 
 class SiteRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
@@ -708,6 +710,20 @@ class SiteRepository(BaseRepository):
             device_types = session.query(APICControllers.device_type).distinct().all()
             # Filter out None values
             return [device_type[0] for device_type in device_types if device_type[0] is not None]
+
+    def update_password_group1(self, group_id: int, password_group: PasswordGroupUpdate) -> PasswordGroup:
+        with self.session_factory() as session:
+            db_password_group = session.query(PasswordGroup).filter(PasswordGroup.id == group_id).first()
+            if not db_password_group:
+                raise HTTPException(status_code=404, detail="Password group not found")
+
+            for key, value in password_group.dict().items():
+                if value is not None and value != '' and value != 'string':
+                    setattr(db_password_group, key, value)
+
+            session.commit()
+            session.refresh(db_password_group)
+            return db_password_group
 
     # def update_device2(self, device_id: int, device_data: APICControllersUpdate) -> APICControllers:
     #     with self.session_factory() as session:

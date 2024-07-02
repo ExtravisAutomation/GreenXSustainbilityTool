@@ -37,6 +37,8 @@ from app.schema.site_schema import APICControllersCreate, APICControllersUpdate
 
 from app.schema.site_schema import APICControllersResponse
 
+from app.schema.site_schema import PasswordGroupUpdate
+
 
 class SiteService:
     def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
@@ -962,4 +964,7 @@ class SiteService:
         device_types = self.site_repository.get_all_device_types1()
         # Ensure it returns a valid list even if empty
         return device_types if device_types else []
+
+    def update_password_group(self, group_id: int, password_group: PasswordGroupUpdate) -> PasswordGroup:
+        return self.site_repository.update_password_group1(group_id, password_group)
 

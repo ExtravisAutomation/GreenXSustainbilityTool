@@ -235,6 +235,13 @@ class PasswordGroupResponse(BaseModel):
         orm_mode = True
 
 
+class PasswordGroupUpdate(BaseModel):
+    password_group_name: str = None
+    password_group_type: str = None
+    username: str = None
+    password: str = None
+
+
 class APICControllersCreate(BaseModel):
     ip_address: str
     device_type: Optional[str]
