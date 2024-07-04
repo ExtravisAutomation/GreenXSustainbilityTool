@@ -780,7 +780,7 @@ class SiteRepository(BaseRepository):
         with self.session_factory() as session:
             device = (
                 session.query(DeviceInventory)
-                .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_id == device_id)
+                .filter(DeviceInventory.site_id == site_id, DeviceInventory.id == device_id)
                 .first()
             )
             print(f"Querying for site_id: {site_id}, device_id: {device_id}. Result: {device}", file=sys.stderr)
