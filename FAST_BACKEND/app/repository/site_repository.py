@@ -722,9 +722,6 @@ class SiteRepository(BaseRepository):
 
             return result
 
-
-
-
     def get_all_device_types1(self) -> List[str]:
         with self.session_factory() as session:
             device_types = session.query(APICControllers.device_type).distinct().all()
@@ -786,4 +783,5 @@ class SiteRepository(BaseRepository):
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_id == device_id)
                 .first()
             )
+            print(f"Querying for site_id: {site_id}, device_id: {device_id}. Result: {device}", file=sys.stderr)
         return device
