@@ -2,7 +2,7 @@ import sys
 from collections import defaultdict
 from datetime import datetime, timedelta
 from random import random
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
 import pandas as pd
 from fastapi import HTTPException, status
