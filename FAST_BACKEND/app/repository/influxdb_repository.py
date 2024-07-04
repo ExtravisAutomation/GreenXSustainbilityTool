@@ -592,7 +592,7 @@ class InfluxDBRepository:
 
             query_pin = f'''
                 from(bucket: "{self.bucket}")
-                |> range(start: -2d)
+                |> range(start: -1d)
                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
                 |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)

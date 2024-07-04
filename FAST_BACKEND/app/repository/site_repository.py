@@ -496,6 +496,16 @@ class SiteRepository(BaseRepository):
 
                 return {}
 
+    def get_all_device_names(self, site_id: int) -> List[str]:
+        with self.session_factory() as session:
+            device_names = (
+                session.query(DeviceInventory.device_name)
+                .filter(DeviceInventory.site_id == site_id)
+                .order_by(DeviceInventory.id)  # Assuming ordering by ID or another column
+                .all()
+            )
+        return [name for (name,) in device_names]
+
     def get_device_details_by_name_and_site_id1(self, site_id: int, device_name: str) -> dict:
         with self.session_factory() as session:
 
