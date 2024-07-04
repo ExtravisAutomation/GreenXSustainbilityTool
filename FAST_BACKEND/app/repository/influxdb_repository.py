@@ -2043,6 +2043,8 @@ class InfluxDBRepository:
             time_format = '%Y-%m'
 
         for ip in device_ips:
+            print("inside IPPPPPPPPPPPPPPPPPPPPPP", ip, file=sys.stderr)
+            print("complete deviceipssss", device_ips, file=sys.stderr)
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
                 |> range(start: {start_time}, stop: {end_time})
@@ -2052,7 +2054,7 @@ class InfluxDBRepository:
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             result = self.query_api1.query_data_frame(query)
-
+            print("RESULTTTTTTTTTTTTTTTTTTTTTTTTTTTT")
             if not result.empty:
                 result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
                 numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()

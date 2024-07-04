@@ -929,6 +929,7 @@ def get_device_energy_consumption_metrics(
 ):
     duration = duration or "24 hours"
     metrics = site_service.calculate_energy_consumption_by_device_id_with_filter(site_id, device_id, duration)
+    print("METRIXXX ENDPOINTTTTTTTTTTTTTTT", metrics, file=sys.stderr)
     if not metrics:
         raise HTTPException(status_code=404, detail="No metrics found for the given device and duration.")
 

@@ -1011,6 +1011,8 @@ class SiteService:
             List[dict]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         device = self.site_repository.get_device_by_site_id_and_device_id(site_id, device_id)
+        print("DEVICE DATAAAAAAAAAAAAAAAA", device, file=sys.stderr)
+        print("DEIVCE IPPPPPPPPPP", device.ip_address, file=sys.stderr)
 
         if not device or not device.ip_address:
             return []
@@ -1018,4 +1020,5 @@ class SiteService:
         energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter123([device.ip_address],
                                                                                                 start_date, end_date,
                                                                                                 duration_str)
+        print("RETURNNNN METRIX FROM INFLUX", energy_metrics, file=sys.stderr)
         return energy_metrics
