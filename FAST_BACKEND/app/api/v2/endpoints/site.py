@@ -915,3 +915,25 @@ def update_password_group(
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/sites/single_device_energy_consumption/{site_id}/{device_id}",
+            response_model=CustomResponse[List[EnergyConsumptionMetricsDetails]])
+@inject
+def get_device_energy_consumption_metrics(
+        site_id: int,
+        device_id: int,
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+    metrics = site_service.calculate_energy_consumption_by_device_id_with_filter(site_id, device_id, duration)
+    if not metrics:
+        raise HTTPException(status_code=404, detail="No metrics found for the given device and duration.")
+
+    return CustomResponse(
+        message="Energy consumption metrics retrieved successfully.",
+        data=metrics,
+        status_code=status.HTTP_200_OK
+    )

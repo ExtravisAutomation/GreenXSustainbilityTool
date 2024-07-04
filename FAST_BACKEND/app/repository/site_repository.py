@@ -768,3 +768,12 @@ class SiteRepository(BaseRepository):
         with self.session_factory() as session:
             session.query(APICControllers).filter(APICControllers.id.in_(device_ids)).delete(synchronize_session=False)
             session.commit()
+
+    def get_device_by_site_id_and_device_id(self, site_id: int, device_id: int) -> Optional[DeviceInventory]:
+        with self.session_factory() as session:
+            device = (
+                session.query(DeviceInventory)
+                .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_id == device_id)
+                .first()
+            )
+        return device

@@ -104,7 +104,7 @@ class SiteService:
 
         if not device_ips:
             return {"total_power": 0, "average_power": 0, "max_power": 0, "total_cost": 0, "total_power_duration": 0}
-            #return {"total_power": 0, "average_power": 0, "max_power": 0,"total_cost": 0, "total_power_duration":0}
+            # return {"total_power": 0, "average_power": 0, "max_power": 0,"total_cost": 0, "total_power_duration":0}
 
         power_metrics = self.influxdb_repository.get_site_power_metrics(device_ips)
         return power_metrics
@@ -1007,3 +1007,15 @@ class SiteService:
     def update_password_group(self, group_id: int, password_group: PasswordGroupUpdate) -> PasswordGroup:
         return self.site_repository.update_password_group1(group_id, password_group)
 
+    def calculate_energy_consumption_by_device_id_with_filter(self, site_id: int, device_id: int, duration_str: str) -> \
+            List[dict]:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        device = self.site_repository.get_device_by_site_id_and_device_id(site_id, device_id)
+
+        if not device or not device.ip_address:
+            return []
+
+        energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter123([device.ip_address],
+                                                                                                start_date, end_date,
+                                                                                                duration_str)
+        return energy_metrics
