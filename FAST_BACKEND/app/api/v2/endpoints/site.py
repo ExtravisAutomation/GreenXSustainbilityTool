@@ -172,6 +172,7 @@ def compare_devices_metrics(
         site_repository: SiteRepository = Depends(Provide[Container.site_repo])):
     if not device_name1 or not device_name2:
         default_device_names = site_repository.get_first_two_device_names(site_id)
+        print("DEVICESS NAMEEEEEEEEEEEEEEEEEEEEEE", default_device_names, file=sys.stderr)
         if len(default_device_names) < 2:
             raise HTTPException(status_code=404, detail="Not enough devices found in the database.")
         device_name1 = device_name1 or default_device_names[0]
