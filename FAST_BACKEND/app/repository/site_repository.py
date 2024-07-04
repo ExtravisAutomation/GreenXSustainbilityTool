@@ -776,12 +776,26 @@ class SiteRepository(BaseRepository):
             session.query(APICControllers).filter(APICControllers.id.in_(device_ids)).delete(synchronize_session=False)
             session.commit()
 
-    def get_device_by_site_id_and_device_id(self, site_id: int, device_id: int) -> Optional[DeviceInventory]:
+    def get_device_by_site_id_and_device_id(self, site_id: int, device_id: int) -> Optional[dict]:
         with self.session_factory() as session:
             device = (
-                session.query(DeviceInventory)
+                session.query(
+                    DeviceInventory.id,
+                    DeviceInventory.device_name,
+                    APICControllers.ip_address,
+                    Site.site_name
+                )
+                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.id == device_id)
                 .first()
             )
-            print(f"Querying for site_id: {site_id}, device_id: {device_id}. Result: {device}", file=sys.stderr)
-        return device
+            if device:
+                return {
+                    "device_id": device.id,
+                    "device_name": device.device_name,
+                    "ip_address": device.ip_address,
+                    "site_name": device.site_name
+                }
+            else:
+                return None
