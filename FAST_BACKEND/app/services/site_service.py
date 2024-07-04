@@ -343,10 +343,12 @@ class SiteService:
     def compare_devices_hourly_power_metrics(self, site_id: int, device_name1: str,
                                              device_name2: str) -> dict[str, dict[str, list[dict]]]:
         devices_info = self.site_repository.get_device_ips_by_names_and_site_id(site_id, [device_name1, device_name2])
+        print("IFOOOOOOOOOOOOOOOO", devices_info, file=sys.stderr)
         hourly_data: Dict[str, Dict[str, List[dict]]] = {device_name1: [], device_name2: []}
 
         for device in devices_info:
             ip_metrics = self.influxdb_repository.get_hourly_power_metrics_for_ip([device['ip_address']])
+            print("metrix from INFFFFFFFFFFFFFFFFFF", ip_metrics, file=sys.stderr)
             device_details = self.site_repository.get_device_details_by_name_and_site_id1(site_id,
                                                                                           device['device_name'])
 
