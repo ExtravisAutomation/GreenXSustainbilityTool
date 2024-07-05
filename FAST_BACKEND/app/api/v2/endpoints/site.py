@@ -291,7 +291,7 @@ def get_site_traffic_throughput_metrics(
     return metrics
 
 
-@router.get("/site/devices_name/{site_id}", response_model=CustomResponse[List[dict[str, str]]])
+@router.get("/site/devices_name/{site_id}", response_model=CustomResponse[List[str]])
 @inject
 def get_device_names_by_site_id(
         site_id: int,
