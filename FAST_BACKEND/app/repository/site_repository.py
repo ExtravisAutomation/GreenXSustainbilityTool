@@ -394,25 +394,25 @@ class SiteRepository(BaseRepository):
             else:
                 return {}
 
-    # def get_device_names_by_site_id2(self, site_id: int) -> List[str]:
-    #     with self.session_factory() as session:
-    #         device_names = (
-    #             session.query(DeviceInventory.device_name)
-    #             .filter(DeviceInventory.site_id == site_id)
-    #             .distinct()
-    #             .all()
-    #         )
-    #         return [name[0] for name in device_names if name[0] is not None]
-
-    def get_device_names_by_site_id2(self, site_id: int) -> List[Dict[str, str]]:
+    def get_device_names_by_site_id2(self, site_id: int) -> List[str]:
         with self.session_factory() as session:
             device_names = (
-                session.query(DeviceInventory.id, DeviceInventory.device_name)
+                session.query(DeviceInventory.device_name)
                 .filter(DeviceInventory.site_id == site_id)
                 .distinct()
                 .all()
             )
-            return [{"id": name[0], "device_name": name[1]} for name in device_names if name[1] is not None]
+            return [name[0] for name in device_names if name[0] is not None]
+
+    # def get_device_names_by_site_id2(self, site_id: int) -> List[Dict[str, str]]:
+    #     with self.session_factory() as session:
+    #         device_names = (
+    #             session.query(DeviceInventory.id, DeviceInventory.device_name)
+    #             .filter(DeviceInventory.site_id == site_id)
+    #             .distinct()
+    #             .all()
+    #         )
+    #         return [{"id": name[0], "device_name": name[1]} for name in device_names if name[1] is not None]
 
     # def get_device_by_site_and_rack(self, site_id: int, rack_id: int) -> Dict[str, Any]:
     #     with self.session_factory() as session:

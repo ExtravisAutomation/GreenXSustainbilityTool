@@ -578,7 +578,7 @@ class SiteService:
 
         return TrafficThroughputMetricsResponse(metrics=metrics_list)
 
-    def get_device_names_by_site_id1(self, site_id: int) -> List[dict[str, str]]:
+    def get_device_names_by_site_id1(self, site_id: int) -> List[str]:
         return self.site_repository.get_device_names_by_site_id2(site_id)
 
     def get_device_metrics_by_site_and_rack(self, site_id: int, rack_id: int) -> Dict[str, Any]:
