@@ -39,6 +39,8 @@ from app.schema.site_schema import APICControllersResponse
 
 from app.schema.site_schema import PasswordGroupUpdate
 
+from app.schema.site_schema import RackResponse
+
 
 class SiteService:
     def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
@@ -1025,3 +1027,7 @@ class SiteService:
                                                                                                 duration_str)
         print("RETURNNNN METRIX FROM INFLUX", energy_metrics, file=sys.stderr)
         return energy_metrics
+
+    def get_racks_by_site_id(self, site_id: int) -> List[RackResponse]:
+        racks = self.site_repository.get_racks_by_site_id1(site_id)
+        return [RackResponse(id=rack.id, rack_name=rack.rack_name) for rack in racks]

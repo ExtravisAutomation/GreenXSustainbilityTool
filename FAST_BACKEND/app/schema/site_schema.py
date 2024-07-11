@@ -276,3 +276,15 @@ class APICControllersResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class RackResponse(BaseModel):
+    id: int
+    rack_name: str
+
+    class Config:
+        orm_mode = True
+
+
+class GetRacksResponse(BaseModel):
+    racks: List[RackResponse]

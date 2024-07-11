@@ -40,6 +40,8 @@ from app.ONBOARDING.main import DeviceProcessor
 
 from app.schema.site_schema import PasswordGroupUpdate
 
+from app.schema.site_schema import GetRacksResponse
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 
 
@@ -125,7 +127,7 @@ def get_site_power_metrics(
     )
 
 
-@router.get("/sites/energy_consumption_metrics/{site_id}",
+@router.get("/sites//energy_consumption_metrics{site_id}",
             response_model=CustomResponse[list[EnergyConsumptionMetricsDetails]])
 @inject
 def get_energy_consumption_metrics(
@@ -936,5 +938,18 @@ def get_device_energy_consumption_metrics(
     return CustomResponse(
         message="Energy consumption metrics retrieved successfully.",
         data=metrics,
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/get_racks_by_site_id/{site_id}", response_model=CustomResponse[GetRacksResponse])
+@inject
+def get_racks_by_site_id(site_id: int,
+                         current_user: User = Depends(get_current_active_user),
+                         site_service: SiteService = Depends(Provide[Container.site_service])):
+    racks = site_service.get_racks_by_site_id(site_id)
+    return CustomResponse(
+        message="Racks fetched successfully",
+        data=GetRacksResponse(racks=racks),
         status_code=status.HTTP_200_OK
     )

@@ -799,3 +799,7 @@ class SiteRepository(BaseRepository):
                 }
             else:
                 return None
+
+    def get_racks_by_site_id1(self, site_id: int) -> List[Rack]:
+        with self.session_factory() as session:
+            return session.query(Rack).filter(Rack.site_id == site_id).all()
