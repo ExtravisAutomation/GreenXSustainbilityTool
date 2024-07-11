@@ -942,7 +942,7 @@ def get_device_energy_consumption_metrics(
     )
 
 
-@router.get("/get_racks_by_site_id/{site_id}", response_model=CustomResponse[GetRacksResponse])
+@router.post("/get_racks_by_site_id/{site_id}", response_model=CustomResponse[GetRacksResponse])
 @inject
 def get_racks_by_site_id(site_id: int,
                          current_user: User = Depends(get_current_active_user),
