@@ -42,6 +42,8 @@ from app.schema.site_schema import PasswordGroupUpdate
 
 from app.schema.site_schema import GetRacksResponse
 
+from app.schema.site_schema import EnergyConsumptionMetricsDetails1
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 
 
@@ -951,5 +953,24 @@ def get_racks_by_site_id(site_id: int,
     return CustomResponse(
         message="Racks fetched successfully",
         data=GetRacksResponse(racks=racks),
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/sites/average_energy_consumption_metrics/{site_id}",
+            response_model=CustomResponse[EnergyConsumptionMetricsDetails1])
+@inject
+def get_average_energy_consumption_metrics(
+        site_id: int,
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+    metrics = site_service.calculate_average_energy_consumption_by_id(site_id, duration)
+    message = "Average energy consumption metrics retrieved successfully."
+    return CustomResponse(
+        message=message,
+        data=metrics,
         status_code=status.HTTP_200_OK
     )

@@ -1031,3 +1031,15 @@ class SiteService:
     def get_racks_by_site_id(self, site_id: int) -> List[RackResponse]:
         racks = self.site_repository.get_racks_by_site_id1(site_id)
         return [RackResponse(id=rack.id, rack_name=rack.rack_name) for rack in racks]
+
+    def calculate_average_energy_consumption_by_id(self, site_id: int, duration_str: str) -> dict:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        if not device_ips:
+            return {}
+
+        energy_metrics = self.influxdb_repository.get_average_energy_consumption_metrics(device_ips, start_date,
+                                                                                         end_date, duration_str)
+        return energy_metrics

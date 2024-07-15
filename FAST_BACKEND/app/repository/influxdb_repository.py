@@ -2084,3 +2084,37 @@ class InfluxDBRepository:
 
         df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
         return df
+
+    def get_average_energy_consumption_metrics(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+                                               duration_str: str) -> dict:
+        total_power_metrics = []
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+
+        query = f'''
+               from(bucket: "{configs.INFLUXDB_BUCKET}")
+               |> range(start: {start_time}, stop: {end_time})
+               |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{device_ips[0]}")
+               |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+               |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+               |> mean()
+           '''
+        result = self.query_api1.query_data_frame(query)
+
+        if result.empty:
+            return {}
+
+        pin_avg = result['total_PIn'].mean()
+        pout_avg = result['total_POut'].mean()
+
+        energy_consumption_avg = (pout_avg / pin_avg) * 100 if pin_avg > 0 else 0
+        power_efficiency_avg = ((pin_avg / pout_avg - 1) * 100) if pout_avg > 0 else 0
+
+        return {
+            "time": f"{start_date} - {end_date}",
+            "energy_consumption": round(energy_consumption_avg, 2),
+            "total_POut": round(pout_avg, 2),
+            "total_PIn": round(pin_avg, 2),
+            "power_efficiency": round(power_efficiency_avg, 2)
+        }

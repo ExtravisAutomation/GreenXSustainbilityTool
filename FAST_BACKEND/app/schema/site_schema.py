@@ -288,3 +288,11 @@ class RackResponse(BaseModel):
 
 class GetRacksResponse(BaseModel):
     racks: List[RackResponse]
+
+
+class EnergyConsumptionMetricsDetails1(BaseModel):
+    time: str
+    energy_consumption: Optional[float] = None
+    total_POut: Optional[float] = None
+    total_PIn: Optional[float] = None
+    power_efficiency: Optional[float] = None
