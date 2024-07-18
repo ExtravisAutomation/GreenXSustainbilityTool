@@ -2148,6 +2148,7 @@ class InfluxDBRepository:
             time_format = '%Y-%m'
 
         for ip in device_ips:
+            print(f"Querying metrics for IP: {ip}", file=sys.stderr)
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
                 |> range(start: {start_time}, stop: {end_time})
@@ -2157,6 +2158,8 @@ class InfluxDBRepository:
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             result = self.query_api1.query_data_frame(query)
+
+            print(f"Result for IP {ip}: {result}", file=sys.stderr)
 
             if not result.empty:
                 result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
@@ -2186,4 +2189,5 @@ class InfluxDBRepository:
                         })
 
         df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
+        print(f"Final metrics: {df}", file=sys.stderr)
         return df

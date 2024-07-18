@@ -1072,6 +1072,8 @@ class SiteService:
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
 
+        print(f"Device IPs: {device_ips}", file=sys.stderr)
+
         if not device_ips:
             return {"time": f"{start_date} - {end_date}"}
 
@@ -1084,12 +1086,19 @@ class SiteService:
         for ip in device_ips:
             metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter17([ip], start_date, end_date,
                                                                                           duration_str)
+            print(f"Metrics for IP {ip}: {metrics}", file=sys.stderr)
             if metrics:
                 total_energy_consumption += metrics[0].get('energy_consumption', 0)
                 total_POut += metrics[0].get('total_POut', 0)
                 total_PIn += metrics[0].get('total_PIn', 0)
                 total_power_efficiency += metrics[0].get('power_efficiency', 0)
                 count += 1
+
+        print(f"Total energy consumption: {total_energy_consumption}", file=sys.stderr)
+        print(f"Total POut: {total_POut}", file=sys.stderr)
+        print(f"Total PIn: {total_PIn}", file=sys.stderr)
+        print(f"Total power efficiency: {total_power_efficiency}", file=sys.stderr)
+        print(f"Count: {count}", file=sys.stderr)
 
         if count == 0:
             return {"time": f"{start_date} - {end_date}"}
