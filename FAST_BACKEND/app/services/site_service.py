@@ -1087,12 +1087,14 @@ class SiteService:
             metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter17([ip], start_date, end_date,
                                                                                           duration_str)
             print(f"Metrics for IP {ip}: {metrics}", file=sys.stderr)
-            if metrics:
-                total_energy_consumption += metrics[0].get('energy_consumption', 0)
-                total_POut += metrics[0].get('total_POut', 0)
-                total_PIn += metrics[0].get('total_PIn', 0)
-                total_power_efficiency += metrics[0].get('power_efficiency', 0)
-                count += 1
+            if metrics and len(metrics) > 0:
+                total_energy_consumption += sum(
+                    metric['energy_consumption'] for metric in metrics if metric['energy_consumption'] is not None)
+                total_POut += sum(metric['total_POut'] for metric in metrics if metric['total_POut'] is not None)
+                total_PIn += sum(metric['total_PIn'] for metric in metrics if metric['total_PIn'] is not None)
+                total_power_efficiency += sum(
+                    metric['power_efficiency'] for metric in metrics if metric['power_efficiency'] is not None)
+                count += len(metrics)
 
         print(f"Total energy consumption: {total_energy_consumption}", file=sys.stderr)
         print(f"Total POut: {total_POut}", file=sys.stderr)
@@ -1110,3 +1112,4 @@ class SiteService:
             "total_PIn": round(total_PIn / count, 2),
             "power_efficiency": round(total_power_efficiency / count, 2)
         }
+
