@@ -1036,6 +1036,7 @@ class SiteService:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
+        print("Device IPPPPPPPPPPPPPPPPPPS", device_ips, file=sys.stderr)
 
         if not device_ips:
             return {"time": f"{start_date} - {end_date}"}  # Ensure 'time' key is always present
