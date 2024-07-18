@@ -1148,8 +1148,9 @@ class SiteService:
 
         return {
             "time": f"{start_date} - {end_date}",
-            "energy_consumption": round(total_energy_consumption / count, 2),
-            "total_POut": round(total_POut / count, 2),
-            "total_PIn": round(total_PIn / count, 2),
-            "power_efficiency": round(total_power_efficiency / count, 2)
+            "energy_consumption": round(total_energy_consumption / count, 2) if count > 0 else 0,
+            "energy_consumption": round(total_energy_consumption / count, 2) if count > 0 else 0,
+            "total_POut": round(total_POut / count, 2) if count > 0 else 0,
+            "total_PIn": round(total_PIn / count, 2) if count > 0 else 0,
+            "power_efficiency": round(total_power_efficiency / count, 2) if count > 0 else 0
         }
