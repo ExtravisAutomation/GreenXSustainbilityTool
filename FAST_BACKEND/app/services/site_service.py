@@ -1126,9 +1126,30 @@ class SiteService:
                                                                                         start_date, end_date,
                                                                                         duration_str)
 
-        if metrics:
-            print(f"Metrics for Device IP {device['ip_address']}: {metrics}", file=sys.stderr)
-            # Returning only the first metric assuming it contains the overall average for the duration
-            return metrics[0]
+        if not metrics:
+            return {"time": f"{start_date} - {end_date}"}
 
-        return {"time": f"{start_date} - {end_date}"}
+        total_energy_consumption = sum(
+            metric['energy_consumption'] for metric in metrics if metric['energy_consumption'] is not None)
+        total_POut = sum(metric['total_POut'] for metric in metrics if metric['total_POut'] is not None)
+        total_PIn = sum(metric['total_PIn'] for metric in metrics if metric['total_PIn'] is not None)
+        total_power_efficiency = sum(
+            metric['power_efficiency'] for metric in metrics if metric['power_efficiency'] is not None)
+        count = len(metrics)
+
+        print(f"Total energy consumption: {total_energy_consumption}", file=sys.stderr)
+        print(f"Total POut: {total_POut}", file=sys.stderr)
+        print(f"Total PIn: {total_PIn}", file=sys.stderr)
+        print(f"Total power efficiency: {total_power_efficiency}", file=sys.stderr)
+        print(f"Count: {count}", file=sys.stderr)
+
+        if count == 0:
+            return {"time": f"{start_date} - {end_date}"}
+
+        return {
+            "time": f"{start_date} - {end_date}",
+            "energy_consumption": round(total_energy_consumption / count, 2),
+            "total_POut": round(total_POut / count, 2),
+            "total_PIn": round(total_PIn / count, 2),
+            "power_efficiency": round(total_power_efficiency / count, 2)
+        }
