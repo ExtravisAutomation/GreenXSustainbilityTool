@@ -2178,7 +2178,7 @@ class InfluxDBRepository:
                         pout = row['total_POut']
 
                         energy_consumption = (pout / pin) * 100 if pin > 0 else 0
-                        power_efficiency = ((pin / pout - 1) * 100) if pout > 0 else 0
+                        power_efficiency = ((pin / pout ) * 100) if pout > 0 else 0
 
                         total_power_metrics.append({
                             "time": row['index'],
