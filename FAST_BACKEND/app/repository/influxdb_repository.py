@@ -2131,7 +2131,7 @@ class InfluxDBRepository:
         }
 
     def get_energy_consumption_metrics_with_filter17(self, device_ips: List[str], start_date: datetime,
-                                                   end_date: datetime, duration_str: str) -> List[dict]:
+                                                     end_date: datetime, duration_str: str) -> List[dict]:
         total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
@@ -2178,7 +2178,7 @@ class InfluxDBRepository:
                         pout = row['total_POut']
 
                         energy_consumption = (pout / pin) * 100 if pin > 0 else 0
-                        power_efficiency = ((pin / pout ) * 100) if pout > 0 else 0
+                        power_efficiency = ((pin / pout) * 100) if pout > 0 else 0
 
                         total_power_metrics.append({
                             "time": row['index'],
