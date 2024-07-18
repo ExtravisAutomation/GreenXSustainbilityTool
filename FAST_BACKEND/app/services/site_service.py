@@ -1036,12 +1036,33 @@ class SiteService:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
-        print("Device IPPPPPPPPPPPPPPPPPPS", device_ips, file=sys.stderr)
 
         if not device_ips:
-            return {"time": f"{start_date} - {end_date}"}  # Ensure 'time' key is always present
+            return {"time": f"{start_date} - {end_date}"}
 
-        energy_metrics = self.influxdb_repository.get_average_energy_consumption_metrics(device_ips, start_date,
-                                                                                         end_date, duration_str)
-        energy_metrics["time"] = f"{start_date} - {end_date}"  # Add 'time' key to the result
-        return energy_metrics
+        total_energy_consumption = 0
+        total_POut = 0
+        total_PIn = 0
+        total_power_efficiency = 0
+        count = 0
+
+        for ip in device_ips:
+            metrics = self.influxdb_repository.get_average_energy_consumption_metrics([ip], start_date, end_date,
+                                                                                      duration_str)
+            if metrics:
+                total_energy_consumption += metrics.get('energy_consumption', 0)
+                total_POut += metrics.get('total_POut', 0)
+                total_PIn += metrics.get('total_PIn', 0)
+                total_power_efficiency += metrics.get('power_efficiency', 0)
+                count += 1
+
+        if count == 0:
+            return {"time": f"{start_date} - {end_date}"}
+
+        return {
+            "time": f"{start_date} - {end_date}",
+            "energy_consumption": round(total_energy_consumption / count, 2),
+            "total_POut": round(total_POut / count, 2),
+            "total_PIn": round(total_PIn / count, 2),
+            "power_efficiency": round(total_power_efficiency / count, 2)
+        }
