@@ -1120,14 +1120,26 @@ class SiteService:
         print(f"Device Data: {device}", file=sys.stderr)
 
         if not device or not device["ip_address"]:
-            return {"time": f"{start_date} - {end_date}"}
+            return {
+                "time": f"{start_date} - {end_date}",
+                "energy_consumption": 0,
+                "total_POut": 0,
+                "total_PIn": 0,
+                "power_efficiency": 0
+            }
 
         metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter17([device["ip_address"]],
                                                                                         start_date, end_date,
                                                                                         duration_str)
 
         if not metrics:
-            return {"time": f"{start_date} - {end_date}"}
+            return {
+                "time": f"{start_date} - {end_date}",
+                "energy_consumption": 0,
+                "total_POut": 0,
+                "total_PIn": 0,
+                "power_efficiency": 0
+            }
 
         total_energy_consumption = sum(
             metric['energy_consumption'] for metric in metrics if metric['energy_consumption'] is not None)
@@ -1144,13 +1156,18 @@ class SiteService:
         print(f"Count: {count}", file=sys.stderr)
 
         if count == 0:
-            return {"time": f"{start_date} - {end_date}"}
+            return {
+                "time": f"{start_date} - {end_date}",
+                "energy_consumption": 0,
+                "total_POut": 0,
+                "total_PIn": 0,
+                "power_efficiency": 0
+            }
 
         return {
             "time": f"{start_date} - {end_date}",
-            "energy_consumption": round(total_energy_consumption / count, 2) if count > 0 else 0,
-            "energy_consumption": round(total_energy_consumption / count, 2) if count > 0 else 0,
-            "total_POut": round(total_POut / count, 2) if count > 0 else 0,
-            "total_PIn": round(total_PIn / count, 2) if count > 0 else 0,
-            "power_efficiency": round(total_power_efficiency / count, 2) if count > 0 else 0
+            "energy_consumption": round(total_energy_consumption / count, 2),
+            "total_POut": round(total_POut / count, 2),
+            "total_PIn": round(total_PIn / count, 2),
+            "power_efficiency": round(total_power_efficiency / count, 2)
         }
