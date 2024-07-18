@@ -967,10 +967,12 @@ def get_average_energy_consumption_metrics(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     duration = duration or "24 hours"
-    metrics = site_service.calculate_average_energy_consumption_by_id(site_id, duration)
-    message = "Average energy consumption metrics retrieved successfully."
+    metrics = site_service.calculate_average_energy_consumption_by_site_id(site_id, duration)
+    if not metrics:
+        raise HTTPException(status_code=404, detail="No metrics found for the given site and duration.")
+
     return CustomResponse(
-        message=message,
+        message="Average energy consumption metrics retrieved successfully.",
         data=metrics,
         status_code=status.HTTP_200_OK
     )

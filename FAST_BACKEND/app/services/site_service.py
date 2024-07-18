@@ -1066,3 +1066,38 @@ class SiteService:
             "total_PIn": round(total_PIn / count, 2),
             "power_efficiency": round(total_power_efficiency / count, 2)
         }
+
+    def calculate_average_energy_consumption_by_site_id(self, site_id: int, duration_str: str) -> dict:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        if not device_ips:
+            return {"time": f"{start_date} - {end_date}"}
+
+        total_energy_consumption = 0
+        total_POut = 0
+        total_PIn = 0
+        total_power_efficiency = 0
+        count = 0
+
+        for ip in device_ips:
+            metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter17([ip], start_date, end_date,
+                                                                                          duration_str)
+            if metrics:
+                total_energy_consumption += metrics[0].get('energy_consumption', 0)
+                total_POut += metrics[0].get('total_POut', 0)
+                total_PIn += metrics[0].get('total_PIn', 0)
+                total_power_efficiency += metrics[0].get('power_efficiency', 0)
+                count += 1
+
+        if count == 0:
+            return {"time": f"{start_date} - {end_date}"}
+
+        return {
+            "time": f"{start_date} - {end_date}",
+            "energy_consumption": round(total_energy_consumption / count, 2),
+            "total_POut": round(total_POut / count, 2),
+            "total_PIn": round(total_PIn / count, 2),
+            "power_efficiency": round(total_power_efficiency / count, 2)
+        }

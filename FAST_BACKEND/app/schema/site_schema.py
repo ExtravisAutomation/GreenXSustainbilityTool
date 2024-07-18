@@ -291,7 +291,7 @@ class GetRacksResponse(BaseModel):
 
 
 class EnergyConsumptionMetricsDetails1(BaseModel):
-    time: str
+    time: Optional[str] = None
     energy_consumption: Optional[float] = None
     total_POut: Optional[float] = None
     total_PIn: Optional[float] = None
