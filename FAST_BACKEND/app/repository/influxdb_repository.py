@@ -224,7 +224,8 @@ class InfluxDBRepository:
         except Exception as e:
             print(f"Error executing query in InfluxDB: {e}", file=sys.stderr)
             raise
-    def get_total_duration(self,ip):
+
+    def get_total_duration(self, ip):
 
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
@@ -246,15 +247,16 @@ class InfluxDBRepository:
             duration = result['_time'].iloc[-1] - result['_time'].iloc[0]
             duration_hours = duration.total_seconds() // 3600
             duration_minutes = (duration.total_seconds() % 3600) // 60
-            duration=f"{round(duration_hours)} h {round(duration_minutes)} m"
+            duration = f"{round(duration_hours)} h {round(duration_minutes)} m"
             return duration
         else:
             return 0
+
     def get_site_power_metrics(self, device_ips: List[str]) -> dict:
         total_power = 0
         max_power = 0
         power_measurements = []
-        total_power_duration=0
+        total_power_duration = 0
 
         for ip in device_ips:
             query = f'''
@@ -278,13 +280,13 @@ class InfluxDBRepository:
         total_power = int(total_power)
         average_power = int(average_power)
         max_power = int(max_power)
-        total_price=round(total_power * 0.027) #(6.7fils/kWh)
+        total_price = round(total_power * 0.027)  # (6.7fils/kWh)
         return {
             "total_power": total_power,
             "average_power": average_power,
             "max_power": max_power,
             "total_cost": total_price,
-            "total_power_duration":total_power_duration
+            "total_power_duration": total_power_duration
 
         }
 
@@ -892,8 +894,8 @@ class InfluxDBRepository:
         combined_result = pd.merge(traffic_result, power_result, on='_time', how='outer').fillna(0)
 
         for _, row in combined_result.iterrows():
-
-            total_bytes_rate_last_gb = self.convert_bytes(row['total_bytesRateLast']) if row['total_bytesRateLast'] > 0 else 0
+            total_bytes_rate_last_gb = self.convert_bytes(row['total_bytesRateLast']) if row[
+                                                                                             'total_bytesRateLast'] > 0 else 0
             pin = row['total_PIn'] if row['total_PIn'] > 0 else 1  # Avoid division by zero
             pout = row['total_POut'] if row['total_POut'] > 0 else 0
             energy_consumption = (pout / pin) * 100  # Calculate energy consumption
@@ -910,6 +912,7 @@ class InfluxDBRepository:
             return value / (2 ** 20)
         else:  # 1 GB or more
             return value / (2 ** 30)
+
     def get_traffic_throughput_metrics12(self, device_ips: List[str], start_date: datetime, end_date: datetime,
                                          duration_str: str) -> List[dict]:
         throughput_metrics = []
@@ -945,7 +948,7 @@ class InfluxDBRepository:
                         total_bytes_rate_last_gb = 0  # You might want to change this handling based on your needs
                     else:
                         print("elseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", file=sys.stderr)
-                        total_bytes_rate_last_gb =self.convert_bytes(row['total_bytesRateLast']) # Convert to GB
+                        total_bytes_rate_last_gb = self.convert_bytes(row['total_bytesRateLast'])  # Convert to GB
                     throughput_metrics.append({
                         "time": row['_time'],
                         "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2)
@@ -1980,9 +1983,8 @@ class InfluxDBRepository:
 
         return carbon_intensity
 
-
     def get_total_pin_value22(self, device_ips: List[str], start_date: datetime, end_date: datetime,
-                            duration_str: str) -> float:
+                              duration_str: str) -> float:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
         aggregate_window = "1h" if duration_str == "24 hours" else "1d"
@@ -2001,7 +2003,6 @@ class InfluxDBRepository:
                 total_pin += result['_value'].sum()
 
         return total_pin
-
 
     def get_carbon_intensity22(self, start_date: datetime, end_date: datetime, duration_str: str) -> float:
         start_time = start_date.isoformat() + 'Z'
@@ -2026,7 +2027,7 @@ class InfluxDBRepository:
         return carbon_intensity
 
     def get_energy_consumption_metrics_with_filter123(self, device_ips: List[str], start_date: datetime,
-                                                   end_date: datetime, duration_str: str) -> List[dict]:
+                                                      end_date: datetime, duration_str: str) -> List[dict]:
         total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
@@ -2090,6 +2091,16 @@ class InfluxDBRepository:
         total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
+
+        if duration_str in ["24 hours"]:
+            aggregate_window = "1h"
+            time_format = '%Y-%m-%d %H:00'
+        elif duration_str in ["7 Days", "Current Month", "Last Month"]:
+            aggregate_window = "1d"
+            time_format = '%Y-%m-%d'
+        else:  # For "last 6 months", "last year", "current year"
+            aggregate_window = "1m"
+            time_format = '%Y-%m'
 
         query = f'''
                from(bucket: "{configs.INFLUXDB_BUCKET}")
