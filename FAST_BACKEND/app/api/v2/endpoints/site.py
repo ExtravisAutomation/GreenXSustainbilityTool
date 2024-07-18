@@ -1,6 +1,6 @@
 import sys
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 from app.api.v2.endpoints.test_script import main
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import BaseModel
@@ -973,6 +973,34 @@ def get_average_energy_consumption_metrics(
 
     return CustomResponse(
         message="Average energy consumption metrics retrieved successfully.",
+        data=metrics,
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/sites/AVERAGE_energy_consumption_metrics/{site_id}",
+            response_model=CustomResponse[Union[EnergyConsumptionMetricsDetails1, List[EnergyConsumptionMetricsDetails1]]])
+@inject
+def get_energy_consumption_metrics(
+        site_id: int,
+        device_id: Optional[int] = Query(None, alias="device_id"),
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+    if device_id:
+        metrics = site_service.calculate_energy_consumption_by_device_id(site_id, device_id, duration)
+    else:
+        metrics = site_service.calculate_average_energy_consumption_by_site_id(site_id, duration)
+
+    print(f"Metrics: {metrics}", file=sys.stderr)
+
+    if not metrics:
+        raise HTTPException(status_code=404, detail="No metrics found for the given site/device and duration.")
+
+    return CustomResponse(
+        message="Energy consumption metrics retrieved successfully.",
         data=metrics,
         status_code=status.HTTP_200_OK
     )

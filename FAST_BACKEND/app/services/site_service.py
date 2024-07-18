@@ -1085,7 +1085,7 @@ class SiteService:
 
         for ip in device_ips:
             metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter17([ip], start_date, end_date,
-                                                                                          duration_str)
+                                                                                            duration_str)
             print(f"Metrics for IP {ip}: {metrics}", file=sys.stderr)
             if metrics and len(metrics) > 0:
                 total_energy_consumption += sum(
@@ -1113,3 +1113,22 @@ class SiteService:
             "power_efficiency": round(total_power_efficiency / count, 2)
         }
 
+    def calculate_energy_consumption_by_device_id(self, site_id: int, device_id: int, duration_str: str) -> dict:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        device = self.site_repository.get_device_by_site_id_and_device_id(site_id, device_id)
+
+        print(f"Device Data: {device}", file=sys.stderr)
+
+        if not device or not device["ip_address"]:
+            return {"time": f"{start_date} - {end_date}"}
+
+        metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter17([device["ip_address"]],
+                                                                                        start_date, end_date,
+                                                                                        duration_str)
+
+        if metrics:
+            print(f"Metrics for Device IP {device['ip_address']}: {metrics}", file=sys.stderr)
+            # Returning only the first metric assuming it contains the overall average for the duration
+            return metrics[0]
+
+        return {"time": f"{start_date} - {end_date}"}
