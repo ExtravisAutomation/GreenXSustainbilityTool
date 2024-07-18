@@ -1010,7 +1010,7 @@ class SiteService:
         return self.site_repository.update_password_group1(group_id, password_group)
 
     def calculate_energy_consumption_by_device_id_with_filter(self, site_id: int, device_id: int, duration_str: str) -> \
-    List[dict]:
+            List[dict]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         device = self.site_repository.get_device_by_site_id_and_device_id(site_id, device_id)
         print("DEVICE DATAAAAAAAAAAAAAAAA", device, file=sys.stderr)
@@ -1038,8 +1038,9 @@ class SiteService:
         device_ips = [device.ip_address for device in devices if device.ip_address]
 
         if not device_ips:
-            return {}
+            return {"time": f"{start_date} - {end_date}"}  # Ensure 'time' key is always present
 
         energy_metrics = self.influxdb_repository.get_average_energy_consumption_metrics(device_ips, start_date,
                                                                                          end_date, duration_str)
+        energy_metrics["time"] = f"{start_date} - {end_date}"  # Add 'time' key to the result
         return energy_metrics

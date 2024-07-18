@@ -2114,7 +2114,7 @@ class InfluxDBRepository:
         result = self.query_api1.query_data_frame(query)
 
         if result.empty:
-            return {}
+            return {"time": f"{start_date} - {end_date}"}  # Ensure 'time' key is always present
 
         pin_avg = result['total_PIn'].mean()
         pout_avg = result['total_POut'].mean()
