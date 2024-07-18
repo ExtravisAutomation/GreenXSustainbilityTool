@@ -2136,6 +2136,8 @@ class InfluxDBRepository:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
+        print(f"Start Time: {start_time}, End Time: {end_time}", file=sys.stderr)
+
         # Define the aggregate window and time format based on the duration string
         if duration_str in ["24 hours"]:
             aggregate_window = "1h"
@@ -2157,6 +2159,7 @@ class InfluxDBRepository:
                 |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
+            print(f"Query: {query}", file=sys.stderr)
             result = self.query_api1.query_data_frame(query)
 
             print(f"Result for IP {ip}: {result}", file=sys.stderr)
@@ -2179,7 +2182,6 @@ class InfluxDBRepository:
 
                         energy_consumption = (pout / pin) * 100 if pin > 0 else 0
                         power_efficiency = (pin / pout) if pout > 0 else 0
-                        #power_efficiency = (power_efficiency -1 / power_efficiency) * 100 if power_efficiency > 0 else 0
 
                         total_power_metrics.append({
                             "time": row['index'],

@@ -11,6 +11,6 @@ class APICController(BaseModel):
     deviceInventory = relationship("DeviceInventory", back_populates="apic_controller")
 
 # class APICController(BaseModel):
-#     __tablename__ = 'apic_controllers'
+#     __tablename__ = 'apic_controllers'.
 #
 #     ip_address = Column(String(255), nullable=False)
