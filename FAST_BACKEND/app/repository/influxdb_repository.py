@@ -2195,7 +2195,7 @@ class InfluxDBRepository:
         print(f"Final metrics: {df}", file=sys.stderr)
         return df
 
-    def convert_granularity(granularity: str) -> str:
+    def convert_granularity(self, granularity: str) -> str:
         granularity_map = {
             "daily": "1d",
             "hourly": "1h",
@@ -2218,7 +2218,7 @@ class InfluxDBRepository:
 
         print(f"InfluxDB query range: start_time={start_time}, end_time={end_time}, granularity={granularity}")
 
-        aggregate_window = convert_granularity(granularity)
+        aggregate_window = self.convert_granularity(granularity)
 
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
