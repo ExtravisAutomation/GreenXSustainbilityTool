@@ -2199,7 +2199,7 @@ class InfluxDBRepository:
         granularity_map = {
             "daily": "1d",
             "hourly": "1h",
-            # Add other granularity conversions as needed
+            "monthly": "1m",
         }
         return granularity_map.get(granularity, granularity)
 
@@ -2208,7 +2208,7 @@ class InfluxDBRepository:
         if exact_time.tzinfo is None:
             exact_time = exact_time.replace(tzinfo=timezone.utc)
 
-        start_time, end_time = self.determine_time_range12(exact_time, granularity)
+        start_time, end_time = self.determine_time_range(exact_time, granularity)
 
         # Ensure start_time and end_time are timezone-aware
         if start_time.tzinfo is None:
@@ -2218,7 +2218,7 @@ class InfluxDBRepository:
 
         print(f"InfluxDB query range: start_time={start_time}, end_time={end_time}, granularity={granularity}")
 
-        aggregate_window = self.convert_granularity(granularity)
+        aggregate_window = convert_granularity(granularity)
 
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
@@ -2247,7 +2247,7 @@ class InfluxDBRepository:
         power_efficiency = ((pin / pout - 1) * 100) if pout > 0 else 0
 
         return {
-            "time": closest_metric['_time'],
+            "time": closest_metric['_time'].strftime('%Y-%m-%d %H'),
             "PE": round(energy_consumption, 2),
             "PUE": round(power_efficiency, 2),
             "current_power": round(pin, 2),
@@ -2264,5 +2264,10 @@ class InfluxDBRepository:
         elif granularity == "hourly":
             start_time = exact_time.replace(minute=0, second=0, microsecond=0)
             end_time = exact_time.replace(minute=59, second=59, microsecond=999999)
+        elif granularity == "monthly":
+            start_time = exact_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            # Move to the first day of the next month and subtract a microsecond to get the end of the current month
+            next_month = exact_time.replace(day=28) + timedelta(days=4)  # this will always move to the next month
+            end_time = next_month.replace(day=1, hour=0, minute=0, second=0, microsecond=0) - timedelta(microseconds=1)
             # Add other granularity handling as needed
         return start_time, end_time
