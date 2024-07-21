@@ -783,7 +783,13 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.id,
                     DeviceInventory.device_name,
                     APICControllers.ip_address,
-                    Site.site_name
+                    Site.site_name,
+                    DeviceInventory.hardware_version,  # Ensure these columns are included in the query
+                    DeviceInventory.manufacturer,
+                    DeviceInventory.pn_code,
+                    DeviceInventory.serial_number,
+                    DeviceInventory.software_version,
+                    DeviceInventory.status
                 )
                 .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
@@ -802,7 +808,6 @@ class SiteRepository(BaseRepository):
                     "serial_number": device.serial_number,
                     "software_version": device.software_version,
                     "status": device.status
-
                 }
             else:
                 return None
