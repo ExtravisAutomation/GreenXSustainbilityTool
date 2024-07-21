@@ -13,7 +13,7 @@ from influxdb_client.client.query_api import QueryApi
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 from app.core.config import configs
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pandas as pd
 
 
@@ -2195,17 +2195,34 @@ class InfluxDBRepository:
         print(f"Final metrics: {df}", file=sys.stderr)
         return df
 
+    def convert_granularity(granularity: str) -> str:
+        granularity_map = {
+            "daily": "1d",
+            "hourly": "1h",
+            # Add other granularity conversions as needed
+        }
+        return granularity_map.get(granularity, granularity)
+
     def get_energy_details_for_device_at_time(self, device_ip: str, exact_time: datetime, granularity: str) -> dict:
-        start_time, end_time = self.determine_time_range(exact_time, granularity)
+        # Ensure exact_time is timezone-aware
+        if exact_time.tzinfo is None:
+            exact_time = exact_time.replace(tzinfo=timezone.utc)
+
+        start_time, end_time = self.determine_time_range12(exact_time, granularity)
+
+        # Ensure start_time and end_time are timezone-aware
+        if start_time.tzinfo is None:
+            start_time = start_time.replace(tzinfo=timezone.utc)
+        if end_time.tzinfo is None:
+            end_time = end_time.replace(tzinfo=timezone.utc)
+
         print(f"InfluxDB query range: start_time={start_time}, end_time={end_time}, granularity={granularity}")
-        aggregate_window = "1h"  # Default to 1 hour
-        if granularity == 'daily':
-            aggregate_window = "1h"  # Hourly aggregates for daily
-        elif granularity == 'monthly':
-            aggregate_window = "1d"  # Daily aggregates for monthly
+
+        aggregate_window = convert_granularity(granularity)
+
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
-            |> range(start: {start_time}, stop: {end_time})
+            |> range(start: {start_time.isoformat()}, stop: {end_time.isoformat()})
             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{device_ip}")
             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
@@ -2218,8 +2235,10 @@ class InfluxDBRepository:
             print("InfluxDB query returned no results.")
             return None
 
-        # Assuming you want data closest to the exact_time
-        result['_time'] = pd.to_datetime(result['_time'])
+        # Ensure result['_time'] is timezone-aware
+        result['_time'] = pd.to_datetime(result['_time']).dt.tz_convert('UTC')
+        exact_time = exact_time.astimezone(timezone.utc)
+
         closest_metric = result.iloc[(result['_time'] - exact_time).abs().argsort()[:1]].to_dict('records')[0]
 
         pin = closest_metric['total_PIn']
@@ -2233,3 +2252,17 @@ class InfluxDBRepository:
             "PUE": round(power_efficiency, 2),
             "current_power": round(pin, 2),
         }
+
+    def determine_time_range12(self, exact_time: datetime, granularity: str):
+        # Ensure exact_time is timezone-aware
+        if exact_time.tzinfo is None:
+            exact_time = exact_time.replace(tzinfo=timezone.utc)
+
+        if granularity == "daily":
+            start_time = exact_time.replace(hour=0, minute=0, second=0, microsecond=0)
+            end_time = exact_time.replace(hour=23, minute=59, second=59, microsecond=999999)
+        elif granularity == "hourly":
+            start_time = exact_time.replace(minute=0, second=0, microsecond=0)
+            end_time = exact_time.replace(minute=59, second=59, microsecond=999999)
+        # Add other granularity handling as needed
+        return start_time, end_time
