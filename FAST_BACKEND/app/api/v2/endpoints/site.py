@@ -44,6 +44,8 @@ from app.schema.site_schema import GetRacksResponse
 
 from app.schema.site_schema import EnergyConsumptionMetricsDetails1
 
+from app.schema.site_schema import DeviceEnergyDetailResponse123
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 
 
@@ -1005,3 +1007,22 @@ def get_energy_consumption_metrics(
         data=metrics,
         status_code=status.HTTP_200_OK
     )
+
+
+@router.get("/site/device_energy_details/{site_id}", response_model=DeviceEnergyDetailResponse123)
+@inject
+def get_device_energy_details(
+        site_id: int,
+        device_id: int,
+        time: str,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        exact_time, granularity = parse_time12(time)
+        device_details = site_service.get_device_energy_details(site_id, device_id, exact_time, granularity)
+        if not device_details:
+            raise HTTPException(status_code=404, detail="No details found for the specified device and time.")
+        return device_details
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

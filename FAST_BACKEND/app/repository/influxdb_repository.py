@@ -2194,3 +2194,35 @@ class InfluxDBRepository:
         df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
         print(f"Final metrics: {df}", file=sys.stderr)
         return df
+
+    def get_energy_details_for_device_at_time(self, device_ip: str, exact_time: datetime, granularity: str) -> dict:
+        start_time, end_time = self.determine_time_range(exact_time, granularity)
+
+        query = f'''
+            from(bucket: "{configs.INFLUXDB_BUCKET}")
+            |> range(start: {start_time}, stop: {end_time})
+            |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{device_ip}")
+            |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+            |> aggregateWindow(every: {granularity}, fn: mean, createEmpty: false)
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        '''
+        result = self.query_api1.query_data_frame(query)
+
+        if result.empty:
+            return None
+
+        # Assuming you want data closest to the exact_time
+        result['_time'] = pd.to_datetime(result['_time'])
+        closest_metric = result.iloc[(result['_time'] - exact_time).abs().argsort()[:1]].to_dict('records')[0]
+
+        pin = closest_metric['total_PIn']
+        pout = closest_metric['total_POut']
+        energy_consumption = (pout / pin) * 100 if pin > 0 else 0
+        power_efficiency = ((pin / pout - 1) * 100) if pout > 0 else 0
+
+        return {
+            "time": closest_metric['_time'],
+            "PE": round(energy_consumption, 2),
+            "PUE": round(power_efficiency, 2),
+            "current_power": round(pin, 2),
+        }

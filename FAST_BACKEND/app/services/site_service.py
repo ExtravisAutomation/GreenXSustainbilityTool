@@ -41,6 +41,8 @@ from app.schema.site_schema import PasswordGroupUpdate
 
 from app.schema.site_schema import RackResponse
 
+from app.schema.site_schema import DeviceEnergyDetailResponse123
+
 
 class SiteService:
     def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
@@ -1171,3 +1173,34 @@ class SiteService:
             "total_PIn": round(total_PIn / count, 2),
             "power_efficiency": round(total_power_efficiency / count, 2)
         }
+
+    def format_device_energy_detail(self, data: dict) -> DeviceEnergyDetailResponse123:
+        return DeviceEnergyDetailResponse123(
+            device_name=data.get('device_name'),
+            hardware_version=data.get('hardware_version'),
+            manufacturer=data.get('manufacturer'),
+            pn_code=data.get('pn_code'),
+            serial_number=data.get('serial_number'),
+            software_version=data.get('software_version'),
+            status=data.get('status'),
+            site_name=data.get('site_name'),
+            apic_controller_ip=data.get('ip_address'),
+            PE=data.get('PE'),
+            PUE=data.get('PUE'),
+            current_power=data.get('current_power'),
+            time=data.get('time'),
+        )
+
+    def get_device_energy_details(self, site_id: int, device_id: int, exact_time: datetime,
+                                  granularity: str) -> DeviceEnergyDetailResponse123:
+        device = self.site_repository.get_device_by_site_id_and_device_id(site_id, device_id)
+        if not device or not device["ip_address"]:
+            raise HTTPException(status_code=404, detail="Device not found.")
+
+        energy_metrics = self.influxdb_repository.get_energy_details_for_device_at_time(device["ip_address"],
+                                                                                        exact_time, granularity)
+        if not energy_metrics:
+            raise HTTPException(status_code=404, detail="No energy metrics found for the specified time.")
+
+        device_details = {**device, **energy_metrics}
+        return self.format_device_energy_detail(device_details)

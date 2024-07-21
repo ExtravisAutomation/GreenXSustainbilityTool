@@ -296,3 +296,19 @@ class EnergyConsumptionMetricsDetails1(BaseModel):
     total_POut: Optional[float] = None
     total_PIn: Optional[float] = None
     power_efficiency: Optional[float] = None
+
+
+class DeviceEnergyDetailResponse123(BaseModel):
+    device_name: Optional[str] = None
+    hardware_version: Optional[str] = None
+    manufacturer: Optional[str] = None
+    pn_code: Optional[str] = None
+    serial_number: Optional[str] = None
+    software_version: Optional[str] = None
+    status: Optional[str] = None
+    site_name: Optional[str] = None
+    apic_controller_ip: Optional[str] = None
+    PE: Optional[float] = None
+    PUE: Optional[float] = None
+    current_power: Optional[float] = None
+    time: Optional[datetime] = None

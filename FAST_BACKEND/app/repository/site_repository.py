@@ -795,7 +795,14 @@ class SiteRepository(BaseRepository):
                     "device_id": device.id,
                     "device_name": device.device_name,
                     "ip_address": device.ip_address,
-                    "site_name": device.site_name
+                    "site_name": device.site_name,
+                    "hardware_version": device.hardware_version,
+                    "manufacturer": device.manufacturer,
+                    "pn_code": device.pn_code,
+                    "serial_number": device.serial_number,
+                    "software_version": device.software_version,
+                    "status": device.status
+
                 }
             else:
                 return None
