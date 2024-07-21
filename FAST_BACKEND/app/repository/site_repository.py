@@ -777,6 +777,7 @@ class SiteRepository(BaseRepository):
             session.commit()
 
     def get_device_by_site_id_and_device_id(self, site_id: int, device_id: int) -> Optional[dict]:
+        print(f"Querying device: site_id={site_id}, device_id={device_id}")
         with self.session_factory() as session:
             device = (
                 session.query(
@@ -784,7 +785,7 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.device_name,
                     APICControllers.ip_address,
                     Site.site_name,
-                    DeviceInventory.hardware_version,  # Ensure these columns are included in the query
+                    DeviceInventory.hardware_version,
                     DeviceInventory.manufacturer,
                     DeviceInventory.pn_code,
                     DeviceInventory.serial_number,
@@ -797,6 +798,7 @@ class SiteRepository(BaseRepository):
                 .first()
             )
             if device:
+                print(f"Device found: {device}")
                 return {
                     "device_id": device.id,
                     "device_name": device.device_name,
@@ -810,6 +812,7 @@ class SiteRepository(BaseRepository):
                     "status": device.status
                 }
             else:
+                print("Device not found.")
                 return None
 
     def get_racks_by_site_id1(self, site_id: int) -> List[Rack]:

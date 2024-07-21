@@ -1191,16 +1191,19 @@ class SiteService:
             time=data.get('time'),
         )
 
-    def get_device_energy_details(self, site_id: int, device_id: int, exact_time: datetime,
-                                  granularity: str) -> DeviceEnergyDetailResponse123:
+    def get_device_energy_details(self, site_id: int, device_id: int, exact_time: datetime, granularity: str) -> DeviceEnergyDetailResponse123:
+        print(f"Fetching device details: site_id={site_id}, device_id={device_id}")
         device = self.site_repository.get_device_by_site_id_and_device_id(site_id, device_id)
         if not device or not device["ip_address"]:
+            print("Device not found or missing IP address.")
             raise HTTPException(status_code=404, detail="Device not found.")
 
-        energy_metrics = self.influxdb_repository.get_energy_details_for_device_at_time(device["ip_address"],
-                                                                                        exact_time, granularity)
+        print(f"Device details: {device}")
+        energy_metrics = self.influxdb_repository.get_energy_details_for_device_at_time(device["ip_address"], exact_time, granularity)
         if not energy_metrics:
+            print("No energy metrics found.")
             raise HTTPException(status_code=404, detail="No energy metrics found for the specified time.")
 
+        print(f"Energy metrics: {energy_metrics}")
         device_details = {**device, **energy_metrics}
         return self.format_device_energy_detail(device_details)

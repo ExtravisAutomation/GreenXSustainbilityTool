@@ -2197,6 +2197,7 @@ class InfluxDBRepository:
 
     def get_energy_details_for_device_at_time(self, device_ip: str, exact_time: datetime, granularity: str) -> dict:
         start_time, end_time = self.determine_time_range(exact_time, granularity)
+        print(f"InfluxDB query range: start_time={start_time}, end_time={end_time}, granularity={granularity}")
 
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
@@ -2206,9 +2207,11 @@ class InfluxDBRepository:
             |> aggregateWindow(every: {granularity}, fn: mean, createEmpty: false)
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
+        print(f"InfluxDB query: {query}")
         result = self.query_api1.query_data_frame(query)
 
         if result.empty:
+            print("InfluxDB query returned no results.")
             return None
 
         # Assuming you want data closest to the exact_time

@@ -1019,10 +1019,13 @@ def get_device_energy_details(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
+        print(f"Received request: site_id={site_id}, device_id={device_id}, time={time}")
         exact_time, granularity = parse_time12(time)
+        print(f"Parsed time: exact_time={exact_time}, granularity={granularity}")
         device_details = site_service.get_device_energy_details(site_id, device_id, exact_time, granularity)
         if not device_details:
             raise HTTPException(status_code=404, detail="No details found for the specified device and time.")
         return device_details
     except Exception as e:
+        print(f"Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))
