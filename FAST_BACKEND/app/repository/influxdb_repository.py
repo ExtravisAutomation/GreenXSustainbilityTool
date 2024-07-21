@@ -2198,13 +2198,17 @@ class InfluxDBRepository:
     def get_energy_details_for_device_at_time(self, device_ip: str, exact_time: datetime, granularity: str) -> dict:
         start_time, end_time = self.determine_time_range(exact_time, granularity)
         print(f"InfluxDB query range: start_time={start_time}, end_time={end_time}, granularity={granularity}")
-
+        aggregate_window = "1h"  # Default to 1 hour
+        if granularity == 'daily':
+            aggregate_window = "1h"  # Hourly aggregates for daily
+        elif granularity == 'monthly':
+            aggregate_window = "1d"  # Daily aggregates for monthly
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
             |> range(start: {start_time}, stop: {end_time})
             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{device_ip}")
             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-            |> aggregateWindow(every: {granularity}, fn: mean, createEmpty: false)
+            |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
         print(f"InfluxDB query: {query}")
