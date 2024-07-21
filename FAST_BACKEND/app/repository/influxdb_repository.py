@@ -2264,5 +2264,5 @@ class InfluxDBRepository:
         elif granularity == "hourly":
             start_time = exact_time.replace(minute=0, second=0, microsecond=0)
             end_time = exact_time.replace(minute=59, second=59, microsecond=999999)
-        # Add other granularity handling as needed
+            # Add other granularity handling as needed
         return start_time, end_time
