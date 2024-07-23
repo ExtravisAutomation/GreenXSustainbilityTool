@@ -1483,7 +1483,7 @@ class InfluxDBRepository:
         for ip in device_ips:
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
-                |> range(start: {start_time.isoformat()}, stop: {end_time.isoformat()})
+                |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and (r["_field"] == "total_PIn" or r["_field"] == "total_POut"))
                 |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
