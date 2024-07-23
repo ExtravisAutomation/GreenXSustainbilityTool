@@ -1426,49 +1426,8 @@ class InfluxDBRepository:
     #     print(f"Total metrics processed: {len(filtered_metrics)}")  # Debug print for total processed metrics
     #     return filtered_metrics
 
-    # def calculate_metrics_for_device_at_timeu(self, device_ips: List[str], exact_time: datetime, granularity: str) -> \
-    #         List[dict]:
-    #     start_time, end_time = self.determine_time_range(exact_time, granularity)
-    #     filtered_metrics = []
-    #
-    #     aggregate_window = "1h"  # Default to 1 hour
-    #     if granularity == 'daily':
-    #         aggregate_window = "1h"  # Hourly aggregates for daily
-    #     elif granularity == 'monthly':
-    #         aggregate_window = "1d"  # Daily aggregates for monthly
-    #
-    #     print(f"Querying from {start_time} to {end_time} with window {aggregate_window}",
-    #           file=sys.stderr)  # Debug print for query setup
-    #
-    #     for ip in device_ips:
-    #         print("IP QQQQ", ip, file=sys.stderr)
-    #         query = f'''
-    #                        from(bucket: "{configs.INFLUXDB_BUCKET}")
-    #                        |> range(start: {start_time}, stop: {end_time})
-    #                        |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-    #                        |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and (r["_field"] == "total_PIn" or r["_field"] == "total_POut"))
-    #                        |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-    #                        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-    #                    '''
-    #         result = self.query_api1.query_data_frame(query)
-    #         print("resultttttttttttttttttt", result, file=sys.stderr)
-    #
-    #         if result.empty:
-    #             print(f"No data found for {ip}. Skipping data generation.", file=sys.stderr)  # Debug print when no data
-    #         else:
-    #             print(f"Data retrieved for {ip}, processing {len(result)} entries.",
-    #                   file=sys.stderr)  # Debug print for retrieved data
-    #             parsed_metrics = self.parse_result12(result)
-    #             for metric in parsed_metrics:
-    #                 metric["ip"] = ip  # Ensuring IP is included for device details merging
-    #             filtered_metrics.extend(parsed_metrics)
-    #
-    #     print(f"Total metrics processed: {len(filtered_metrics)}",
-    #           file=sys.stderr)  # Debug print for total processed metrics
-    #     return filtered_metrics
-
     def calculate_metrics_for_device_at_timeu(self, device_ips: List[str], exact_time: datetime, granularity: str) -> \
-    List[dict]:
+            List[dict]:
         start_time, end_time = self.determine_time_range(exact_time, granularity)
         filtered_metrics = []
 
@@ -1478,30 +1437,71 @@ class InfluxDBRepository:
         elif granularity == 'monthly':
             aggregate_window = "1d"  # Daily aggregates for monthly
 
-        print(f"Querying from {start_time} to {end_time} with window {aggregate_window}", file=sys.stderr)
+        print(f"Querying from {start_time} to {end_time} with window {aggregate_window}",
+              file=sys.stderr)  # Debug print for query setup
 
         for ip in device_ips:
+            print("IP QQQQ", ip, file=sys.stderr)
             query = f'''
-                from(bucket: "{configs.INFLUXDB_BUCKET}")
-                |> range(start: {start_time}, stop: {end_time})
-                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and (r["_field"] == "total_PIn" or r["_field"] == "total_POut"))
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-            '''
+                           from(bucket: "{configs.INFLUXDB_BUCKET}")
+                           |> range(start: {start_time}, stop: {end_time})
+                           |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                           |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and (r["_field"] == "total_PIn" or r["_field"] == "total_POut"))
+                           |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                       '''
             result = self.query_api1.query_data_frame(query)
+            print("resultttttttttttttttttt", result, file=sys.stderr)
 
             if result.empty:
-                print(f"No data found for {ip}. Skipping data generation.", file=sys.stderr)
+                print(f"No data found for {ip}. Skipping data generation.", file=sys.stderr)  # Debug print when no data
             else:
-                print(f"Data retrieved for {ip}, processing {len(result)} entries.", file=sys.stderr)
+                print(f"Data retrieved for {ip}, processing {len(result)} entries.",
+                      file=sys.stderr)  # Debug print for retrieved data
                 parsed_metrics = self.parse_result12(result)
                 for metric in parsed_metrics:
-                    metric["ip"] = ip
+                    metric["ip"] = ip  # Ensuring IP is included for device details merging
                 filtered_metrics.extend(parsed_metrics)
 
-        print(f"Total metrics processed: {len(filtered_metrics)}", file=sys.stderr)
+        print(f"Total metrics processed: {len(filtered_metrics)}",
+              file=sys.stderr)  # Debug print for total processed metrics
         return filtered_metrics
+
+    # def calculate_metrics_for_device_at_timeu(self, device_ips: List[str], exact_time: datetime, granularity: str) -> \
+    # List[dict]:
+    #     start_time, end_time = self.determine_time_range(exact_time, granularity)
+    #     filtered_metrics = []
+    #
+    #     aggregate_window = "1h"  # Default to 1 hour
+    #     if granularity == 'daily':
+    #         aggregate_window = "1h"  # Hourly aggregates for daily
+    #     elif granularity == 'monthly':
+    #         aggregate_window = "1d"  # Daily aggregates for monthly
+    #
+    #     print(f"Querying from {start_time} to {end_time} with window {aggregate_window}", file=sys.stderr)
+    #
+    #     for ip in device_ips:
+    #         query = f'''
+    #             from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #             |> range(start: {start_time}, stop: {end_time})
+    #             |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and (r["_field"] == "total_PIn" or r["_field"] == "total_POut"))
+    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+    #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #         '''
+    #         result = self.query_api1.query_data_frame(query)
+    #
+    #         if result.empty:
+    #             print(f"No data found for {ip}. Skipping data generation.", file=sys.stderr)
+    #         else:
+    #             print(f"Data retrieved for {ip}, processing {len(result)} entries.", file=sys.stderr)
+    #             parsed_metrics = self.parse_result12(result)
+    #             for metric in parsed_metrics:
+    #                 metric["ip"] = ip
+    #             filtered_metrics.extend(parsed_metrics)
+    #
+    #     print(f"Total metrics processed: {len(filtered_metrics)}", file=sys.stderr)
+    #     return filtered_metrics
 
     def determine_time_range(self, exact_time: datetime, granularity: str):
         if granularity == 'hourly':
