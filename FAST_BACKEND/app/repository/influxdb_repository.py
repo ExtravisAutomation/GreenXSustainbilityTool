@@ -1505,17 +1505,15 @@ class InfluxDBRepository:
 
     def determine_time_range(self, exact_time: datetime, granularity: str):
         if granularity == 'hourly':
-            start_time = exact_time.replace(minute=0, second=0, microsecond=0)
-            end_time = start_time + timedelta(hours=1)
+            start_time = exact_time.strftime('%Y-%m-%dT%H:00:00Z')
+            end_time = (exact_time + timedelta(hours=1)).strftime('%Y-%m-%dT%H:00:00Z')
         elif granularity == 'daily':
-            start_time = exact_time.replace(hour=0, minute=0, second=0, microsecond=0)
-            end_time = start_time + timedelta(days=1)
-        elif granularity == 'monthly':
-            start_time = exact_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-            end_time = (start_time + timedelta(days=31)).replace(day=1)
-        else:
-            raise ValueError("Invalid granularity")
-
+            start_time = exact_time.strftime('%Y-%m-%d') + "T00:00:00Z"
+            end_time = exact_time.strftime('%Y-%m-%d') + "T23:59:59Z"
+        else:  # 'monthly'
+            start_time = exact_time.strftime('%Y-%m') + "-01T00:00:00Z"
+            last_day = (exact_time + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+            end_time = last_day.strftime('%Y-%m-%d') + "T23:59:59Z"
         return start_time, end_time
 
     def parse_result12(self, result):
