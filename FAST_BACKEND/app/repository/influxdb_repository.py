@@ -452,7 +452,7 @@ class InfluxDBRepository:
                         pin = row['total_PIn']
                         pout = row['total_POut']
 
-                        energy_consumption = pout / pin  if pin > 0 else 0
+                        energy_consumption = pout / pin if pin > 0 else 0
                         power_efficiency = ((pin / pout - 1) * 100) if pout > 0 else 0
 
                         total_power_metrics.append({
@@ -899,7 +899,7 @@ class InfluxDBRepository:
                                                                                              'total_bytesRateLast'] > 0 else 0
             pin = row['total_PIn'] if row['total_PIn'] > 0 else 1  # Avoid division by zero
             pout = row['total_POut'] if row['total_POut'] > 0 else 0
-            energy_consumption = (pout / pin) * 100  # Calculate energy consumption
+            energy_consumption = pout / pin # Calculate energy consumption
 
             throughput_metrics.append({
                 "time": row['_time'],
@@ -2073,8 +2073,8 @@ class InfluxDBRepository:
                         pin = row['total_PIn']
                         pout = row['total_POut']
 
-                        energy_consumption = (pout / pin) * 100 if pin > 0 else 0
-                        power_efficiency = pin / pout  if pout > 0 else 0
+                        energy_consumption = pout / pin if pin > 0 else 0
+                        power_efficiency = pin / pout if pout > 0 else 0
 
                         total_power_metrics.append({
                             "time": row['index'],
@@ -2238,7 +2238,7 @@ class InfluxDBRepository:
         pin = closest_metric['total_PIn']
         pout = closest_metric['total_POut']
         energy_consumption = (pout / pin) * 100 if pin > 0 else 0
-        power_efficiency = pin / pout  if pout > 0 else 0
+        power_efficiency = pin / pout if pout > 0 else 0
 
         return {
             "time": closest_metric['_time'],
