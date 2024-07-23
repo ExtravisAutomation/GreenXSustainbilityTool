@@ -362,7 +362,7 @@ def get_energy_consumption_metrics(
     issue_detected1 = False
 
     for metric in metrics:
-        energy_consumption = metric['energy_consumption']
+        energy_consumption = metric['energy_efficiency']
         power_efficiency = metric['power_efficiency']
         time_stamp = metric['time']
 
