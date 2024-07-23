@@ -104,7 +104,7 @@ class SitePowerConsumptionResponse(BaseModel):
 
 class EnergyConsumptionMetricsDetails(BaseModel):
     time: str
-    energy_consumption: Optional[float] = None
+    energy_efficiency: Optional[float] = None
     total_POut: Optional[float] = None
     total_PIn: Optional[float] = None
     average_energy_consumed: Optional[float] = None
