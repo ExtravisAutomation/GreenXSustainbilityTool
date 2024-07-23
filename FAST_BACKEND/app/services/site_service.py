@@ -657,6 +657,26 @@ class SiteService:
         )
         return formatted_metric
 
+    # def get_energy_metrics_for_time(self, site_id: int, exact_time: datetime,
+    #                                 granularity: str) -> HourlyEnergyMetricsResponse:
+    #     device_inventory = self.site_repository.get_device_inventory_by_site_id(site_id)
+    #     device_ips = [device['ip_address'] for device in device_inventory]
+    #     print(f"Device IPs: {device_ips}")
+    #
+    #     metrics = self.influxdb_repository.calculate_metrics_for_device_at_timeu(device_ips, exact_time, granularity)
+    #     formatted_metrics = []
+    #
+    #     print(f"Received {len(metrics)} metrics for granularity {granularity}")
+    #
+    #     for metric in metrics:
+    #         device_details = next((item for item in device_inventory if item['ip_address'] == metric['ip']), None)
+    #         if device_details:
+    #             formatted_metric = self.format_metric({**metric, **device_details})
+    #             formatted_metrics.append(formatted_metric)
+    #
+    #     print(f"Formatted {len(formatted_metrics)} metrics")
+    #     return HourlyEnergyMetricsResponse(metrics=formatted_metrics)
+
     def get_energy_metrics_for_time(self, site_id: int, exact_time: datetime,
                                     granularity: str) -> HourlyEnergyMetricsResponse:
         device_inventory = self.site_repository.get_device_inventory_by_site_id(site_id)
@@ -676,6 +696,7 @@ class SiteService:
 
         print(f"Formatted {len(formatted_metrics)} metrics")
         return HourlyEnergyMetricsResponse(metrics=formatted_metrics)
+
 
     def generate_dummy_data(self, exact_time, granularity):
         """Generate dummy data based on the granularity required."""
