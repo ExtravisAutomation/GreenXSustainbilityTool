@@ -651,7 +651,7 @@ class SiteService:
             site_name=metric_data.get('site_name'),
             apic_controller_ip=metric_data.get('ip'),
             PE=round(metric_data.get('PE', 0), 2),  # Ensuring PE is rounded and defaults to 0 if not present
-            PUE=metric_data.get('PUE', 1.0),  # Defaulting PUE to 1.0 if not present
+            PUE=metric_data.get('PUE', 0),  # Defaulting PUE to 1.0 if not present
             current_power=metric_data.get('current_power', 0),
             time=metric_data.get('time')  # Assuming time is correctly formatted
         )
