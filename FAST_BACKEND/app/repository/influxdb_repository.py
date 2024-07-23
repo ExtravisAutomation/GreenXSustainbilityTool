@@ -5,6 +5,7 @@ import traceback
 from calendar import calendar
 
 import numpy as np
+from fastapi import HTTPException
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from contextlib import AbstractContextManager
 from typing import Callable, List, Union, Tuple, Any
@@ -2195,22 +2196,16 @@ class InfluxDBRepository:
         print(f"Final metrics: {df}", file=sys.stderr)
         return df
 
-    def convert_granularity(self, granularity: str) -> str:
-        granularity_map = {
-            "daily": "1d",
-            "hourly": "1h",
-            "monthly": "1m",
-        }
-        return granularity_map.get(granularity, granularity)
-
     def get_energy_details_for_device_at_time(self, device_ip: str, exact_time: datetime, granularity: str) -> dict:
-        # Ensure exact_time is timezone-aware
         if exact_time.tzinfo is None:
             exact_time = exact_time.replace(tzinfo=timezone.utc)
 
-        start_time, end_time = self.determine_time_range12(exact_time, granularity)
+        try:
+            start_time, end_time = self.determine_time_range12(exact_time, granularity)
+        except Exception as e:
+            print(f"Error determining time range: {e}")
+            raise HTTPException(status_code=500, detail="Error determining time range")
 
-        # Ensure start_time and end_time are timezone-aware
         if start_time.tzinfo is None:
             start_time = start_time.replace(tzinfo=timezone.utc)
         if end_time.tzinfo is None:
@@ -2235,7 +2230,6 @@ class InfluxDBRepository:
             print("InfluxDB query returned no results.")
             return None
 
-        # Ensure result['_time'] is timezone-aware
         result['_time'] = pd.to_datetime(result['_time']).dt.tz_convert('UTC')
         exact_time = exact_time.astimezone(timezone.utc)
 
@@ -2254,15 +2248,28 @@ class InfluxDBRepository:
         }
 
     def determine_time_range12(self, exact_time: datetime, granularity: str):
-        # Ensure exact_time is timezone-aware
-        if exact_time.tzinfo is None:
-            exact_time = exact_time.replace(tzinfo=timezone.utc)
-
-        if granularity == "daily":
-            start_time = exact_time.replace(hour=0, minute=0, second=0, microsecond=0)
-            end_time = exact_time.replace(hour=23, minute=59, second=59, microsecond=999999)
-        elif granularity == "hourly":
+        # Implement logic to determine the time range based on granularity
+        if granularity == 'hourly':
             start_time = exact_time.replace(minute=0, second=0, microsecond=0)
-            end_time = exact_time.replace(minute=59, second=59, microsecond=999999)
-            # Add other granularity handling as needed
+            end_time = start_time + timedelta(hours=1)
+        elif granularity == 'daily':
+            start_time = exact_time.replace(hour=0, minute=0, second=0, microsecond=0)
+            end_time = start_time + timedelta(days=1)
+        elif granularity == 'monthly':
+            start_time = exact_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            end_time = (start_time + timedelta(days=31)).replace(day=1)
+        else:
+            raise ValueError("Invalid granularity")
+
         return start_time, end_time
+
+    def convert_granularity(self, granularity: str) -> str:
+        # Convert the granularity to the appropriate InfluxDB time window
+        if granularity == 'hourly':
+            return '1h'
+        elif granularity == 'daily':
+            return '1d'
+        elif granularity == 'monthly':
+            return '30d'
+        else:
+            raise ValueError("Invalid granularity")
