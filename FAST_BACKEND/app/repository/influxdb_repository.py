@@ -3,9 +3,9 @@ import random
 import sys
 import traceback
 from calendar import calendar
+from http.client import HTTPException
 
 import numpy as np
-from fastapi import HTTPException
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from contextlib import AbstractContextManager
 from typing import Callable, List, Union, Tuple, Any
@@ -1364,29 +1364,29 @@ class InfluxDBRepository:
             })
         return dummy_metrics
 
-    # def parse_result12(self, result):
-    #     parsed_metrics = []
-    #     for index, row in result.iterrows():
-    #         pin = row.get('total_PIn', 0)
-    #         pout = row.get('total_POut', 1)  # Ensure pout isn't zero to avoid division by zero
-    #
-    #         current_power = ((
-    #                                  pin / pout) - 1) * 100 if pout != 0 else 0  # Calculate current power based on your formula
-    #
-    #         metric = {
-    #             "ip": row.get("ApicController_IP", "unknown_ip"),
-    #             "time": row['_time'].strftime('%Y-%m-%d %H:%M:%S'),
-    #             "PE": row.get('total_POut', 0) / max(pin, 1) * 100,
-    #             "PUE": pin * 1.2 / max(pin, 1),
-    #             "current_power": round(current_power, 2),  # Rounded for better display
-    #             "energy_consumption": pin / 1000,
-    #             "total_POut": pout / 1000,
-    #             "average_energy_consumed": pin / max(pout, 1),
-    #             "power_efficiency": pout / max(pin, 1) * 100
-    #         }
-    #         parsed_metrics.append(metric)
-    #         print(f"Parsing metric: {metric}", file=sys.stderr)
-    #     return parsed_metrics
+    def parse_result12(self, result):
+        parsed_metrics = []
+        for index, row in result.iterrows():
+            pin = row.get('total_PIn', 0)
+            pout = row.get('total_POut', 1)  # Ensure pout isn't zero to avoid division by zero
+
+            current_power = ((
+                                     pin / pout) - 1) * 100 if pout != 0 else 0  # Calculate current power based on your formula
+
+            metric = {
+                "ip": row.get("ApicController_IP", "unknown_ip"),
+                "time": row['_time'].strftime('%Y-%m-%d %H:%M:%S'),
+                "PE": row.get('total_POut', 0) / max(pin, 1) * 100,
+                "PUE": pin * 1.2 / max(pin, 1),
+                "current_power": round(current_power, 2),  # Rounded for better display
+                "energy_consumption": pin / 1000,
+                "total_POut": pout / 1000,
+                "average_energy_consumed": pin / max(pout, 1),
+                "power_efficiency": pout / max(pin, 1) * 100
+            }
+            parsed_metrics.append(metric)
+            print(f"Parsing metric: {metric}", file=sys.stderr)
+        return parsed_metrics
 
     # def calculate_metrics_for_device_at_timeu(self, device_ips: List[str], exact_time: datetime, granularity: str) -> \
     #         List[dict]:
@@ -1467,113 +1467,49 @@ class InfluxDBRepository:
               file=sys.stderr)  # Debug print for total processed metrics
         return filtered_metrics
 
-    # def calculate_metrics_for_device_at_timeu(self, device_ips: List[str], exact_time: datetime, granularity: str) -> \
-    # List[dict]:
-    #     start_time, end_time = self.determine_time_range(exact_time, granularity)
-    #     filtered_metrics = []
-    #
-    #     aggregate_window = "1h"  # Default to 1 hour
-    #     if granularity == 'daily':
-    #         aggregate_window = "1h"  # Hourly aggregates for daily
-    #     elif granularity == 'monthly':
-    #         aggregate_window = "1d"  # Daily aggregates for monthly
-    #
-    #     print(f"Querying from {start_time} to {end_time} with window {aggregate_window}", file=sys.stderr)
-    #
-    #     for ip in device_ips:
-    #         query = f'''
-    #             from(bucket: "{configs.INFLUXDB_BUCKET}")
-    #             |> range(start: {start_time}, stop: {end_time})
-    #             |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and (r["_field"] == "total_PIn" or r["_field"] == "total_POut"))
-    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-    #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-    #         '''
-    #         result = self.query_api1.query_data_frame(query)
-    #
-    #         if result.empty:
-    #             print(f"No data found for {ip}. Skipping data generation.", file=sys.stderr)
-    #         else:
-    #             print(f"Data retrieved for {ip}, processing {len(result)} entries.", file=sys.stderr)
-    #             parsed_metrics = self.parse_result12(result)
-    #             for metric in parsed_metrics:
-    #                 metric["ip"] = ip
-    #             filtered_metrics.extend(parsed_metrics)
-    #
-    #     print(f"Total metrics processed: {len(filtered_metrics)}", file=sys.stderr)
-    #     return filtered_metrics
-
-    def determine_time_range(self, exact_time: datetime, granularity: str):
+    def determine_time_range(self, exact_time, granularity):
+        """ Adjust time range based on the granularity. """
         if granularity == 'hourly':
+            # For hourly data, range is the exact hour
             start_time = exact_time.strftime('%Y-%m-%dT%H:00:00Z')
             end_time = (exact_time + timedelta(hours=1)).strftime('%Y-%m-%dT%H:00:00Z')
         elif granularity == 'daily':
+            # For daily data, range spans the whole day
             start_time = exact_time.strftime('%Y-%m-%d') + "T00:00:00Z"
             end_time = exact_time.strftime('%Y-%m-%d') + "T23:59:59Z"
         else:  # 'monthly'
+            # For monthly data, range spans the whole month
             start_time = exact_time.strftime('%Y-%m') + "-01T00:00:00Z"
             last_day = (exact_time + timedelta(days=32)).replace(day=1) - timedelta(days=1)
             end_time = last_day.strftime('%Y-%m-%d') + "T23:59:59Z"
         return start_time, end_time
 
-    def parse_result12(self, result):
-        metrics = []
-        for _, row in result.iterrows():
-            metric = {
-                "time": row["_time"],
-                "PE": row["total_PIn"],
-                "PUE": row["total_POut"],
-                "current_power": row["total_PIn"] - row["total_POut"]
-            }
-            metrics.append(metric)
-        return metrics
+    def generate_dummy(self, exact_time, granularity, ip):
+        dummy_metrics = []
+        periods = {
+            'hourly': 1,
+            'daily': 24,  # 24 hours for daily
+            'monthly': (exact_time.replace(month=exact_time.month % 12 + 1, day=1) - timedelta(days=1)).day
+            # days in the month
+        }
 
-
-
-
-    # def determine_time_range(self, exact_time, granularity):
-    #     """ Adjust time range based on the granularity. """
-    #     if granularity == 'hourly':
-    #         # For hourly data, range is the exact hour
-    #         start_time = exact_time.strftime('%Y-%m-%dT%H:00:00Z')
-    #         end_time = (exact_time + timedelta(hours=1)).strftime('%Y-%m-%dT%H:00:00Z')
-    #     elif granularity == 'daily':
-    #         # For daily data, range spans the whole day
-    #         start_time = exact_time.strftime('%Y-%m-%d') + "T00:00:00Z"
-    #         end_time = exact_time.strftime('%Y-%m-%d') + "T23:59:59Z"
-    #     else:  # 'monthly'
-    #         # For monthly data, range spans the whole month
-    #         start_time = exact_time.strftime('%Y-%m') + "-01T00:00:00Z"
-    #         last_day = (exact_time + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-    #         end_time = last_day.strftime('%Y-%m-%d') + "T23:59:59Z"
-    #     return start_time, end_time
-
-    # def generate_dummy(self, exact_time, granularity, ip):
-    #     dummy_metrics = []
-    #     periods = {
-    #         'hourly': 1,
-    #         'daily': 24,  # 24 hours for daily
-    #         'monthly': (exact_time.replace(month=exact_time.month % 12 + 1, day=1) - timedelta(days=1)).day
-    #         # days in the month
-    #     }
-    #
-    #     period_count = periods.get(granularity, 24)  # Default to daily if granularity key is not found
-    #     for i in range(period_count):
-    #         time_step = exact_time + timedelta(hours=i) if granularity != 'monthly' else exact_time + timedelta(days=i)
-    #         dummy_metrics.append({
-    #             "ip": ip,
-    #             "time": time_step.strftime('%Y-%m-%d %H:%M:%S'),
-    #             "PE": random.uniform(84.00, 90.00),
-    #             "PUE": round(random.uniform(1.0, 1.2), 2),
-    #             "current_power": round(random.uniform(12220, 12230), 2),
-    #             "energy_consumption": random.uniform(10.00, 12.00),
-    #             "total_POut": random.uniform(8000, 11000),
-    #             "average_energy_consumed": random.uniform(1.00, 2.00),
-    #             "power_efficiency": random.uniform(84.00, 90.00)
-    #         })
-    #     print(
-    #         f"Generated {len(dummy_metrics)} dummy metrics for {ip} on granularity {granularity}")  # Debug print for generated dummy data
-    #     return dummy_metrics
+        period_count = periods.get(granularity, 24)  # Default to daily if granularity key is not found
+        for i in range(period_count):
+            time_step = exact_time + timedelta(hours=i) if granularity != 'monthly' else exact_time + timedelta(days=i)
+            dummy_metrics.append({
+                "ip": ip,
+                "time": time_step.strftime('%Y-%m-%d %H:%M:%S'),
+                "PE": random.uniform(84.00, 90.00),
+                "PUE": round(random.uniform(1.0, 1.2), 2),
+                "current_power": round(random.uniform(12220, 12230), 2),
+                "energy_consumption": random.uniform(10.00, 12.00),
+                "total_POut": random.uniform(8000, 11000),
+                "average_energy_consumed": random.uniform(1.00, 2.00),
+                "power_efficiency": random.uniform(84.00, 90.00)
+            })
+        print(
+            f"Generated {len(dummy_metrics)} dummy metrics for {ip} on granularity {granularity}")  # Debug print for generated dummy data
+        return dummy_metrics
 
     def get_24hsite_power(self, apic_ips: List[str], site_id: int) -> List[dict]:
         if not apic_ips:
