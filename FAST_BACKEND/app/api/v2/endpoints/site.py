@@ -1029,3 +1029,5 @@ def get_device_energy_details(
     except Exception as e:
         print(f"Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+

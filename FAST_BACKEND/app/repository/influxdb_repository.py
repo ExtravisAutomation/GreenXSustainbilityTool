@@ -1924,7 +1924,14 @@ class InfluxDBRepository:
     def get_carbon_intensity(self, start_date: datetime, end_date: datetime, duration_str: str) -> float:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
-        aggregate_window = "1h" if duration_str == "24 hours" else "1d"
+        # aggregate_window = "1h" if duration_str == "24 hours" else "1d"
+        if duration_str in ["24 hours"]:
+            aggregate_window = "1h"
+        elif duration_str in ["7 Days", "Current Month", "Last Month"]:
+            aggregate_window = "1d"
+        else:
+            aggregate_window = "1m"
+
         zone = "AE"
 
         query = f'''
