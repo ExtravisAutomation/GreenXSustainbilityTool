@@ -899,7 +899,7 @@ class InfluxDBRepository:
                                                                                              'total_bytesRateLast'] > 0 else 0
             pin = row['total_PIn'] if row['total_PIn'] > 0 else 1  # Avoid division by zero
             pout = row['total_POut'] if row['total_POut'] > 0 else 0
-            energy_consumption = pout / pin # Calculate energy consumption
+            energy_consumption = pout / pin  # Calculate energy consumption
 
             throughput_metrics.append({
                 "time": row['_time'],
@@ -2280,3 +2280,31 @@ class InfluxDBRepository:
             return '30d'
         else:
             raise ValueError("Invalid granularity")
+
+    def get_device_total_pin_value(self, device_ip: str, start_date: datetime, end_date: datetime,
+                                   duration_str: str) -> float:
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+
+        if duration_str in ["24 hours"]:
+            aggregate_window = "1h"
+        elif duration_str in ["7 Days", "Current Month", "Last Month"]:
+            aggregate_window = "1d"
+        else:  # For "last 6 months", "last year", "current year"
+            aggregate_window = "1m"
+
+        total_pin = 0
+
+        query = f'''
+            from(bucket: "{configs.INFLUXDB_BUCKET}")
+            |> range(start: {start_time}, stop: {end_time})
+            |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{device_ip}")
+            |> filter(fn: (r) => r["_field"] == "total_PIn")
+            |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+        '''
+
+        result = self.query_api1.query_data_frame(query)
+        if not result.empty:
+            total_pin += result['_value'].sum()
+
+        return total_pin

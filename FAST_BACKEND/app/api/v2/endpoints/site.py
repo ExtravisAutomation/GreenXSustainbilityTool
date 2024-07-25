@@ -1031,3 +1031,23 @@ def get_device_energy_details(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/sites/device_carbon_emission_details/{site_id}", response_model=CustomResponse[dict])
+@inject
+def get_carbon_emission_metrics(
+        site_id: int,
+        device_id: int,
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+    device_details, carbon_emission = site_service.calculate_device_carbon_emission(site_id, device_id, duration)
+    return CustomResponse(
+        message="Carbon emission metrics retrieved successfully.",
+        data={
+            "device_id": device_details["device_id"],
+            "device_name": device_details["device_name"],
+            "carbon_emission": carbon_emission,
+        },
+        status_code=200
+    )

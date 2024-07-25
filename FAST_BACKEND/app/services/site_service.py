@@ -697,7 +697,6 @@ class SiteService:
         print(f"Formatted {len(formatted_metrics)} metrics")
         return HourlyEnergyMetricsResponse(metrics=formatted_metrics)
 
-
     def generate_dummy_data(self, exact_time, granularity):
         """Generate dummy data based on the granularity required."""
         dummy_metrics = []
@@ -880,12 +879,11 @@ class SiteService:
         return float(total_pin_value_KW), carbon_emission_KG, carbon_car, carbon_flight, carbon_solution
 
     def calculate_carbon_car(self, carbon_emission_KG):
-        # Example calculations (adjust these according to realistic models or data)
+
         car_trips = carbon_emission_KG * 1.39  # example conversion factor
-        # Dynamically calculate the distance per trip
-        # Let's say each kg of CO2 represents a trip of 1000 km modified by some factor of the emissions
+
         base_distance = 1000  # base distance in km
-        distance_per_trip = base_distance + (carbon_emission_KG * 10)  # Example dynamic adjustment
+        distance_per_trip = base_distance + (carbon_emission_KG * 10)
 
         return f"{round(carbon_emission_KG)}kg is Equivalent of {int(car_trips)} car trips of {int(distance_per_trip)} km each in a gas-powered passenger vehicle"
 
@@ -1212,7 +1210,8 @@ class SiteService:
             time=data.get('time'),
         )
 
-    def get_device_energy_details(self, site_id: int, device_id: int, exact_time: datetime, granularity: str) -> DeviceEnergyDetailResponse123:
+    def get_device_energy_details(self, site_id: int, device_id: int, exact_time: datetime,
+                                  granularity: str) -> DeviceEnergyDetailResponse123:
         print(f"Fetching device details: site_id={site_id}, device_id={device_id}")
         device = self.site_repository.get_device_by_site_id_and_device_id(site_id, device_id)
         if not device or not device["ip_address"]:
@@ -1220,7 +1219,8 @@ class SiteService:
             raise HTTPException(status_code=404, detail="Device not found.")
 
         print(f"Device details: {device}")
-        energy_metrics = self.influxdb_repository.get_energy_details_for_device_at_time(device["ip_address"], exact_time, granularity)
+        energy_metrics = self.influxdb_repository.get_energy_details_for_device_at_time(device["ip_address"],
+                                                                                        exact_time, granularity)
         if not energy_metrics:
             print("No energy metrics found.")
             raise HTTPException(status_code=404, detail="No energy metrics found for the specified time.")
@@ -1228,3 +1228,22 @@ class SiteService:
         print(f"Energy metrics: {energy_metrics}")
         device_details = {**device, **energy_metrics}
         return self.format_device_energy_detail(device_details)
+
+    def calculate_device_carbon_emission(self, site_id: int, device_id: int, duration_str: str) -> tuple:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        device = self.site_repository.get_device_by_site_id_and_device_id(site_id, device_id)
+        if not device or not device.get("ip_address"):
+            print("Device not found or missing IP address.")
+            raise HTTPException(status_code=404, detail="Device not found.")
+
+        print(f"Device details: {device}")
+
+        total_pin_value = self.influxdb_repository.get_device_total_pin_value(
+            device["ip_address"], start_date, end_date, duration_str)
+        carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
+
+        total_pin_value_KW = total_pin_value / 1000
+        carbon_emission = float(total_pin_value_KW) * float(carbon_intensity)
+        carbon_emission_KG = round(carbon_emission / 1000, 2)
+
+        return device, carbon_emission_KG
