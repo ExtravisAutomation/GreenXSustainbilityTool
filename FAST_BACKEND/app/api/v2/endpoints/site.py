@@ -1051,3 +1051,20 @@ def get_carbon_emission_metrics(
         },
         status_code=200
     )
+
+
+@router.get("/sites/all_devices_carbon_emission/{site_id}", response_model=CustomResponse[List[dict]])
+@inject
+def get_all_devices_carbon_emission(
+        site_id: int,
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+    devices_carbon_emission = site_service.get_all_devices_carbon_emission(site_id, duration)
+    return CustomResponse(
+        message="Carbon emission metrics for all devices retrieved successfully.",
+        data=devices_carbon_emission,
+        status_code=200
+    )

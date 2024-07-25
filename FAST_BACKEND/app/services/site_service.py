@@ -1247,3 +1247,31 @@ class SiteService:
         carbon_emission_KG = round(carbon_emission / 1000, 2)
 
         return device, carbon_emission_KG
+
+    def get_all_devices_carbon_emission(self, site_id: int, duration_str: str) -> List[dict]:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+
+        if not devices:
+            raise HTTPException(status_code=404, detail="No devices found for the given site.")
+
+        devices_carbon_emission = []
+        for device in devices:
+            if not device or not device.ip_address:
+                continue
+
+            total_pin_value = self.influxdb_repository.get_device_total_pin_value(
+                device.ip_address, start_date, end_date, duration_str)
+            carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
+
+            total_pin_value_KW = total_pin_value / 1000
+            carbon_emission = float(total_pin_value_KW) * float(carbon_intensity)
+            carbon_emission_KG = round(carbon_emission / 1000, 2)  # Rounded to 2 decimal places for precision
+
+            devices_carbon_emission.append({
+                "device_id": device.id,
+                "device_name": device.device_name,
+                "carbon_emission": carbon_emission_KG
+            })
+
+        return devices_carbon_emission
