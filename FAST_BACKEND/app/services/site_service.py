@@ -924,7 +924,7 @@ class SiteService:
 
         total_pin_KW = total_pin / 1000
         carbon_emission = total_pin_KW * carbon_intensity
-        carbon_emission_KG = round(carbon_emission / 1000, 2)
+        carbon_emission_KG = round(carbon_emission / 10000, 2)
 
         return {
             "id": site_id,
@@ -1244,7 +1244,7 @@ class SiteService:
 
         total_pin_value_KW = total_pin_value / 1000
         carbon_emission = float(total_pin_value_KW) * float(carbon_intensity)
-        carbon_emission_KG = round(carbon_emission / 1000, 2)
+        carbon_emission_KG = round(carbon_emission / 10000, 2)
 
         return device, carbon_emission_KG
 
@@ -1266,7 +1266,7 @@ class SiteService:
 
             total_pin_value_KW = total_pin_value / 1000
             carbon_emission = float(total_pin_value_KW) * float(carbon_intensity)
-            carbon_emission_KG = round(carbon_emission / 1000, 2)  # Rounded to 2 decimal places for precision
+            carbon_emission_KG = round(carbon_emission / 10000, 2)  # Rounded to 2 decimal places for precision
 
             devices_carbon_emission.append({
                 "device_id": device.id,
