@@ -1291,6 +1291,8 @@ class SiteService:
             for metric in metrics:
                 total_bytes_rate_last_gb = metric.get("total_bytes_rate_last_gb", 0)
                 energy_consumption = metric.get("energy_consumption", 1)  # Avoid division by zero
+                print("TTTTTTTTTTTTTTTTTT", total_bytes_rate_last_gb, file=sys.stderr)
+                print("EEEEEEEEEEEEEEEE", energy_consumption, file=sys.stderr)
                 if total_bytes_rate_last_gb > 0:
                     pcr = energy_consumption / total_bytes_rate_last_gb
                 else:
