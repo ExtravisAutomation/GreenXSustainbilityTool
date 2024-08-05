@@ -1275,3 +1275,29 @@ class SiteService:
             })
 
         return devices_carbon_emission
+
+    def calculate_device_pcr_by_name_with_filter(self, site_id: int, device_name: str, duration_str: str) -> List[dict]:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        device_info_list = self.site_repository.get_device_ips_by_names_and_site_id(site_id, [device_name])
+
+        if not device_info_list:
+            return []
+
+        pcr_metrics = []
+        for device_info in device_info_list:
+            device_ip = device_info['ip_address']
+            metrics = self.influxdb_repository.get_traffic_throughput_metrics_with_ener(device_ip, start_date, end_date,
+                                                                                        duration_str)
+            for metric in metrics:
+                total_bytes_rate_last_gb = metric.get("total_bytes_rate_last_gb", 0)
+                energy_consumption = metric.get("energy_consumption", 1)  # Avoid division by zero
+                if total_bytes_rate_last_gb > 0:
+                    pcr = energy_consumption / total_bytes_rate_last_gb
+                else:
+                    pcr = None
+                pcr_metrics.append({
+                    "time": metric["time"],
+                    "PCR": round(pcr, 2) if pcr is not None else 0
+                })
+
+        return pcr_metrics

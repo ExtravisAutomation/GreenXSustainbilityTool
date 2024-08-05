@@ -46,6 +46,8 @@ from app.schema.site_schema import EnergyConsumptionMetricsDetails1
 
 from app.schema.site_schema import DeviceEnergyDetailResponse123
 
+from app.schema.site_schema import PCRMetricsDetails
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 
 
@@ -1067,4 +1069,29 @@ def get_all_devices_carbon_emission(
         message="Carbon emission metrics for all devices retrieved successfully.",
         data=devices_carbon_emission,
         status_code=200
+    )
+
+
+@router.get("/site/traffic_pcr_metrics_by_device_WITH_FILTER/{site_id}",
+            response_model=CustomResponse1[List[PCRMetricsDetails]])
+@inject
+def get_device_pcr_metrics(
+        site_id: int,
+        device_name: Optional[str] = None,
+        duration: Optional[str] = Query("24 hours", alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service]),
+        site_repository: SiteRepository = Depends(Provide[Container.site_repo])
+):
+    if not device_name:
+        device_name = site_repository.get_first_device_name(site_id)
+        if not device_name:
+            raise HTTPException(status_code=404, detail="No devices found for the given site.")
+
+    pcr_metrics = site_service.calculate_device_pcr_by_name_with_filter(site_id, device_name, duration)
+    message = "Device PCR metrics retrieved successfully."
+    return CustomResponse1(
+        message=message,
+        data=pcr_metrics,
+        status_code=status.HTTP_200_OK
     )

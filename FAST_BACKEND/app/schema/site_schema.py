@@ -83,6 +83,11 @@ class CustomResponse1(BaseModel, Generic[T]):
     status_code: int
 
 
+class PCRMetricsDetails(BaseModel):
+    time: Optional[str]
+    PCR: Optional[float]
+
+
 class SiteDetails1(BaseModel):
     site_name: Optional[str] = None
     site_type: Optional[str] = None
