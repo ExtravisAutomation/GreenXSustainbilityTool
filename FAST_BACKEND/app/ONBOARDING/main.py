@@ -80,7 +80,7 @@ class DeviceProcessor:
 
     def handle_device_vendor(self, device, session):
         """Handle devices by trying different device types based on vendor."""
-        device_types = self.get_device_types_for_vendor(device.vendor)  # Get device types for the given vendor
+        device_types = self.get_device_types_for_vendor(device.device_name)  # Get device types for the given vendor
         for device_type in device_types:
             if self.try_device_type(device, device_type, session):
                 device.device_type = device_type  # Set the device type based on successful connection

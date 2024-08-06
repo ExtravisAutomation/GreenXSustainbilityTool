@@ -321,7 +321,7 @@ class DeviceEnergyDetailResponse123(BaseModel):
 
 class DeviceCreateRequest(BaseModel):
     ip_address: str
-    vendor: str
+    device_name: str
     site_id: int
     rack_id: int
     password_group_id: int
