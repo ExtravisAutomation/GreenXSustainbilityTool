@@ -1103,7 +1103,7 @@ def get_device_pcr_metrics(
     )
 
 
-@router.post("sites/create_onboard_devices", response_model=CustomResponse[DeviceCreateRequest])
+@router.post("sites/create_onboard_devices", response_model=CustomResponse[dict])
 @inject
 def create_device(
         device_data: DeviceCreateRequest,
