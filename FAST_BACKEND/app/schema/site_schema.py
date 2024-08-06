@@ -317,3 +317,15 @@ class DeviceEnergyDetailResponse123(BaseModel):
     PUE: Optional[float] = None
     current_power: Optional[float] = None
     time: Optional[datetime] = None
+
+
+class DeviceCreateRequest(BaseModel):
+    ip_address: str
+    vendor: str
+    site_id: int
+    rack_id: int
+    password_group_id: int
+    device_type: Optional[str] = None
+
+class OnboardingRequest(BaseModel):
+    device_ids: List[int]

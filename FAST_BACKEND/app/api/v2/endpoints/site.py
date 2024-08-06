@@ -48,7 +48,13 @@ from app.schema.site_schema import DeviceEnergyDetailResponse123
 
 from app.schema.site_schema import PCRMetricsDetails
 
+from app.schema.site_schema import DeviceCreateRequest
+from logging import getLogger
+
+from app.schema.site_schema import OnboardingRequest
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
+logger = getLogger(__name__)
 
 
 class DeleteRequest(BaseModel):
@@ -1095,3 +1101,40 @@ def get_device_pcr_metrics(
         data=pcr_metrics,
         status_code=status.HTTP_200_OK
     )
+
+
+@router.post("sites/create_onboard_devices", response_model=CustomResponse[DeviceCreateRequest])
+@inject
+def create_device(
+        device_data: DeviceCreateRequest,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        response_data = site_service.create_onboard_device(device_data)
+        return CustomResponse(
+            message="Device created successfully.",
+            data=response_data,
+            status_code=201
+        )
+    except Exception as e:
+        logger.error(f"Exception: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/onboard_devices", response_model=CustomResponse[str])
+def onboard_devices(
+    onboarding_data: OnboardingRequest,
+    current_user: User = Depends(get_current_active_user)
+):
+    try:
+        processor = DeviceProcessor()
+        processor.get_devices_by_ids(onboarding_data.device_ids)
+        return CustomResponse(
+            message="Devices onboarded successfully.",
+            data="Success",
+            status_code=200
+        )
+    except Exception as e:
+        logger.error(f"Exception: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))

@@ -31,6 +31,8 @@ from app.schema.site_schema import APICControllersCreate, APICControllersUpdate
 
 from app.schema.site_schema import PasswordGroupUpdate
 
+from app.schema.site_schema import DeviceCreateRequest
+
 
 class SiteRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
@@ -818,3 +820,21 @@ class SiteRepository(BaseRepository):
     def get_racks_by_site_id1(self, site_id: int) -> List[Rack]:
         with self.session_factory() as session:
             return session.query(Rack).filter(Rack.site_id == site_id).all()
+
+    def create_device_onbrd(self, device_data: DeviceCreateRequest) -> APICControllers:
+        with self.session_factory() as session:
+            db_device = APICControllers(
+                **device_data.dict(),
+                OnBoardingStatus=False  # Default onboarding status to False
+            )
+            session.add(db_device)
+            session.commit()
+            session.refresh(db_device)
+
+            db_device = session.query(APICControllers).options(
+                joinedload(APICControllers.password_group),
+                joinedload(APICControllers.site),
+                joinedload(APICControllers.rack)
+            ).filter(APICControllers.id == db_device.id).first()
+
+            return db_device

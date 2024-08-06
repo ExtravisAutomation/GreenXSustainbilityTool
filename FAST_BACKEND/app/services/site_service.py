@@ -43,6 +43,8 @@ from app.schema.site_schema import RackResponse
 
 from app.schema.site_schema import DeviceEnergyDetailResponse123
 
+from app.schema.site_schema import DeviceCreateRequest
+
 
 class SiteService:
     def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
@@ -1303,3 +1305,18 @@ class SiteService:
                 })
 
         return pcr_metrics
+
+    def create_onboard_device(self, device_data: DeviceCreateRequest) -> APICControllersResponse:
+        device = self.site_repository.create_device_onbrd(device_data)
+
+        password_group_name = device.password_group.password_group_name if device.password_group else None
+        site_name = device.site.site_name if device.site else None
+        rack_name = device.rack.rack_name if device.rack else None
+
+        response_data = APICControllersResponse.from_orm(device)
+        response_data.password_group_name = password_group_name
+        response_data.site_name = site_name
+        response_data.rack_name = rack_name
+        response_data.rack_unit = device.rack_unit
+
+        return response_data
