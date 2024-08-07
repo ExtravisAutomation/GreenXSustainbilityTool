@@ -1,4 +1,6 @@
 import logging
+import sys
+
 from sqlalchemy.exc import SQLAlchemyError
 import requests
 from sqlalchemy.orm import sessionmaker
@@ -40,6 +42,7 @@ class APIClient:
         Authenticate and return the auth token.
         """
         login_url = f"{self.base_url}/aaaLogin.json"
+        print("USERNAMEEEEEEEEEEEEEEE", self.password_group.username, self.password_group.password, file=sys.stderr)
         auth_data = {
             "aaaUser": {
                 "attributes": {

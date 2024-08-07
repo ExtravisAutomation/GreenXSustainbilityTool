@@ -1,5 +1,6 @@
 import logging
-from app.ONBOARDING.Database.db_connector import DBConnection  # Import DBConnection correctly based on your project structure
+from app.ONBOARDING.Database.db_connector import \
+    DBConnection  # Import DBConnection correctly based on your project structure
 from app.ONBOARDING.Models.model import Device, PasswordGroup
 from app.ONBOARDING.ACI.APIC import APIClient
 from app.ONBOARDING.NXos.nxos import NXOS
@@ -14,6 +15,7 @@ logging.basicConfig(
     filemode='a'  # Use 'a' to append to the file or 'w' to write over it
 )
 
+
 class DeviceProcessor:
     def __init__(self):
         """Initialize the DeviceProcessor with a DBConnection instance."""
@@ -26,7 +28,7 @@ class DeviceProcessor:
                 if device_ids:
                     print(f"Fetching devices for IDs: {device_ids}")
                     devices = session.query(Device).filter(Device.id.in_(device_ids)).all()
-                    print(len(devices)," devices")
+                    print(len(devices), " devices")
                     if devices:
                         for device in devices:
                             print("Device")
@@ -41,10 +43,10 @@ class DeviceProcessor:
     def get_password(self, device, session):
         """Process individual devices by fetching associated password group and handling based on device type."""
         try:
-            print("Processing device",device.password_group_id )
-            password_group = session.query(PasswordGroup).filter(PasswordGroup.id==device.password_group_id).first()
+            print("Processing device", device.password_group_id)
+            password_group = session.query(PasswordGroup).filter(PasswordGroup.id == device.password_group_id).first()
             if password_group:
-                print("Processing password",)
+                print("Processing password", )
                 logging.info(f"Processing device ID {device.id} with type {device.device_type}")
                 return password_group
             else:
@@ -54,23 +56,23 @@ class DeviceProcessor:
 
     def handle_device_type(self, device, session):
         """Handle specific actions based on device type."""
-        print("Handling device type",(device.device_type).lower())
-        deviceType=(device.device_type).lower()
+        print("Handling device type", (device.device_type).lower())
+        deviceType = (device.device_type).lower()
         if deviceType == 'apic':
             print("Device type")
-            password_group=self.get_password(device, session)
+            password_group = self.get_password(device, session)
 
-            aci=APIClient(device, password_group)
+            aci = APIClient(device, password_group)
 
             aci.get_inventory()
 
             print(f"Device type is {deviceType} and password is {password_group.username}")
             logging.info(f"Handling APIC device: {device.id}")
-        elif deviceType=="cisco_nxos":
+        elif deviceType == "cisco_nxos":
 
             password_group = self.get_password(device, session)
             print(f"Device type is {deviceType} and password is {password_group.password_group_type}")
-            nx=NXOS(device, password_group)
+            nx = NXOS(device, password_group)
             print("Wokring")
             nx.main()
             logging.info(f"Handling NX-os device: {device.id}")
@@ -88,4 +90,3 @@ if len(sys.argv) > 1:
     except Exception as e:
         print("Exception")
 # device_ids = [4392]  # Example list of device IDs you want to retrieve
-
