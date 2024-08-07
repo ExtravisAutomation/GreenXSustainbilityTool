@@ -1128,7 +1128,7 @@ def onboard_devices(
     current_user: User = Depends(get_current_active_user)
 ):
     try:
-        print("IDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD". onboarding_data.device_ids, file=sys.stderr)
+        print("IDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD", onboarding_data.device_ids, file=sys.stderr)
         processor = DeviceProcessor()
         processor.get_devices_by_ids(onboarding_data.device_ids)
         return CustomResponse(
