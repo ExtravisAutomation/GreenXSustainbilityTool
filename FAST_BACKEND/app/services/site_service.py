@@ -505,7 +505,7 @@ class SiteService:
             print("devvvvvvvvvvv", device_info, file=sys.stderr)
             device_ip = device_info['ip_address']
             print("IPPPPPPPPPPPPPPPPPPPPPP", device_ip, file=sys.stderr)
-            metrics = self.influxdb_repository.get_traffic_throughput_metrics_with_ener(device_ip, start_date, end_date,
+            metrics = self.influxdb_repository.get_traffic_throughput_metrics_with_ener00(device_ip, start_date, end_date,
                                                                                         duration_str)
             print("FINAL_MATRICSSSSSSSSSS", metrics, file=sys.stderr)
             data_metrics.extend(metrics)
