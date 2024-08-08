@@ -1807,6 +1807,7 @@ class InfluxDBRepository:
             emission_factor_kg_per_mwh = 100
             annual_co2_emissions_kg = annual_electricity_usage_mwh * emission_factor_kg_per_mwh
             daily_co2_emissions_kg = annual_co2_emissions_kg / 365
+            daily_co2_emissions_kg = daily_co2_emissions_kg / 100
 
             co2_emission_data.append({
                 "site_id": site_id,
