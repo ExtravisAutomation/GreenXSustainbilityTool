@@ -1103,7 +1103,7 @@ def get_device_pcr_metrics(
     )
 
 
-@router.post("sites/create_onboard_devices", response_model=CustomResponse[dict])
+@router.post("/sites/create_onboard_devices", response_model=CustomResponse[dict])
 @inject
 def create_device(
         device_data: DeviceCreateRequest,
@@ -1122,7 +1122,7 @@ def create_device(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/onboard_devices", response_model=CustomResponse[str])
+@router.post("/sites/onboard_devices", response_model=CustomResponse[str])
 def onboard_devices(
     onboarding_data: OnboardingRequest,
     current_user: User = Depends(get_current_active_user)

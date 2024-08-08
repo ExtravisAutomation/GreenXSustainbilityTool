@@ -25,7 +25,7 @@ class APIClient:
         """
         self.device = device
         self.password_group = password_group
-        self.session = requests.Session()  # Correct initialization of the session
+        self.session = requests.Session()
         self.base_url = f"https://{device.ip_address}/api"
         self.get_ipaddress_Response = None
         self.get_auth_token()
