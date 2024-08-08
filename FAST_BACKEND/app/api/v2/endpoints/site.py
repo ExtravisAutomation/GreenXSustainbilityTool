@@ -1122,54 +1122,18 @@ def create_device(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# @router.post("/sites/onboard_devices", response_model=CustomResponse[str])
-# def onboard_devices(
-#     onboarding_data: OnboardingRequest,
-#     current_user: User = Depends(get_current_active_user)
-# ):
-#     try:
-#         print("IDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD", onboarding_data.device_ids, file=sys.stderr)
-#         processor = DeviceProcessor()
-#         processor.get_devices_by_ids(onboarding_data.device_ids)
-#         return CustomResponse(
-#             message="Devices onboarded successfully.",
-#             data="Success",
-#             status_code=200
-#         )
-#     except Exception as e:
-#         logger.error(f"Exception: {str(e)}")
-#         raise HTTPException(status_code=400, detail=str(e))
-
-import concurrent.futures
-
-
-def process_devices(device_ids):
-    processor = DeviceProcessor()
-    processor.get_devices_by_ids(device_ids)
-    return "Success"
-
-
-
 @router.post("/sites/onboard_devices", response_model=CustomResponse[str])
 def onboard_devices(
     onboarding_data: OnboardingRequest,
     current_user: User = Depends(get_current_active_user)
 ):
     try:
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            future = executor.submit(process_devices, onboarding_data.device_ids)
-            try:
-                result = future.result(timeout=20)
-            except concurrent.futures.TimeoutError:
-                return CustomResponse(
-                    message="Request timed out, but devices are being processed in the background.",
-                    data="Success",
-                    status_code=200
-                )
-
+        print("IDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD", onboarding_data.device_ids, file=sys.stderr)
+        processor = DeviceProcessor()
+        processor.get_devices_by_ids(onboarding_data.device_ids)
         return CustomResponse(
             message="Devices onboarded successfully.",
-            data=result,
+            data="Success",
             status_code=200
         )
     except Exception as e:
