@@ -127,7 +127,11 @@ class SiteService:
 
     def calculate_start_end_dates(self, duration_str: str) -> (datetime, datetime):
         today = datetime.today()
-        if duration_str == "Last 6 Months":
+
+        if duration_str == "Last 9 Months":
+            start_date = (today - timedelta(days=30 * 9)).replace(day=1)
+            end_date = today
+        elif duration_str == "Last 6 Months":
             start_date = (today - timedelta(days=30 * 6)).replace(day=1)
             end_date = today
         elif duration_str == "Last 3 Months":
@@ -153,6 +157,7 @@ class SiteService:
             end_date = today
         else:
             raise ValueError("Unsupported duration format")
+
         return start_date, end_date
 
     def compare_device_data_by_names_and_duration(self, site_id: int, device_name1: str, device_name2: str,
