@@ -472,13 +472,14 @@ class InfluxDBRepository:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
-        if duration_str == "24 hours":
+        # Define the aggregate window and time format based on the duration string
+        if duration_str in ["24 hours"]:
             aggregate_window = "1h"
             time_format = '%Y-%m-%d %H:00'
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             aggregate_window = "1d"
             time_format = '%Y-%m-%d'
-        else:
+        else:  # For "last 6 months", "last year", "current year",
             aggregate_window = "1m"
             time_format = '%Y-%m'
 
@@ -494,20 +495,21 @@ class InfluxDBRepository:
             result = self.query_api1.query_data_frame(query)
 
             if not result.empty:
+                # Optimize date formatting
                 result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
                 numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
 
                 if '_time' in result.columns and numeric_cols:
+                    # Group by '_time' and calculate mean
                     grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
-                    grouped['_time'] = pd.to_datetime(grouped['_time'])
 
-                    # Generate date range once and reindex with formatted time
+                    # Prepare the time index
                     all_times = pd.date_range(start=start_date, end=end_date, freq=aggregate_window.upper()).strftime(
                         time_format)
                     grouped.set_index('_time', inplace=True)
                     grouped = grouped.reindex(all_times).fillna(0).reset_index()
 
-                    # Vectorized calculations for energy efficiency and power efficiency
+                    # Vectorized calculations
                     pin = grouped['total_PIn']
                     pout = grouped['total_POut']
 
@@ -524,7 +526,9 @@ class InfluxDBRepository:
 
                     total_power_metrics.extend(metrics_df.to_dict(orient='records'))
 
-        return total_power_metrics
+        # Remove duplicates efficiently
+        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
+        return df
 
     def calculate_hourly_metrics_for_device(self, device_ips: List[str]) -> List[dict]:
         total_power_metrics = []
