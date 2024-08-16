@@ -2401,7 +2401,7 @@ class InfluxDBRepository:
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             aggregate_window = "1d"
             time_format = '%Y-%m-%d'
-        else:  # For "Last 6 months", "Last year", "Current year"
+        else:  # For "Last 6 months", "Last 9 months"
             aggregate_window = "30d"
             time_format = '%Y-%m'
 
@@ -2412,7 +2412,6 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             print(f"Generated Query: {query}", file=sys.stderr)
@@ -2430,19 +2429,13 @@ class InfluxDBRepository:
                 result['total_PIn'] = pd.to_numeric(result['total_PIn'], errors='coerce')
                 result['total_POut'] = pd.to_numeric(result['total_POut'], errors='coerce')
 
-                result = result.dropna(subset=['total_PIn', 'total_POut'])
+                # Aggregate after filtering out NaNs
+                if duration_str in ["Last 6 Months", "Last 9 Months"]:
+                    result = result.dropna(subset=['total_PIn', 'total_POut'])
 
-                if not result.empty:
-                    result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
-                    numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
-                    if '_time' in result.columns and numeric_cols:
-                        grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
-                        grouped['_time'] = pd.to_datetime(grouped['_time'])
-                        grouped.set_index('_time', inplace=True)
-
-                        all_times = pd.date_range(start=start_date, end=end_date, freq=aggregate_window).strftime(
-                            time_format)
-                        grouped = grouped.reindex(all_times).fillna(0).reset_index()
+                    if not result.empty:
+                        result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+                        grouped = result.groupby('_time').mean().reset_index()
 
                         for _, row in grouped.iterrows():
                             pin = row['total_PIn']
@@ -2452,7 +2445,7 @@ class InfluxDBRepository:
                             power_efficiency = (pin / pout) if pout > 0 else 0
 
                             total_power_metrics.append({
-                                "time": row['index'],
+                                "time": row['_time'],
                                 "energy_consumption": round(energy_consumption, 2),
                                 "total_POut": round(pout, 2),
                                 "total_PIn": round(pin, 2),
