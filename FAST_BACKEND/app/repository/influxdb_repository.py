@@ -2426,15 +2426,15 @@ class InfluxDBRepository:
             print(f"Result for IP {ip}: {result}", file=sys.stderr)
 
             if not result.empty:
-                # Convert to numeric, coercing errors to NaN
-                result['total_PIn'] = pd.to_numeric(result['total_PIn'], errors='coerce')
-                result['total_POut'] = pd.to_numeric(result['total_POut'], errors='coerce')
+                # Ensure only numeric columns are considered
+                numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+                if '_time' in result.columns and numeric_cols:
+                    result = result[['_time'] + numeric_cols]
 
-                # Drop rows where both total_PIn and total_POut are NaN
-                result = result.dropna(subset=['total_PIn', 'total_POut'], how='all')
+                    # Handle NaN values: either fill with 0 or drop
+                    result = result.fillna(0)
 
-                if not result.empty:
-                    result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+                    # Group by time and compute the mean for numeric columns
                     grouped = result.groupby('_time').mean().reset_index()
 
                     for _, row in grouped.iterrows():
