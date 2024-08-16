@@ -2406,7 +2406,7 @@ class InfluxDBRepository:
             aggregate_window = "1d"
             time_format = '%Y-%m-%d'
         elif duration_str == "Last 3 Months":
-            aggregate_window = "90d"
+            aggregate_window = "3m"
             time_format = '%Y-%m'
         elif duration_str == "Last 6 Months":
             aggregate_window = "180d"
