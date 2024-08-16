@@ -436,7 +436,8 @@ class InfluxDBRepository:
                 |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
-            # Query InfluxDB and process the result
+            print(f"Generated Query: {query}", file=sys.stderr)  # Debugging output
+
             try:
                 result = self.query_api1.query_data_frame(query)
             except Exception as e:
