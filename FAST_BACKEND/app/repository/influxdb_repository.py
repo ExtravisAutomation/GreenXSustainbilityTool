@@ -2412,6 +2412,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             print(f"Generated Query: {query}", file=sys.stderr)
@@ -2425,32 +2426,31 @@ class InfluxDBRepository:
             print(f"Result for IP {ip}: {result}", file=sys.stderr)
 
             if not result.empty:
-                # Convert to numeric, coercing errors to NaN, then drop NaNs
+                # Convert to numeric, coercing errors to NaN
                 result['total_PIn'] = pd.to_numeric(result['total_PIn'], errors='coerce')
                 result['total_POut'] = pd.to_numeric(result['total_POut'], errors='coerce')
 
-                # Aggregate after filtering out NaNs
-                if duration_str in ["Last 6 Months", "Last 9 Months"]:
-                    result = result.dropna(subset=['total_PIn', 'total_POut'])
+                # Drop rows where both total_PIn and total_POut are NaN
+                result = result.dropna(subset=['total_PIn', 'total_POut'], how='all')
 
-                    if not result.empty:
-                        result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
-                        grouped = result.groupby('_time').mean().reset_index()
+                if not result.empty:
+                    result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+                    grouped = result.groupby('_time').mean().reset_index()
 
-                        for _, row in grouped.iterrows():
-                            pin = row['total_PIn']
-                            pout = row['total_POut']
+                    for _, row in grouped.iterrows():
+                        pin = row['total_PIn'] if not pd.isna(row['total_PIn']) else 0
+                        pout = row['total_POut'] if not pd.isna(row['total_POut']) else 0
 
-                            energy_consumption = (pout / pin) * 100 if pin > 0 else 0
-                            power_efficiency = (pin / pout) if pout > 0 else 0
+                        energy_consumption = (pout / pin) * 100 if pin > 0 else 0
+                        power_efficiency = (pin / pout) if pout > 0 else 0
 
-                            total_power_metrics.append({
-                                "time": row['_time'],
-                                "energy_consumption": round(energy_consumption, 2),
-                                "total_POut": round(pout, 2),
-                                "total_PIn": round(pin, 2),
-                                "power_efficiency": round(power_efficiency, 2)
-                            })
+                        total_power_metrics.append({
+                            "time": row['_time'],
+                            "energy_consumption": round(energy_consumption, 2),
+                            "total_POut": round(pout, 2),
+                            "total_PIn": round(pin, 2),
+                            "power_efficiency": round(power_efficiency, 2)
+                        })
 
         df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
         print(f"Final metrics: {df}", file=sys.stderr)
