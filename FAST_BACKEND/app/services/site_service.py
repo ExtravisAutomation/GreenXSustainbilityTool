@@ -129,10 +129,10 @@ class SiteService:
         today = datetime.today()
 
         if duration_str == "Last 9 Months":
-            start_date = (today - timedelta(days=30 * 9)).replace(day=1)
+            start_date = (today - timedelta(days=270)).replace(day=1)
             end_date = today
         elif duration_str == "Last 6 Months":
-            start_date = (today - timedelta(days=30 * 6)).replace(day=1)
+            start_date = (today - timedelta(days=180)).replace(day=1)
             end_date = today
         elif duration_str == "Last 3 Months":
             start_date = (today - timedelta(days=90)).replace(day=1)
