@@ -426,6 +426,7 @@ class InfluxDBRepository:
             time_format = '%Y-%m'
 
         for ip in device_ips:
+            # Correctly construct the query string without syntax errors
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
                 |> range(start: {start_time}, stop: {end_time})
@@ -435,10 +436,14 @@ class InfluxDBRepository:
                 |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
-            result = self.query_api1.query_data_frame(query)
+            # Query InfluxDB and process the result
+            try:
+                result = self.query_api1.query_data_frame(query)
+            except Exception as e:
+                print(f"InfluxDB query failed for IP {ip}: {str(e)}", file=sys.stderr)
+                continue
 
             if not result.empty:
-                # Ensure that the result data is of numeric type
                 result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
                 numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
                 if '_time' in result.columns and numeric_cols:
