@@ -2395,13 +2395,33 @@ class InfluxDBRepository:
         print(f"Start Time: {start_time}, End Time: {end_time}", file=sys.stderr)
 
         # Define the aggregate window and time format based on the duration string
-        if duration_str in ["24 hours"]:
+        # Define the aggregate window and time format based on the duration string
+        if duration_str == "24 hours":
             aggregate_window = "1h"
             time_format = '%Y-%m-%d %H:00'
-        elif duration_str in ["7 Days", "Current Month", "Last Month"]:
+        elif duration_str == "7 Days":
             aggregate_window = "1d"
             time_format = '%Y-%m-%d'
-        else:  # For "Last 6 months", "Last 9 months"
+        elif duration_str == "Current Month" or duration_str == "Last Month":
+            aggregate_window = "1d"
+            time_format = '%Y-%m-%d'
+        elif duration_str == "Last 3 Months":
+            aggregate_window = "90d"
+            time_format = '%Y-%m'
+        elif duration_str == "Last 6 Months":
+            aggregate_window = "180d"
+            time_format = '%Y-%m'
+        elif duration_str == "Last 9 Months":
+            aggregate_window = "270d"
+            time_format = '%Y-%m'
+        elif duration_str == "Last Year":
+            aggregate_window = "1m"
+            time_format = '%Y-%m'
+        elif duration_str == "Current Year":
+            aggregate_window = "1m"
+            time_format = '%Y-%m'
+        else:
+            # Default values if the duration string doesn't match any known patterns
             aggregate_window = "30d"
             time_format = '%Y-%m'
 
