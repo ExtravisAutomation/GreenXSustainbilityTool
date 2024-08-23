@@ -2039,10 +2039,39 @@ class InfluxDBRepository:
 
         return percentages
 
+    # def get_carbon_intensity(self, start_date: datetime, end_date: datetime, duration_str: str) -> float:
+    #     start_time = start_date.isoformat() + 'Z'
+    #     end_time = end_date.isoformat() + 'Z'
+    #     # aggregate_window = "1h" if duration_str == "24 hours" else "1d"
+    #     if duration_str in ["24 hours"]:
+    #         aggregate_window = "1h"
+    #     elif duration_str in ["7 Days", "Current Month", "Last Month"]:
+    #         aggregate_window = "1d"
+    #     else:
+    #         aggregate_window = "1m"
+    #
+    #     zone = "AE"
+    #
+    #     query = f'''
+    #         from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #         |> range(start: {start_time}, stop: {end_time})
+    #         |> filter(fn: (r) => r["_measurement"] == "electricitymap_carbonIntensity" and r["zone"] == "{zone}")
+    #         |> filter(fn: (r) => r["_field"] == "carbonIntensity")
+    #         |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+    #         |> sum()  // Sum the carbon intensity over the time period
+    #     '''
+    #     result = self.query_api1.query_data_frame(query)
+    #     print("RESULT", result, file=sys.stderr)
+    #     carbon_intensity = result['_value'] if not result.empty else 0
+    #     print("carbon_intensity", carbon_intensity, file=sys.stderr)
+    #
+    #     return carbon_intensity
+
     def get_carbon_intensity(self, start_date: datetime, end_date: datetime, duration_str: str) -> float:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
-        # aggregate_window = "1h" if duration_str == "24 hours" else "1d"
+
+        # Determine the appropriate aggregate window based on the duration
         if duration_str in ["24 hours"]:
             aggregate_window = "1h"
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
@@ -2052,18 +2081,28 @@ class InfluxDBRepository:
 
         zone = "AE"
 
+        # InfluxDB query to fetch and sum carbon intensity over the specified time period
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
             |> range(start: {start_time}, stop: {end_time})
             |> filter(fn: (r) => r["_measurement"] == "electricitymap_carbonIntensity" and r["zone"] == "{zone}")
             |> filter(fn: (r) => r["_field"] == "carbonIntensity")
             |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
-            |> sum()  // Sum the carbon intensity over the time period
+            |> sum()
         '''
         result = self.query_api1.query_data_frame(query)
-        print("RESULT", result, file=sys.stderr)
-        carbon_intensity = result['_value'] if not result.empty else 0
-        print("carbon_intensity", carbon_intensity, file=sys.stderr)
+
+        # Debug output to ensure correct query results
+        print("Result DataFrame:\n", result, file=sys.stderr)
+
+        # Ensure carbon intensity is properly extracted and converted to float
+        if not result.empty and '_value' in result.columns:
+            # Assuming sum() results in a single row, first element of '_value'
+            carbon_intensity = float(result['_value'].iloc[0])
+        else:
+            carbon_intensity = 0.0  # Default to 0 if no data is returned
+
+        print("Carbon Intensity:", carbon_intensity, file=sys.stderr)
 
         return carbon_intensity
 
