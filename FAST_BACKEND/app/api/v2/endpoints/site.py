@@ -703,6 +703,7 @@ def get_carbon_emission_metrics(
     duration = duration or "24 hours"
     pin_value, carbon_emission, carbon_car, carbon_flight, carbon_solution = site_service.calculate_carbon_emission(
         site_id, duration)
+    print("FINALLLLLLLL", carbon_emission, file=sys.stderr)
     return CustomResponse(
         message="Carbon emission metrics retrieved successfully.",
         data={

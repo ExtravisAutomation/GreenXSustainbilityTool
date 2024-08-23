@@ -879,6 +879,7 @@ class SiteService:
         carbon_emission = float(total_pin_value_KW) * float(carbon_intensity)
         print("Emisssionsssssss", carbon_emission, file=sys.stderr)
         carbon_emission_KG = round(carbon_emission / 100000)
+        print("KGGGGGGGGGGGG", carbon_emission_KG, file=sys.stderr)
 
         # Calculating carbon effects and solutions
         carbon_car = self.calculate_carbon_car(carbon_emission_KG)
