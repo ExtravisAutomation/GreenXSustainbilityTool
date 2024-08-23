@@ -2044,7 +2044,7 @@ class InfluxDBRepository:
         end_time = end_date.isoformat() + 'Z'
         # aggregate_window = "1h" if duration_str == "24 hours" else "1d"
         if duration_str in ["24 hours"]:
-            aggregate_window = "1h"
+            aggregate_window = "1d"
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             aggregate_window = "1d"
         else:
