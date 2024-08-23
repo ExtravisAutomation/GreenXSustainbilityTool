@@ -2042,24 +2042,28 @@ class InfluxDBRepository:
     def get_carbon_intensity(self, start_date: datetime, end_date: datetime, duration_str: str) -> float:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
-        # aggregate_window = "1h" if duration_str == "24 hours" else "1d"
-        if duration_str in ["24 hours"]:
+        # Determine the appropriate aggregate window based on the duration
+        if duration_str == "24 hours":
             aggregate_window = "1h"
+            aggregation_function = "max()"  # For 24 hours, take the maximum value
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             aggregate_window = "1d"
+            aggregation_function = "sum()"  # Sum for longer durations
         else:
             aggregate_window = "1m"
+            aggregation_function = "sum()"
 
         zone = "AE"
 
+        # InfluxDB query to fetch the carbon intensity
         query = f'''
-            from(bucket: "{configs.INFLUXDB_BUCKET}")
-            |> range(start: {start_time}, stop: {end_time})
-            |> filter(fn: (r) => r["_measurement"] == "electricitymap_carbonIntensity" and r["zone"] == "{zone}")
-            |> filter(fn: (r) => r["_field"] == "carbonIntensity")
-            |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
-            |> sum()  
-        '''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "electricitymap_carbonIntensity" and r["zone"] == "{zone}")
+                |> filter(fn: (r) => r["_field"] == "carbonIntensity")
+                |> aggregateWindow(every: {aggregate_window}, fn: max, createEmpty: false)
+                |> {aggregation_function}  
+            '''
         result = self.query_api1.query_data_frame(query)
         print("RESULT", result, file=sys.stderr)
         carbon_intensity = result['_value'] if not result.empty else 0
