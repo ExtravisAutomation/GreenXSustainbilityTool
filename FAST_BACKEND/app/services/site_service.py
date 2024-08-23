@@ -872,8 +872,9 @@ class SiteService:
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
 
-        total_pin_value = self.influxdb_repository.get_total_pin_value(device_ips, start_date, end_date, duration_str)
+        #total_pin_value = self.influxdb_repository.get_total_pin_value(device_ips, start_date, end_date, duration_str)
         carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
+        total_pin_value = 100
         total_pin_value_KW = total_pin_value / 1000
         carbon_emission = float(total_pin_value_KW) * float(carbon_intensity)
         carbon_emission_KG = round(carbon_emission / 100000)
