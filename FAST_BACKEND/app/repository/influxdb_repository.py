@@ -493,7 +493,7 @@ class InfluxDBRepository:
             return []
 
         result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
-        numeric_cols = result.select_dtypes(include=[pd.np.number]).columns.tolist()
+        numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
 
         if '_time' in result.columns and numeric_cols:
             grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
