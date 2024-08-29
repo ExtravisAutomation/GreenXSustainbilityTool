@@ -2468,59 +2468,37 @@ class InfluxDBRepository:
 
         return total_pin
 
-    def get_energy_metrics_for_last_7_days(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> List[dict]:
+    def get_energy_metrics_for_last_7_days(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> \
+    List[dict]:
         total_power_metrics = []
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
 
-        # Convert start_date and end_date to date-only format (strip time)
-        start_date = start_date.date()
-        end_date = end_date.date()
-
-        # Debug: Print the date-only start and end dates
-        print("Start Date (Date-only):", start_date)
-        print("End Date (Date-only):", end_date)
-
-        # Define the aggregate window to group by day
         aggregate_window = "1d"
+        time_format = '%A'  # Day of the week (e.g., Monday)
 
         for ip in device_ips:
-            # Debug: Print the current device IP being processed
-            print("Processing Device IP:", ip)
-
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
-                |> range(start: {start_date}, stop: {end_date + timedelta(days=1)})  # stop is exclusive, hence adding a day
+                |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
                 |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
 
-            # Debug: Print the generated InfluxDB query
-            print("Generated InfluxDB Query:", query)
-
             try:
                 result = self.query_api1.query_data_frame(query)
             except Exception as e:
-                # Debug: Print any exceptions encountered during the query
-                print("Error executing query:", e)
+                print(f"Error executing query for IP {ip}: {e}")
                 continue
 
-            # Debug: Print the raw query result
-            print("Query Result (raw):", result)
-
             if not result.empty:
-                # Convert the '_time' column to day names
-                result['_time'] = pd.to_datetime(result['_time']).dt.strftime('%A')
-
-                # Debug: Print the result after converting '_time' to day names
-                print("Query Result with Day Names:", result)
-
-                numeric_cols = result.select_dtypes(include=[pd.np.number]).columns.tolist()
+                # Convert the '_time' column to the day of the week
+                result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+                numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
                 if '_time' in result.columns and numeric_cols:
                     grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
-
-                    # Debug: Print the grouped result by day
-                    print("Grouped Result by Day:", grouped)
 
                     for _, row in grouped.iterrows():
                         pin = row['total_PIn']
@@ -2528,13 +2506,6 @@ class InfluxDBRepository:
 
                         energy_consumption = pout / pin if pin > 0 else 0
                         power_efficiency = ((pin / pout - 1) * 100) if pout > 0 else 0
-
-                        # Debug: Print the metrics calculated for this row
-                        print(f"Metrics for Day ({row['_time']}):")
-                        print("  Energy Efficiency:", energy_consumption)
-                        print("  Total POut:", pout)
-                        print("  Total PIn:", pin)
-                        print("  Power Efficiency:", power_efficiency)
 
                         total_power_metrics.append({
                             "day": row['_time'],  # Day of the week
@@ -2544,8 +2515,6 @@ class InfluxDBRepository:
                             "power_efficiency": round(power_efficiency, 2)
                         })
 
-        # Debug: Print the final dataframe before returning
         df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='day').to_dict(orient='records')
-        print("Final DataFrame:", df)
-
+        print("Final DataFrame:", df)  # Debug print to check the final output
         return df
