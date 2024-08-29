@@ -18,6 +18,7 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 from app.core.config import configs
 from datetime import datetime, timedelta, timezone
 import pandas as pd
+import asyncio
 
 
 class InfluxDBRepository:
@@ -468,55 +469,55 @@ class InfluxDBRepository:
     #     df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
     #     return df
 
-    def query_influxdb_for_device(self, IP: str, start_time: str, end_time: str, aggregate_window: str,
-                                  time_format: str) -> \
-            List[dict]:
-        query = f'''
-            from(bucket: "{configs.INFLUXDB_BUCKET}")
-            |> range(start: {start_time}, stop: {end_time})
-            |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{IP}")
-            |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-            |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
-            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-        '''
-        result = self.query_api1.query_data_frame(query)
+    async def query_influxdb_for_device(self, IP: str, start_time: str, end_time: str, aggregate_window: str,
+                                        time_format: str, semaphore: asyncio.Semaphore) -> List[dict]:
+        async with semaphore:
+            query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{IP}")
+                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+            result = await self.query_api1.query_data_frame(query)
 
-        if result.empty:
+            if result.empty:
+                return []
+
+            result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+            numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+
+            if '_time' in result.columns and numeric_cols:
+                grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
+                grouped['_time'] = pd.to_datetime(grouped['_time'])
+                grouped.set_index('_time', inplace=True)
+
+                all_times = pd.date_range(start=start_time, end=end_time, freq=aggregate_window.upper()).strftime(
+                    time_format)
+                grouped = grouped.reindex(all_times).fillna(0).reset_index()
+
+                total_power_metrics = []
+                for _, row in grouped.iterrows():
+                    pin = row['total_PIn']
+                    pout = row['total_POut']
+
+                    energy_consumption = pout / pin if pin > 0 else 0
+                    power_efficiency = ((pin / pout - 1) * 100) if pout > 0 else 0
+
+                    total_power_metrics.append({
+                        "time": row['index'],
+                        "energy_efficiency": round(energy_consumption, 2),
+                        "total_POut": round(pout, 2),
+                        "total_PIn": round(pin, 2),
+                        "power_efficiency": round(power_efficiency, 2)
+                    })
+
+                return total_power_metrics
             return []
 
-        result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
-        numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
-
-        if '_time' in result.columns and numeric_cols:
-            grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
-            grouped['_time'] = pd.to_datetime(grouped['_time'])
-            grouped.set_index('_time', inplace=True)
-
-            all_times = pd.date_range(start=start_time, end=end_time, freq=aggregate_window.upper()).strftime(
-                time_format)
-            grouped = grouped.reindex(all_times).fillna(0).reset_index()
-
-            total_power_metrics = []
-            for _, row in grouped.iterrows():
-                pin = row['total_PIn']
-                pout = row['total_POut']
-
-                energy_consumption = pout / pin if pin > 0 else 0
-                power_efficiency = ((pin / pout - 1) * 100) if pout > 0 else 0
-
-                total_power_metrics.append({
-                    "time": row['index'],
-                    "energy_efficiency": round(energy_consumption, 2),
-                    "total_POut": round(pout, 2),
-                    "total_PIn": round(pin, 2),
-                    "power_efficiency": round(power_efficiency, 2)
-                })
-
-            return total_power_metrics
-        return []
-
-    def get_energy_consumption_metrics_with_filter(self, device_ips: List[str], start_date: datetime,
-                                                   end_date: datetime, duration_str: str) -> List[dict]:
+    async def get_energy_consumption_metrics_with_filter(self, device_ips: List[str], start_date: datetime,
+                                                         end_date: datetime, duration_str: str) -> List[dict]:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
@@ -531,11 +532,12 @@ class InfluxDBRepository:
             aggregate_window = "1m"
             time_format = '%Y-%m'
 
-        # Utilize multiprocessing to query data in parallel
-        with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
-            func = partial(self.query_influxdb_for_device, start_time=start_time, end_time=end_time,
-                           aggregate_window=aggregate_window, time_format=time_format)
-            results = pool.map(func, device_ips)
+        semaphore = asyncio.Semaphore(10)  # Limit concurrency to 10 simultaneous requests
+
+        tasks = [self.query_influxdb_for_device(ip, start_time, end_time, aggregate_window, time_format, semaphore)
+                 for ip in device_ips]
+
+        results = await asyncio.gather(*tasks)
 
         # Flatten the list of results
         total_power_metrics = [item for sublist in results for item in sublist]
