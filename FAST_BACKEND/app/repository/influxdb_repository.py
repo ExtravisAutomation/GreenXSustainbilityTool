@@ -2536,6 +2536,9 @@ class InfluxDBRepository:
         # Sort the DataFrame by the custom day order
         df = df.sort_values('day')
 
-        print("Final DataFrame (ordered):", df)  # Debug print to check the final output
+        # Reverse the order of the DataFrame
+        df = df.iloc[::-1]
+
+        print("Final DataFrame (reversed order):", df)  # Debug print to check the final output
 
         return df.to_dict(orient='records')
