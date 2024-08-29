@@ -2468,17 +2468,20 @@ class InfluxDBRepository:
 
         return total_pin
 
-    def get_energy_metrics_for_last_7_days(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> \
-    List[dict]:
+    def get_energy_metrics_for_last_7_days(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> List[dict]:
         total_power_metrics = []
 
-        # Debug: Print the start and end dates before formatting
-        print("Start Date (raw):", start_date)
-        print("End Date (raw):", end_date)
+        # Convert start_date and end_date to UTC explicitly
+        start_date = start_date.astimezone(timezone.utc)
+        end_date = end_date.astimezone(timezone.utc)
 
-        # Format start_time and end_time as ISO strings with 'Z' to indicate UTC, excluding microseconds
-        start_time = start_date.replace(microsecond=0).isoformat() + 'Z'
-        end_time = end_date.replace(microsecond=0).isoformat() + 'Z'
+        # Debug: Print the UTC-converted dates
+        print("Start Date (UTC):", start_date)
+        print("End Date (UTC):", end_date)
+
+        # Format to ISO 8601 with 'Z' to indicate UTC
+        start_time = start_date.isoformat(timespec='seconds').replace('+00:00', 'Z')
+        end_time = end_date.isoformat(timespec='seconds').replace('+00:00', 'Z')
 
         # Debug: Print the formatted start and end times
         print("Start Time (formatted):", start_time)
