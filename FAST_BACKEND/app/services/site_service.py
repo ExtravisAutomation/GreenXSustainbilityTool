@@ -506,7 +506,6 @@ class SiteService:
 
         return hourly_data
 
-
     def get_eol_eos_counts_for_site(self, site_id: int):
         return self.site_repository.get_eol_eos_counts(site_id)
 
@@ -596,8 +595,9 @@ class SiteService:
             print("devvvvvvvvvvv", device_info, file=sys.stderr)
             device_ip = device_info['ip_address']
             print("IPPPPPPPPPPPPPPPPPPPPPP", device_ip, file=sys.stderr)
-            metrics = self.influxdb_repository.get_traffic_throughput_metrics_with_ener00(device_ip, start_date, end_date,
-                                                                                        duration_str)
+            metrics = self.influxdb_repository.get_traffic_throughput_metrics_with_ener00(device_ip, start_date,
+                                                                                          end_date,
+                                                                                          duration_str)
             print("FINAL_MATRICSSSSSSSSSS", metrics, file=sys.stderr)
             data_metrics.extend(metrics)
             if len(data_metrics) >= 23:
@@ -1449,3 +1449,15 @@ class SiteService:
         response_data.rack_unit = device.rack_unit
 
         return response_data
+
+    def get_last_7_days_energy_metrics(self, site_id: int) -> List[dict]:
+        duration_str = "7 Days"
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        if not device_ips:
+            return []
+
+        energy_metrics = self.influxdb_repository.get_energy_metrics_for_last_7_days(device_ips, start_date, end_date)
+        return energy_metrics

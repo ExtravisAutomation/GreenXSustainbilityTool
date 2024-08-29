@@ -175,8 +175,6 @@ def get_detailed_hourly_power_metrics_for_site(
     return site_service.calculate_hourly_power_metrics_for_each_device(site_id)
 
 
-
-
 # @router.get("/site/device_specific_comparison/{site_id}")
 # @inject
 # def compare_devices_metrics(
@@ -237,8 +235,6 @@ def compare_devices_metrics(
         response = site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2, duration)
 
     return {"device_name1": response[device_name1], "device_name2": response[device_name2]}
-
-
 
 
 @router.get("/site/pie_chart/{site_id}", response_model=dict[str, int])
@@ -1140,8 +1136,8 @@ def create_device(
 
 @router.post("/sites/onboard_devices", response_model=CustomResponse[str])
 def onboard_devices(
-    onboarding_data: OnboardingRequest,
-    current_user: User = Depends(get_current_active_user)
+        onboarding_data: OnboardingRequest,
+        current_user: User = Depends(get_current_active_user)
 ):
     try:
         print("IDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD", onboarding_data.device_ids, file=sys.stderr)
@@ -1155,3 +1151,24 @@ def onboard_devices(
     except Exception as e:
         logger.error(f"Exception: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/sites/last_7_days_energy_metrics/{site_id}",
+            response_model=CustomResponse[List[dict]])
+@inject
+def get_last_7_days_energy_metrics(
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    metrics = site_service.get_last_7_days_energy_metrics(site_id)
+    message = "Last 7 days energy metrics retrieved successfully."
+
+    if not metrics:
+        message = "No metrics available for the last 7 days."
+
+    return CustomResponse(
+        message=message,
+        data=metrics,
+        status_code=status.HTTP_200_OK
+    )

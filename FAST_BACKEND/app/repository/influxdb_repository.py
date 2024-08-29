@@ -2467,3 +2467,47 @@ class InfluxDBRepository:
             total_pin += result['_value'].sum()
 
         return total_pin
+
+    def get_energy_metrics_for_last_7_days(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> \
+    List[dict]:
+        total_power_metrics = []
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+
+        aggregate_window = "1d"  # Aggregating by day
+        time_format = '%A'  # To get the day name (e.g., Monday)
+
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: "{start_time}", stop: "{end_time}")
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+            result = self.query_api1.query_data_frame(query)
+
+            if not result.empty:
+                result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+                numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+                if '_time' in result.columns and numeric_cols:
+                    grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
+
+                    for _, row in grouped.iterrows():
+                        pin = row['total_PIn']
+                        pout = row['total_POut']
+
+                        energy_consumption = pout / pin if pin > 0 else 0
+                        power_efficiency = ((pin / pout - 1) * 100) if pout > 0 else 0
+
+                        total_power_metrics.append({
+                            "day": row['index'],  # Day of the week
+                            "energy_efficiency": round(energy_consumption, 2),
+                            "total_POut": round(pout, 2),
+                            "total_PIn": round(pin, 2),
+                            "power_efficiency": round(power_efficiency, 2)
+                        })
+
+        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='day').to_dict(orient='records')
+        return df
