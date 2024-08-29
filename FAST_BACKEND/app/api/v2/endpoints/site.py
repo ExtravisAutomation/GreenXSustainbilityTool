@@ -214,7 +214,7 @@ def compare_devices_metrics(
             device_name1 = all_device_names[i]
             device_name2 = all_device_names[i + 1] if i + 1 < len(all_device_names) else None
             response = site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2)
-            if response[device_name1] or response[device_name2]:
+            if response[device_name1] and response[device_name2]:
                 found_devices = True
                 break
 
