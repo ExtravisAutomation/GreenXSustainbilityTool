@@ -485,7 +485,7 @@ class InfluxDBRepository:
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
 
-        result = self.query_api1.query_data_frame(query)
+        result = self.query_api1.query_data_frame(query, org=configs.INFLUXDB_ORG, timeout=60)
 
         if result.empty:
             return []
