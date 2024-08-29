@@ -2468,8 +2468,7 @@ class InfluxDBRepository:
 
         return total_pin
 
-    def get_energy_metrics_for_last_7_days(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> \
-    List[dict]:
+    def get_energy_metrics_for_last_7_days(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> List[dict]:
         total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
@@ -2494,7 +2493,6 @@ class InfluxDBRepository:
                 continue
 
             if not result.empty:
-                # Convert the '_time' column to the day of the week
                 result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
                 numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
                 if '_time' in result.columns and numeric_cols:
@@ -2515,6 +2513,10 @@ class InfluxDBRepository:
                             "power_efficiency": round(power_efficiency, 2)
                         })
 
-        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='day').to_dict(orient='records')
-        print("Final DataFrame:", df)  # Debug print to check the final output
-        return df
+        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='day')
+
+        # Fill NaN values with 0.0 to make sure they are JSON serializable
+        df = df.fillna(0.0)
+        print("Final DataFrame (after NaN handling):", df)  # Debug print to check the final output
+
+        return df.to_dict(orient='records')
