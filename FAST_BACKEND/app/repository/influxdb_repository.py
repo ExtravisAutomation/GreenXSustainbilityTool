@@ -469,12 +469,10 @@ class InfluxDBRepository:
     #     df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
     #     return df
 
-    async def query_influxdb_for_devices(self, device_ips: List[str], start_time: str, end_time: str, aggregate_window: str,
-                                         time_format: str) -> List[dict]:
+    async def query_influxdb_for_devices(self, device_ips: List[str], start_time: str, end_time: str, aggregate_window: str, time_format: str) -> List[dict]:
         if not device_ips:
             return []
 
-        # Batch all devices into a single query
         ips_filter = ' or '.join([f'r["ApicController_IP"] == "{ip}"' for ip in device_ips])
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
@@ -485,21 +483,24 @@ class InfluxDBRepository:
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
 
-        result = self.query_api1.query_data_frame(query, org=configs.INFLUXDB_ORG, timeout=60)
+        try:
+            result = self.query_api1.query_data_frame(query, org=configs.INFLUXDB_ORG)
+        except Exception as e:
+            print(f"Error querying InfluxDB: {str(e)}", file=sys.stderr)
+            return []
 
         if result.empty:
             return []
 
         result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
-        numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+        numeric_cols = result.select_dtypes(include=[pd.np.number]).columns.tolist()
 
         if '_time' in result.columns and numeric_cols:
             grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
             grouped['_time'] = pd.to_datetime(grouped['_time'])
             grouped.set_index('_time', inplace=True)
 
-            all_times = pd.date_range(start=start_time, end=end_time, freq=aggregate_window.upper()).strftime(
-                time_format)
+            all_times = pd.date_range(start=start_time, end=end_time, freq=aggregate_window.upper()).strftime(time_format)
             grouped = grouped.reindex(all_times).fillna(0).reset_index()
 
             total_power_metrics = []
@@ -521,8 +522,7 @@ class InfluxDBRepository:
             return total_power_metrics
         return []
 
-    async def get_energy_consumption_metrics_with_filter(self, device_ips: List[str], start_date: datetime,
-                                                         end_date: datetime, duration_str: str) -> List[dict]:
+    async def get_energy_consumption_metrics_with_filter(self, device_ips: List[str], start_date: datetime, end_date: datetime, duration_str: str) -> List[dict]:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
@@ -537,8 +537,7 @@ class InfluxDBRepository:
             time_format = '%Y-%m'
 
         # Single batch query for all devices
-        total_power_metrics = await self.query_influxdb_for_devices(device_ips, start_time, end_time, aggregate_window,
-                                                               time_format)
+        total_power_metrics = await self.query_influxdb_for_devices(device_ips, start_time, end_time, aggregate_window, time_format)
 
         # Ensure uniqueness and return the data
         df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
