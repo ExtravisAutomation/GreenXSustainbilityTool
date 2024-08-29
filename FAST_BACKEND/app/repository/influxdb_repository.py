@@ -2543,8 +2543,7 @@ class InfluxDBRepository:
 
         return df.to_dict(orient='records')
 
-    def get_energy_metrics_for_last_24_hours(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> \
-    List[dict]:
+    def get_energy_metrics_for_last_24_hours(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> List[dict]:
         total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
@@ -2589,11 +2588,16 @@ class InfluxDBRepository:
                             "power_efficiency": round(power_efficiency, 2)
                         })
 
-        # Fill NaN values with 0.0 to ensure JSON serializability
+        # Ensure that there are exactly 24 unique hours in the result
         df = pd.DataFrame(total_power_metrics).fillna(0.0)
+        df = df.groupby('time').mean().reset_index()
 
         # Sort the DataFrame by time (ascending order from 00 to 23)
         df = df.sort_values('time')
+
+        # Ensure only 24 distinct hour entries are returned
+        if len(df) > 24:
+            df = df.head(24)
 
         print("Final DataFrame:", df)  # Debug print to check the final output
 
