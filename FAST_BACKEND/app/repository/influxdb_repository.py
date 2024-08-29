@@ -2577,8 +2577,8 @@ class InfluxDBRepository:
                         pin = row['total_PIn']
                         pout = row['total_POut']
 
-                        energy_consumption = pout / pin if pin > 0 else 0
-                        power_efficiency = ((pin / pout - 1) * 100) if pout > 0 else 0
+                        energy_consumption = round(pout / pin, 2) if pin > 0 else 0
+                        power_efficiency = round(((pin / pout - 1) * 100), 2) if pout > 0 else 0
 
                         total_power_metrics.append({
                             "time": row['_time'],  # Hour of the day
@@ -2588,14 +2588,11 @@ class InfluxDBRepository:
                             "power_efficiency": round(power_efficiency, 2)
                         })
 
-        # Ensure that there are exactly 24 unique hours in the result
         df = pd.DataFrame(total_power_metrics).fillna(0.0)
         df = df.groupby('time').mean().reset_index()
 
-        # Sort the DataFrame by time (ascending order from 00 to 23)
         df = df.sort_values('time')
 
-        # Ensure only 24 distinct hour entries are returned
         if len(df) > 24:
             df = df.head(24)
 
