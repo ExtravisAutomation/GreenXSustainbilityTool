@@ -2574,18 +2574,18 @@ class InfluxDBRepository:
                     grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
 
                     for _, row in grouped.iterrows():
-                        pin = row['total_PIn']
-                        pout = row['total_POut']
+                        pin = round(row['total_PIn'], 2)
+                        pout = round(row['total_POut'], 2)
 
                         energy_consumption = round(pout / pin, 2) if pin > 0 else 0
                         power_efficiency = round(((pin / pout - 1) * 100), 2) if pout > 0 else 0
 
                         total_power_metrics.append({
                             "time": row['_time'],  # Hour of the day
-                            "energy_efficiency": round(energy_consumption, 2),
-                            "total_POut": round(pout, 2),
-                            "total_PIn": round(pin, 2),
-                            "power_efficiency": round(power_efficiency, 2)
+                            "energy_efficiency": energy_consumption,
+                            "total_POut": pout,
+                            "total_PIn": pin,
+                            "power_efficiency": power_efficiency
                         })
 
         df = pd.DataFrame(total_power_metrics).fillna(0.0)
