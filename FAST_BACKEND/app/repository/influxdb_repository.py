@@ -2476,9 +2476,9 @@ class InfluxDBRepository:
         print("Start Date (raw):", start_date)
         print("End Date (raw):", end_date)
 
-        # Format start_time and end_time as ISO strings with 'Z' to indicate UTC
-        start_time = start_date.isoformat() + 'Z'
-        end_time = end_date.isoformat() + 'Z'
+        # Format start_time and end_time as ISO strings with 'Z' to indicate UTC, excluding microseconds
+        start_time = start_date.replace(microsecond=0).isoformat() + 'Z'
+        end_time = end_date.replace(microsecond=0).isoformat() + 'Z'
 
         # Debug: Print the formatted start and end times
         print("Start Time (formatted):", start_time)
