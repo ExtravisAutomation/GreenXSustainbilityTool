@@ -2471,24 +2471,16 @@ class InfluxDBRepository:
     def get_energy_metrics_for_last_7_days(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> List[dict]:
         total_power_metrics = []
 
-        # Convert start_date and end_date to UTC explicitly
-        start_date = start_date.astimezone(timezone.utc)
-        end_date = end_date.astimezone(timezone.utc)
+        # Convert start_date and end_date to date-only format (strip time)
+        start_date = start_date.date()
+        end_date = end_date.date()
 
-        # Debug: Print the UTC-converted dates
-        print("Start Date (UTC):", start_date)
-        print("End Date (UTC):", end_date)
+        # Debug: Print the date-only start and end dates
+        print("Start Date (Date-only):", start_date)
+        print("End Date (Date-only):", end_date)
 
-        # Format to ISO 8601 with 'Z' to indicate UTC
-        start_time = start_date.isoformat(timespec='seconds').replace('+00:00', 'Z')
-        end_time = end_date.isoformat(timespec='seconds').replace('+00:00', 'Z')
-
-        # Debug: Print the formatted start and end times
-        print("Start Time (formatted):", start_time)
-        print("End Time (formatted):", end_time)
-
-        aggregate_window = "1d"  # Aggregating by day
-        time_format = '%A'  # To get the day name (e.g., Monday)
+        # Define the aggregate window to group by day
+        aggregate_window = "1d"
 
         for ip in device_ips:
             # Debug: Print the current device IP being processed
@@ -2496,7 +2488,7 @@ class InfluxDBRepository:
 
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
-                |> range(start: "{start_time}", stop: "{end_time}")
+                |> range(start: {start_date}, stop: {end_date + timedelta(days=1)})  # stop is exclusive, hence adding a day
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
                 |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
@@ -2513,17 +2505,17 @@ class InfluxDBRepository:
                 print("Error executing query:", e)
                 continue
 
-            # Debug: Print the result from the query
+            # Debug: Print the raw query result
             print("Query Result (raw):", result)
 
             if not result.empty:
-                # Format the '_time' column to display day names
-                result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+                # Convert the '_time' column to day names
+                result['_time'] = pd.to_datetime(result['_time']).dt.strftime('%A')
 
-                # Debug: Print the formatted result
-                print("Query Result (formatted):", result)
+                # Debug: Print the result after converting '_time' to day names
+                print("Query Result with Day Names:", result)
 
-                numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+                numeric_cols = result.select_dtypes(include=[pd.np.number]).columns.tolist()
                 if '_time' in result.columns and numeric_cols:
                     grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
 
@@ -2538,7 +2530,7 @@ class InfluxDBRepository:
                         power_efficiency = ((pin / pout - 1) * 100) if pout > 0 else 0
 
                         # Debug: Print the metrics calculated for this row
-                        print("Metrics for Day:", row['_time'])
+                        print(f"Metrics for Day ({row['_time']}):")
                         print("  Energy Efficiency:", energy_consumption)
                         print("  Total POut:", pout)
                         print("  Total PIn:", pin)
