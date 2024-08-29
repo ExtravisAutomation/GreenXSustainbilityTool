@@ -364,10 +364,64 @@ def get_device_metrics(
     return metrics
 
 
+# @router.get("/sites/energy_consumption_metrics_WITH_FILTER/{site_id}",
+#             response_model=CustomResponse[List[EnergyConsumptionMetricsDetails]])
+# @inject
+# def get_energy_consumption_metrics(
+#         site_id: int,
+#         duration: Optional[str] = Query(None, alias="duration"),
+#         current_user: User = Depends(get_current_active_user),
+#         site_service: SiteService = Depends(Provide[Container.site_service])
+# ):
+#     global issue_detected1
+#     duration = duration or "24 hours"
+#     metrics = site_service.calculate_energy_consumption_by_id_with_filter(site_id, duration)
+#     response_data = []
+#     message = "Energy consumption metrics retrieved successfully."
+#     issue_detected1 = False
+#
+#     for metric in metrics:
+#         energy_consumption = metric['energy_efficiency']
+#         power_efficiency = metric['power_efficiency']
+#         time_stamp = metric['time']
+#
+#         if energy_consumption == 0 and power_efficiency == 0:
+#             continue  # Skip metrics with zero values for energy consumption and power efficiency
+#
+#         if energy_consumption < 50:
+#             message = (f"At {time_stamp}, the energy efficiency ratio recorded was {energy_consumption}%, "
+#                        "which is unusually low and may indicate hardware malfunctions or inefficiencies. ")
+#             issue_detected1 = True
+#         elif 50 <= energy_consumption < 80:
+#             message = (f"Overall, the energy efficiency ratio measured was average, "
+#                        "which indicates that the hardware is generally performing well. ")
+#         elif energy_consumption >= 80:
+#             message = (f"Overall, the energy efficiency ratio is high, "
+#                        "demonstrating excellent performance and optimal operation of the hardware. ")
+#
+#         if power_efficiency > 20:
+#             message += (
+#                 f"However, a high power efficiency of {power_efficiency}% at this time suggests potential problems with power usage effectiveness, "
+#                 "warranting further checks.")
+#             issue_detected1 = True
+#         elif power_efficiency <= 20 and power_efficiency > 0:
+#             message += f" Power usage effectiveness is low which is ideal and indicates positive performance."
+#
+#         # response_data.append(metric)
+#
+#     # if not issue_detected and not response_data:
+#     #     message = "No metrics available for the specified period or all metrics are within normal parameters."
+#
+#     return CustomResponse(
+#         message=message,
+#         data=metrics,
+#         status_code=status.HTTP_200_OK
+#     )
+
 @router.get("/sites/energy_consumption_metrics_WITH_FILTER/{site_id}",
             response_model=CustomResponse[List[EnergyConsumptionMetricsDetails]])
 @inject
-def get_energy_consumption_metrics(
+async def get_energy_consumption_metrics(
         site_id: int,
         duration: Optional[str] = Query(None, alias="duration"),
         current_user: User = Depends(get_current_active_user),
@@ -375,7 +429,10 @@ def get_energy_consumption_metrics(
 ):
     global issue_detected1
     duration = duration or "24 hours"
-    metrics = site_service.calculate_energy_consumption_by_id_with_filter(site_id, duration)
+
+    # Await the asynchronous call to retrieve metrics
+    metrics = await site_service.calculate_energy_consumption_by_id_with_filter(site_id, duration)
+
     response_data = []
     message = "Energy consumption metrics retrieved successfully."
     issue_detected1 = False
@@ -390,14 +447,14 @@ def get_energy_consumption_metrics(
 
         if energy_consumption < 50:
             message = (f"At {time_stamp}, the energy efficiency ratio recorded was {energy_consumption}%, "
-                       "which is unusually low and may indicate hardware malfunctions or inefficiencies. ")
+                       "which is unusually low and may indicate hardware malfunctions or inefficiencies.")
             issue_detected1 = True
         elif 50 <= energy_consumption < 80:
             message = (f"Overall, the energy efficiency ratio measured was average, "
-                       "which indicates that the hardware is generally performing well. ")
+                       "which indicates that the hardware is generally performing well.")
         elif energy_consumption >= 80:
             message = (f"Overall, the energy efficiency ratio is high, "
-                       "demonstrating excellent performance and optimal operation of the hardware. ")
+                       "demonstrating excellent performance and optimal operation of the hardware.")
 
         if power_efficiency > 20:
             message += (
@@ -407,16 +464,16 @@ def get_energy_consumption_metrics(
         elif power_efficiency <= 20 and power_efficiency > 0:
             message += f" Power usage effectiveness is low which is ideal and indicates positive performance."
 
-        # response_data.append(metric)
-
-    # if not issue_detected and not response_data:
-    #     message = "No metrics available for the specified period or all metrics are within normal parameters."
-
     return CustomResponse(
         message=message,
         data=metrics,
         status_code=status.HTTP_200_OK
     )
+
+
+
+
+
 
 
 @router.get("/site/traffic_throughput_metrics_WITH_FILTER/{site_id}",
