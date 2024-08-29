@@ -2469,15 +2469,28 @@ class InfluxDBRepository:
         return total_pin
 
     def get_energy_metrics_for_last_7_days(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> \
-            List[dict]:
+    List[dict]:
         total_power_metrics = []
+
+        # Debug: Print the start and end dates before formatting
+        print("Start Date (raw):", start_date)
+        print("End Date (raw):", end_date)
+
+        # Format start_time and end_time as ISO strings with 'Z' to indicate UTC
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
+
+        # Debug: Print the formatted start and end times
+        print("Start Time (formatted):", start_time)
+        print("End Time (formatted):", end_time)
 
         aggregate_window = "1d"  # Aggregating by day
         time_format = '%A'  # To get the day name (e.g., Monday)
 
         for ip in device_ips:
+            # Debug: Print the current device IP being processed
+            print("Processing Device IP:", ip)
+
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
                 |> range(start: "{start_time}", stop: "{end_time}")
@@ -2486,13 +2499,33 @@ class InfluxDBRepository:
                 |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
-            result = self.query_api1.query_data_frame(query)
+
+            # Debug: Print the generated InfluxDB query
+            print("Generated InfluxDB Query:", query)
+
+            try:
+                result = self.query_api1.query_data_frame(query)
+            except Exception as e:
+                # Debug: Print any exceptions encountered during the query
+                print("Error executing query:", e)
+                continue
+
+            # Debug: Print the result from the query
+            print("Query Result (raw):", result)
 
             if not result.empty:
+                # Format the '_time' column to display day names
                 result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+
+                # Debug: Print the formatted result
+                print("Query Result (formatted):", result)
+
                 numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
                 if '_time' in result.columns and numeric_cols:
                     grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
+
+                    # Debug: Print the grouped result by day
+                    print("Grouped Result by Day:", grouped)
 
                     for _, row in grouped.iterrows():
                         pin = row['total_PIn']
@@ -2501,13 +2534,23 @@ class InfluxDBRepository:
                         energy_consumption = pout / pin if pin > 0 else 0
                         power_efficiency = ((pin / pout - 1) * 100) if pout > 0 else 0
 
+                        # Debug: Print the metrics calculated for this row
+                        print("Metrics for Day:", row['_time'])
+                        print("  Energy Efficiency:", energy_consumption)
+                        print("  Total POut:", pout)
+                        print("  Total PIn:", pin)
+                        print("  Power Efficiency:", power_efficiency)
+
                         total_power_metrics.append({
-                            "day": row['index'],  # Day of the week
+                            "day": row['_time'],  # Day of the week
                             "energy_efficiency": round(energy_consumption, 2),
                             "total_POut": round(pout, 2),
                             "total_PIn": round(pin, 2),
                             "power_efficiency": round(power_efficiency, 2)
                         })
 
+        # Debug: Print the final dataframe before returning
         df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='day').to_dict(orient='records')
+        print("Final DataFrame:", df)
+
         return df
