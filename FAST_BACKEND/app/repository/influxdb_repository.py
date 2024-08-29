@@ -469,18 +469,19 @@ class InfluxDBRepository:
     #     df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
     #     return df
 
-    async def query_influxdb_for_device(self, IP: str, start_time: str, end_time: str, aggregate_window: str,
+    async def query_influxdb_for_device(ip: str, start_time: str, end_time: str, aggregate_window: str,
                                         time_format: str, semaphore: asyncio.Semaphore) -> List[dict]:
         async with semaphore:
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
                 |> range(start: {start_time}, stop: {end_time})
-                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{IP}")
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
                 |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
-            result = await self.query_api1.query_data_frame(query)
+            # Since query_data_frame is synchronous, do not use await
+            result = self.query_api1.query_data_frame(query)
 
             if result.empty:
                 return []
@@ -534,7 +535,8 @@ class InfluxDBRepository:
 
         semaphore = asyncio.Semaphore(10)  # Limit concurrency to 10 simultaneous requests
 
-        tasks = [self.query_influxdb_for_device(ip, start_time, end_time, aggregate_window, time_format, semaphore)
+        # Launch tasks asynchronously
+        tasks = [query_influxdb_for_device(ip, start_time, end_time, aggregate_window, time_format, semaphore)
                  for ip in device_ips]
 
         results = await asyncio.gather(*tasks)

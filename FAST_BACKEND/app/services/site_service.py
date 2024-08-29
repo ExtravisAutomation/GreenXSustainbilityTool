@@ -1473,5 +1473,3 @@ class SiteService:
 
         energy_metrics = self.influxdb_repository.get_energy_metrics_for_last_24_hours(device_ips, start_date, end_date)
         return energy_metrics
-
-
