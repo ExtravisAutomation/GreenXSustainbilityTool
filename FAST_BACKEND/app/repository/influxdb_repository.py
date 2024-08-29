@@ -2517,6 +2517,25 @@ class InfluxDBRepository:
 
         # Fill NaN values with 0.0 to make sure they are JSON serializable
         df = df.fillna(0.0)
-        print("Final DataFrame (after NaN handling):", df)  # Debug print to check the final output
+
+        # Get the current day of the week
+        today = datetime.now().strftime('%A')
+
+        # List of days in a week
+        all_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+        # Find the index of today in the list
+        today_index = all_days.index(today)
+
+        # Create the custom order starting from today and going backward
+        days_order = all_days[today_index:] + all_days[:today_index]
+
+        # Convert the 'day' column to a categorical type with the custom ordering
+        df['day'] = pd.Categorical(df['day'], categories=days_order, ordered=True)
+
+        # Sort the DataFrame by the custom day order
+        df = df.sort_values('day')
+
+        print("Final DataFrame (ordered):", df)  # Debug print to check the final output
 
         return df.to_dict(orient='records')
