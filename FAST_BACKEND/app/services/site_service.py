@@ -1461,3 +1461,17 @@ class SiteService:
 
         energy_metrics = self.influxdb_repository.get_energy_metrics_for_last_7_days(device_ips, start_date, end_date)
         return energy_metrics
+
+    def get_last_24_hours_energy_metrics(self, site_id: int) -> List[dict]:
+        duration_str = "24 hours"
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        if not device_ips:
+            return []
+
+        energy_metrics = self.influxdb_repository.get_energy_metrics_for_last_24_hours(device_ips, start_date, end_date)
+        return energy_metrics
+
+

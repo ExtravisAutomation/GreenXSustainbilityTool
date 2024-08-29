@@ -1172,3 +1172,24 @@ def get_last_7_days_energy_metrics(
         data=metrics,
         status_code=status.HTTP_200_OK
     )
+
+@router.get("/sites/last_24_hours_energy_metrics/{site_id}",
+            response_model=CustomResponse[List[dict]])
+@inject
+def get_last_24_hours_energy_metrics(
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    metrics = site_service.get_last_24_hours_energy_metrics(site_id)
+    message = "Last 24 hours energy metrics retrieved successfully."
+
+    if not metrics:
+        message = "No metrics available for the last 24 hours."
+
+    return CustomResponse(
+        message=message,
+        data=metrics,
+        status_code=status.HTTP_200_OK
+    )
+
