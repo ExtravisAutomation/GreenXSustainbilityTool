@@ -2469,7 +2469,7 @@ class InfluxDBRepository:
         return total_pin
 
     def get_energy_metrics_for_last_7_days(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> \
-    List[dict]:
+            List[dict]:
         total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
