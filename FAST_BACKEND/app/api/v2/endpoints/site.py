@@ -175,6 +175,8 @@ def get_detailed_hourly_power_metrics_for_site(
     return site_service.calculate_hourly_power_metrics_for_each_device(site_id)
 
 
+
+
 # @router.get("/site/device_specific_comparison/{site_id}")
 # @inject
 # def compare_devices_metrics(
@@ -185,15 +187,25 @@ def get_detailed_hourly_power_metrics_for_site(
 #         site_service: SiteService = Depends(Provide[Container.site_service]),
 #         site_repository: SiteRepository = Depends(Provide[Container.site_repo])):
 #     if not device_name1 or not device_name2:
-#         default_device_names = site_repository.get_first_two_device_names(site_id)
-#         print("DEVICESS NAMEEEEEEEEEEEEEEEEEEEEEE", default_device_names, file=sys.stderr)
-#         if len(default_device_names) < 2:
+#         all_device_names = site_repository.get_all_device_names(site_id)
+#         if len(all_device_names) < 2:
 #             raise HTTPException(status_code=404, detail="Not enough devices found in the database.")
-#         device_name1 = device_name1 or default_device_names[0]
-#         device_name2 = device_name2 or default_device_names[1]
-#     response = site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2)
+#
+#         found_devices = False
+#         for i in range(0, len(all_device_names), 2):
+#             device_name1 = all_device_names[i]
+#             device_name2 = all_device_names[i + 1] if i + 1 < len(all_device_names) else None
+#             response = site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2)
+#             if response[device_name1] and response[device_name2]:
+#                 found_devices = True
+#                 break
+#
+#         if not found_devices:
+#             raise HTTPException(status_code=404, detail="No devices with data found.")
+#     else:
+#         response = site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2)
+#
 #     return {"device_name1": response[device_name1], "device_name2": response[device_name2]}
-
 
 @router.get("/site/device_specific_comparison/{site_id}")
 @inject
@@ -201,6 +213,7 @@ def compare_devices_metrics(
         site_id: int,
         device_name1: Optional[str] = Query(None, alias="device_name1"),
         device_name2: Optional[str] = Query(None, alias="device_name2"),
+        duration: Optional[str] = Query("24 hours", alias="duration"),
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service]),
         site_repository: SiteRepository = Depends(Provide[Container.site_repo])):
@@ -213,7 +226,7 @@ def compare_devices_metrics(
         for i in range(0, len(all_device_names), 2):
             device_name1 = all_device_names[i]
             device_name2 = all_device_names[i + 1] if i + 1 < len(all_device_names) else None
-            response = site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2)
+            response = site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2, duration)
             if response[device_name1] and response[device_name2]:
                 found_devices = True
                 break
@@ -221,9 +234,11 @@ def compare_devices_metrics(
         if not found_devices:
             raise HTTPException(status_code=404, detail="No devices with data found.")
     else:
-        response = site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2)
+        response = site_service.compare_devices_hourly_power_metrics(site_id, device_name1, device_name2, duration)
 
     return {"device_name1": response[device_name1], "device_name2": response[device_name2]}
+
+
 
 
 @router.get("/site/pie_chart/{site_id}", response_model=dict[str, int])

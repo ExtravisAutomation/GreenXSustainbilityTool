@@ -692,6 +692,43 @@ class InfluxDBRepository:
 
         return hourly_power_metrics
 
+    def get_hourly_power_metrics_for_ip0(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+                                         duration: str) -> List[dict]:
+        hourly_power_metrics = []
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+
+        # Define the aggregate window and time format based on the duration string
+        if duration in ["24 hours"]:
+            aggregate_window = "1h"
+            time_format = '%Y-%m-%d %H:00'
+        elif duration in ["7 Days", "Current Month", "Last Month"]:
+            aggregate_window = "1d"
+            time_format = '%Y-%m-%d'
+        else:  # For "last 6 months", "last year", "current year"
+            aggregate_window = "1m"
+            time_format = '%Y-%m'
+
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{self.bucket}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+            '''
+            result_pin = self.query_api1.query_data_frame(query)
+            if not result_pin.empty:
+                for _, row in result_pin.iterrows():
+                    hour = pd.to_datetime(row['_time']).strftime(time_format)
+                    total_power = row['_value']
+                    hourly_power_metrics.append({
+                        "hour": hour,
+                        "total_PIn": total_power
+                    })
+
+        return hourly_power_metrics
+
     def get_top_5_devices_by_power(self, device_ips: List[str]) -> List[dict]:
         top_devices_power = []
 
@@ -973,7 +1010,7 @@ class InfluxDBRepository:
         return throughput_metrics
 
     def get_traffic_throughput_metrics_with_ener00(self, device_ip: str, start_date: datetime, end_date: datetime,
-                                                 duration_str: str) -> List[dict]:
+                                                   duration_str: str) -> List[dict]:
         throughput_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'

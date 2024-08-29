@@ -384,8 +384,46 @@ class SiteService:
     #
     #     return hourly_data
 
+    # def compare_devices_hourly_power_metrics(self, site_id: int, device_name1: str,
+    #                                          device_name2: Optional[str] = None) -> dict[str, dict[str, list[dict]]]:
+    #     device_names = [device_name1]
+    #     if device_name2:
+    #         device_names.append(device_name2)
+    #
+    #     devices_info = self.site_repository.get_device_ips_by_names_and_site_id(site_id, device_names)
+    #     hourly_data: dict[str, dict[str, List[dict]]] = {device_name1: [], device_name2: [] if device_name2 else None}
+    #
+    #     for device in devices_info:
+    #         ip_metrics = self.influxdb_repository.get_hourly_power_metrics_for_ip([device['ip_address']])
+    #         if not ip_metrics:
+    #             continue
+    #         device_details = self.site_repository.get_device_details_by_name_and_site_id1(site_id,
+    #                                                                                       device['device_name'])
+    #
+    #         for metric in ip_metrics:
+    #             updated_metric = {
+    #                 "device_name": device_details.get('device_name', ''),
+    #                 "hardware_version": device_details.get('hardware_version', None),
+    #                 "manufacturer": device_details.get('manufacturer', None),
+    #                 "pn_code": device_details.get('pn_code', None),
+    #                 "serial_number": device_details.get('serial_number', None),
+    #                 "software_version": device_details.get('software_version', None),
+    #                 "status": device_details.get('status', None),
+    #                 "site_name": device_details.get('site_name', ''),
+    #                 "apic_controller_ip": device['ip_address'],
+    #                 "total_power": metric.get('total_PIn', None),
+    #                 "max_power": metric.get('max_power', None),
+    #                 "current_power": metric.get('total_PIn', None),
+    #                 "time": metric.get('hour', None)
+    #             }
+    #             device_key = device_name1 if device_details.get('device_name') == device_name1 else device_name2
+    #             hourly_data[device_key].append(DevicePowerMetric(**updated_metric))
+    #
+    #     return hourly_data
+
     def compare_devices_hourly_power_metrics(self, site_id: int, device_name1: str,
-                                             device_name2: Optional[str] = None) -> dict[str, dict[str, list[dict]]]:
+                                             device_name2: Optional[str] = None,
+                                             duration: str = "24 hours") -> dict[str, dict[str, list[dict]]]:
         device_names = [device_name1]
         if device_name2:
             device_names.append(device_name2)
@@ -393,8 +431,12 @@ class SiteService:
         devices_info = self.site_repository.get_device_ips_by_names_and_site_id(site_id, device_names)
         hourly_data: dict[str, dict[str, List[dict]]] = {device_name1: [], device_name2: [] if device_name2 else None}
 
+        # Calculate the start and end dates based on the duration
+        start_date, end_date = self.calculate_start_end_dates(duration)
+
         for device in devices_info:
-            ip_metrics = self.influxdb_repository.get_hourly_power_metrics_for_ip([device['ip_address']])
+            ip_metrics = self.influxdb_repository.get_hourly_power_metrics_for_ip0(
+                [device['ip_address']], start_date, end_date, duration)
             if not ip_metrics:
                 continue
             device_details = self.site_repository.get_device_details_by_name_and_site_id1(site_id,
@@ -420,6 +462,7 @@ class SiteService:
                 hourly_data[device_key].append(DevicePowerMetric(**updated_metric))
 
         return hourly_data
+
 
     def get_eol_eos_counts_for_site(self, site_id: int):
         return self.site_repository.get_eol_eos_counts(site_id)
