@@ -125,51 +125,8 @@ class SiteService:
         energy_metrics = self.influxdb_repository.get_energy_consumption_metrics(device_ips)
         return energy_metrics
 
-    def calculate_start_end_dates(self, duration_str: str) -> (datetime, datetime):
-        today = datetime.today()
-
-        if duration_str == "Last 9 Months":
-            start_date = (today - timedelta(days=270)).replace(day=1)
-            end_date = today
-        elif duration_str == "Last 6 Months":
-            start_date = (today - timedelta(days=180)).replace(day=1)
-            end_date = today
-        elif duration_str == "Last 3 Months":
-            start_date = (today - timedelta(days=90)).replace(day=1)
-            end_date = today
-        elif duration_str == "Last Year":
-            start_date = (today.replace(day=1, month=1) - timedelta(days=365)).replace(day=1)
-            end_date = start_date.replace(month=12, day=31)
-        elif duration_str == "Current Year":
-            start_date = today.replace(month=1, day=1)  # First day of the current year
-            end_date = today  # Today's date
-        elif duration_str == "Current Month":
-            start_date = today.replace(day=1)
-            end_date = today  # Adjusted to set the end date to today's date
-        elif duration_str == "Last Month":
-            start_date = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
-            end_date = (today.replace(day=1) - timedelta(days=1))
-        elif duration_str == "7 Days":
-            start_date = today - timedelta(days=7)
-            end_date = today
-        elif duration_str == "24 hours":
-            start_date = today - timedelta(days=1)
-            end_date = today
-        else:
-            raise ValueError("Unsupported duration format")
-
-        return start_date, end_date
-
     # def calculate_start_end_dates(self, duration_str: str) -> (datetime, datetime):
     #     today = datetime.today()
-    #
-    #     # Mapping the quarters to corresponding durations
-    #     if duration_str == "First Quarter":
-    #         duration_str = "Last 3 Months"
-    #     elif duration_str == "Second Quarter":
-    #         duration_str = "Last 6 Months"
-    #     elif duration_str == "Third Quarter":
-    #         duration_str = "Last 9 Months"
     #
     #     if duration_str == "Last 9 Months":
     #         start_date = (today - timedelta(days=270)).replace(day=1)
@@ -184,11 +141,11 @@ class SiteService:
     #         start_date = (today.replace(day=1, month=1) - timedelta(days=365)).replace(day=1)
     #         end_date = start_date.replace(month=12, day=31)
     #     elif duration_str == "Current Year":
-    #         start_date = today.replace(month=1, day=1)
-    #         end_date = today
+    #         start_date = today.replace(month=1, day=1)  # First day of the current year
+    #         end_date = today  # Today's date
     #     elif duration_str == "Current Month":
     #         start_date = today.replace(day=1)
-    #         end_date = today
+    #         end_date = today  # Adjusted to set the end date to today's date
     #     elif duration_str == "Last Month":
     #         start_date = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
     #         end_date = (today.replace(day=1) - timedelta(days=1))
@@ -201,7 +158,50 @@ class SiteService:
     #     else:
     #         raise ValueError("Unsupported duration format")
     #
-    #     return start_date.date(), end_date.date()
+    #     return start_date, end_date
+
+    def calculate_start_end_dates(self, duration_str: str) -> (datetime, datetime):
+        today = datetime.today()
+
+        # Mapping the quarters to corresponding durations
+        if duration_str == "First Quarter":
+            duration_str = "Last 3 Months"
+        elif duration_str == "Second Quarter":
+            duration_str = "Last 6 Months"
+        elif duration_str == "Third Quarter":
+            duration_str = "Last 9 Months"
+
+        if duration_str == "Last 9 Months":
+            start_date = (today - timedelta(days=270)).replace(day=1)
+            end_date = today
+        elif duration_str == "Last 6 Months":
+            start_date = (today - timedelta(days=180)).replace(day=1)
+            end_date = today
+        elif duration_str == "Last 3 Months":
+            start_date = (today - timedelta(days=90)).replace(day=1)
+            end_date = today
+        elif duration_str == "Last Year":
+            start_date = (today.replace(day=1, month=1) - timedelta(days=365)).replace(day=1)
+            end_date = start_date.replace(month=12, day=31)
+        elif duration_str == "Current Year":
+            start_date = today.replace(month=1, day=1)
+            end_date = today
+        elif duration_str == "Current Month":
+            start_date = today.replace(day=1)
+            end_date = today
+        elif duration_str == "Last Month":
+            start_date = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
+            end_date = (today.replace(day=1) - timedelta(days=1))
+        elif duration_str == "7 Days":
+            start_date = today - timedelta(days=7)
+            end_date = today
+        elif duration_str == "24 hours":
+            start_date = today - timedelta(days=1)
+            end_date = today
+        else:
+            raise ValueError("Unsupported duration format")
+
+        return start_date, end_date
 
     def compare_device_data_by_names_and_duration(self, site_id: int, device_name1: str, device_name2: str,
                                                   duration_str: str) -> List[List[dict]]:
