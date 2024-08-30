@@ -1347,15 +1347,15 @@ class SiteService:
         }
 
     def calculate_average_energy_consumption_by_site_id(self, site_id: int, duration_str: str) -> dict:
-        if duration_str == "First Quarter":
-            time.sleep(4)
-            return PUE_DUMMY_DATA_FIRST_QUARTER
-        elif duration_str == "Second Quarter":
-            time.sleep(8)
-            return PUE_DUMMY_DATA_SECOND_QUARTER
-        elif duration_str == "Third Quarter":
-            time.sleep(7)
-            return PUE_DUMMY_DATA_THIRD_QUARTER
+        # if duration_str == "First Quarter":
+        #     time.sleep(4)
+        #     return PUE_DUMMY_DATA_FIRST_QUARTER
+        # elif duration_str == "Second Quarter":
+        #     time.sleep(8)
+        #     return PUE_DUMMY_DATA_SECOND_QUARTER
+        # elif duration_str == "Third Quarter":
+        #     time.sleep(7)
+        #     return PUE_DUMMY_DATA_THIRD_QUARTER
 
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)

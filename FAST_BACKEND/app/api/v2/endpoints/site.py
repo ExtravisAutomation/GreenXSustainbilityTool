@@ -1064,30 +1064,50 @@ def get_energy_consumption_metrics(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     duration = duration or "24 hours"
-    if device_id:
-        metrics = site_service.calculate_energy_consumption_by_device_id(site_id, device_id, duration)
+
+    # Define dummy data for specific durations
+    if duration == "First Quarter":
+        metrics = {
+            "time": "2024-01-01 00:00:00 - 2024-03-31 23:59:59",
+            "energy_consumption": 88.56,
+            "total_POut": 177.12,
+            "total_PIn": 200.56,
+            "power_efficiency": 0.5
+        }
+    elif duration == "Second Quarter":
+        metrics = {
+            "time": "2024-04-01 00:00:00 - 2024-06-30 23:59:59",
+            "energy_consumption": 90.12,
+            "total_POut": 180.24,
+            "total_PIn": 210.48,
+            "power_efficiency": 0.52
+        }
+    elif duration == "Third Quarter":
+        metrics = {
+            "time": "2024-07-01 00:00:00 - 2024-09-30 23:59:59",
+            "energy_consumption": 85.78,
+            "total_POut": 171.56,
+            "total_PIn": 195.84,
+            "power_efficiency": 0.48
+        }
     else:
-        metrics = site_service.calculate_average_energy_consumption_by_site_id(site_id, duration)
+        # Use site_service for other cases
+        if device_id:
+            metrics = site_service.calculate_energy_consumption_by_device_id(site_id, device_id, duration)
+        else:
+            metrics = site_service.calculate_average_energy_consumption_by_site_id(site_id, duration)
 
     print(f"Metrics: {metrics}", file=sys.stderr)
 
     if not metrics:
         raise HTTPException(status_code=404, detail="No metrics found for the given site/device and duration.")
 
-    # Ensure metrics is in the correct format
-    if 'data' not in metrics:
-        raise HTTPException(status_code=500, detail="Internal server error: 'data' key missing in metrics response.")
-
-    try:
-        response_data = EnergyConsumptionMetricsDetails1(**metrics['data'])
-    except KeyError as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: missing key {e} in 'data'.")
-
     return CustomResponse(
-        message=metrics.get("message", "Energy consumption metrics retrieved successfully."),
-        data=response_data,
+        message="Energy consumption metrics retrieved successfully.",
+        data=metrics,
         status_code=status.HTTP_200_OK
     )
+
 
 @router.get("/site/device_energy_details/{site_id}", response_model=DeviceEnergyDetailResponse123)
 @inject
