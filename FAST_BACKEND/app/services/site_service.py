@@ -112,7 +112,7 @@ DUMMY_DATA_THIRD_QUARTER = [
     },
     {
         "time": "2024-08",
-        "energy_efficiency": 0.80,
+        "energy_efficiency": 0.81,
         "total_POut": 190,
         "total_PIn": 230,
         "average_energy_consumed": None,
