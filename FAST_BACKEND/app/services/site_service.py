@@ -49,7 +49,7 @@ from app.schema.site_schema import DeviceCreateRequest
 DUMMY_DATA_FIRST_QUARTER = [
     {
         "time": "2024-01",
-        "energy_efficiency": 0.85,
+        "energy_efficiency": 0.81,
         "total_POut": 200,
         "total_PIn": 235,
         "average_energy_consumed": None,
@@ -57,7 +57,7 @@ DUMMY_DATA_FIRST_QUARTER = [
     },
     {
         "time": "2024-02",
-        "energy_efficiency": 0.80,
+        "energy_efficiency": 1.1,
         "total_POut": 190,
         "total_PIn": 230,
         "average_energy_consumed": None,
@@ -65,7 +65,7 @@ DUMMY_DATA_FIRST_QUARTER = [
     },
     {
         "time": "2024-03",
-        "energy_efficiency": 0.78,
+        "energy_efficiency": 0.84,
         "total_POut": 185,
         "total_PIn": 225,
         "average_energy_consumed": None,
@@ -76,7 +76,7 @@ DUMMY_DATA_FIRST_QUARTER = [
 DUMMY_DATA_SECOND_QUARTER = [
     {
         "time": "2024-04",
-        "energy_efficiency": 0.85,
+        "energy_efficiency": 0.90,
         "total_POut": 200,
         "total_PIn": 235,
         "average_energy_consumed": None,
@@ -84,7 +84,7 @@ DUMMY_DATA_SECOND_QUARTER = [
     },
     {
         "time": "2024-05",
-        "energy_efficiency": 0.80,
+        "energy_efficiency": 1.4,
         "total_POut": 190,
         "total_PIn": 230,
         "average_energy_consumed": None,
