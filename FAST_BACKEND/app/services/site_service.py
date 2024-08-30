@@ -49,7 +49,7 @@ from app.schema.site_schema import DeviceCreateRequest
 DUMMY_DATA_FIRST_QUARTER = [
     {
         "time": "2024-01",
-        "energy_efficiency": 0.81,
+        "energy_efficiency": 0,
         "total_POut": 200,
         "total_PIn": 235,
         "average_energy_consumed": None,
@@ -57,7 +57,7 @@ DUMMY_DATA_FIRST_QUARTER = [
     },
     {
         "time": "2024-02",
-        "energy_efficiency": 1.1,
+        "energy_efficiency": 0,
         "total_POut": 190,
         "total_PIn": 230,
         "average_energy_consumed": None,
