@@ -348,23 +348,8 @@ class SiteService:
 
         return comparison_metrics
 
-    # def calculate_energy_consumption_by_id_with_filter(self, site_id: int, duration_str: str) -> List[
-    #     dict]:
-    #     start_date, end_date = self.calculate_start_end_dates(duration_str)
-    #     devices = self.site_repository.get_devices_by_site_id(site_id)
-    #     device_ips = [device.ip_address for device in devices if device.ip_address]
-    #
-    #     if not device_ips:
-    #         return []
-    #
-    #     energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter(device_ips, start_date,
-    #                                                                                          end_date,
-    #                                                                                          duration_str)
-    #     print("ENERGY_METRIC_OF_KPIIIIIIIIIII", energy_metrics, file=sys.stderr)
-    #     return energy_metrics
-
-    def calculate_energy_consumption_by_id_with_filter(self, site_id: int, duration_str: str) -> List[dict]:
-        # Check for specific duration strings and return dummy data
+    def calculate_energy_consumption_by_id_with_filter(self, site_id: int, duration_str: str) -> List[
+        dict]:
         if duration_str == "First Quarter":
             return DUMMY_DATA_FIRST_QUARTER
         elif duration_str == "Second Quarter":
@@ -372,7 +357,6 @@ class SiteService:
         elif duration_str == "Third Quarter":
             return DUMMY_DATA_THIRD_QUARTER
 
-        # Original logic for other duration filters
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
@@ -383,11 +367,34 @@ class SiteService:
         energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter(device_ips, start_date,
                                                                                              end_date,
                                                                                              duration_str)
-        # Modify the time format to include only year and month
-        for metric in energy_metrics:
-            metric['time'] = metric['time'].strftime('%Y-%m')
-
+        print("ENERGY_METRIC_OF_KPIIIIIIIIIII", energy_metrics, file=sys.stderr)
         return energy_metrics
+
+    # def calculate_energy_consumption_by_id_with_filter(self, site_id: int, duration_str: str) -> List[dict]:
+    #     # Check for specific duration strings and return dummy data
+    #     if duration_str == "First Quarter":
+    #         return DUMMY_DATA_FIRST_QUARTER
+    #     elif duration_str == "Second Quarter":
+    #         return DUMMY_DATA_SECOND_QUARTER
+    #     elif duration_str == "Third Quarter":
+    #         return DUMMY_DATA_THIRD_QUARTER
+    #
+    #     # Original logic for other duration filters
+    #     start_date, end_date = self.calculate_start_end_dates(duration_str)
+    #     devices = self.site_repository.get_devices_by_site_id(site_id)
+    #     device_ips = [device.ip_address for device in devices if device.ip_address]
+    #
+    #     if not device_ips:
+    #         return []
+    #
+    #     energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter(device_ips, start_date,
+    #                                                                                          end_date,
+    #                                                                                          duration_str)
+    #     # Modify the time format to include only year and month
+    #     for metric in energy_metrics:
+    #         metric['time'] = metric['time'].strftime('%Y-%m')
+    #
+    #     return energy_metrics
 
 
     def get_top_5_power_devices_with_filter(self, site_id: int, duration_str: str) -> TopDevicesPowerResponse:
