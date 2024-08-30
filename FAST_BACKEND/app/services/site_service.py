@@ -48,7 +48,7 @@ from app.schema.site_schema import DeviceCreateRequest
 
 DUMMY_DATA_FIRST_QUARTER = [
     {
-        "time": "2024-07",
+        "time": "2024-01",
         "energy_efficiency": 0.85,
         "total_POut": 200,
         "total_PIn": 235,
@@ -56,7 +56,7 @@ DUMMY_DATA_FIRST_QUARTER = [
         "power_efficiency": 21.23
     },
     {
-        "time": "2024-06",
+        "time": "2024-02",
         "energy_efficiency": 0.80,
         "total_POut": 190,
         "total_PIn": 230,
@@ -64,7 +64,7 @@ DUMMY_DATA_FIRST_QUARTER = [
         "power_efficiency": 21.74
     },
     {
-        "time": "2024-05",
+        "time": "2024-03",
         "energy_efficiency": 0.78,
         "total_POut": 185,
         "total_PIn": 225,
@@ -75,7 +75,7 @@ DUMMY_DATA_FIRST_QUARTER = [
 
 DUMMY_DATA_SECOND_QUARTER = [
     {
-        "time": "2024-07",
+        "time": "2024-04",
         "energy_efficiency": 0.85,
         "total_POut": 200,
         "total_PIn": 235,
@@ -83,7 +83,7 @@ DUMMY_DATA_SECOND_QUARTER = [
         "power_efficiency": 21.23
     },
     {
-        "time": "2024-06",
+        "time": "2024-05",
         "energy_efficiency": 0.80,
         "total_POut": 190,
         "total_PIn": 230,
@@ -91,37 +91,14 @@ DUMMY_DATA_SECOND_QUARTER = [
         "power_efficiency": 21.74
     },
     {
-        "time": "2024-05",
+        "time": "2024-06",
         "energy_efficiency": 0.78,
         "total_POut": 185,
         "total_PIn": 225,
         "average_energy_consumed": None,
         "power_efficiency": 22.22
-    },
-    {
-        "time": "2024-04",
-        "energy_efficiency": 0.79,
-        "total_POut": 178,
-        "total_PIn": 208,
-        "average_energy_consumed": None,
-        "power_efficiency": 19.71
-    },
-    {
-        "time": "2024-03",
-        "energy_efficiency": 0.82,
-        "total_POut": 190,
-        "total_PIn": 225,
-        "average_energy_consumed": None,
-        "power_efficiency": 18.95
-    },
-    {
-        "time": "2024-02",
-        "energy_efficiency": 0.78,
-        "total_POut": 180,
-        "total_PIn": 210,
-        "average_energy_consumed": None,
-        "power_efficiency": 19.85
     }
+
 ]
 
 DUMMY_DATA_THIRD_QUARTER = [
@@ -134,7 +111,7 @@ DUMMY_DATA_THIRD_QUARTER = [
         "power_efficiency": 21.23
     },
     {
-        "time": "2024-06",
+        "time": "2024-08",
         "energy_efficiency": 0.80,
         "total_POut": 190,
         "total_PIn": 230,
@@ -142,60 +119,12 @@ DUMMY_DATA_THIRD_QUARTER = [
         "power_efficiency": 21.74
     },
     {
-        "time": "2024-05",
-        "energy_efficiency": 0.78,
-        "total_POut": 185,
-        "total_PIn": 225,
+        "time": "2024-09",
+        "energy_efficiency": 0,
+        "total_POut": 0,
+        "total_PIn": 0,
         "average_energy_consumed": None,
-        "power_efficiency": 22.22
-    },
-    {
-        "time": "2024-04",
-        "energy_efficiency": 0.79,
-        "total_POut": 178,
-        "total_PIn": 208,
-        "average_energy_consumed": None,
-        "power_efficiency": 19.71
-    },
-    {
-        "time": "2024-03",
-        "energy_efficiency": 0.82,
-        "total_POut": 190,
-        "total_PIn": 225,
-        "average_energy_consumed": None,
-        "power_efficiency": 18.95
-    },
-    {
-        "time": "2024-02",
-        "energy_efficiency": 0.78,
-        "total_POut": 180,
-        "total_PIn": 210,
-        "average_energy_consumed": None,
-        "power_efficiency": 19.85
-    },
-    {
-        "time": "2024-01",
-        "energy_efficiency": 0.76,
-        "total_POut": 175,
-        "total_PIn": 205,
-        "average_energy_consumed": None,
-        "power_efficiency": 20.12
-    },
-    {
-        "time": "2023-12",
-        "energy_efficiency": 0.79,
-        "total_POut": 178,
-        "total_PIn": 208,
-        "average_energy_consumed": None,
-        "power_efficiency": 19.71
-    },
-    {
-        "time": "2023-11",
-        "energy_efficiency": 0.82,
-        "total_POut": 190,
-        "total_PIn": 225,
-        "average_energy_consumed": None,
-        "power_efficiency": 18.95
+        "power_efficiency": 0
     }
 ]
 
