@@ -1071,7 +1071,7 @@ def get_energy_consumption_metrics(
 
     print(f"Metrics: {metrics}", file=sys.stderr)
 
-    if not metrics or 'data' not in metrics or not metrics['data']:
+    if not metrics:
         raise HTTPException(status_code=404, detail="No metrics found for the given site/device and duration.")
 
     # Use Pydantic model directly to enforce the correct structure
