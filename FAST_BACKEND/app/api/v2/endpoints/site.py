@@ -1074,15 +1074,20 @@ def get_energy_consumption_metrics(
     if not metrics:
         raise HTTPException(status_code=404, detail="No metrics found for the given site/device and duration.")
 
-    # Use Pydantic model directly to enforce the correct structure
-    response_data = EnergyConsumptionMetricsDetails1(**metrics['data'])
+    # Ensure metrics is in the correct format
+    if 'data' not in metrics:
+        raise HTTPException(status_code=500, detail="Internal server error: 'data' key missing in metrics response.")
+
+    try:
+        response_data = EnergyConsumptionMetricsDetails1(**metrics['data'])
+    except KeyError as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: missing key {e} in 'data'.")
 
     return CustomResponse(
         message=metrics.get("message", "Energy consumption metrics retrieved successfully."),
         data=response_data,
         status_code=status.HTTP_200_OK
     )
-
 
 @router.get("/site/device_energy_details/{site_id}", response_model=DeviceEnergyDetailResponse123)
 @inject
