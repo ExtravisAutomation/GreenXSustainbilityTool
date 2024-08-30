@@ -1,4 +1,5 @@
 import sys
+import time
 from datetime import datetime
 from typing import List, Optional, Dict, Any, Union
 from app.api.v2.endpoints.test_script import main
@@ -1067,6 +1068,7 @@ def get_energy_consumption_metrics(
 
     # Define dummy data for specific durations
     if duration == "First Quarter":
+        time.sleep(5)
         metrics = {
             "time": "2024-01-01 00:00:00 - 2024-03-31 23:59:59",
             "energy_consumption": 88.56,
@@ -1075,6 +1077,7 @@ def get_energy_consumption_metrics(
             "power_efficiency": 0.5
         }
     elif duration == "Second Quarter":
+        time.sleep(8)
         metrics = {
             "time": "2024-04-01 00:00:00 - 2024-06-30 23:59:59",
             "energy_consumption": 90.12,
@@ -1083,12 +1086,13 @@ def get_energy_consumption_metrics(
             "power_efficiency": 0.52
         }
     elif duration == "Third Quarter":
+        time.sleep(6)
         metrics = {
             "time": "2024-07-01 00:00:00 - 2024-09-30 23:59:59",
             "energy_consumption": 85.78,
             "total_POut": 171.56,
             "total_PIn": 195.84,
-            "power_efficiency": 0.48
+            "power_efficiency": 0.4
         }
     else:
         # Use site_service for other cases
