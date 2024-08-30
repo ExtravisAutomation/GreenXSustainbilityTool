@@ -46,6 +46,165 @@ from app.schema.site_schema import DeviceEnergyDetailResponse123
 from app.schema.site_schema import DeviceCreateRequest
 
 
+DUMMY_DATA_FIRST_QUARTER = [
+    {
+        "time": "2024-07",
+        "energy_efficiency": 0.85,
+        "total_POut": 200,
+        "total_PIn": 235,
+        "average_energy_consumed": None,
+        "power_efficiency": 21.23
+    },
+    {
+        "time": "2024-06",
+        "energy_efficiency": 0.80,
+        "total_POut": 190,
+        "total_PIn": 230,
+        "average_energy_consumed": None,
+        "power_efficiency": 21.74
+    },
+    {
+        "time": "2024-05",
+        "energy_efficiency": 0.78,
+        "total_POut": 185,
+        "total_PIn": 225,
+        "average_energy_consumed": None,
+        "power_efficiency": 22.22
+    }
+]
+
+DUMMY_DATA_SECOND_QUARTER = [
+    {
+        "time": "2024-07",
+        "energy_efficiency": 0.85,
+        "total_POut": 200,
+        "total_PIn": 235,
+        "average_energy_consumed": None,
+        "power_efficiency": 21.23
+    },
+    {
+        "time": "2024-06",
+        "energy_efficiency": 0.80,
+        "total_POut": 190,
+        "total_PIn": 230,
+        "average_energy_consumed": None,
+        "power_efficiency": 21.74
+    },
+    {
+        "time": "2024-05",
+        "energy_efficiency": 0.78,
+        "total_POut": 185,
+        "total_PIn": 225,
+        "average_energy_consumed": None,
+        "power_efficiency": 22.22
+    },
+    {
+        "time": "2024-04",
+        "energy_efficiency": 0.79,
+        "total_POut": 178,
+        "total_PIn": 208,
+        "average_energy_consumed": None,
+        "power_efficiency": 19.71
+    },
+    {
+        "time": "2024-03",
+        "energy_efficiency": 0.82,
+        "total_POut": 190,
+        "total_PIn": 225,
+        "average_energy_consumed": None,
+        "power_efficiency": 18.95
+    },
+    {
+        "time": "2024-02",
+        "energy_efficiency": 0.78,
+        "total_POut": 180,
+        "total_PIn": 210,
+        "average_energy_consumed": None,
+        "power_efficiency": 19.85
+    }
+]
+
+DUMMY_DATA_THIRD_QUARTER = [
+    {
+        "time": "2024-07",
+        "energy_efficiency": 0.85,
+        "total_POut": 200,
+        "total_PIn": 235,
+        "average_energy_consumed": None,
+        "power_efficiency": 21.23
+    },
+    {
+        "time": "2024-06",
+        "energy_efficiency": 0.80,
+        "total_POut": 190,
+        "total_PIn": 230,
+        "average_energy_consumed": None,
+        "power_efficiency": 21.74
+    },
+    {
+        "time": "2024-05",
+        "energy_efficiency": 0.78,
+        "total_POut": 185,
+        "total_PIn": 225,
+        "average_energy_consumed": None,
+        "power_efficiency": 22.22
+    },
+    {
+        "time": "2024-04",
+        "energy_efficiency": 0.79,
+        "total_POut": 178,
+        "total_PIn": 208,
+        "average_energy_consumed": None,
+        "power_efficiency": 19.71
+    },
+    {
+        "time": "2024-03",
+        "energy_efficiency": 0.82,
+        "total_POut": 190,
+        "total_PIn": 225,
+        "average_energy_consumed": None,
+        "power_efficiency": 18.95
+    },
+    {
+        "time": "2024-02",
+        "energy_efficiency": 0.78,
+        "total_POut": 180,
+        "total_PIn": 210,
+        "average_energy_consumed": None,
+        "power_efficiency": 19.85
+    },
+    {
+        "time": "2024-01",
+        "energy_efficiency": 0.76,
+        "total_POut": 175,
+        "total_PIn": 205,
+        "average_energy_consumed": None,
+        "power_efficiency": 20.12
+    },
+    {
+        "time": "2023-12",
+        "energy_efficiency": 0.79,
+        "total_POut": 178,
+        "total_PIn": 208,
+        "average_energy_consumed": None,
+        "power_efficiency": 19.71
+    },
+    {
+        "time": "2023-11",
+        "energy_efficiency": 0.82,
+        "total_POut": 190,
+        "total_PIn": 225,
+        "average_energy_consumed": None,
+        "power_efficiency": 18.95
+    }
+]
+
+
+
+
+
+
+
 class SiteService:
     def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
         self.site_repository = site_repository
@@ -260,8 +419,31 @@ class SiteService:
 
         return comparison_metrics
 
-    def calculate_energy_consumption_by_id_with_filter(self, site_id: int, duration_str: str) -> List[
-        dict]:
+    # def calculate_energy_consumption_by_id_with_filter(self, site_id: int, duration_str: str) -> List[
+    #     dict]:
+    #     start_date, end_date = self.calculate_start_end_dates(duration_str)
+    #     devices = self.site_repository.get_devices_by_site_id(site_id)
+    #     device_ips = [device.ip_address for device in devices if device.ip_address]
+    #
+    #     if not device_ips:
+    #         return []
+    #
+    #     energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter(device_ips, start_date,
+    #                                                                                          end_date,
+    #                                                                                          duration_str)
+    #     print("ENERGY_METRIC_OF_KPIIIIIIIIIII", energy_metrics, file=sys.stderr)
+    #     return energy_metrics
+
+    def calculate_energy_consumption_by_id_with_filter(self, site_id: int, duration_str: str) -> List[dict]:
+        # Check for specific duration strings and return dummy data
+        if duration_str == "First Quarter":
+            return DUMMY_DATA_FIRST_QUARTER
+        elif duration_str == "Second Quarter":
+            return DUMMY_DATA_SECOND_QUARTER
+        elif duration_str == "Third Quarter":
+            return DUMMY_DATA_THIRD_QUARTER
+
+        # Original logic for other duration filters
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
@@ -272,8 +454,12 @@ class SiteService:
         energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter(device_ips, start_date,
                                                                                              end_date,
                                                                                              duration_str)
-        print("ENERGY_METRIC_OF_KPIIIIIIIIIII", energy_metrics, file=sys.stderr)
+        # Modify the time format to include only year and month
+        for metric in energy_metrics:
+            metric['time'] = metric['time'].strftime('%Y-%m')
+
         return energy_metrics
+
 
     def get_top_5_power_devices_with_filter(self, site_id: int, duration_str: str) -> TopDevicesPowerResponse:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
