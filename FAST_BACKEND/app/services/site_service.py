@@ -1356,6 +1356,7 @@ class SiteService:
         elif duration_str == "Third Quarter":
             time.sleep(7)
             return PUE_DUMMY_DATA_THIRD_QUARTER
+
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
@@ -1375,14 +1376,23 @@ class SiteService:
             metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter17([ip], start_date, end_date,
                                                                                             duration_str)
             print(f"Metrics for IP {ip}: {metrics}", file=sys.stderr)
-            if metrics and len(metrics) > 0:
-                total_energy_consumption += sum(
-                    metric['energy_consumption'] for metric in metrics if metric['energy_consumption'] is not None)
-                total_POut += sum(metric['total_POut'] for metric in metrics if metric['total_POut'] is not None)
-                total_PIn += sum(metric['total_PIn'] for metric in metrics if metric['total_PIn'] is not None)
-                total_power_efficiency += sum(
-                    metric['power_efficiency'] for metric in metrics if metric['power_efficiency'] is not None)
-                count += len(metrics)
+            if metrics:
+                for metric in metrics:
+                    energy_consumption = metric.get('energy_consumption')
+                    total_POut_val = metric.get('total_POut')
+                    total_PIn_val = metric.get('total_PIn')
+                    power_efficiency = metric.get('power_efficiency')
+
+                    if energy_consumption is not None:
+                        total_energy_consumption += energy_consumption
+                    if total_POut_val is not None:
+                        total_POut += total_POut_val
+                    if total_PIn_val is not None:
+                        total_PIn += total_PIn_val
+                    if power_efficiency is not None:
+                        total_power_efficiency += power_efficiency
+
+                    count += 1
 
         print(f"Total energy consumption: {total_energy_consumption}", file=sys.stderr)
         print(f"Total POut: {total_POut}", file=sys.stderr)
@@ -1395,10 +1405,10 @@ class SiteService:
 
         return {
             "time": f"{start_date} - {end_date}",
-            "energy_consumption": round(total_energy_consumption / count, 2),
-            "total_POut": round(total_POut / count, 2),
-            "total_PIn": round(total_PIn / count, 2),
-            "power_efficiency": round(total_power_efficiency / count, 2)
+            "energy_consumption": round(total_energy_consumption / count, 2) if count > 0 else None,
+            "total_POut": round(total_POut / count, 2) if count > 0 else None,
+            "total_PIn": round(total_PIn / count, 2) if count > 0 else None,
+            "power_efficiency": round(total_power_efficiency / count, 2) if count > 0 else None
         }
 
     def calculate_energy_consumption_by_device_id(self, site_id: int, device_id: int, duration_str: str) -> dict:
