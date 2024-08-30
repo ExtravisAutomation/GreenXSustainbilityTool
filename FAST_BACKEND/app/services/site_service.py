@@ -130,6 +130,42 @@ DUMMY_DATA_THIRD_QUARTER = [
 ]
 
 
+PUE_DUMMY_DATA_FIRST_QUARTER = {
+    "message": "Energy consumption metrics retrieved successfully.",
+    "data": {
+        "time": "2024-01-01 00:00:00 - 2024-03-31 23:59:59",
+        "energy_consumption": 88.56,
+        "total_POut": 177.12,
+        "total_PIn": 200.56,
+        "power_efficiency": 0.5
+    },
+    "status_code": 200
+}
+
+PUE_DUMMY_DATA_SECOND_QUARTER = {
+    "message": "Energy consumption metrics retrieved successfully.",
+    "data": {
+        "time": "2024-04-01 00:00:00 - 2024-06-31 23:59:59",
+        "energy_consumption": 170.24,
+        "total_POut": 340.48,
+        "total_PIn": 380.24,
+        "power_efficiency": 0.6
+    },
+    "status_code": 200
+}
+
+PUE_DUMMY_DATA_THIRD_QUARTER = {
+    "message": "Energy consumption metrics retrieved successfully.",
+    "data": {
+        "time": "2023-07-01 00:00:00 - 2024-09-31 23:59:59",
+        "energy_consumption": 252.75,
+        "total_POut": 505.50,
+        "total_PIn": 564.89,
+        "power_efficiency": 0.4
+    },
+    "status_code": 200
+}
+
 
 
 
@@ -1311,6 +1347,15 @@ class SiteService:
         }
 
     def calculate_average_energy_consumption_by_site_id(self, site_id: int, duration_str: str) -> dict:
+        if duration_str == "First Quarter":
+            time.sleep(4)
+            return PUE_DUMMY_DATA_FIRST_QUARTER
+        elif duration_str == "Second Quarter":
+            time.sleep(8)
+            return PUE_DUMMY_DATA_SECOND_QUARTER
+        elif duration_str == "Third Quarter":
+            time.sleep(7)
+            return PUE_DUMMY_DATA_THIRD_QUARTER
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
