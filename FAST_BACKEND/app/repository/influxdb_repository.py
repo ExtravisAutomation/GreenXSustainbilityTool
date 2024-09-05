@@ -2615,7 +2615,7 @@ class InfluxDBRepository:
         df = df.sort_values('day')
 
         # Reverse the order of the DataFrame
-        df = df.iloc[::-1]
+        # df = df.iloc[::-1]
 
         print("Final DataFrame (reversed order):", df)  # Debug print to check the final output
 
