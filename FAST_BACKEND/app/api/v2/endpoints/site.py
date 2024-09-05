@@ -960,7 +960,7 @@ def delete_devices(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/sites/get_all_device_types", response_model=CustomResponse[List[str]])
+@router.get("/sites/get_all_device_types", response_model=CustomResponse[List[str]])
 @inject
 def get_device_types_by_vendor(
         vendor: str,
