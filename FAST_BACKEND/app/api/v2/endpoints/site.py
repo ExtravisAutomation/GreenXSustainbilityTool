@@ -962,12 +962,13 @@ def delete_devices(
 
 @router.get("/sites/get_all_device_types", response_model=CustomResponse[List[str]])
 @inject
-def get_all_device_types(
+def get_device_types_by_vendor(
+        vendor: str,
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
-        device_types = site_service.get_all_device_types()
+        device_types = site_service.get_device_types_by_vendor(vendor)
         return CustomResponse(
             message="Device types fetched successfully.",
             data=device_types,
