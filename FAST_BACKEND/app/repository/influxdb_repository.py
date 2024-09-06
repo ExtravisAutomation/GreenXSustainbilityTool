@@ -1086,8 +1086,6 @@ class InfluxDBRepository:
             })
         return throughput_metrics
 
-
-
     def get_traffic_throughput_metrics_with_ener00(self, device_ip: str, start_date: datetime, end_date: datetime,
                                                    duration_str: str) -> List[dict]:
         throughput_metrics = []
