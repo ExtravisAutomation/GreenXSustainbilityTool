@@ -658,9 +658,9 @@ class SiteService:
                     "status": device_details.get('status', None),
                     "site_name": device_details.get('site_name', ''),
                     "apic_controller_ip": device['ip_address'],
-                    "total_power": metric.get('total_PIn', None),
+                    "total_power": round(metric.get('total_PIn', 0), 2) if metric.get('total_PIn') is not None else None
                     "max_power": metric.get('max_power', None),
-                    "current_power": metric.get('total_PIn', None),
+                    "current_power": round(metric.get('total_PIn', 0), 2) if metric.get('total_PIn') is not None else None
                     "time": metric.get('hour', None)
                 }
                 device_key = device_name1 if device_details.get('device_name') == device_name1 else device_name2
