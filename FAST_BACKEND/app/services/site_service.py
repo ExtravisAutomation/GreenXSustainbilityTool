@@ -66,7 +66,7 @@ DUMMY_DATA_FIRST_QUARTER = [
     },
     {
         "time": "2024-03",
-        "energy_efficiency": 0.84,
+        "energy_efficiency": 0,
         "total_POut": 185,
         "total_PIn": 225,
         "average_energy_consumed": None,
@@ -77,7 +77,7 @@ DUMMY_DATA_FIRST_QUARTER = [
 DUMMY_DATA_SECOND_QUARTER = [
     {
         "time": "2024-04",
-        "energy_efficiency": 0.90,
+        "energy_efficiency": 0,
         "total_POut": 200,
         "total_PIn": 235,
         "average_energy_consumed": None,
@@ -85,7 +85,7 @@ DUMMY_DATA_SECOND_QUARTER = [
     },
     {
         "time": "2024-05",
-        "energy_efficiency": 1.4,
+        "energy_efficiency": 0,
         "total_POut": 190,
         "total_PIn": 230,
         "average_energy_consumed": None,
@@ -93,7 +93,7 @@ DUMMY_DATA_SECOND_QUARTER = [
     },
     {
         "time": "2024-06",
-        "energy_efficiency": 0.78,
+        "energy_efficiency": 1.4,
         "total_POut": 185,
         "total_PIn": 225,
         "average_energy_consumed": None,
@@ -105,7 +105,7 @@ DUMMY_DATA_SECOND_QUARTER = [
 DUMMY_DATA_THIRD_QUARTER = [
     {
         "time": "2024-07",
-        "energy_efficiency": 0.85,
+        "energy_efficiency": 1.3,
         "total_POut": 200,
         "total_PIn": 235,
         "average_energy_consumed": None,
@@ -113,7 +113,7 @@ DUMMY_DATA_THIRD_QUARTER = [
     },
     {
         "time": "2024-08",
-        "energy_efficiency": 0.81,
+        "energy_efficiency": 1.2,
         "total_POut": 190,
         "total_PIn": 230,
         "average_energy_consumed": None,
@@ -121,7 +121,7 @@ DUMMY_DATA_THIRD_QUARTER = [
     },
     {
         "time": "2024-09",
-        "energy_efficiency": 0,
+        "energy_efficiency": 1.4,
         "total_POut": 0,
         "total_PIn": 0,
         "average_energy_consumed": None,
