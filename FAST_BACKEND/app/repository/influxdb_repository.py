@@ -2586,7 +2586,7 @@ class InfluxDBRepository:
                         total_power_metrics.append({
                             "day": row['_time'],  # Day of the week
                             "energy_efficiency": round(energy_consumption, 2),
-                            "total_POut": round(pout, 2),
+                            "total_POut": round(pout / 1000, 2) if pout is not None else None,
                             "total_PIn": round(pin, 2),
                             "power_efficiency": round(power_efficiency, 2)
                         })
