@@ -1278,3 +1278,13 @@ def get_last_24_hours_energy_metrics(
         data=metrics,
         status_code=status.HTTP_200_OK
     )
+
+
+@router.post("/Co2emmission", response_model=List)
+@inject
+def site_power_co2emmission(
+    site_id: int,
+    # current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    return site_service.site_power_co2emmission(site_id)

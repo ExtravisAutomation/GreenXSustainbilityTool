@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, TIMESTAMP
+from sqlalchemy.orm import relationship
 from .base_model import BaseModel
 
 class DevicesSntc(BaseModel):
@@ -11,3 +12,6 @@ class DevicesSntc(BaseModel):
     sw_EoVSS = Column(Date)
     hw_EoSCR = Column(Date)
     hw_ldos = Column(Date)
+
+
+    chassis_devices = relationship("ChassisDevice", back_populates="device_sntc")

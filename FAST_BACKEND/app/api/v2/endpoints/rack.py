@@ -12,11 +12,12 @@ from app.schema.rack_schema import RackUpdateResponse
 
 router = APIRouter(prefix="/racks", tags=["RACKS"])
 
-
 @router.get("/getallracks", response_model=CustomResponse_rack[List[RackDetails]])
 @inject
-def get_racks(current_user: User = Depends(get_current_active_user),
-              rack_service: RackService = Depends(Provide[Container.rack_service])):
+def get_racks(
+    # current_user: User = Depends(get_current_active_user),
+    rack_service: RackService = Depends(Provide[Container.rack_service])
+):
     racks = rack_service.get_racks()
     return CustomResponse_rack(
         message="Fetched all racks successfully",
@@ -27,8 +28,10 @@ def get_racks(current_user: User = Depends(get_current_active_user),
 
 @router.post("/addrack", response_model=CustomResponse_rack[RackDetails])
 @inject
-def add_rack(rack_data: RackCreate, current_user: User = Depends(get_current_active_user),
-             rack_service: RackService = Depends(Provide[Container.rack_service])):
+def add_rack(
+    rack_data: RackCreate, current_user: User = Depends(get_current_active_user),
+    rack_service: RackService = Depends(Provide[Container.rack_service])
+):
     rack = rack_service.create_rack(rack_data)
     return CustomResponse_rack(
         message="Rack created successfully",
@@ -39,8 +42,12 @@ def add_rack(rack_data: RackCreate, current_user: User = Depends(get_current_act
 
 @router.post("/updaterack/{rack_id}", response_model=RackUpdateResponse)
 @inject
-def update_rack(rack_id: int, rack_data: RackUpdate, current_user: User = Depends(get_current_active_user),
-                rack_service: RackService = Depends(Provide[Container.rack_service])):
+def update_rack(
+    rack_id: int, 
+    rack_data: RackUpdate, 
+    current_user: User = Depends(get_current_active_user),
+    rack_service: RackService = Depends(Provide[Container.rack_service])
+):
     updated_rack = rack_service.update_rack(rack_id, rack_data)
     return RackUpdateResponse(
         message="Rack updated successfully",
@@ -51,8 +58,11 @@ def update_rack(rack_id: int, rack_data: RackUpdate, current_user: User = Depend
 
 @router.post("/deleterack/{rack_id}", response_model=CustomResponse_rack[None])
 @inject
-def delete_rack(rack_id: int, current_user: User = Depends(get_current_active_user),
-                rack_service: RackService = Depends(Provide[Container.rack_service])):
+def delete_rack(
+    rack_id: int, 
+    current_user: User = Depends(get_current_active_user),
+    rack_service: RackService = Depends(Provide[Container.rack_service])
+):
     rack_service.delete_rack(rack_id)
     return CustomResponse_rack(
         message="Rack deleted successfully",
@@ -67,8 +77,11 @@ class DeleteRequest1(BaseModel):
 
 @router.post("/deleteracks", response_model=CustomResponse_rack[None])
 @inject
-def delete_racks(delete_request: DeleteRequest1, current_user: User = Depends(get_current_active_user),
-                 rack_service: RackService = Depends(Provide[Container.rack_service])):
+def delete_racks(
+    delete_request: DeleteRequest1, 
+    current_user: User = Depends(get_current_active_user),
+    rack_service: RackService = Depends(Provide[Container.rack_service])
+):
     rack_ids_list = delete_request.rack_ids
     rack_service.delete_racks(rack_ids_list)
     return CustomResponse_rack(
@@ -76,3 +89,25 @@ def delete_racks(delete_request: DeleteRequest1, current_user: User = Depends(ge
         data=None,
         status_code=status.HTTP_200_OK
     )
+    
+    
+@router.post("/rackLastPowerUtiization", response_model=dict)
+@inject
+def rack_power(
+    rack_id: int,
+    # current_user: User = Depends(get_current_active_user),
+    rack_service: RackService = Depends(Provide[Container.rack_service])
+):
+    return rack_service.get_rack_last_power_utilization(rack_id)
+
+
+
+@router.post("/rackPowerutilization", response_model=List)
+@inject
+def rack_power(
+    rack_id: int,
+    # current_user: User = Depends(get_current_active_user),
+    rack_service: RackService = Depends(Provide[Container.rack_service])
+):
+    return rack_service.get_rack_power_utilization(rack_id)
+

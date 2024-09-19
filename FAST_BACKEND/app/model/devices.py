@@ -1,7 +1,9 @@
 from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey
 from .base_model import BaseModel
+from sqlalchemy.orm import relationship
 
 class Devices(BaseModel):
+    
     __tablename__ = "devices"
 
     ip = Column(String, nullable=True)

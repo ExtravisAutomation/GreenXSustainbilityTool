@@ -1661,3 +1661,9 @@ class SiteService:
             return ["apic", "cisco_ios", "cisco_nxos"]
         else:
             return []
+        
+        
+    def site_power_co2emmission(self, site_id: int):
+        site_power = self.site_repository.site_power_co2emmission(site_id)
+        
+        return site_power
