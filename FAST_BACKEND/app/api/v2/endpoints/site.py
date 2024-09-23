@@ -1278,3 +1278,24 @@ def get_last_24_hours_energy_metrics(
         data=metrics,
         status_code=status.HTTP_200_OK
     )
+
+
+@router.get("/sites/power_output_prediction/{site_id}", response_model=CustomResponse[dict])
+@inject
+def get_total_power_output_prediction(
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    # Fetching data for last 3 months
+    total_pout_value_KW, predicted_pout, predicted_cost = site_service.calculate_total_pout_and_prediction(site_id)
+
+    return CustomResponse(
+        message="Power output prediction retrieved successfully.",
+        data={
+            "total_POut_last_3_months": total_pout_value_KW,
+            "predicted_POut_next_month": predicted_pout,
+            "predicted_cost_next_month": predicted_cost
+        },
+        status_code=200
+    )

@@ -1661,3 +1661,27 @@ class SiteService:
             return ["apic", "cisco_ios", "cisco_nxos"]
         else:
             return []
+
+    def predict_next_month_pout(self, last_3_months_pout: float) -> float:
+        # Simple prediction: assuming the next month's usage grows by 5% based on the last 3 months' average
+        monthly_average_pout = last_3_months_pout / 3
+        predicted_next_month_pout = monthly_average_pout * 1.05  # Predicting a 5% increase
+        return predicted_next_month_pout
+
+    def calculate_cost(self, predicted_pout_kw: float, cost_per_kw: float = 0.24) -> float:
+        # Cost is predicted total POut in KW multiplied by the cost per KW
+        return predicted_pout_kw * cost_per_kw
+
+    def calculate_total_pout_and_prediction(self, site_id: int, duration_str: str = "Last 3 Months") -> (
+    float, float, float):
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        total_pout_value = self.influxdb_repository.get_total_pout_value(device_ips, start_date, end_date, duration_str)
+        total_pout_value_KW = total_pout_value / 1000  # Convert to KW
+
+        predicted_pout = self.predict_next_month_pout(total_pout_value_KW)
+        predicted_cost = self.calculate_cost(predicted_pout)
+
+        return total_pout_value_KW, predicted_pout, predicted_cost

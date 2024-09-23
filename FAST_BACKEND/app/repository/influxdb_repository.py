@@ -2678,3 +2678,24 @@ class InfluxDBRepository:
         print("Final DataFrame:", df)  # Debug print to check the final output
 
         return df.to_dict(orient='records')
+
+    def get_total_pout_value(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+                             duration_str: str) -> float:
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+        aggregate_window = "1d"  # For monthly or larger data we use daily aggregates
+
+        total_pout = 0
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_POut")
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+            '''
+            result = self.query_api1.query_data_frame(query)
+            if not result.empty:
+                total_pout += result['_value'].sum()
+
+        return total_pout
