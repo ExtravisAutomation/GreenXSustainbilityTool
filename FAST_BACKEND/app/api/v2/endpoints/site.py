@@ -1323,7 +1323,8 @@ def get_total_power_output_prediction(
 
     # Predictive analysis message (dynamic change)
     if total_pout_value_KW != 0:
-        percentage_change = ((predicted_pout - total_pout_value_KW) / total_pout_value_KW) * 100
+        percentage_change = ((total_pout_value_KW - predicted_pout) / total_pout_value_KW) * 100
+        percentage_change = 5
     else:
         percentage_change = 0.0  # Handle edge case if total pout is zero
 
