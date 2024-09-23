@@ -21,6 +21,7 @@ class Configs(BaseSettings):
         "prod": "fca",
         "stage": "stage-fca",
         "dev": "DCS_DB",
+        # "dev": "dcs_db", # for local development ahmed laptop
         "test": "test-fca",
     }
     DB_ENGINE_MAPPER: dict = {

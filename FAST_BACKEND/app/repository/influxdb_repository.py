@@ -1946,12 +1946,18 @@ class InfluxDBRepository:
             PowerIn = self.query_last_value(power_in_query)
             PowerOut = self.query_last_value(power_out_query)
             TotalPower = self.query_last_value(total_power_query)
+            
+            if TotalPower is not None and TotalPower != 0:
+                powerper = (PowerIn / TotalPower) * 100
+            else:
+                powerper = 0
 
             power_required_data.append({
                 "site_id": site_id,
                 "apic_controller_ip": ip,
                 "PowerInput": PowerIn,
                 "TotalPower": TotalPower,
+                "PowerPercentage": round(powerper, 2)
             })
 
         return power_required_data

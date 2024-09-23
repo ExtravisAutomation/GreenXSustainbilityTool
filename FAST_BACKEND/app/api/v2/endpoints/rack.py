@@ -29,7 +29,8 @@ def get_racks(
 @router.post("/addrack", response_model=CustomResponse_rack[RackDetails])
 @inject
 def add_rack(
-    rack_data: RackCreate, current_user: User = Depends(get_current_active_user),
+    rack_data: RackCreate, 
+    # current_user: User = Depends(get_current_active_user),
     rack_service: RackService = Depends(Provide[Container.rack_service])
 ):
     rack = rack_service.create_rack(rack_data)
@@ -45,7 +46,7 @@ def add_rack(
 def update_rack(
     rack_id: int, 
     rack_data: RackUpdate, 
-    current_user: User = Depends(get_current_active_user),
+    # current_user: User = Depends(get_current_active_user),
     rack_service: RackService = Depends(Provide[Container.rack_service])
 ):
     updated_rack = rack_service.update_rack(rack_id, rack_data)
@@ -55,17 +56,36 @@ def update_rack(
         status_code=status.HTTP_200_OK
     )
 
+# Original code
+# @router.post("/deleterack/{rack_id}", response_model=CustomResponse_rack[None])
+# @inject
+# def delete_rack(
+#     rack_id: int, 
+#     current_user: User = Depends(get_current_active_user),
+#     rack_service: RackService = Depends(Provide[Container.rack_service])
+# ):
+#     rack_service.delete_rack(rack_id)
+#     return CustomResponse_rack(
+#         message="Rack deleted successfully",
+#         data=None,
+#         status_code=status.HTTP_200_OK
+#     )
 
-@router.post("/deleterack/{rack_id}", response_model=CustomResponse_rack[None])
+
+class DeleteRequest1(BaseModel):
+    rack_ids: List[int]
+    
+    
+@router.post("/deleterack", response_model=CustomResponse_rack[None])
 @inject
 def delete_rack(
-    rack_id: int, 
-    current_user: User = Depends(get_current_active_user),
+    rack_ids: List[int], 
+    # current_user: User = Depends(get_current_active_user),
     rack_service: RackService = Depends(Provide[Container.rack_service])
 ):
-    rack_service.delete_rack(rack_id)
+    rack_service.delete_rack(rack_ids)
     return CustomResponse_rack(
-        message="Rack deleted successfully",
+        message="Racks deleted successfully",
         data=None,
         status_code=status.HTTP_200_OK
     )
@@ -75,20 +95,20 @@ class DeleteRequest1(BaseModel):
     rack_ids: List[int]
 
 
-@router.post("/deleteracks", response_model=CustomResponse_rack[None])
-@inject
-def delete_racks(
-    delete_request: DeleteRequest1, 
-    current_user: User = Depends(get_current_active_user),
-    rack_service: RackService = Depends(Provide[Container.rack_service])
-):
-    rack_ids_list = delete_request.rack_ids
-    rack_service.delete_racks(rack_ids_list)
-    return CustomResponse_rack(
-        message="Racks deleted successfully",
-        data=None,
-        status_code=status.HTTP_200_OK
-    )
+# @router.post("/deleteracks", response_model=CustomResponse_rack[None])
+# @inject
+# def delete_racks(
+#     delete_request: DeleteRequest1, 
+#     current_user: User = Depends(get_current_active_user),
+#     rack_service: RackService = Depends(Provide[Container.rack_service])
+# ):
+#     rack_ids_list = delete_request.rack_ids
+#     rack_service.delete_racks(rack_ids_list)
+#     return CustomResponse_rack(
+#         message="Racks deleted successfully",
+#         data=None,
+#         status_code=status.HTTP_200_OK
+#     )
     
     
 @router.post("/rackLastPowerUtiization", response_model=dict)

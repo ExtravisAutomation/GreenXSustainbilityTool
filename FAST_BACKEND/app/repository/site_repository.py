@@ -87,8 +87,31 @@ class SiteRepository(BaseRepository):
 
     def delete_sites(self, site_ids: List[int]):
         with self.session_factory() as session:
-            session.query(Site).filter(Site.id.in_(site_ids)).delete(synchronize_session='fetch')
-            session.commit()
+            # session.query(Site).filter(Site.id.in_(site_ids)).delete(synchronize_session='fetch')
+            # session.commit()
+            
+            successful_deletes = []
+            failed_deletes = []
+            for site_id in site_ids:
+                try:
+                    site = session.query(Site).filter(Site.id == site_id).first()
+                    if site:
+                        site_name = site.site_name  # Assume each site has a 'name' attribute
+                        # session.delete(site)
+                        session.query(Site).filter(Site.id == site_id).delete(synchronize_session='fetch')
+                        session.commit()
+                        successful_deletes.append({'id': site_id, 'name': site_name})  # Include name in the success list
+                    else:
+                        failed_deletes.append({'id': site_id, 'name': None})  # No site found, name is None
+                except Exception as e:
+                    session.rollback()
+                    if site:  # Check if site was defined before the error
+                        failed_deletes.append({'id': site_id, 'name': site.site_name})
+                    else:
+                        failed_deletes.append({'id': site_id, 'name': None})  # Error occurred, but site was not defined
+
+            return successful_deletes, failed_deletes
+            
 
     # def get_devices_by_site_name(self, site_name: str) -> List[APICControllers]:
     #     with self.session_factory() as session:
@@ -102,6 +125,17 @@ class SiteRepository(BaseRepository):
                 .all()
             )
             return devices
+        
+    def get_apic_controller_names(self, sorted_power_required: list):
+        with self.session_factory() as session:
+            for data in sorted_power_required:
+                result=session.query(Devices.device_name).filter(Devices.ip_address== data['apic_controller_ip']).first()
+                
+                # Add property to the data
+                data['apic_controller_name'] = result[0] if result else None
+                
+            return sorted_power_required
+               
 
     # def get_devices_with_inventory_by_site_id(self, site_id: int) -> List[DeviceInventory]:
     #     with self.session_factory() as session:
@@ -895,3 +929,9 @@ class SiteRepository(BaseRepository):
                 })
                 
             return response
+        
+        
+    def get_site_names(self):
+        with self.session_factory() as session:
+            sites = session.query(Site).all()
+            return sites

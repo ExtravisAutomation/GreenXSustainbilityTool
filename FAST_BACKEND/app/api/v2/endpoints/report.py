@@ -38,3 +38,5 @@ def add_report(
     report_service: ReportService = Depends(Provide[Container.report_service])
 ):
     return report_service.add_report(report_data)
+
+

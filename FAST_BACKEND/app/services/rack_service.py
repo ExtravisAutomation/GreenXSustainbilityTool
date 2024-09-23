@@ -29,8 +29,8 @@ class RackService:
         # Ensure the response is of type RackDetails
         return RackDetails.from_orm(rack)
 
-    def delete_rack(self, rack_id: int) -> None:
-        self.rack_repository.delete_rack(rack_id)
+    def delete_rack(self, rack_ids: List[int]) -> None:
+        self.rack_repository.delete_rack(rack_ids)
         # Since delete operations don't return a model, no conversion is necessary here
 
     def delete_racks(self, rack_ids: List[int]) -> None:

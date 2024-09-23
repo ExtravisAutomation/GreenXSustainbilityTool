@@ -76,8 +76,11 @@ class DeleteRequest(BaseModel):
 
 @router.post("/addsite", response_model=CustomResponse[SiteDetails])
 @inject
-def add_site(site_data: SiteCreate, current_user: User = Depends(get_current_active_user),
-             site_service: SiteService = Depends(Provide[Container.site_service])):
+def add_site(
+    site_data: SiteCreate, 
+    # current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
     site = site_service.create_site(site_data)
     return CustomResponse(
         message="Site created successfully",
@@ -88,8 +91,12 @@ def add_site(site_data: SiteCreate, current_user: User = Depends(get_current_act
 
 @router.post("/updatesite/{id}", response_model=CustomResponse[SiteDetails1])
 @inject
-def update_site(id: int, site_data: SiteUpdate, current_user: User = Depends(get_current_active_user),
-                site_service: SiteService = Depends(Provide[Container.site_service])):
+def update_site(
+    id: int, 
+    site_data: SiteUpdate, 
+    # current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
     try:
         site = site_service.update_site(id, site_data)
         return CustomResponse(
@@ -101,28 +108,40 @@ def update_site(id: int, site_data: SiteUpdate, current_user: User = Depends(get
         return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
 
 
-@router.post("/deletesite", response_model=CustomResponse[None])
-@inject
-def delete_site(site_id: int, current_user: User = Depends(get_current_active_user),
-                site_service: SiteService = Depends(Provide[Container.site_service])):
-    site_service.delete_site(site_id)
-    return CustomResponse(
-        message="Site deleted successfully",
-        data=None,
-        status_code=status.HTTP_200_OK
-    )
+# @router.post("/deletesite", response_model=CustomResponse[None])
+# @inject
+# def delete_site(
+#     site_id: int, 
+#     # current_user: User = Depends(get_current_active_user),
+#     site_service: SiteService = Depends(Provide[Container.site_service])
+# ):
+#     site_service.delete_site(site_id)
+#     return CustomResponse(
+#         message="Site deleted successfully",
+#         data=None,
+#         status_code=status.HTTP_200_OK
+#     )
 
 
-@router.post("/deletesites", response_model=CustomResponse[None])
+# @router.post("/deletesite", response_model=CustomResponse[None])
+@router.post("/deletesite", response_model=List)
 @inject
-def delete_sites(request: DeleteRequest, current_user: User = Depends(get_current_active_user),
-                 site_service: SiteService = Depends(Provide[Container.site_service])):
-    site_service.delete_sites(request.site_ids)
-    return CustomResponse(
-        message="Sites deleted successfully",
-        data=None,
-        status_code=status.HTTP_200_OK
-    )
+def delete_sites(
+    # request: DeleteRequest, 
+    request: List[int],
+    # current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    # site_service.delete_sites(request.site_ids)
+    return site_service.delete_sites(request)
+    
+    
+    
+    # return CustomResponse(
+    #     message="Sites deleted successfully",
+    #     data=None,
+    #     status_code=status.HTTP_200_OK
+    # )
 
 
 @router.get("/sites/power_summary_metrics/{site_id}", response_model=CustomResponse[SitePowerConsumptionResponse])
@@ -681,8 +700,10 @@ def get_detailed_energy_metrics(
 
 @router.get("/site/getallsites", response_model=CustomResponse1[GetSitesResponse])
 @inject
-def get_sites(current_user: User = Depends(get_current_active_user),
-              site_service: SiteService = Depends(Provide[Container.site_service])):
+def get_sites(
+    # current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
     sites = site_service.get_extended_sites()
     return CustomResponse(
         message="Fetched all sites successfully",
@@ -705,9 +726,11 @@ def site_power_utilization(site_id: int,
 
 @router.post("/site/sitePowerEfficiency/{site_id}")
 @inject
-def site_power_efficiency(site_id: int,
-                          current_user: User = Depends(get_current_active_user),
-                          site_service: SiteService = Depends(Provide[Container.site_service])):
+def site_power_efficiency(
+    site_id: int,
+    current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
     try:
         efficiency_data = site_service.calculate_power_efficiency_by_id(site_id)
         return efficiency_data
@@ -717,9 +740,11 @@ def site_power_efficiency(site_id: int,
 
 @router.post("/site/sitePowerRequired/{site_id}")
 @inject
-def site_power_required(site_id: int,
-                        current_user: User = Depends(get_current_active_user),
-                        site_service: SiteService = Depends(Provide[Container.site_service])):
+def site_power_required(
+    site_id: int,
+    # current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
     try:
         power_required = site_service.calculate_power_requirement_by_id(site_id)
         return power_required
@@ -1288,3 +1313,17 @@ def site_power_co2emmission(
     site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     return site_service.site_power_co2emmission(site_id)
+
+
+@router.get("/get_site_names", response_model=CustomResponse)
+@inject
+def get_site_names(
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    sites = site_service.get_site_names()
+    return CustomResponse(
+        message="Fetched all sites successfully",
+        data=sites,
+        status_code=status.HTTP_200_OK
+    )

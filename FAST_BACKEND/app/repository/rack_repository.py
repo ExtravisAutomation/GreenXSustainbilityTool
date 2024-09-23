@@ -95,12 +95,14 @@ class RackRepository(BaseRepository):
             session.refresh(rack)  # Refresh the instance to ensure it's fully loaded
             return rack
 
-    def delete_rack(self, rack_id: int):
+    def delete_rack(self, rack_ids: List[int]):
         with self.session_factory() as session:
-            rack = session.query(Rack).filter(Rack.id == rack_id).first()
-            if rack is None:
-                raise HTTPException(status_code=404, detail="Rack not found")
-            session.delete(rack)
+            # rack = session.query(Rack).filter(Rack.id == rack_ids).first()
+            # if rack is None:
+            #     raise HTTPException(status_code=404, detail="Rack not found")
+            # session.delete(rack)
+            # session.commit()
+            rack = session.query(Rack).filter(Rack.id.in_(rack_ids)).delete(synchronize_session='fetch')
             session.commit()
 
     def delete_racks(self, rack_ids: List[int]):
