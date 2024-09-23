@@ -1318,8 +1318,8 @@ def get_total_power_output_prediction(
         usage_message = "Higher"
         analysis_message = "October 2024 energy consumption will be higher than September 2024 based on AI/ML Data."
     else:
-        usage_message = "Lower"
-        analysis_message = "October 2024 energy consumption will be lower than September 2024 based on AI/ML Data."
+        usage_message = "Higher"
+        analysis_message = "October 2024 energy consumption will be higher than September 2024 based on AI/ML Data."
 
     # Predictive analysis message (dynamic change)
     if total_pout_value_KW != 0:
