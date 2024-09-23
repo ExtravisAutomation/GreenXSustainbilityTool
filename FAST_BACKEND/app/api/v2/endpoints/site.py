@@ -1280,6 +1280,26 @@ def get_last_24_hours_energy_metrics(
     )
 
 
+# @router.get("/sites/power_output_prediction/{site_id}", response_model=CustomResponse[dict])
+# @inject
+# def get_total_power_output_prediction(
+#         site_id: int,
+#         current_user: User = Depends(get_current_active_user),
+#         site_service: SiteService = Depends(Provide[Container.site_service])
+# ):
+#     # Fetching data for last 3 months
+#     total_pout_value_KW, predicted_pout, predicted_cost = site_service.calculate_total_pout_and_prediction(site_id)
+#
+#     return CustomResponse(
+#         message="Power output prediction retrieved successfully.",
+#         data={
+#             "total_POut_last_3_months": total_pout_value_KW,
+#             "predicted_POut_next_month": predicted_pout,
+#             "predicted_cost_next_month": predicted_cost
+#         },
+#         status_code=200
+#     )
+
 @router.get("/sites/power_output_prediction/{site_id}", response_model=CustomResponse[dict])
 @inject
 def get_total_power_output_prediction(
@@ -1290,12 +1310,38 @@ def get_total_power_output_prediction(
     # Fetching data for last 3 months
     total_pout_value_KW, predicted_pout, predicted_cost = site_service.calculate_total_pout_and_prediction(site_id)
 
+    # Directly generating the dynamic text inside the endpoint
+    cost_message = f"Estimated cost of this month: AED {predicted_cost:.2f}"
+
+    # Usage comparison - higher or lower than last period
+    if predicted_pout > total_pout_value_KW:
+        usage_message = "Higher"
+        analysis_message = "October 2024 energy consumption will be higher than September 2024 based on AI/ML Data."
+    else:
+        usage_message = "Lower"
+        analysis_message = "October 2024 energy consumption will be lower than September 2024 based on AI/ML Data."
+
+    # Predictive analysis message (dynamic change)
+    if total_pout_value_KW != 0:
+        percentage_change = ((predicted_pout - total_pout_value_KW) / total_pout_value_KW) * 100
+    else:
+        percentage_change = 0.0  # Handle edge case if total pout is zero
+
+    predictive_analysis_message = f"From January to September, estimated cost will be more than {percentage_change:.2f}% for this month."
+
+    # Return the response with the dynamic text
     return CustomResponse(
         message="Power output prediction retrieved successfully.",
         data={
             "total_POut_last_3_months": total_pout_value_KW,
             "predicted_POut_next_month": predicted_pout,
-            "predicted_cost_next_month": predicted_cost
+            "predicted_cost_next_month": predicted_cost,
+            "text_stats": {
+                "cost_message": cost_message,
+                "usage_comparison": usage_message,
+                "predictive_analysis": predictive_analysis_message,
+                "analysis_message": analysis_message
+            }
         },
         status_code=200
     )
