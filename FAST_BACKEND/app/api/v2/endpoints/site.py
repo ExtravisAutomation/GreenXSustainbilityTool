@@ -1328,7 +1328,7 @@ def get_total_power_output_prediction(
     else:
         percentage_change = 0.0  # Handle edge case if total pout is zero
 
-    predictive_analysis_message = f"From January to September, estimated cost will be more than {percentage_change:.2f}% for this month."
+    predictive_analysis_message = f"From January to September, estimated cost will be more than {percentage_change:.1f}% for this month."
 
     # Return the response with the dynamic text
     return CustomResponse(
