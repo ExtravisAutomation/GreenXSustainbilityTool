@@ -2721,7 +2721,7 @@ class InfluxDBRepository:
                     |> range(start: {start_time}, stop: {end_time})
                     |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                     |> filter(fn: (r) => r["_field"] == "total_POut")
-                    |> aggregateWindow(every: 1mo, fn: sum, createEmpty: false)
+                    |> aggregateWindow(every: 1m, fn: sum, createEmpty: false)
                 '''
                 result = self.query_api1.query_data_frame(query)
                 if not result.empty:
