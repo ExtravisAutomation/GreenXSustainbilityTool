@@ -1692,4 +1692,4 @@ class SiteService:
 
         # Use the influxdb_repository to get the total power output for the given month
         total_pout_value = self.influxdb_repository.get_total_pout_value_new(device_ips, start_date, end_date, "Monthly")
-        return total_pout_value / 1000  # Convert to KW
+        return round(total_pout_value / 1000, 2)  # Convert to KW
