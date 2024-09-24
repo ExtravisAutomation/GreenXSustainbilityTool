@@ -2714,7 +2714,6 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_POut")
-                |> filter(fn: (r) => type(v: r._value) == "float")  # Ensure numeric values
                 |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
                 |> yield(name: "total")
             '''
