@@ -2700,7 +2700,7 @@ class InfluxDBRepository:
 
         return total_pout
 
-    def get_monthly_pout(self, device_ips: List[str], year: int) -> Dict[int, float]:
+    def get_monthly_pout(self, device_ips: List[str], year: int) -> dict[int, float]:
         monthly_pout = {}
 
         # Iterate over each month to get total_POut for that month
