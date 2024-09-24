@@ -1355,40 +1355,45 @@ def get_power_comparison_and_prediction(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    # Define the months for labels
+    # Define the months
     months = [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     ]
 
-    # Fetch power output for the last year
-    last_year_pout = {}
-    current_year_pout = {}
+    # Fetch power output for the last year and current year
+    last_year_power = []
+    current_year_power = []
 
-    # Calculate total pout for each month of the previous year and current year
+    # Loop through each month
     for i, month in enumerate(months):
+        # Calculate start and end dates for each month of last year and current year
         last_year_start = datetime(datetime.now().year - 1, i + 1, 1)
         last_year_end = (last_year_start + timedelta(days=31)).replace(day=1) - timedelta(days=1)
         total_pout_last_year = site_service.get_monthly_pout(site_id, last_year_start, last_year_end)
-        last_year_pout[month] = total_pout_last_year
+        last_year_power.append(total_pout_last_year)
 
         current_year_start = datetime(datetime.now().year, i + 1, 1)
         current_year_end = (current_year_start + timedelta(days=31)).replace(day=1) - timedelta(days=1)
         total_pout_current_year = site_service.get_monthly_pout(site_id, current_year_start, current_year_end)
-        current_year_pout[month] = total_pout_current_year
+        current_year_power.append(total_pout_current_year)
 
-    # Predict the next month's power output based on the current year data
-    predicted_next_month_pout = site_service.predict_next_month_pout(
-        sum(current_year_pout.values()) / len(current_year_pout))
+    # Determine the current month and predict the power output for the next month
+    current_month_index = datetime.now().month - 1  # 0-indexed (January = 0, September = 8)
+    predicted_next_month_power = site_service.predict_next_month_pout(
+        sum(current_year_power) / len([p for p in current_year_power if p > 0]))
+
+    # Place the predicted value for the next month (October) in its correct position
+    if current_month_index < 11:  # Ensure we're not going out of bounds
+        current_year_power[current_month_index + 1] = predicted_next_month_power
 
     # Build the response
     return CustomResponse(
         message="Power comparison and prediction retrieved successfully.",
         data={
-            "last_year_power": last_year_pout,
-            "current_year_power": current_year_pout,
-            "predicted_next_month_power": round(predicted_next_month_pout,2)
+            "months": months,
+            "last_year_power": last_year_power,
+            "current_year_power": current_year_power
         },
         status_code=200
     )
-
