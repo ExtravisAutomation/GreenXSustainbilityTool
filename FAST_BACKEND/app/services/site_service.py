@@ -1686,59 +1686,12 @@ class SiteService:
 
         return total_pout_value_KW, predicted_pout, predicted_cost
 
-    def predict_next_month_pout1(self, current_year_data: dict) -> float:
-        # Predict next month based on the average growth over the past few months
-        last_month = max(current_year_data.keys())
-        if last_month >= 3:
-            # Take the last three months for the trend (if available)
-            last_3_months = [current_year_data[last_month - i] for i in range(3)]
-            monthly_average_pout = sum(last_3_months) / len(last_3_months)
-        else:
-            # Fallback: Take the average of available months
-            monthly_average_pout = sum(current_year_data.values()) / len(current_year_data)
-
-        # Predict a 5% growth for the next month
-        predicted_next_month_pout = monthly_average_pout * 1.05
-        return predicted_next_month_pout
-
-    def get_power_comparison_and_prediction(self, site_id: int) -> Dict:
-        # Get the last and current year data
-        current_year = datetime.now().year
-        last_year = current_year - 1
-        current_month = datetime.now().month
-
-        start_date_last_year, end_date_last_year = self.calculate_start_end_dates1(f"{last_year}")
-        start_date_current_year, end_date_current_year = self.calculate_start_end_dates1(f"{current_year}")
-
+    def get_monthly_pout(self, site_id: int, start_date: datetime, end_date: datetime) -> float:
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
 
-        if not device_ips:
-            return {}
+        # Use the influxdb_repository to get the total power output for the given month
+        total_pout_value = self.influxdb_repository.get_total_pout_value_new(device_ips, start_date, end_date, "Monthly")
+        return total_pout_value / 1000  # Convert to KW
 
-        # Get power data for last year and current year
-        last_year_pout = self.influxdb_repository.get_monthly_pout(device_ips, last_year)
-        current_year_pout = self.influxdb_repository.get_monthly_pout(device_ips, current_year)
 
-        # Limit current year data to only include months up to the current month
-        current_year_pout = {month: pout for month, pout in current_year_pout.items() if month <= current_month}
-
-        # Predict next month’s consumption
-        predicted_next_month_pout = self.predict_next_month_pout1(current_year_pout)
-
-        # Return comparison and prediction results
-        return {
-            "last_year_pout": self.map_month_numbers_to_names(last_year_pout),
-            "current_year_pout": self.map_month_numbers_to_names(current_year_pout),
-            "predicted_next_month_pout": predicted_next_month_pout
-        }
-
-    def calculate_start_end_dates1(self, year: str) -> (datetime, datetime):
-        start_date = datetime(year=int(year), month=1, day=1)
-        end_date = datetime(year=int(year), month=12, day=31)
-        return start_date, end_date
-
-    def map_month_numbers_to_names(self, monthly_pout: dict) -> dict:
-        import calendar
-        # Convert month numbers to month names
-        return {calendar.month_name[month]: pout for month, pout in monthly_pout.items()}

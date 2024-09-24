@@ -2700,33 +2700,23 @@ class InfluxDBRepository:
 
         return total_pout
 
-    def get_monthly_pout(self, device_ips: List[str], year: int) -> dict[int, float]:
-        monthly_pout = {}
+    def get_total_pout_value_new(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+                             duration_str: str) -> float:
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+        aggregate_window = "1m"  # Monthly aggregation
 
-        # Iterate over each month to get total_POut for that month
-        for month in range(1, 13):
-            start_date = datetime(year, month, 1)
-            if month == 12:
-                end_date = datetime(year + 1, 1, 1)
-            else:
-                end_date = datetime(year, month + 1, 1)
+        total_pout = 0
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_POut")
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+            '''
+            result = self.query_api1.query_data_frame(query)
+            if not result.empty:
+                total_pout += result['_value'].sum()
 
-            start_time = start_date.isoformat() + 'Z'
-            end_time = end_date.isoformat() + 'Z'
-
-            total_pout = 0
-            for ip in device_ips:
-                query = f'''
-                    from(bucket: "{configs.INFLUXDB_BUCKET}")
-                    |> range(start: {start_time}, stop: {end_time})
-                    |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                    |> filter(fn: (r) => r["_field"] == "total_POut")
-                    |> aggregateWindow(every: 1m, fn: sum, createEmpty: false)
-                '''
-                result = self.query_api1.query_data_frame(query)
-                if not result.empty:
-                    total_pout += result['_value'].sum()
-
-            monthly_pout[month] = total_pout
-
-        return monthly_pout
+        return total_pout

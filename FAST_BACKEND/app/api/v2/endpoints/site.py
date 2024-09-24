@@ -1,6 +1,6 @@
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any, Union
 from app.api.v2.endpoints.test_script import main
 from fastapi import APIRouter, Depends, HTTPException, status, Query
@@ -1348,23 +1348,47 @@ def get_total_power_output_prediction(
     )
 
 
-@router.get("/sites/power_comparison_prediction/{site_id}", response_model=CustomResponse[dict])
+@router.get("/sites/power_comparison_and_prediction/{site_id}", response_model=CustomResponse[Dict])
 @inject
 def get_power_comparison_and_prediction(
         site_id: int,
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    # Fetch power comparison for last year and current year and predict next month
-    power_comparison = site_service.get_power_comparison_and_prediction(site_id)
+    # Define the months for labels
+    months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ]
 
-    # Handle case where no data is available
-    message = "Power comparison and prediction retrieved successfully."
-    if not power_comparison:
-        message = "No power consumption data available for the comparison."
+    # Fetch power output for the last year
+    last_year_pout = {}
+    current_year_pout = {}
 
+    # Calculate total pout for each month of the previous year and current year
+    for i, month in enumerate(months):
+        last_year_start = datetime(datetime.now().year - 1, i + 1, 1)
+        last_year_end = (last_year_start + timedelta(days=31)).replace(day=1) - timedelta(days=1)
+        total_pout_last_year = site_service.get_monthly_pout(site_id, last_year_start, last_year_end)
+        last_year_pout[month] = total_pout_last_year
+
+        current_year_start = datetime(datetime.now().year, i + 1, 1)
+        current_year_end = (current_year_start + timedelta(days=31)).replace(day=1) - timedelta(days=1)
+        total_pout_current_year = site_service.get_monthly_pout(site_id, current_year_start, current_year_end)
+        current_year_pout[month] = total_pout_current_year
+
+    # Predict the next month's power output based on the current year data
+    predicted_next_month_pout = site_service.predict_next_month_pout(
+        sum(current_year_pout.values()) / len(current_year_pout))
+
+    # Build the response
     return CustomResponse(
-        message=message,
-        data=power_comparison,
-        status_code=status.HTTP_200_OK
+        message="Power comparison and prediction retrieved successfully.",
+        data={
+            "last_year_pout": last_year_pout,
+            "current_year_pout": current_year_pout,
+            "predicted_next_month_pout": predicted_next_month_pout
+        },
+        status_code=200
     )
+
