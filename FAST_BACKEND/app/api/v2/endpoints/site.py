@@ -1385,9 +1385,9 @@ def get_power_comparison_and_prediction(
     return CustomResponse(
         message="Power comparison and prediction retrieved successfully.",
         data={
-            "last_year_pout": last_year_pout,
-            "current_year_pout": current_year_pout,
-            "predicted_next_month_pout": round(predicted_next_month_pout,2)
+            "last_year_power": last_year_pout,
+            "current_year_power": current_year_pout,
+            "predicted_next_month_power": round(predicted_next_month_pout,2)
         },
         status_code=200
     )
