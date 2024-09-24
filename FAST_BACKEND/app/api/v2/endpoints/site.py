@@ -1387,7 +1387,7 @@ def get_power_comparison_and_prediction(
         data={
             "last_year_pout": last_year_pout,
             "current_year_pout": current_year_pout,
-            "predicted_next_month_pout": predicted_next_month_pout
+            "predicted_next_month_pout": round(predicted_next_month_pout,2)
         },
         status_code=200
     )
