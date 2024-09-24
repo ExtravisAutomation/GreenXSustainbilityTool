@@ -2704,7 +2704,7 @@ class InfluxDBRepository:
                              duration_str: str) -> float:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
-        aggregate_window = "1m"  # Monthly aggregation
+        aggregate_window = "1d"  # Monthly aggregation
 
         total_pout = 0
         for ip in device_ips:
