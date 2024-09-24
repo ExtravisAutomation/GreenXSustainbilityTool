@@ -2700,24 +2700,25 @@ class InfluxDBRepository:
 
         return total_pout
 
-    def get_total_pout_value_new(self, device_ips: List[str], start_date: datetime, end_date: datetime,
-                             duration_str: str) -> float:
+    def get_total_pout_value_new(self, device_ips: List[str], start_date: datetime, end_date: datetime, duration_str: str) -> float:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
         aggregate_window = "1d"  # Monthly aggregation
-        print("STARTTTTTTTTTT", start_time, file=sys.stderr)
-        print("ENDDDDDDDDDDDDD", end_time, file=sys.stderr)
+
         total_pout = 0
         for ip in device_ips:
+            # Ensure we are filtering for numeric values only
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                |> filter(fn: (r) => type(v: r._value) == "float")  # Ensure it's a numeric value
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
             '''
             result = self.query_api1.query_data_frame(query)
             if not result.empty:
+                # Sum only numeric values
                 total_pout += result['_value'].sum()
 
         return total_pout
