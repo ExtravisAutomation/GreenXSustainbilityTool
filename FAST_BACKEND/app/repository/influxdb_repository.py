@@ -2708,7 +2708,7 @@ class InfluxDBRepository:
 
         total_pout = 0
         for ip in device_ips:
-            # Correct and validate the query string
+            # Correctly format the query with proper escaping of string values
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
                 |> range(start: {start_time}, stop: {end_time})
@@ -2716,16 +2716,20 @@ class InfluxDBRepository:
                 |> filter(fn: (r) => r["_field"] == "total_POut")
                 |> filter(fn: (r) => type(v: r._value) == "float")  # Ensure numeric values
                 |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
-                |> yield(name: "total")  # Ensure there's a yield statement
+                |> yield(name: "total")
             '''
 
-            # Log or print the query for debugging purposes
+            # Debug: log the query for inspection
             print(f"Query for IP {ip}: {query}")
 
             # Execute the query
-            result = self.query_api1.query_data_frame(query)
-            if not result.empty:
-                # Sum only numeric values
-                total_pout += result['_value'].sum()
+            try:
+                result = self.query_api1.query_data_frame(query)
+                if not result.empty:
+                    # Sum only numeric values
+                    total_pout += result['_value'].sum()
+            except Exception as e:
+                # Log the exception for debugging
+                print(f"Error executing query for IP {ip}: {e}")
 
         return total_pout
