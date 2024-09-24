@@ -1346,3 +1346,25 @@ def get_total_power_output_prediction(
         },
         status_code=200
     )
+
+
+@router.get("/sites/power_comparison_prediction/{site_id}", response_model=CustomResponse[dict])
+@inject
+def get_power_comparison_and_prediction(
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    # Fetch power comparison for last year and current year and predict next month
+    power_comparison = site_service.get_power_comparison_and_prediction(site_id)
+
+    # Handle case where no data is available
+    message = "Power comparison and prediction retrieved successfully."
+    if not power_comparison:
+        message = "No power consumption data available for the comparison."
+
+    return CustomResponse(
+        message=message,
+        data=power_comparison,
+        status_code=status.HTTP_200_OK
+    )

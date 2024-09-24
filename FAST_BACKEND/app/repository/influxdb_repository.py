@@ -2699,3 +2699,34 @@ class InfluxDBRepository:
                 total_pout += result['_value'].sum()
 
         return total_pout
+
+    def get_monthly_pout(self, device_ips: List[str], year: int) -> Dict[int, float]:
+        monthly_pout = {}
+
+        # Iterate over each month to get total_POut for that month
+        for month in range(1, 13):
+            start_date = datetime(year, month, 1)
+            if month == 12:
+                end_date = datetime(year + 1, 1, 1)
+            else:
+                end_date = datetime(year, month + 1, 1)
+
+            start_time = start_date.isoformat() + 'Z'
+            end_time = end_date.isoformat() + 'Z'
+
+            total_pout = 0
+            for ip in device_ips:
+                query = f'''
+                    from(bucket: "{configs.INFLUXDB_BUCKET}")
+                    |> range(start: {start_time}, stop: {end_time})
+                    |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                    |> filter(fn: (r) => r["_field"] == "total_POut")
+                    |> aggregateWindow(every: 1mo, fn: sum, createEmpty: false)
+                '''
+                result = self.query_api1.query_data_frame(query)
+                if not result.empty:
+                    total_pout += result['_value'].sum()
+
+            monthly_pout[month] = total_pout
+
+        return monthly_pout
