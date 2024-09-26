@@ -1378,23 +1378,25 @@ def get_power_comparison_and_prediction(
         total_pout_current_year = site_service.get_monthly_pout(site_id, current_year_start, current_year_end)
         current_year_power.append(round(total_pout_current_year, 2))  # Round to 2 decimal places
 
-    # Determine the current month and predict the power output for the next month
+    # Determine the current month (October) and predict the power output for the next month
     current_month_index = datetime.now().month - 1  # 0-indexed (January = 0, September = 8)
 
     # Safely calculate the next month prediction by avoiding division by zero
     last_3_months = [p for p in current_year_power[-3:] if p > 0]
 
     if len(last_3_months) > 0:
-        predicted_next_month_power = round(
-            site_service.predict_next_month_pout(sum(last_3_months) / len(last_3_months)), 2)
+        predicted_next_month_power = round(site_service.predict_next_month_pout(sum(last_3_months) / len(last_3_months)), 2)
     else:
         # Fallback value if there are no valid data points in the last three months
         predicted_next_month_power = 0.0
 
-    # Overwrite the value for the next month (October) with the predicted value
-    if current_month_index < 11:  # Ensure we're not going out of bounds
-        # Replace or append the predicted power for October
+    # Ensure that the current year power list has an entry for October
+    if len(current_year_power) > current_month_index + 1:  # If the list has an entry for the next month
+        # Overwrite the value for the next month (October) with the predicted value
         current_year_power[current_month_index + 1] = predicted_next_month_power
+    else:
+        # Append the predicted power for October if the list doesn't have the value
+        current_year_power.append(predicted_next_month_power)
 
     # Build the response
     return CustomResponse(
