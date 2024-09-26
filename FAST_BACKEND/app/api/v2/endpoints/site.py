@@ -1390,13 +1390,9 @@ def get_power_comparison_and_prediction(
         # Fallback value if there are no valid data points in the last three months
         predicted_next_month_power = 0.0
 
-    # Ensure that the current year power list has an entry for October
-    if len(current_year_power) > current_month_index + 1:  # If the list has an entry for the next month
-        # Overwrite the value for the next month (October) with the predicted value
-        current_year_power[current_month_index + 1] = predicted_next_month_power
-    else:
-        # Append the predicted power for October if the list doesn't have the value
-        current_year_power.append(predicted_next_month_power)
+    # Overwrite the value for the next month (October) with the predicted value explicitly
+    if current_month_index == 9:  # October index is 9
+        current_year_power[9] = predicted_next_month_power  # Replace October's value with the prediction
 
     # Build the response
     return CustomResponse(
