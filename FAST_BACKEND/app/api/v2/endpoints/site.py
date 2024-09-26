@@ -1371,21 +1371,30 @@ def get_power_comparison_and_prediction(
         last_year_start = datetime(datetime.now().year - 1, i + 1, 1)
         last_year_end = (last_year_start + timedelta(days=31)).replace(day=1) - timedelta(days=1)
         total_pout_last_year = site_service.get_monthly_pout(site_id, last_year_start, last_year_end)
-        last_year_power.append(total_pout_last_year)
+        last_year_power.append(round(total_pout_last_year, 2))  # Round to 2 decimal places
 
         current_year_start = datetime(datetime.now().year, i + 1, 1)
         current_year_end = (current_year_start + timedelta(days=31)).replace(day=1) - timedelta(days=1)
         total_pout_current_year = site_service.get_monthly_pout(site_id, current_year_start, current_year_end)
-        current_year_power.append(total_pout_current_year)
+        current_year_power.append(round(total_pout_current_year, 2))  # Round to 2 decimal places
 
     # Determine the current month and predict the power output for the next month
     current_month_index = datetime.now().month - 1  # 0-indexed (January = 0, September = 8)
+
+    # Predict the next month power based on current year power
     predicted_next_month_power = site_service.predict_next_month_pout(
-        sum(current_year_power) / len([p for p in current_year_power if p > 0]))
-    print("Predicted next month power:", predicted_next_month_power, file=sys.stderr)
+        sum(current_year_power) / len([p for p in current_year_power if p > 0])
+    )
+
     # Place the predicted value for the next month (October) in its correct position
     if current_month_index < 11:  # Ensure we're not going out of bounds
-        current_year_power[current_month_index + 1] = predicted_next_month_power
+        if current_year_power[current_month_index + 1] == 0:  # If no value for next month, set prediction
+            current_year_power[current_month_index + 1] = round(predicted_next_month_power,
+                                                                2)  # Round to 2 decimal places
+        else:
+            # If there is already a value for next month, overwrite it with the predicted value
+            current_year_power[current_month_index + 1] = round(predicted_next_month_power,
+                                                                2)  # Round to 2 decimal places
 
     # Build the response
     return CustomResponse(
