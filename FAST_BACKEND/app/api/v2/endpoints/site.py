@@ -1382,7 +1382,7 @@ def get_power_comparison_and_prediction(
     current_month_index = datetime.now().month - 1  # 0-indexed (January = 0, September = 8)
     predicted_next_month_power = site_service.predict_next_month_pout(
         sum(current_year_power) / len([p for p in current_year_power if p > 0]))
-
+    print("Predicted next month power:", predicted_next_month_power, file=sys.stderr")
     # Place the predicted value for the next month (October) in its correct position
     if current_month_index < 11:  # Ensure we're not going out of bounds
         current_year_power[current_month_index + 1] = predicted_next_month_power

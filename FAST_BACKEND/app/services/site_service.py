@@ -1665,7 +1665,7 @@ class SiteService:
     def predict_next_month_pout(self, last_3_months_pout: float) -> float:
         # Simple prediction: assuming the next month's usage grows by 5% based on the last 3 months' average
         monthly_average_pout = last_3_months_pout / 3
-        predicted_next_month_pout = monthly_average_pout * 1.05  # Predicting a 5% increase
+        predicted_next_month_pout = monthly_average_pout * 1.05
         return predicted_next_month_pout
 
     def calculate_cost(self, predicted_pout_kw: float, cost_per_kw: float = 0.24) -> float:
