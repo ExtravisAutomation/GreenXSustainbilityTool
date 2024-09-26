@@ -1378,29 +1378,17 @@ def get_power_comparison_and_prediction(
         total_pout_current_year = site_service.get_monthly_pout(site_id, current_year_start, current_year_end)
         current_year_power.append(round(total_pout_current_year, 2))  # Round to 2 decimal places
 
-    # Determine the current month (October) and predict the power output for the next month
+    # Call the method from the second API to calculate the prediction
+    total_pout_last_3_months_kw, predicted_next_month_pout_kw, predicted_cost = site_service.calculate_total_pout_and_prediction(
+        site_id)
+
+    # Insert the predicted next month power (for October) into the current_year_power list
     current_month_index = datetime.now().month - 1  # 0-indexed (January = 0, September = 8)
+    if current_month_index == 9:  # October is the 10th month, index 9
+        current_year_power[9] = predicted_next_month_pout_kw  # Set October's predicted value
 
-    # Log current_year_power for debugging
-    print(f"Current year power before prediction: {current_year_power}", file=sys.stderr)
-
-    # Safely calculate the next month prediction by avoiding division by zero
-    last_3_months = [p for p in current_year_power[-3:] if p > 0]
-
-    if len(last_3_months) > 0:
-        predicted_next_month_power = round(site_service.predict_next_month_pout(sum(last_3_months) / len(last_3_months)), 2)
-        print(f"Predicted next month power: {predicted_next_month_power}", file=sys.stderr)  # Log predicted power
-    else:
-        # Fallback value if there are no valid data points in the last three months
-        predicted_next_month_power = 0.0
-        print(f"No valid data for last 3 months. Predicted next month power set to {predicted_next_month_power}", file=sys.stderr)
-
-    # Overwrite the value for the next month (October) with the predicted value explicitly
-    if current_month_index == 9:  # October index is 9
-        current_year_power[9] = predicted_next_month_power  # Replace October's value with the prediction
-        print(f"October power set to: {current_year_power[9]}", file=sys.stderr)  # Log October power value
-
-    # Log the final current_year_power list for debugging
+    # Log final result for debugging
+    print(f"Predicted next month (October) power: {predicted_next_month_pout_kw}", file=sys.stderr)
     print(f"Final current year power: {current_year_power}", file=sys.stderr)
 
     # Build the response
