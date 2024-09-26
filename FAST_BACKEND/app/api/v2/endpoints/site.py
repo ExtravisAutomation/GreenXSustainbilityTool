@@ -1382,19 +1382,14 @@ def get_power_comparison_and_prediction(
     current_month_index = datetime.now().month - 1  # 0-indexed (January = 0, September = 8)
 
     # Predict the next month power based on current year power
-    predicted_next_month_power = site_service.predict_next_month_pout(
-        sum(current_year_power) / len([p for p in current_year_power if p > 0])
-    )
+    predicted_next_month_power = round(site_service.predict_next_month_pout(
+        sum(current_year_power[-3:]) / len([p for p in current_year_power[-3:] if p > 0])
+    ), 2)
 
-    # Place the predicted value for the next month (October) in its correct position
+    # Overwrite the value for the next month (October) with the predicted value
     if current_month_index < 11:  # Ensure we're not going out of bounds
-        if current_year_power[current_month_index + 1] == 0:  # If no value for next month, set prediction
-            current_year_power[current_month_index + 1] = round(predicted_next_month_power,
-                                                                2)  # Round to 2 decimal places
-        else:
-            # If there is already a value for next month, overwrite it with the predicted value
-            current_year_power[current_month_index + 1] = round(predicted_next_month_power,
-                                                                2)  # Round to 2 decimal places
+        # Replace or append the predicted power for October
+        current_year_power[current_month_index + 1] = predicted_next_month_power
 
     # Build the response
     return CustomResponse(
