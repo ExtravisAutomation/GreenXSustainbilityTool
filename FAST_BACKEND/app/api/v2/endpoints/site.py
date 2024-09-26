@@ -1381,10 +1381,15 @@ def get_power_comparison_and_prediction(
     # Determine the current month and predict the power output for the next month
     current_month_index = datetime.now().month - 1  # 0-indexed (January = 0, September = 8)
 
-    # Predict the next month power based on current year power
-    predicted_next_month_power = round(site_service.predict_next_month_pout(
-        sum(current_year_power[-3:]) / len([p for p in current_year_power[-3:] if p > 0])
-    ), 2)
+    # Safely calculate the next month prediction by avoiding division by zero
+    last_3_months = [p for p in current_year_power[-3:] if p > 0]
+
+    if len(last_3_months) > 0:
+        predicted_next_month_power = round(
+            site_service.predict_next_month_pout(sum(last_3_months) / len(last_3_months)), 2)
+    else:
+        # Fallback value if there are no valid data points in the last three months
+        predicted_next_month_power = 0.0
 
     # Overwrite the value for the next month (October) with the predicted value
     if current_month_index < 11:  # Ensure we're not going out of bounds
