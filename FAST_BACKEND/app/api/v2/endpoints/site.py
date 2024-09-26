@@ -1382,21 +1382,22 @@ def get_power_comparison_and_prediction(
     total_pout_last_3_months_kw, predicted_next_month_pout_kw, predicted_cost = site_service.calculate_total_pout_and_prediction(
         site_id)
 
-    # If predicted next month power is 0, use last 3 months' average + 5% increase
-    if predicted_next_month_pout_kw == 0:
-        # Calculate the average of the last 3 months (July, August, September)
-        last_3_months_data = current_year_power[-3:]
-        if len(last_3_months_data) > 0:
-            avg_last_3_months = sum(last_3_months_data) / len([p for p in last_3_months_data if p > 0])
-            predicted_next_month_pout_kw = round(avg_last_3_months * 1.05, 2)  # Increase by 5%
-
     # Insert the predicted next month power (for October) into the current_year_power list
     current_month_index = datetime.now().month - 1  # 0-indexed (January = 0, September = 8)
     if current_month_index == 9:  # October is the 10th month, index 9
         current_year_power[9] = predicted_next_month_pout_kw  # Set October's predicted value
 
+    # Check if the predicted next month value is still 0
+    if current_year_power[9] == 0:
+        # Take the last 3 months values, calculate the average, and apply 5% increase
+        last_3_months_values = current_year_power[6:9]  # Values for July, August, September
+        if len(last_3_months_values) > 0 and sum(last_3_months_values) > 0:
+            avg_last_3_months = sum(last_3_months_values) / len([p for p in last_3_months_values if p > 0])
+            predicted_next_month_pout_kw = round(avg_last_3_months * 1.05, 2)  # Apply a 5% increase
+            current_year_power[9] = predicted_next_month_pout_kw  # Update the October value
+
     # Log final result for debugging
-    print(f"Predicted next month (October) power: {predicted_next_month_pout_kw}", file=sys.stderr)
+    print(f"Predicted next month (October) power after fallback: {current_year_power[9]}", file=sys.stderr)
     print(f"Final current year power: {current_year_power}", file=sys.stderr)
 
     # Build the response
