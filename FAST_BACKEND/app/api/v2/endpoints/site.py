@@ -1381,18 +1381,27 @@ def get_power_comparison_and_prediction(
     # Determine the current month (October) and predict the power output for the next month
     current_month_index = datetime.now().month - 1  # 0-indexed (January = 0, September = 8)
 
+    # Log current_year_power for debugging
+    print(f"Current year power before prediction: {current_year_power}", file=sys.stderr)
+
     # Safely calculate the next month prediction by avoiding division by zero
     last_3_months = [p for p in current_year_power[-3:] if p > 0]
 
     if len(last_3_months) > 0:
         predicted_next_month_power = round(site_service.predict_next_month_pout(sum(last_3_months) / len(last_3_months)), 2)
+        print(f"Predicted next month power: {predicted_next_month_power}", file=sys.stderr)  # Log predicted power
     else:
         # Fallback value if there are no valid data points in the last three months
         predicted_next_month_power = 0.0
+        print(f"No valid data for last 3 months. Predicted next month power set to {predicted_next_month_power}", file=sys.stderr)
 
     # Overwrite the value for the next month (October) with the predicted value explicitly
     if current_month_index == 9:  # October index is 9
         current_year_power[9] = predicted_next_month_power  # Replace October's value with the prediction
+        print(f"October power set to: {current_year_power[9]}", file=sys.stderr)  # Log October power value
+
+    # Log the final current_year_power list for debugging
+    print(f"Final current year power: {current_year_power}", file=sys.stderr)
 
     # Build the response
     return CustomResponse(
