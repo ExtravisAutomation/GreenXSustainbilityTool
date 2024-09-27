@@ -1393,7 +1393,7 @@ def get_power_comparison_and_prediction(
         last_3_months_values = current_year_power[6:9]  # Values for July, August, September
         if len(last_3_months_values) > 0 and sum(last_3_months_values) > 0:
             avg_last_3_months = sum(last_3_months_values) / len([p for p in last_3_months_values if p > 0])
-            predicted_next_month_pout_kw = round(avg_last_3_months * 1.05, 2)  # Apply a 5% increase
+            predicted_next_month_pout_kw = round(avg_last_3_months * 2, 2)  # Apply a 5% increase
             current_year_power[9] = predicted_next_month_pout_kw  # Update the October value
 
     # Log final result for debugging
