@@ -783,6 +783,7 @@ class SiteService:
             device_ip = device_info['ip_address']
             metrics = self.influxdb_repository.get_traffic_throughput_metrics123(device_ip, start_date, end_date,
                                                                                  duration_str)
+            print("FINAL MATRICSSSSSSSS", metrics, file=sys.stderr)
 
             if metrics:
                 metrics = sorted(metrics, key=lambda x: x['time'])  # Sort metrics by time
