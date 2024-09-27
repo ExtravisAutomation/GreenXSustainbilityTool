@@ -394,7 +394,7 @@ class SiteService:
             time.sleep(1)
             return DUMMY_DATA_SECOND_QUARTER
         elif duration_str == "Third Quarter":
-            time.sleep(8)
+            time.sleep(1)
             return DUMMY_DATA_THIRD_QUARTER
 
         start_date, end_date = self.calculate_start_end_dates(duration_str)
