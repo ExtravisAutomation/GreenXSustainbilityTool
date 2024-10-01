@@ -18,6 +18,10 @@ class Site(BaseModel):
     racks = relationship("Rack", back_populates="site")
     devices = relationship("APICControllers", back_populates="site")
     #racks = relationship("Rack", order_by="Rack.id", back_populates="site")
+    
+    # Relationship
+    reports = relationship("Reports", back_populates="site")
+
 
 
 class PasswordGroup(BaseModel):

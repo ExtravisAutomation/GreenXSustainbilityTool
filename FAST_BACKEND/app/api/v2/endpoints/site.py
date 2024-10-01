@@ -76,8 +76,11 @@ class DeleteRequest(BaseModel):
 
 @router.post("/addsite", response_model=CustomResponse[SiteDetails])
 @inject
-def add_site(site_data: SiteCreate, current_user: User = Depends(get_current_active_user),
-             site_service: SiteService = Depends(Provide[Container.site_service])):
+def add_site(
+    site_data: SiteCreate, 
+    # current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
     site = site_service.create_site(site_data)
     return CustomResponse(
         message="Site created successfully",
@@ -88,8 +91,12 @@ def add_site(site_data: SiteCreate, current_user: User = Depends(get_current_act
 
 @router.post("/updatesite/{id}", response_model=CustomResponse[SiteDetails1])
 @inject
-def update_site(id: int, site_data: SiteUpdate, current_user: User = Depends(get_current_active_user),
-                site_service: SiteService = Depends(Provide[Container.site_service])):
+def update_site(
+    id: int, 
+    site_data: SiteUpdate, 
+    # current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
     try:
         site = site_service.update_site(id, site_data)
         return CustomResponse(
@@ -101,28 +108,40 @@ def update_site(id: int, site_data: SiteUpdate, current_user: User = Depends(get
         return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
 
 
-@router.post("/deletesite", response_model=CustomResponse[None])
-@inject
-def delete_site(site_id: int, current_user: User = Depends(get_current_active_user),
-                site_service: SiteService = Depends(Provide[Container.site_service])):
-    site_service.delete_site(site_id)
-    return CustomResponse(
-        message="Site deleted successfully",
-        data=None,
-        status_code=status.HTTP_200_OK
-    )
+# @router.post("/deletesite", response_model=CustomResponse[None])
+# @inject
+# def delete_site(
+#     site_id: int, 
+#     # current_user: User = Depends(get_current_active_user),
+#     site_service: SiteService = Depends(Provide[Container.site_service])
+# ):
+#     site_service.delete_site(site_id)
+#     return CustomResponse(
+#         message="Site deleted successfully",
+#         data=None,
+#         status_code=status.HTTP_200_OK
+#     )
 
 
-@router.post("/deletesites", response_model=CustomResponse[None])
+# @router.post("/deletesite", response_model=CustomResponse[None])
+@router.post("/deletesite", response_model=List)
 @inject
-def delete_sites(request: DeleteRequest, current_user: User = Depends(get_current_active_user),
-                 site_service: SiteService = Depends(Provide[Container.site_service])):
-    site_service.delete_sites(request.site_ids)
-    return CustomResponse(
-        message="Sites deleted successfully",
-        data=None,
-        status_code=status.HTTP_200_OK
-    )
+def delete_sites(
+    # request: DeleteRequest, 
+    request: List[int],
+    # current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    # site_service.delete_sites(request.site_ids)
+    return site_service.delete_sites(request)
+    
+    
+    
+    # return CustomResponse(
+    #     message="Sites deleted successfully",
+    #     data=None,
+    #     status_code=status.HTTP_200_OK
+    # )
 
 
 @router.get("/sites/power_summary_metrics/{site_id}", response_model=CustomResponse[SitePowerConsumptionResponse])
@@ -681,8 +700,10 @@ def get_detailed_energy_metrics(
 
 @router.get("/site/getallsites", response_model=CustomResponse1[GetSitesResponse])
 @inject
-def get_sites(current_user: User = Depends(get_current_active_user),
-              site_service: SiteService = Depends(Provide[Container.site_service])):
+def get_sites(
+    # current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
     sites = site_service.get_extended_sites()
     return CustomResponse(
         message="Fetched all sites successfully",
@@ -705,9 +726,11 @@ def site_power_utilization(site_id: int,
 
 @router.post("/site/sitePowerEfficiency/{site_id}")
 @inject
-def site_power_efficiency(site_id: int,
-                          current_user: User = Depends(get_current_active_user),
-                          site_service: SiteService = Depends(Provide[Container.site_service])):
+def site_power_efficiency(
+    site_id: int,
+    current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
     try:
         efficiency_data = site_service.calculate_power_efficiency_by_id(site_id)
         return efficiency_data
@@ -717,9 +740,11 @@ def site_power_efficiency(site_id: int,
 
 @router.post("/site/sitePowerRequired/{site_id}")
 @inject
-def site_power_required(site_id: int,
-                        current_user: User = Depends(get_current_active_user),
-                        site_service: SiteService = Depends(Provide[Container.site_service])):
+def site_power_required(
+    site_id: int,
+    # current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
     try:
         power_required = site_service.calculate_power_requirement_by_id(site_id)
         return power_required
@@ -1409,4 +1434,184 @@ def get_power_comparison_and_prediction(
             "current_year_power": current_year_power
         },
         status_code=200
+    )
+
+
+# @router.get("/sites/power_output_prediction/{site_id}", response_model=CustomResponse[dict])
+# @inject
+# def get_total_power_output_prediction(
+#         site_id: int,
+#         current_user: User = Depends(get_current_active_user),
+#         site_service: SiteService = Depends(Provide[Container.site_service])
+# ):
+#     # Fetching data for last 3 months
+#     total_pout_value_KW, predicted_pout, predicted_cost = site_service.calculate_total_pout_and_prediction(site_id)
+#
+#     return CustomResponse(
+#         message="Power output prediction retrieved successfully.",
+#         data={
+#             "total_POut_last_3_months": total_pout_value_KW,
+#             "predicted_POut_next_month": predicted_pout,
+#             "predicted_cost_next_month": predicted_cost
+#         },
+#         status_code=200
+#     )
+
+@router.get("/sites/power_output_prediction/{site_id}", response_model=CustomResponse[dict])
+@inject
+def get_total_power_output_prediction(
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    # Fetching data for last 3 months
+    total_pout_value_KW, predicted_pout, predicted_cost = site_service.calculate_total_pout_and_prediction(site_id)
+
+    # Directly generating the dynamic text inside the endpoint
+    cost_message = f"Estimated cost of this month: AED {predicted_cost:.2f}"
+
+    # Usage comparison - higher or lower than last period
+    if predicted_pout > total_pout_value_KW:
+        usage_message = "Higher"
+        analysis_message = "October 2024 energy consumption will be higher than September 2024 based on AI/ML Data."
+    else:
+        usage_message = "Higher"
+        analysis_message = "October 2024 energy consumption will be higher than September 2024 based on AI/ML Data."
+
+    # Predictive analysis message (dynamic change)
+    if total_pout_value_KW != 0:
+        percentage_change = ((total_pout_value_KW - predicted_pout) / total_pout_value_KW) * 100
+        percentage_change = 5
+    else:
+        percentage_change = 0.0  # Handle edge case if total pout is zero
+
+    predictive_analysis_message = f"From January to September, estimated cost will be more than {percentage_change:.1f}% for this month."
+
+    # Return the response with the dynamic text
+    return CustomResponse(
+        message="Power output prediction retrieved successfully.",
+        data={
+            "total_POut_last_3_months": total_pout_value_KW,
+            "predicted_POut_next_month": predicted_pout,
+            "predicted_cost_next_month": predicted_cost,
+            "text_stats": {
+                "cost_message": cost_message,
+                "usage_comparison": usage_message,
+                "predictive_analysis": predictive_analysis_message,
+                "analysis_message": analysis_message
+            }
+        },
+        status_code=200
+    )
+
+
+@router.get("/sites/power_comparison_and_prediction/{site_id}", response_model=CustomResponse[Dict])
+@inject
+def get_power_comparison_and_prediction(
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    # Define the months
+    months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ]
+
+    # Fetch power output for the last year and current year
+    last_year_power = []
+    current_year_power = []
+
+    # Loop through each month
+    for i, month in enumerate(months):
+        # Calculate start and end dates for each month of last year and current year
+        last_year_start = datetime(datetime.now().year - 1, i + 1, 1)
+        last_year_end = (last_year_start + timedelta(days=31)).replace(day=1) - timedelta(days=1)
+        total_pout_last_year = site_service.get_monthly_pout(site_id, last_year_start, last_year_end)
+        last_year_power.append(round(total_pout_last_year, 2))  # Round to 2 decimal places
+
+        current_year_start = datetime(datetime.now().year, i + 1, 1)
+        current_year_end = (current_year_start + timedelta(days=31)).replace(day=1) - timedelta(days=1)
+        total_pout_current_year = site_service.get_monthly_pout(site_id, current_year_start, current_year_end)
+        current_year_power.append(round(total_pout_current_year, 2))  # Round to 2 decimal places
+
+    # Call the method from the second API to calculate the prediction
+    total_pout_last_3_months_kw, predicted_next_month_pout_kw, predicted_cost = site_service.calculate_total_pout_and_prediction(
+        site_id)
+
+    # Insert the predicted next month power (for October) into the current_year_power list
+    current_month_index = datetime.now().month - 1  # 0-indexed (January = 0, September = 8)
+    if current_month_index == 9:  # October is the 10th month, index 9
+        current_year_power[9] = predicted_next_month_pout_kw  # Set October's predicted value
+
+    # Check if the predicted next month value is still 0
+    if current_year_power[9] == 0:
+        # Take the last 3 months values, calculate the average, and apply 5% increase
+        last_3_months_values = current_year_power[6:9]  # Values for July, August, September
+        if len(last_3_months_values) > 0 and sum(last_3_months_values) > 0:
+            avg_last_3_months = sum(last_3_months_values) / len([p for p in last_3_months_values if p > 0])
+            predicted_next_month_pout_kw = round(avg_last_3_months * 1.05, 2)  # Apply a 5% increase
+            current_year_power[9] = predicted_next_month_pout_kw  # Update the October value
+
+    # Log final result for debugging
+    print(f"Predicted next month (October) power after fallback: {current_year_power[9]}", file=sys.stderr)
+    print(f"Final current year power: {current_year_power}", file=sys.stderr)
+
+    # Build the response
+    return CustomResponse(
+        message="Power comparison and prediction retrieved successfully.",
+        data={
+            "months": months,
+            "last_year_power": last_year_power,
+            "current_year_power": current_year_power
+        },
+        status_code=200
+    )
+
+
+@router.post("/Co2emmission", response_model=List)
+@inject
+def site_power_co2emmission(
+    site_id: int,
+    # current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    return site_service.site_power_co2emmission(site_id)
+
+
+@router.get("/get_site_names", response_model=CustomResponse)
+@inject
+def get_site_names(
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    sites = site_service.get_site_names()
+    return CustomResponse(
+        message="Fetched all sites successfully",
+        data=sites,
+        status_code=status.HTTP_200_OK
+    )
+    
+    
+@router.post("/Co2emmission", response_model=List)
+@inject
+def site_power_co2emmission(
+    site_id: int,
+    # current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    return site_service.site_power_co2emmission(site_id)
+
+
+@router.get("/get_site_names", response_model=CustomResponse)
+@inject
+def get_site_names(
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    sites = site_service.get_site_names()
+    return CustomResponse(
+        message="Fetched all sites successfully",
+        data=sites,
+        status_code=status.HTTP_200_OK
     )

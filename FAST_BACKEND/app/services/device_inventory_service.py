@@ -29,3 +29,21 @@ class DeviceInventoryService:
     def get_device_inventory_with_power_utilization(self) -> List[DeviceInventoryInDB]:
         devices = self.device_inventory_repository.get_device_inventory_with_power_utilization()
         return [DeviceInventoryInDB.from_orm(device) for device in devices]
+    
+    def chasis(self):
+        return self.device_inventory_repository.chasis()
+    
+    def modules(self):
+        return self.device_inventory_repository.modules()
+    
+    def power_supply(self):
+        return self.device_inventory_repository.power_supply()
+    
+    def fans(self):
+        return self.device_inventory_repository.fans()
+    
+    def device_power(self, apic_api: str):
+        return self.device_inventory_repository.device_power(apic_api)
+    
+    def get_spcific_devices(self, device_ip: str):
+        return self.device_inventory_repository.get_spcific_devices(device_ip)

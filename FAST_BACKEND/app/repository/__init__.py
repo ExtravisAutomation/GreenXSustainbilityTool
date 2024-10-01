@@ -5,3 +5,6 @@ from app.repository.blacklisted_token_repository import BlacklistedTokenReposito
 from app.repository.influxdb_repository import InfluxDBRepository
 from app.repository.apic_repository import APICRepository
 from app.repository.device_inventory_repository import DeviceInventoryRepository
+from app.repository.report_repository import ReportRepository
+from app.repository.vcenter_repository import VcenterRepository
+from app.repository.perhr_repository import PerhrRepository
