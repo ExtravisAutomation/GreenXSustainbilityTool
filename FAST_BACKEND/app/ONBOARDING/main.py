@@ -112,7 +112,7 @@ class DeviceProcessor:
     def get_device_types_for_vendor(self, vendor):
         """Return device types based on vendor."""
         vendor_device_types = {
-            "cisco": ["apic", "cisco_nxos"],
+            "cisco": ["apic", "cisco_nxos", "cisco_ios"]
             # Add other vendors and their device types here
         }
         return vendor_device_types.get(vendor.lower(), [])
