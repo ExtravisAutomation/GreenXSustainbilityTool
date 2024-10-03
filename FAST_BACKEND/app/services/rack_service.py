@@ -11,8 +11,13 @@ class RackService:
 
     def get_racks(self) -> List[RackDetails]:
         racks = self.rack_repository.get_all_racks()
+        
+        # New Code
+        return racks
+        
+        # Old Code 
         # Convert the ORM models to schema models
-        return [RackDetails.from_orm(rack) for rack in racks]
+        # return [RackDetails.from_orm(rack) for rack in racks]
 
     def create_rack(self, rack_data: RackCreate) -> RackDetails:
         rack = self.rack_repository.add_rack(rack_data)
@@ -24,9 +29,18 @@ class RackService:
         # Ensure the response is of type RackDetails
         return RackDetails.from_orm(rack)
 
-    def delete_rack(self, rack_id: int) -> None:
-        self.rack_repository.delete_rack(rack_id)
+    def delete_rack(self, rack_ids: List[int]) -> None:
+        self.rack_repository.delete_rack(rack_ids)
         # Since delete operations don't return a model, no conversion is necessary here
 
     def delete_racks(self, rack_ids: List[int]) -> None:
         self.rack_repository.delete_racks(rack_ids)
+        
+        
+    def get_rack_last_power_utilization(self, rack_id: int):
+        rack = self.rack_repository.get_rack_last_power_utilization(rack_id)
+        return rack
+    
+    def get_rack_power_utilization(self, rack_id: int):
+        rack = self.rack_repository.get_rack_power_utilization(rack_id)
+        return rack

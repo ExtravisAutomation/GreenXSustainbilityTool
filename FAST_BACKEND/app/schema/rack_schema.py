@@ -11,7 +11,7 @@ class RackBase(BaseModel):
     manufacture_date: Optional[date] = None
     unit_position: Optional[int] = None
     rack_model: Optional[str] = None
-    pn_code: Optional[str] = None
+    # pn_code: Optional[str] = None
     serial_number: Optional[str] = None
     Ru: Optional[int] = None
     RFS: Optional[str] = None

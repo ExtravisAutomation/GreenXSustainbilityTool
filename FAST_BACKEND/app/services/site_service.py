@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from random import random
 from typing import Dict, List, Any, Optional
 
+from starlette.responses import JSONResponse
 import pandas as pd
 from fastapi import HTTPException, status
 from sqlalchemy.engine import Row
@@ -203,9 +204,29 @@ class SiteService:
         self.site_repository.delete_site(site_id)
         return {"message": "Site deleted successfully"}
 
-    def delete_sites(self, site_ids: List[int]) -> str:
-        self.site_repository.delete_sites(site_ids)
-        return "Sites deleted successfully"
+    def delete_sites(self, site_ids: List[int]) -> list:
+        try:
+            # self.site_repository.delete_sites(site_ids)
+            # return "Sites deleted successfully"
+            successful_deletes, failed_deletes = self.site_repository.delete_sites(site_ids)
+            response_content = {
+                "successful_deletes": successful_deletes,
+                "failed_deletes": failed_deletes
+            }
+            
+            if failed_deletes:
+                response_content["message"] = "Some sites could not be deleted."
+                status_code = status.HTTP_400_BAD_REQUEST
+            else:
+                response_content["message"] = "All sites deleted successfully."
+                status_code = status.HTTP_200_OK
+
+            return JSONResponse(status_code=status_code, content=response_content)
+    
+        except HTTPException as e:
+            return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
+        
+        # return response_content
 
     def get_site_power_consumption(self, site_name: str) -> Dict[str, float]:
         devices = self.site_repository.get_devices_by_site_name(site_name)
@@ -1068,7 +1089,12 @@ class SiteService:
                                        key=lambda x: x['TotalPower'] if x['TotalPower'] is not None else float('-inf'),
                                        reverse=True)
         # Return the top 4
-        return sorted_power_required[:4]
+        
+        # Adding the APIC controller name
+        response = self.site_repository.get_apic_controller_names(sorted_power_required[:4])
+        
+        # return sorted_power_required[:4]
+        return response
 
     def calculate_co2_emission_by_id(self, site_id: int) -> List[dict]:
         devices = self.site_repository.get_devices_by_site_id(site_id)
@@ -1694,3 +1720,13 @@ class SiteService:
         # Use the influxdb_repository to get the total power output for the given month
         total_pout_value = self.influxdb_repository.get_total_pout_value_new(device_ips, start_date, end_date, "Monthly")
         return round(total_pout_value / 1000, 2)  # Convert to KW
+        
+        
+    def site_power_co2emmission(self, site_id: int):
+        site_power = self.site_repository.site_power_co2emmission(site_id)
+        
+        return site_power
+    
+    
+    def get_site_names(self):
+        return self.site_repository.get_site_names()

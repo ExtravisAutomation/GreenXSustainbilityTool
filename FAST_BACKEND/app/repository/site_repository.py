@@ -33,6 +33,8 @@ from app.schema.site_schema import PasswordGroupUpdate
 
 from app.schema.site_schema import DeviceCreateRequest
 
+from app.model.APIC_controllers import APICControllers as Devices
+
 
 class SiteRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
@@ -85,8 +87,31 @@ class SiteRepository(BaseRepository):
 
     def delete_sites(self, site_ids: List[int]):
         with self.session_factory() as session:
-            session.query(Site).filter(Site.id.in_(site_ids)).delete(synchronize_session='fetch')
-            session.commit()
+            # session.query(Site).filter(Site.id.in_(site_ids)).delete(synchronize_session='fetch')
+            # session.commit()
+            
+            successful_deletes = []
+            failed_deletes = []
+            for site_id in site_ids:
+                try:
+                    site = session.query(Site).filter(Site.id == site_id).first()
+                    if site:
+                        site_name = site.site_name  # Assume each site has a 'name' attribute
+                        # session.delete(site)
+                        session.query(Site).filter(Site.id == site_id).delete(synchronize_session='fetch')
+                        session.commit()
+                        successful_deletes.append({'id': site_id, 'name': site_name})  # Include name in the success list
+                    else:
+                        failed_deletes.append({'id': site_id, 'name': None})  # No site found, name is None
+                except Exception as e:
+                    session.rollback()
+                    if site:  # Check if site was defined before the error
+                        failed_deletes.append({'id': site_id, 'name': site.site_name})
+                    else:
+                        failed_deletes.append({'id': site_id, 'name': None})  # Error occurred, but site was not defined
+
+            return successful_deletes, failed_deletes
+            
 
     # def get_devices_by_site_name(self, site_name: str) -> List[APICControllers]:
     #     with self.session_factory() as session:
@@ -100,6 +125,17 @@ class SiteRepository(BaseRepository):
                 .all()
             )
             return devices
+        
+    def get_apic_controller_names(self, sorted_power_required: list):
+        with self.session_factory() as session:
+            for data in sorted_power_required:
+                result=session.query(Devices.device_name).filter(Devices.ip_address== data['apic_controller_ip']).first()
+                
+                # Add property to the data
+                data['apic_controller_name'] = result[0] if result else None
+                
+            return sorted_power_required
+               
 
     # def get_devices_with_inventory_by_site_id(self, site_id: int) -> List[DeviceInventory]:
     #     with self.session_factory() as session:
@@ -838,3 +874,64 @@ class SiteRepository(BaseRepository):
             ).filter(APICControllers.id == db_device.id).first()
 
             return db_device
+        
+        
+    def co2_emission(self, apic_ips: List[str], site_id: int) -> List[Dict[str, any]]:
+        apic_ip_list = [ip[0] for ip in apic_ips if ip[0]]
+
+        if not apic_ip_list:
+            return []
+
+        co2emission_data = []
+
+        for apic_ip in apic_ip_list:
+            # Annual electricity usage in MWh
+            annual_electricity_usage_mwh = 10000
+
+            # Emission factor in kg CO2/MWh
+            emission_factor_kg_per_mwh = 100
+
+            # Calculating annual CO2 emissions
+            annual_co2_emissions_kg = annual_electricity_usage_mwh * emission_factor_kg_per_mwh
+
+            # There are 365 days in a year (not accounting for leap years in this calculation)
+            days_in_year = 365
+
+            # Calculating daily CO2 emissions
+            daily_co2_emissions_kg = annual_co2_emissions_kg / days_in_year
+
+            co2emission_data.append({
+                "site_id": site_id,
+                "apic_controller_ip": apic_ip,
+                "co2emission": round(daily_co2_emissions_kg, 2) if daily_co2_emissions_kg is not None else None
+            })
+
+        return co2emission_data
+        
+        
+    def site_power_co2emmission(self, site_id: int):
+        with self.session_factory() as session:
+            
+            apic_ips = session.query(Devices.ip_address).filter(Devices.site_id == site_id).distinct().limit(4).all()
+            print(apic_ips)
+
+            co2_emmsion = self.co2_emission(apic_ips, site_id)
+            
+            response = []
+            
+            for data in co2_emmsion:
+                result=session.query(Devices.device_name).filter(Devices.ip_address == data['apic_controller_ip']).first()
+                response.append({
+                    'site_id': site_id,
+                    'apic_controller_ip': data['apic_controller_ip'],
+                    'apic_controller_name': result[0],
+                    'co2_emission': data['co2emission'],
+                })
+                
+            return response
+        
+        
+    def get_site_names(self):
+        with self.session_factory() as session:
+            sites = session.query(Site).all()
+            return sites
