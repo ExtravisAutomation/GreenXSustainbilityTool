@@ -1582,7 +1582,7 @@ def site_power_co2emmission(
 @router.get("/get_site_names", response_model=CustomResponse)
 @inject
 def get_site_names(
-        # current_user: User = Depends(get_current_active_user),
+        current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     sites = site_service.get_site_names()
@@ -1597,7 +1597,7 @@ def get_site_names(
 @inject
 def site_power_co2emmission(
     site_id: int,
-    # current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
     site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     return site_service.site_power_co2emmission(site_id)
@@ -1606,7 +1606,7 @@ def site_power_co2emmission(
 @router.get("/get_site_names", response_model=CustomResponse)
 @inject
 def get_site_names(
-        # current_user: User = Depends(get_current_active_user),
+        current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     sites = site_service.get_site_names()
