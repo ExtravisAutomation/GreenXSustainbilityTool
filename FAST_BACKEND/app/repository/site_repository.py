@@ -746,6 +746,7 @@ class SiteRepository(BaseRepository):
                 .outerjoin(DeviceInventory, APICControllers.id == DeviceInventory.apic_controller_id) \
                 .filter(~APICControllers.id.in_(subquery)) \
                 .options(joinedload(APICControllers.site), joinedload(APICControllers.rack)) \
+                .order_by(APICControllers.created_at) \
                 .all()
 
             result = []
