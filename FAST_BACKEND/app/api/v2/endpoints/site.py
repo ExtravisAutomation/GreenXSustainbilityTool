@@ -77,9 +77,9 @@ class DeleteRequest(BaseModel):
 @router.post("/addsite", response_model=CustomResponse[SiteDetails])
 @inject
 def add_site(
-    site_data: SiteCreate, 
-    # current_user: User = Depends(get_current_active_user),
-    site_service: SiteService = Depends(Provide[Container.site_service])
+        site_data: SiteCreate,
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     site = site_service.create_site(site_data)
     return CustomResponse(
@@ -92,10 +92,10 @@ def add_site(
 @router.post("/updatesite/{id}", response_model=CustomResponse[SiteDetails1])
 @inject
 def update_site(
-    id: int, 
-    site_data: SiteUpdate, 
-    # current_user: User = Depends(get_current_active_user),
-    site_service: SiteService = Depends(Provide[Container.site_service])
+        id: int,
+        site_data: SiteUpdate,
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
         site = site_service.update_site(id, site_data)
@@ -127,16 +127,14 @@ def update_site(
 @router.post("/deletesite", response_model=List)
 @inject
 def delete_sites(
-    # request: DeleteRequest, 
-    request: List[int],
-    # current_user: User = Depends(get_current_active_user),
-    site_service: SiteService = Depends(Provide[Container.site_service])
+        # request: DeleteRequest,
+        request: List[int],
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     # site_service.delete_sites(request.site_ids)
     return site_service.delete_sites(request)
-    
-    
-    
+
     # return CustomResponse(
     #     message="Sites deleted successfully",
     #     data=None,
@@ -438,6 +436,7 @@ def get_energy_consumption_metrics(
         status_code=status.HTTP_200_OK
     )
 
+
 # @router.get("/sites/energy_consumption_metrics_WITH_FILTER/{site_id}",
 #             response_model=CustomResponse[List[EnergyConsumptionMetricsDetails]])
 # @inject
@@ -701,8 +700,8 @@ def get_detailed_energy_metrics(
 @router.get("/site/getallsites", response_model=CustomResponse1[GetSitesResponse])
 @inject
 def get_sites(
-    # current_user: User = Depends(get_current_active_user),
-    site_service: SiteService = Depends(Provide[Container.site_service])
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     sites = site_service.get_extended_sites()
     return CustomResponse(
@@ -727,9 +726,9 @@ def site_power_utilization(site_id: int,
 @router.post("/site/sitePowerEfficiency/{site_id}")
 @inject
 def site_power_efficiency(
-    site_id: int,
-    current_user: User = Depends(get_current_active_user),
-    site_service: SiteService = Depends(Provide[Container.site_service])
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
         efficiency_data = site_service.calculate_power_efficiency_by_id(site_id)
@@ -741,9 +740,9 @@ def site_power_efficiency(
 @router.post("/site/sitePowerRequired/{site_id}")
 @inject
 def site_power_required(
-    site_id: int,
-    # current_user: User = Depends(get_current_active_user),
-    site_service: SiteService = Depends(Provide[Container.site_service])
+        site_id: int,
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
         power_required = site_service.calculate_power_requirement_by_id(site_id)
@@ -1572,9 +1571,9 @@ def get_power_comparison_and_prediction(
 @router.post("/Co2emmission", response_model=List)
 @inject
 def site_power_co2emmission(
-    site_id: int,
-    # current_user: User = Depends(get_current_active_user),
-    site_service: SiteService = Depends(Provide[Container.site_service])
+        site_id: int,
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     return site_service.site_power_co2emmission(site_id)
 
@@ -1591,14 +1590,14 @@ def get_site_names(
         data=sites,
         status_code=status.HTTP_200_OK
     )
-    
-    
+
+
 @router.post("/Co2emmission", response_model=List)
 @inject
 def site_power_co2emmission(
-    site_id: int,
-    current_user: User = Depends(get_current_active_user),
-    site_service: SiteService = Depends(Provide[Container.site_service])
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     return site_service.site_power_co2emmission(site_id)
 
@@ -1616,24 +1615,25 @@ def get_site_names(
         status_code=status.HTTP_200_OK
     )
 
-
-from fastapi import File, UploadFile
-@router.post("/sites/upload_devices", response_model=CustomResponse[dict])
-@inject
-def upload_devices(
-    file: UploadFile = File(...),
-    current_user: User = Depends(get_current_active_user),
-    site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    try:
-        # Pass the uploaded file to the service layer
-        response_data = site_service.upload_devices_from_excel(file)
-        return CustomResponse(
-            message="Devices processed successfully from Excel.",
-            data=response_data,
-            status_code=201
-        )
-    except Exception as e:
-        logger.error(f"Exception: {str(e)}")
-        raise HTTPException(status_code=400, detail="Failed to process the file.")
-
+#
+# from fastapi import File, UploadFile
+#
+#
+# @router.post("/sites/upload_devices", response_model=CustomResponse[dict])
+# @inject
+# def upload_devices(
+#         file: UploadFile = File(...),
+#         current_user: User = Depends(get_current_active_user),
+#         site_service: SiteService = Depends(Provide[Container.site_service])
+# ):
+#     try:
+#         # Pass the uploaded file to the service layer
+#         response_data = site_service.upload_devices_from_excel(file)
+#         return CustomResponse(
+#             message="Devices processed successfully from Excel.",
+#             data=response_data,
+#             status_code=201
+#         )
+#     except Exception as e:
+#         logger.error(f"Exception: {str(e)}")
+#         raise HTTPException(status_code=400, detail="Failed to process the file.")
