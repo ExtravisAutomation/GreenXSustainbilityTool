@@ -3,6 +3,7 @@ from app.ONBOARDING.Database.db_connector import DBConnection  # Import DBConnec
 from app.ONBOARDING.Models.model import Device, PasswordGroup
 from app.ONBOARDING.ACI.APIC import APIClient
 from app.ONBOARDING.NXos.nxos import NXOS
+from app.IOS.ios import IOSXE
 import sys
 import ast
 
@@ -47,7 +48,6 @@ class DeviceProcessor:
             print("Processing device", device.password_group_id)
             password_group = session.query(PasswordGroup).filter(PasswordGroup.id == device.password_group_id).first()
             if password_group:
-                print("Processing password")
                 logging.info(f"Processing device ID {device.id} with type {device.device_type}")
                 return password_group
             else:
@@ -60,30 +60,31 @@ class DeviceProcessor:
     def handle_device_type(self, device, session):
         """Handle specific actions based on device type."""
         device_type = (device.device_type).lower()
-        print("Handling device type", device_type)
         if device_type == 'apic':
-            print("Device type")
             password_group = self.get_password(device, session)
             if password_group:
                 aci = APIClient(device, password_group)
                 aci.get_inventory()
-                print(f"Device type is {device_type} and password is {password_group.username}")
                 logging.info(f"Handling APIC device: {device.id}")
         elif device_type == "cisco_nxos":
             password_group = self.get_password(device, session)
             if password_group:
-                print(f"Device type is {device_type} and password is {password_group.password_group_type}")
                 nx = NXOS(device, password_group)
-                print("Working")
                 nx.main()
                 logging.info(f"Handling NX-os device: {device.id}")
+        elif device_type == "cisco_ios":
+            password_group = self.get_password(device, session)
+            if password_group:
+                ios = IOSXE(device, password_group)
+                ios.main()
+                logging.info(f"Handling IOS device: {device.id}")
 
     def handle_device_vendor(self, device, session):
         """Handle devices by trying different device types based on vendor."""
-        device_types = self.get_device_types_for_vendor(device.device_name)  # Get device types for the given vendor
+        device_types = self.get_device_types_for_vendor(device.device_name)
         for device_type in device_types:
             if self.try_device_type(device, device_type, session):
-                device.device_type = device_type  # Set the device type based on successful connection
+                device.device_type = device_type
                 session.commit()
                 self.handle_device_type(device, session)
                 break
@@ -105,6 +106,12 @@ class DeviceProcessor:
                     nx = NXOS(device, password_group)
                     nx.main()
                     return True
+            elif device_type == "cisco_ios":
+                password_group = self.get_password(device, session)
+                if password_group:
+                    ios = IOSXE(device, password_group)
+                    ios.main()
+                    return True
         except Exception as e:
             logging.error(f"Failed to onboard device {device.id} with type {device_type}: {e}")
         return False
@@ -118,17 +125,16 @@ class DeviceProcessor:
         return vendor_device_types.get(vendor.lower(), [])
 
 
+# Main execution block
 processor = DeviceProcessor()
 if len(sys.argv) > 1:
     try:
-        # Using `ast.literal_eval` to safely evaluate the string as a Python literal
         device_ids = ast.literal_eval(sys.argv[1])
         if isinstance(device_ids, list) and all(isinstance(id, int) for id in device_ids):
-            print("List of device IDs:", device_ids)
             processor.get_devices_by_ids(device_ids)
     except Exception as e:
-        print(f"Exception: {e}")
         logging.error(f"Exception: {e}")
+
 
 
 

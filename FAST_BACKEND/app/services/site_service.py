@@ -7,7 +7,7 @@ from typing import Dict, List, Any, Optional
 
 from starlette.responses import JSONResponse
 import pandas as pd
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.engine import Row
 from sqlalchemy.orm import Session
 from app.repository.site_repository import SiteRepository  # Adjust the import
@@ -47,6 +47,8 @@ from app.schema.site_schema import DeviceEnergyDetailResponse123
 
 from app.schema.site_schema import DeviceCreateRequest
 
+import pandas as pd
+from io import BytesIO
 
 DUMMY_DATA_FIRST_QUARTER = [
     {
@@ -130,7 +132,6 @@ DUMMY_DATA_THIRD_QUARTER = [
     }
 ]
 
-
 PUE_DUMMY_DATA_FIRST_QUARTER = {
     "message": "Energy consumption metrics retrieved successfully.",
     "data": {
@@ -166,10 +167,6 @@ PUE_DUMMY_DATA_THIRD_QUARTER = {
     },
     "status_code": 200
 }
-
-
-
-
 
 
 class SiteService:
@@ -213,7 +210,7 @@ class SiteService:
                 "successful_deletes": successful_deletes,
                 "failed_deletes": failed_deletes
             }
-            
+
             if failed_deletes:
                 response_content["message"] = "Some sites could not be deleted."
                 status_code = status.HTTP_400_BAD_REQUEST
@@ -222,10 +219,10 @@ class SiteService:
                 status_code = status.HTTP_200_OK
 
             return JSONResponse(status_code=status_code, content=response_content)
-    
+
         except HTTPException as e:
             return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
-        
+
         # return response_content
 
     def get_site_power_consumption(self, site_name: str) -> Dict[str, float]:
@@ -457,7 +454,6 @@ class SiteService:
     #
     #     return energy_metrics
 
-
     def get_top_5_power_devices_with_filter(self, site_id: int, duration_str: str) -> TopDevicesPowerResponse:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
 
@@ -679,9 +675,11 @@ class SiteService:
                     "status": device_details.get('status', None),
                     "site_name": device_details.get('site_name', ''),
                     "apic_controller_ip": device['ip_address'],
-                    "total_power": round(metric.get('total_PIn', 0) / 1000, 2) if metric.get('total_PIn') is not None else None,
+                    "total_power": round(metric.get('total_PIn', 0) / 1000, 2) if metric.get(
+                        'total_PIn') is not None else None,
                     "max_power": metric.get('max_power', None),
-                    "current_power": round(metric.get('total_PIn', 0) / 1000, 2) if metric.get('total_PIn') is not None else None,
+                    "current_power": round(metric.get('total_PIn', 0) / 1000, 2) if metric.get(
+                        'total_PIn') is not None else None,
                     "time": metric.get('hour', None)
                 }
                 device_key = device_name1 if device_details.get('device_name') == device_name1 else device_name2
@@ -1089,10 +1087,10 @@ class SiteService:
                                        key=lambda x: x['TotalPower'] if x['TotalPower'] is not None else float('-inf'),
                                        reverse=True)
         # Return the top 4
-        
+
         # Adding the APIC controller name
         response = self.site_repository.get_apic_controller_names(sorted_power_required[:4])
-        
+
         # return sorted_power_required[:4]
         return response
 
@@ -1700,7 +1698,7 @@ class SiteService:
         return predicted_pout_kw * cost_per_kw
 
     def calculate_total_pout_and_prediction(self, site_id: int, duration_str: str = "Last 3 Months") -> (
-    float, float, float):
+            float, float, float):
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
@@ -1718,15 +1716,52 @@ class SiteService:
         device_ips = [device.ip_address for device in devices if device.ip_address]
 
         # Use the influxdb_repository to get the total power output for the given month
-        total_pout_value = self.influxdb_repository.get_total_pout_value_new(device_ips, start_date, end_date, "Monthly")
+        total_pout_value = self.influxdb_repository.get_total_pout_value_new(device_ips, start_date, end_date,
+                                                                             "Monthly")
         return round(total_pout_value / 1000, 2)  # Convert to KW
-        
-        
+
     def site_power_co2emmission(self, site_id: int):
         site_power = self.site_repository.site_power_co2emmission(site_id)
-        
+
         return site_power
-    
-    
+
     def get_site_names(self):
         return self.site_repository.get_site_names()
+
+    def upload_devices_from_excel(self, file: UploadFile):
+        try:
+            # Read the Excel file using pandas
+            contents = file.file.read()
+            df = pd.read_excel(BytesIO(contents))
+
+            # Ensure required columns are present
+            required_columns = ["ip_address", "device_name", "site_name", "rack_name", "password_group_name",
+                                "device_type"]
+            if not all(col in df.columns for col in required_columns):
+                raise HTTPException(status_code=400, detail="Excel file is missing required columns.")
+
+            # Iterate through rows and process each device
+            response_data = []
+            for index, row in df.iterrows():
+                device_data = {
+                    "ip_address": row["ip_address"],
+                    "device_name": row["device_name"],
+                    "site_name": row["site_name"],
+                    "rack_name": row["rack_name"],
+                    "password_group_name": row["password_group_name"],
+                    "device_type": row["device_type"]
+                }
+
+                # Call repository to add the device (after checking if it exists)
+                result = self.site_repository.create_device_from_excel(device_data)
+                if result:
+                    response_data.append(result)
+
+            return response_data
+
+        except pd.errors.EmptyDataError:
+            raise HTTPException(status_code=400, detail="Excel file is empty.")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An error occurred while processing the Excel file: {str(e)}")
+        finally:
+            file.file.close()

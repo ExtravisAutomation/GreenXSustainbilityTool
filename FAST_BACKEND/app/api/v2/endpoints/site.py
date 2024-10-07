@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any, Union
 from app.api.v2.endpoints.test_script import main
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.core.dependencies import get_db, get_current_active_user
@@ -1615,3 +1615,25 @@ def get_site_names(
         data=sites,
         status_code=status.HTTP_200_OK
     )
+
+
+from fastapi import File, UploadFile
+@router.post("/sites/upload_devices", response_model=CustomResponse[dict])
+@inject
+def upload_devices(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_active_user),
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        # Pass the uploaded file to the service layer
+        response_data = site_service.upload_devices_from_excel(file)
+        return CustomResponse(
+            message="Devices processed successfully from Excel.",
+            data=response_data,
+            status_code=201
+        )
+    except Exception as e:
+        logger.error(f"Exception: {str(e)}")
+        raise HTTPException(status_code=400, detail="Failed to process the file.")
+
