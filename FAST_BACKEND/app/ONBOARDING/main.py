@@ -3,7 +3,7 @@ from app.ONBOARDING.Database.db_connector import DBConnection  # Import DBConnec
 from app.ONBOARDING.Models.model import Device, PasswordGroup
 from app.ONBOARDING.ACI.APIC import APIClient
 from app.ONBOARDING.NXos.nxos import NXOS
-from app.IOS.ios import IOSXE
+from app.ONBOARDING.IOS.ios import IOSXE
 import sys
 import ast
 
