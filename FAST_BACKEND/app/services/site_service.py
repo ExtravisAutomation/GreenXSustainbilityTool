@@ -1735,29 +1735,34 @@ class SiteService:
             df = pd.read_excel(BytesIO(contents))
 
             # Ensure required columns are present
-            required_columns = ["ip_address", "device_name", "site_name", "rack_name", "password_group_name",
-                                "device_type"]
+            required_columns = ["ip_address", "vendor", "device_type", "site_name", "rack_name", "password_group_name"]
             if not all(col in df.columns for col in required_columns):
                 raise HTTPException(status_code=400, detail="Excel file is missing required columns.")
 
-            # Iterate through rows and process each device
+            # Initialize response data and exception storage
             response_data = []
+            exceptions = []
+
+            # Iterate through rows and process each device
             for index, row in df.iterrows():
                 device_data = {
                     "ip_address": row["ip_address"],
-                    "device_name": row["device_name"],
+                    "device_name": row["vendor"],  # Mapping 'vendor' to 'device_name'
                     "site_name": row["site_name"],
                     "rack_name": row["rack_name"],
                     "password_group_name": row["password_group_name"],
                     "device_type": row["device_type"]
                 }
 
-                # Call repository to add the device (after checking if it exists)
-                result = self.site_repository.create_device_from_excel(device_data)
-                if result:
-                    response_data.append(result)
+                # Try to add the device and capture exceptions at each step
+                try:
+                    result = self.site_repository.create_device_from_excel(device_data)
+                    if result:
+                        response_data.append(result)
+                except Exception as e:
+                    exceptions.append({"row_index": index, "error": str(e), "data": device_data})
 
-            return response_data
+            return response_data, exceptions
 
         except pd.errors.EmptyDataError:
             raise HTTPException(status_code=400, detail="Excel file is empty.")

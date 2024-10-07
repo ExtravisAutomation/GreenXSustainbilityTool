@@ -1628,12 +1628,11 @@ def upload_devices(
 ):
     try:
         # Pass the uploaded file to the service layer
-        response_data = site_service.upload_devices_from_excel(file)
+        response_data, exceptions = site_service.upload_devices_from_excel(file)
         return CustomResponse(
-            message="Devices processed successfully from Excel.",
-            data=response_data,
+            message="Devices processed successfully from Excel with exceptions." if exceptions else "Devices processed successfully from Excel.",
+            data={"processed_devices": response_data, "exceptions": exceptions},
             status_code=201
         )
     except Exception as e:
-        logger.error(f"Exception: {str(e)}")
         raise HTTPException(status_code=400, detail="Failed to process the file.")
