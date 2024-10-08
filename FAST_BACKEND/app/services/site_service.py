@@ -1746,7 +1746,7 @@ class SiteService:
             # Iterate through rows and process each device
             for index, row in df.iterrows():
                 # Check if device_type is null, and assign "devices" if it is
-                device_type = row["device_type"] if pd.notnull(row["device_type"]) else "devices"
+                device_type = row["device_type"] if pd.notnull(row["device_type"]) else ""
 
                 # Prepare device data
                 device_data = {
