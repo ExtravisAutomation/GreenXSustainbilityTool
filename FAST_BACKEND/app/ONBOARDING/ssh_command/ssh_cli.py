@@ -5,17 +5,19 @@ import re, sys, time
 import textfsm
 import logging
 
+
 class sshCommand:
     def __init__(self, devicedata, passwordgroup):
-        self.device_id=devicedata.id
+        self.device_id = devicedata.id
         self.hostname = devicedata.ip_address
         self.username = passwordgroup.username
         self.password = passwordgroup.password
         self.device_type = devicedata.device_type
         self.commands = []  # Initialize an empty list for commands
+        self.message = ""
 
     def getcommands(self, commands):
-        print("Get commands",commands)
+        print("Get commands", commands)
         self.commands.extend(commands)  # Append commands to the existing list
 
     def connect(self):
@@ -39,7 +41,9 @@ class sshCommand:
             else:
                 logging.warning(f"No active connection for command execution: {command}")
                 return ""
+                self.message = "Command executed successfully"
         except Exception as e:
+            self.messages = e
             logging.error(f"Error executing command '{command}': {str(e)}")
             return ""
 
@@ -66,12 +70,16 @@ class sshCommand:
 
             for command, template_path in zip(self.commands, template_paths):
                 output = self.execute_command(command)
+                print(output)
+
                 parsed_output = self.parse_output(template_path, output)
                 parsed_results.append({command: parsed_output})
 
             return parsed_results
 
         except Exception as e:
+            self.message = "Error executing and parsing commands:"
+
             logging.error(f"Error executing and parsing commands: {str(e)}")
             return []
 
@@ -79,13 +87,12 @@ class sshCommand:
             print(f"Error executing and parsing commands: {e}", file=sys.stderr)
             return []
 
-
     def get_node_info(self, version_data, inventory_data):
         try:
             version_info = version_data[0] if version_data else {}
             inventory_info = inventory_data[0] if inventory_data else {}
-            node=1
-            inventory={}
+            node = 1
+            inventory = {}
             node_info = {
                 "id": self.device_id,
                 "address": self.hostname,
@@ -96,7 +103,8 @@ class sshCommand:
                 "version": version_info.get("OS", ""),
                 "lastStateModTs": version_info.get("LAST_REBOOT_REASON", ""),
                 "status": "Active",
-                "role": "Core Plugin"
+                "role": "",
+                "message": self.message
             }
             inventory[node] = node_info
             print(inventory)
@@ -105,6 +113,7 @@ class sshCommand:
             return inventory
         except Exception as e:
             logging.error(f"Error while creating node information: {str(e)}")
+
             return {}
 
     def main(self, template_paths):
@@ -127,20 +136,3 @@ class sshCommand:
 
         finally:
             self.disconnect()
-
-# Example usage:
-# if __name__ == "__main__":
-#     # Assuming you have Device and PasswordGroup classes defined appropriately
-#     device = Device(ip_address="192.168.1.1", device_type="cisco_ios")
-#     password_group = PasswordGroup(username="admin", password="password", type="ssh")
-#
-#     ssh = sshCommand(device, password_group)
-#     ssh.getcommands(["show version", "show inventory"])
-#
-#     template_paths = [
-#         "path/to/version_template.template",
-#         "path/to/inventory_template.template"
-#     ]
-#
-#     results = ssh.main(template_paths)
-#     print(results)

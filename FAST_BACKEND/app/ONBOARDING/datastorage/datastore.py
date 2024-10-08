@@ -13,21 +13,24 @@ logging.basicConfig(
     filemode='a'  # Use 'a' to append to the file or 'w' to write over it
 )
 from app.ONBOARDING.Database.db_connector import DBConnection
+
+
 class DataStorage:
 
-    def __init__(self, inventorydata,device, passwordID):
+    def __init__(self, inventorydata, device, passwordID):
         print("datastorage")
         self.db_connection = DBConnection()
         print("datastorage db")
-        self.rack_id=device.rack_id
+        self.rack_id = device.rack_id
         print("datastorage rack")
-        self.site_id=device.site_id
+        self.site_id = device.site_id
         print("datastorage site")
         self.inventorydata = inventorydata
-        print("datastorage inventory data",len(self.inventorydata))
-        self.password_id=passwordID
+        print("datastorage inventory data", len(self.inventorydata))
+        self.password_id = passwordID
         print("datastorage password")
-        self.deviceType=device.device_type
+        self.deviceType = device.device_type
+
         print("device_done")
 
     def save_data(self):
@@ -53,18 +56,27 @@ class DataStorage:
                             rack_unit=2,
                             OnBoardingStatus=True,
                             password_group_id=self.password_id,
-                            node_id=node_info['id']
+                            node_id=node_info['id'],
+                            messages=self.inventorydata.message
 
                         )
-                        session.add(device)
-                        logging.info(f"Added new device with IP: {node_info['address']}")
+                        try:
+                            session.add(device)
+                            logging.info(f"Added new device with IP: {node_info['address']}")
+                            device.messages = "Device data added Successfully"
+                        except Exception as e:
+                            device.messages = "Error saving data for node"
+
                     else:
                         device.OnBoardingStatus = True
                         device.device_name = node_info['name']
+                        device.messages = ""
                         logging.info(f"Updated existing device with IP: {node_info['address']}")
 
-                    session.commit()  # Commit each device as it's processed
+                    # Commit each device as it's processed
                     self.add_deviceinventory(device.id, node_info, session)
+                    device.messages = "Device Onboarded Successfully"
+                    session.commit()
 
                     logging.info(f"Finished processing node {node_id}")
             except Exception as e:
@@ -101,5 +113,4 @@ class DataStorage:
         except Exception as e:
             logging.error(f"Error in add_deviceinventory: {e}")
             raise  # Raise the exception to handle it in the caller or let it propagate
-
 
