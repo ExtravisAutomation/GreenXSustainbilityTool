@@ -1249,18 +1249,29 @@ def onboard_devices(
         current_user: User = Depends(get_current_active_user)
 ):
     try:
-        print("IDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD", onboarding_data.device_ids, file=sys.stderr)
+        # Log the input data for debugging purposes
+        print(f"Onboarding Devices: {onboarding_data.device_ids}", file=sys.stderr)
+
+        # Initialize the device processor and onboard devices
         processor = DeviceProcessor()
         processor.get_devices_by_ids(onboarding_data.device_ids)
+
+        # Return success response if no exception occurs
         return CustomResponse(
             message="Devices onboarded successfully.",
             data="Success",
             status_code=200
         )
-    except Exception as e:
-        logger.error(f"Exception: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
 
+    except ValueError as ve:
+        # Handle validation issues and return a consistent error message
+        logger.error(f"Validation error during device onboarding: {str(ve)}")
+        raise HTTPException(status_code=400, detail="Devices onboarding failed due to validation errors.")
+
+    except Exception as e:
+        # Handle any other unexpected exceptions and return a consistent error message
+        logger.error(f"Unexpected error during device onboarding: {str(e)}")
+        raise HTTPException(status_code=500, detail="Devices onboarding failed due to an unexpected error.")
 
 @router.get("/sites/last_7_days_energy_metrics/{site_id}",
             response_model=CustomResponse[List[dict]])
