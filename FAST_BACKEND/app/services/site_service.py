@@ -1745,13 +1745,17 @@ class SiteService:
 
             # Iterate through rows and process each device
             for index, row in df.iterrows():
+                # Check if device_type is null, and assign "devices" if it is
+                device_type = row["device_type"] if pd.notnull(row["device_type"]) else "devices"
+
+                # Prepare device data
                 device_data = {
                     "ip_address": row["ip_address"],
                     "device_name": row["vendor"],  # Mapping 'vendor' to 'device_name'
                     "site_name": row["site_name"],
                     "rack_name": row["rack_name"],
                     "password_group_name": row["password_group_name"],
-                    "device_type": row["device_type"]
+                    "device_type": device_type  # Use default "devices" if device_type is null
                 }
 
                 # Try to add the device and capture exceptions at each step
