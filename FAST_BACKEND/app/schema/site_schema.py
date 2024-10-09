@@ -2,7 +2,7 @@ from app.schema.base_schema import ModelBaseInfo, FindBase, SearchOptions, FindR
 from pydantic import BaseModel, validator
 from typing import Generic, TypeVar, Optional, List, Dict
 from pydantic.generics import GenericModel
-from datetime import datetime
+from datetime import datetime, date
 
 DataT = TypeVar('DataT')
 
