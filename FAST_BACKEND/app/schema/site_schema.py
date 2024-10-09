@@ -328,5 +328,28 @@ class DeviceCreateRequest(BaseModel):
     password_group_id: int
     device_type: Optional[str] = None
 
+
 class OnboardingRequest(BaseModel):
     device_ids: List[int]
+
+
+class CSPCDevicesWithSntcResponse(BaseModel):
+    # Fields from CSPCDevices
+    vendor: Optional[str] = None
+    device_family: Optional[str] = None
+    model_name: Optional[str] = None
+    device_name: Optional[str] = None
+    device_type: Optional[str] = None
+    software_version: Optional[str] = None
+
+    # Fields from DevicesSntc
+    hw_eol_ad: Optional[date] = None
+    hw_eos: Optional[date] = None
+    sw_EoSWM: Optional[date] = None
+    hw_EoRFA: Optional[date] = None
+    sw_EoVSS: Optional[date] = None
+    hw_EoSCR: Optional[date] = None
+    hw_ldos: Optional[date] = None
+
+    class Config:
+        orm_mode = True

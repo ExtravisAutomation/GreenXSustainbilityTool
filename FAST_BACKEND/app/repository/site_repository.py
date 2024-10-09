@@ -35,6 +35,9 @@ from app.schema.site_schema import DeviceCreateRequest
 
 from app.model.APIC_controllers import APICControllers as Devices
 
+from app.model.cspc_devices import CSPCDevices
+from app.schema.site_schema import CSPCDevicesWithSntcResponse
+
 
 class SiteRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
@@ -1000,3 +1003,25 @@ class SiteRepository(BaseRepository):
             except Exception as e:
                 session.rollback()
                 raise ValueError(f"Error creating device: {str(e)}")
+
+    def get_cspc_devices_with_sntc(self) -> List[CSPCDevicesWithSntcResponse]:
+        with self.session_factory() as session:
+            # Query to join CSPCDevices with DevicesSntc on model_name
+            devices = session.query(
+                CSPCDevices, DevicesSntc
+            ).outerjoin(
+                DevicesSntc, CSPCDevices.model_name == DevicesSntc.model_name
+            ).all()
+
+            result = []
+            for device, sntc in devices:
+                device_data = device.__dict__
+
+                # If SNTC data is available, merge it with device data
+                if sntc:
+                    sntc_data = sntc.__dict__
+                    device_data.update(sntc_data)
+
+                result.append(device_data)
+
+            return result

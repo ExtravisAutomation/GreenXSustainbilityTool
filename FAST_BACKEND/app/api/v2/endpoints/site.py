@@ -54,6 +54,8 @@ from logging import getLogger
 
 from app.schema.site_schema import OnboardingRequest
 
+from app.schema.site_schema import CSPCDevicesWithSntcResponse
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 logger = getLogger(__name__)
 
@@ -1647,3 +1649,17 @@ def upload_devices(
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail="Failed to process the file.")
+
+
+
+
+@router.get("/devices/get_all_with_sntc", response_model=List[CSPCDevicesWithSntcResponse])
+@inject
+def get_all_devices_with_sntc(
+    site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        devices = site_service.get_cspc_devices_with_sntc()
+        return devices
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

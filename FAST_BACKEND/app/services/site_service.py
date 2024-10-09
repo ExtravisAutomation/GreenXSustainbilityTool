@@ -50,6 +50,8 @@ from app.schema.site_schema import DeviceCreateRequest
 import pandas as pd
 from io import BytesIO
 
+from app.schema.site_schema import CSPCDevicesWithSntcResponse
+
 DUMMY_DATA_FIRST_QUARTER = [
     {
         "time": "2024-01",
@@ -1774,3 +1776,10 @@ class SiteService:
             raise HTTPException(status_code=500, detail=f"An error occurred while processing the Excel file: {str(e)}")
         finally:
             file.file.close()
+
+    def get_cspc_devices_with_sntc(self) -> List[CSPCDevicesWithSntcResponse]:
+        # Call the repository function that returns the data
+        devices = self.site_repository.get_cspc_devices_with_sntc()
+
+        # Convert the data into the response schema
+        return [CSPCDevicesWithSntcResponse(**device) for device in devices]
