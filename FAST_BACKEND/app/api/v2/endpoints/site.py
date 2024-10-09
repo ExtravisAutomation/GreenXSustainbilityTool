@@ -1258,7 +1258,7 @@ def onboard_devices(
 
         # Return success response if no exception occurs
         return CustomResponse(
-            message="Devices onboarded successfully.",
+            message="Onboarding Process Completed.",
             data="Success",
             status_code=200
         )
