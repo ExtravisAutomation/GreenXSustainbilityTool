@@ -39,8 +39,8 @@ class IOSXE:
 
                 # TextFSM template paths
                 template_paths = [
-                    r"textfsm/cisco_ios_show_version.textfsm",
-                    r"textfsm/cisco_ios_show_inventory.textfsm",
+                    r"app/ONBOARDING/textfsm/cisco_ios_show_version.textfsm",
+                    r"app/ONBOARDING/textfsm/cisco_ios_show_inventory.textfsm",
                 ]
 
                 # Execute commands and parse output
