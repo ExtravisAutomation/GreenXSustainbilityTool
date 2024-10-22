@@ -1786,3 +1786,93 @@ class SiteService:
 
         # Convert the data into the response schema
         return [CSPCDevicesWithSntcResponse(**device) for device in devices]
+
+    def calculate_energy_metrics_by_device_id(self, site_id: int, device_id: int, duration_str: str) -> dict:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device = next((device for device in devices if device.id == device_id), None)
+
+        if not device:
+            return {"time": f"{start_date} - {end_date}"}
+
+        device_ip = device.ip_address
+        if not device_ip:
+            return {"time": f"{start_date} - {end_date}"}
+
+        metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date, end_date,
+                                                                               duration_str)
+
+        if metrics:
+            return {
+                "time": f"{start_date} - {end_date}",
+                "metrics": metrics
+            }
+        else:
+            return {"time": f"{start_date} - {end_date}"}
+
+    def calculate_average_energy_metrics_by_site_id(self, site_id: int, duration_str: str) -> dict:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        print(f"Device IPs: {device_ips}", file=sys.stderr)
+
+        if not device_ips:
+            return {"time": f"{start_date} - {end_date}"}
+
+        total_energy_consumption = 0
+        total_POut = 0
+        total_PIn = 0
+        total_power_efficiency = 0
+        total_eer = 0
+        total_pue = 0
+        count = 0
+
+        for ip in device_ips:
+            metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([ip], start_date, end_date,
+                                                                                   duration_str)
+            print(f"Metrics for IP {ip}: {metrics}", file=sys.stderr)
+            if metrics:
+                for metric in metrics:
+                    energy_consumption = metric.get('energy_consumption')
+                    total_POut_val = metric.get('total_POut')
+                    total_PIn_val = metric.get('total_PIn')
+                    power_efficiency = metric.get('power_efficiency')
+                    eer = metric.get('eer')
+                    pue = metric.get('pue')
+
+                    if energy_consumption is not None:
+                        total_energy_consumption += energy_consumption
+                    if total_POut_val is not None:
+                        total_POut += total_POut_val
+                    if total_PIn_val is not None:
+                        total_PIn += total_PIn_val
+                    if power_efficiency is not None:
+                        total_power_efficiency += power_efficiency
+                    if eer is not None:
+                        total_eer += eer
+                    if pue is not None:
+                        total_pue += pue
+
+                    count += 1
+
+        print(f"Total energy consumption: {total_energy_consumption}", file=sys.stderr)
+        print(f"Total POut: {total_POut}", file=sys.stderr)
+        print(f"Total PIn: {total_PIn}", file=sys.stderr)
+        print(f"Total power efficiency: {total_power_efficiency}", file=sys.stderr)
+        print(f"Total EER: {total_eer}", file=sys.stderr)
+        print(f"Total PUE: {total_pue}", file=sys.stderr)
+        print(f"Count: {count}", file=sys.stderr)
+
+        if count == 0:
+            return {"time": f"{start_date} - {end_date}"}
+
+        return {
+            "time": f"{start_date} - {end_date}",
+            "energy_consumption": round(total_energy_consumption / count, 2) if count > 0 else None,
+            "total_POut": round(total_POut /.3 count, 2) if count > 0 else None,
+            "total_PIn": round(total_PIn / count, 2) if count > 0 else None,
+            "power_efficiency": round(total_power_efficiency / count, 2) if count > 0 else None,
+            "eer": round(total_eer / count, 2) if count > 0 else None,  # Average EER
+            "pue": round(total_pue / count, 2) if count > 0 else None  # Average PUE
+        }

@@ -129,8 +129,9 @@ class DeviceEnergyMetric(BaseModel):
     PE: Optional[float] = None
     PUE: Optional[float] = None
     current_power: Optional[float] = None
-    time: Optional[datetime] = None
     eer: Optional[float] = None
+    time: Optional[datetime] = None
+
 
 
 class HourlyEnergyMetricsResponse(BaseModel):

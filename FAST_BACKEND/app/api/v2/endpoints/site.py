@@ -1663,3 +1663,36 @@ def get_all_devices_with_sntc(
         return devices
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+
+@router.get("/sites/PUE_onclick/{site_id}",
+            response_model=CustomResponse[Union[EnergyConsumptionMetricsDetails1, List[EnergyConsumptionMetricsDetails1]]])
+@inject
+def get_device_energy_metrics(
+        site_id: int,
+        device_id: Optional[int] = Query(None, alias="device_id"),
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+
+    # Use site_service to fetch the device metrics (EER, PUE, etc.)
+    if device_id:
+        metrics = site_service.calculate_energy_metrics_by_device_id(site_id, device_id, duration)
+    else:
+        metrics = site_service.calculate_average_energy_metrics_by_site_id(site_id, duration)
+
+    print(f"Metrics: {metrics}", file=sys.stderr)
+
+    if not metrics:
+        raise HTTPException(status_code=404, detail="No metrics found for the given site/device and duration.")
+
+    return CustomResponse(
+        message="Device energy metrics retrieved successfully.",
+        data=metrics,
+        status_code=status.HTTP_200_OK
+    )
+
+
