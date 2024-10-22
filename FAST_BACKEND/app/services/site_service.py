@@ -916,6 +916,8 @@ class SiteService:
         return {"hourly_data": hourly_data}
 
     def format_metric(self, metric_data):
+        # Including EER calculation (total_POut / total_PIn)
+        eer = metric_data.get('total_POut', 0) / max(metric_data.get('total_PIn', 1), 1)  # Ensure no division by zero
 
         formatted_metric = DeviceEnergyMetric(
             device_name=metric_data.get('device_name'),
@@ -930,7 +932,8 @@ class SiteService:
             PE=round(metric_data.get('PE', 0), 2),  # Ensuring PE is rounded and defaults to 0 if not present
             PUE=metric_data.get('PUE', 0),  # Defaulting PUE to 1.0 if not present
             current_power=metric_data.get('current_power', 0),
-            time=metric_data.get('time')  # Assuming time is correctly formatted
+            time=metric_data.get('time'),  # Assuming time is correctly formatted
+            eer=round(eer, 2),  # EER (Energy Efficiency Ratio)
         )
         return formatted_metric
 

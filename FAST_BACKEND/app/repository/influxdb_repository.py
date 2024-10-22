@@ -1600,20 +1600,22 @@ class InfluxDBRepository:
         for index, row in result.iterrows():
             pin = row.get('total_PIn', 0)
             pout = row.get('total_POut', 1)  # Ensure pout isn't zero to avoid division by zero
+            current_power = ((pin / pout) - 1) * 100 if pout != 0 else 0  # Calculate current power
 
-            current_power = ((
-                                     pin / pout) - 1) * 100 if pout != 0 else 0  # Calculate current power based on your formula
+            # Calculate EER as total_POut / total_PIn
+            eer = pout / max(pin, 1)  # Avoid division by zero
 
             metric = {
                 "ip": row.get("ApicController_IP", "unknown_ip"),
-                "time": row['_time'].strftime('%Y-%m-%d %H:%M:%S'),
-                "PE": row.get('total_POut', 0) / max(pin, 1) * 100,
-                "PUE": pin * 1.2 / max(pin, 1),
+                "time": row['_time'].strftime('%Y-%m-%d %H:%M:%S'),  # Nearest or exact time
+                "PE": row.get('total_POut', 0) / max(pin, 1) * 100,  # Power efficiency
+                "PUE": pin * 1.2 / max(pin, 1),  # Power Usage Effectiveness
                 "current_power": round(current_power, 2),  # Rounded for better display
-                "energy_consumption": pin / 1000,
-                "total_POut": pout / 1000,
-                "average_energy_consumed": pin / max(pout, 1),
-                "power_efficiency": pout / max(pin, 1) * 100
+                "energy_consumption": pin / 1000,  # Energy consumption in kW
+                "total_POut": pout / 1000,  # Total power output in kW
+                "average_energy_consumed": pin / max(pout, 1),  # Average energy consumed
+                "power_efficiency": pout / max(pin, 1) * 100,  # Power efficiency percentage
+                "eer": round(eer, 2)  # EER (Energy Efficiency Ratio)
             }
             parsed_metrics.append(metric)
             print(f"Parsing metric: {metric}", file=sys.stderr)
@@ -1672,17 +1674,16 @@ class InfluxDBRepository:
               file=sys.stderr)  # Debug print for query setup
 
         for ip in device_ips:
-            print("IP QQQQ", ip, file=sys.stderr)
             query = f'''
-                           from(bucket: "{configs.INFLUXDB_BUCKET}")
-                           |> range(start: {start_time}, stop: {end_time})
-                           |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-                           |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and (r["_field"] == "total_PIn" or r["_field"] == "total_POut"))
-                           |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-                           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-                       '''
+                       from(bucket: "{configs.INFLUXDB_BUCKET}")
+                       |> range(start: {start_time}, stop: {end_time})
+                       |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                       |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and (r["_field"] == "total_PIn" or r["_field"] == "total_POut"))
+                       |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                       |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                   '''
             result = self.query_api1.query_data_frame(query)
-            print("resultttttttttttttttttt", result, file=sys.stderr)
+            print("Result:", result, file=sys.stderr)
 
             if result.empty:
                 print(f"No data found for {ip}. Skipping data generation.", file=sys.stderr)  # Debug print when no data
@@ -1691,7 +1692,7 @@ class InfluxDBRepository:
                       file=sys.stderr)  # Debug print for retrieved data
                 parsed_metrics = self.parse_result12(result)
                 for metric in parsed_metrics:
-                    metric["ip"] = ip  # Ensuring IP is included for device details merging
+                    metric["ip"] = ip  # Ensure IP is included for device details merging
                 filtered_metrics.extend(parsed_metrics)
 
         print(f"Total metrics processed: {len(filtered_metrics)}",

@@ -130,6 +130,7 @@ class DeviceEnergyMetric(BaseModel):
     PUE: Optional[float] = None
     current_power: Optional[float] = None
     time: Optional[datetime] = None
+    eer: Optional[float] = None
 
 
 class HourlyEnergyMetricsResponse(BaseModel):
