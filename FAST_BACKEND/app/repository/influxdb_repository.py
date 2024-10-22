@@ -2800,3 +2800,27 @@ class InfluxDBRepository:
 
         print(f"Final power metrics: {total_power_metrics}", file=sys.stderr)
         return total_power_metrics
+
+    def get_aggregate_window(self, duration_str: str) -> str:
+        """
+        Determines the aggregation window based on the duration string.
+        For example, "24 hours" -> 1-hour windows, "7 Days" -> 1-day windows.
+        """
+        if duration_str in ["24 hours"]:
+            return "1h"  # Aggregate by 1 hour
+        elif duration_str in ["7 Days", "Current Month", "Last Month"]:
+            return "1d"  # Aggregate by 1 day
+        else:  # For larger periods like "Last 6 Months", "Last Year", etc.
+            return "1m"  # Aggregate by 1 month
+
+    def get_time_format(self, duration_str: str) -> str:
+        """
+        Determines the time format based on the duration string.
+        This is used to format the time in a user-friendly way.
+        """
+        if duration_str in ["24 hours"]:
+            return '%Y-%m-%d %H:00'  # Format time for hourly aggregation
+        elif duration_str in ["7 Days", "Current Month", "Last Month"]:
+            return '%Y-%m-%d'  # Format time for daily aggregation
+        else:  # For larger periods like "Last 6 Months", "Last Year", etc.
+            return '%Y-%m'  # Format time for monthly aggregation
