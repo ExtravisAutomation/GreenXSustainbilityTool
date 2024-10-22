@@ -1789,92 +1789,71 @@ class SiteService:
 
     def calculate_energy_metrics_by_device_id(self, site_id: int, device_id: int, duration_str: str) -> dict:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
-        devices = self.site_repository.get_devices_by_site_id(site_id)  # Fetch device details from site repository
+        devices = self.site_repository.get_devices_by_site_id(site_id)
         device = next((device for device in devices if device.id == device_id), None)
 
+        print(f"Device fetched for site_id {site_id}: {device}", file=sys.stderr)
+
         if not device:
-            return {"time": f"{start_date} - {end_date}"}
+            print(f"No device found with device_id {device_id} for site_id {site_id}", file=sys.stderr)
+            return {"time": f"{start_date} - {end_date}", "metrics": []}
 
         device_ip = device.ip_address
         if not device_ip:
-            return {"time": f"{start_date} - {end_date}"}
+            print(f"Device IP not found for device_id {device_id}", file=sys.stderr)
+            return {"time": f"{start_date} - {end_date}", "metrics": []}
 
         # Fetch metrics from InfluxDB using device IP
         metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date, end_date,
                                                                                duration_str)
 
-        # Merge device details (e.g., device_name, apic_controller_ip) into metrics
-        for metric in metrics:
-            metric["device_name"] = device.device_name  # Add device name from site repository
-            metric["apic_controller_ip"] = device_ip  # Add IP address as apic_controller_ip
+        print(f"Metrics from InfluxDB for device {device.device_name} ({device_ip}): {metrics}", file=sys.stderr)
 
+        # Merge device details (device_name, apic_controller_ip) into each metric
         if metrics:
+            for metric in metrics:
+                metric["device_name"] = device.device_name  # Add device name from site repository
+                metric["apic_controller_ip"] = device_ip  # Add IP address as apic_controller_ip
+
             return {
                 "time": f"{start_date} - {end_date}",
-                "metrics": metrics
+                "metrics": metrics  # Return metrics as a list of records for each time point
             }
         else:
-            return {"time": f"{start_date} - {end_date}"}
+            print(f"No metrics available for device {device.device_name} ({device_ip})", file=sys.stderr)
+            return {"time": f"{start_date} - {end_date}", "metrics": []}
 
     def calculate_average_energy_metrics_by_site_id(self, site_id: int, duration_str: str) -> dict:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
-        devices = self.site_repository.get_devices_by_site_id(site_id)  # Get all devices for the site
+        devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
 
-        if not device_ips:
-            return {"time": f"{start_date} - {end_date}"}
+        print(f"Device IPs for site_id {site_id}: {device_ips}", file=sys.stderr)
 
-        total_energy_consumption = 0
-        total_POut = 0
-        total_PIn = 0
-        total_power_efficiency = 0
-        total_eer = 0
-        total_pue = 0
-        count = 0
+        if not device_ips:
+            print(f"No device IPs found for site_id {site_id}", file=sys.stderr)
+            return {"time": f"{start_date} - {end_date}", "metrics": []}
+
         aggregated_metrics = []
 
         # Fetch metrics for all device IPs and merge device details into metrics
         for device in devices:
             device_ip = device.ip_address
             if device_ip:
-                # Fetch metrics from InfluxDB for the device IP
                 metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date,
                                                                                        end_date, duration_str)
 
-                # Process each metric and merge device details
+                print(f"Metrics for device {device.device_name} ({device_ip}): {metrics}", file=sys.stderr)
+
                 if metrics:
                     for metric in metrics:
-                        energy_consumption = metric.get('energy_consumption')
-                        total_POut_val = metric.get('total_POut')
-                        total_PIn_val = metric.get('total_PIn')
-                        power_efficiency = metric.get('power_efficiency')
-                        eer = metric.get('eer')
-                        pue = metric.get('pue')
+                        # Add device details to the metric
+                        metric["device_name"] = device.device_name  # Add device name
+                        metric["apic_controller_ip"] = device_ip  # Add device IP
 
-                        if energy_consumption is not None:
-                            total_energy_consumption += energy_consumption
-                        if total_POut_val is not None:
-                            total_POut += total_POut_val
-                        if total_PIn_val is not None:
-                            total_PIn += total_PIn_val
-                        if power_efficiency is not None:
-                            total_power_efficiency += power_efficiency
-                        if eer is not None:
-                            total_eer += eer
-                        if pue is not None:
-                            total_pue += pue
-
-                        count += 1
-
-                        # Merge device details into each metric
-                        metric["device_name"] = device.device_name  # Add device name from site repository
-                        metric["apic_controller_ip"] = device_ip  # Add IP address as apic_controller_ip
                         aggregated_metrics.append(metric)
-
-        if count == 0:
-            return {"time": f"{start_date} - {end_date}"}
 
         return {
             "time": f"{start_date} - {end_date}",
-            "metrics": aggregated_metrics
+            "metrics": aggregated_metrics  # Return all metrics for each device and time
         }

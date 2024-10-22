@@ -1947,7 +1947,7 @@ class InfluxDBRepository:
             PowerIn = self.query_last_value(power_in_query)
             PowerOut = self.query_last_value(power_out_query)
             TotalPower = self.query_last_value(total_power_query)
-            
+
             if TotalPower is not None and TotalPower != 0:
                 powerper = (PowerIn / TotalPower) * 100
             else:
@@ -2553,7 +2553,7 @@ class InfluxDBRepository:
         return total_pin
 
     def get_energy_metrics_for_last_7_days(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> \
-    List[dict]:
+            List[dict]:
         total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
@@ -2629,7 +2629,7 @@ class InfluxDBRepository:
         return df.to_dict(orient='records')
 
     def get_energy_metrics_for_last_24_hours(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> \
-    List[dict]:
+            List[dict]:
         total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
@@ -2708,7 +2708,7 @@ class InfluxDBRepository:
         return total_pout
 
     def get_total_pout_value_new(self, device_ips: List[str], start_date: datetime, end_date: datetime,
-                             duration_str: str) -> float:
+                                 duration_str: str) -> float:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
         aggregate_window = "1m"  # Monthly aggregation
@@ -2746,18 +2746,10 @@ class InfluxDBRepository:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
-        print(f"Start Time: {start_time}, End Time: {end_time}", file=sys.stderr)
+        print(f"Querying InfluxDB from {start_time} to {end_time} for device_ips: {device_ips}", file=sys.stderr)
 
-        # Define the aggregate window and time format based on the duration string
-        if duration_str in ["24 hours"]:
-            aggregate_window = "1h"
-            time_format = '%Y-%m-%d %H:00'
-        elif duration_str in ["7 Days", "Current Month", "Last Month"]:
-            aggregate_window = "1d"
-            time_format = '%Y-%m-%d'
-        else:  # For "last 6 months", "last year", "current year"
-            aggregate_window = "1m"
-            time_format = '%Y-%m'
+        aggregate_window = self.get_aggregate_window(duration_str)
+        time_format = self.get_time_format(duration_str)
 
         for ip in device_ips:
             query = f'''
@@ -2768,7 +2760,8 @@ class InfluxDBRepository:
                 |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
-            print(f"Query: {query}", file=sys.stderr)
+
+            print(f"InfluxDB Query for IP {ip}: {query}", file=sys.stderr)
             result = self.query_api1.query_data_frame(query)
 
             print(f"Result for IP {ip}: {result}", file=sys.stderr)
@@ -2789,7 +2782,6 @@ class InfluxDBRepository:
                         pin = row['total_PIn']
                         pout = row['total_POut']
 
-                        # EER and PUE calculations
                         eer = pout / pin if pin > 0 else 0
                         pue = pin * 1.2 / pout if pout > 0 else 1.0
 
@@ -2802,10 +2794,9 @@ class InfluxDBRepository:
                             "total_POut": round(pout, 2),
                             "total_PIn": round(pin, 2),
                             "power_efficiency": round(power_efficiency, 2),
-                            "eer": round(eer, 2),  # EER value
-                            "pue": round(pue, 2)  # PUE value
+                            "eer": round(eer, 2),
+                            "pue": round(pue, 2)
                         })
 
-        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
-        print(f"Final metrics: {df}", file=sys.stderr)
-        return df
+        print(f"Final power metrics: {total_power_metrics}", file=sys.stderr)
+        return total_power_metrics
