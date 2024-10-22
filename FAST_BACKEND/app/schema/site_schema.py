@@ -355,3 +355,15 @@ class CSPCDevicesWithSntcResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class EnergyConsumptionMetricsDetails2(BaseModel):
+    time: Optional[str] = None  # Start and end time of the metrics calculation
+    energy_consumption: Optional[float] = None  # Energy consumption in kW
+    total_POut: Optional[float] = None  # Total Power Output in kW
+    total_PIn: Optional[float] = None  # Total Power Input in kW
+    power_efficiency: Optional[float] = None  # Power Efficiency percentage
+    eer: Optional[float] = None  # Energy Efficiency Ratio
+    pue: Optional[float] = None  # Power Usage Effectiveness
+    device_name: Optional[str] = None  # Device name
+    apic_controller_ip: Optional[str] = None  # APIC controller IP

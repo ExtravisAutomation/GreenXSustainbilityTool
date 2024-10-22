@@ -56,6 +56,8 @@ from app.schema.site_schema import OnboardingRequest
 
 from app.schema.site_schema import CSPCDevicesWithSntcResponse
 
+from app.schema.site_schema import EnergyConsumptionMetricsDetails2
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 logger = getLogger(__name__)
 
@@ -1667,7 +1669,7 @@ def get_all_devices_with_sntc(
 
 
 @router.get("/sites/PUE_onclick/{site_id}",
-            response_model=CustomResponse[Union[EnergyConsumptionMetricsDetails1, List[EnergyConsumptionMetricsDetails1]]])
+            response_model=CustomResponse[Union[EnergyConsumptionMetricsDetails2, List[EnergyConsumptionMetricsDetails2]]])
 @inject
 def get_device_energy_metrics(
         site_id: int,

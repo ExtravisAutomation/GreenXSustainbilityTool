@@ -1789,7 +1789,7 @@ class SiteService:
 
     def calculate_energy_metrics_by_device_id(self, site_id: int, device_id: int, duration_str: str) -> dict:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
-        devices = self.site_repository.get_devices_by_site_id(site_id)
+        devices = self.site_repository.get_devices_by_site_id(site_id)  # Fetch device details from site repository
         device = next((device for device in devices if device.id == device_id), None)
 
         if not device:
@@ -1799,8 +1799,14 @@ class SiteService:
         if not device_ip:
             return {"time": f"{start_date} - {end_date}"}
 
+        # Fetch metrics from InfluxDB using device IP
         metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date, end_date,
                                                                                duration_str)
+
+        # Merge device details (e.g., device_name, apic_controller_ip) into metrics
+        for metric in metrics:
+            metric["device_name"] = device.device_name  # Add device name from site repository
+            metric["apic_controller_ip"] = device_ip  # Add IP address as apic_controller_ip
 
         if metrics:
             return {
@@ -1812,10 +1818,8 @@ class SiteService:
 
     def calculate_average_energy_metrics_by_site_id(self, site_id: int, duration_str: str) -> dict:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
-        devices = self.site_repository.get_devices_by_site_id(site_id)
+        devices = self.site_repository.get_devices_by_site_id(site_id)  # Get all devices for the site
         device_ips = [device.ip_address for device in devices if device.ip_address]
-
-        print(f"Device IPs: {device_ips}", file=sys.stderr)
 
         if not device_ips:
             return {"time": f"{start_date} - {end_date}"}
@@ -1827,52 +1831,50 @@ class SiteService:
         total_eer = 0
         total_pue = 0
         count = 0
+        aggregated_metrics = []
 
-        for ip in device_ips:
-            metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([ip], start_date, end_date,
-                                                                                   duration_str)
-            print(f"Metrics for IP {ip}: {metrics}", file=sys.stderr)
-            if metrics:
-                for metric in metrics:
-                    energy_consumption = metric.get('energy_consumption')
-                    total_POut_val = metric.get('total_POut')
-                    total_PIn_val = metric.get('total_PIn')
-                    power_efficiency = metric.get('power_efficiency')
-                    eer = metric.get('eer')
-                    pue = metric.get('pue')
+        # Fetch metrics for all device IPs and merge device details into metrics
+        for device in devices:
+            device_ip = device.ip_address
+            if device_ip:
+                # Fetch metrics from InfluxDB for the device IP
+                metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date,
+                                                                                       end_date, duration_str)
 
-                    if energy_consumption is not None:
-                        total_energy_consumption += energy_consumption
-                    if total_POut_val is not None:
-                        total_POut += total_POut_val
-                    if total_PIn_val is not None:
-                        total_PIn += total_PIn_val
-                    if power_efficiency is not None:
-                        total_power_efficiency += power_efficiency
-                    if eer is not None:
-                        total_eer += eer
-                    if pue is not None:
-                        total_pue += pue
+                # Process each metric and merge device details
+                if metrics:
+                    for metric in metrics:
+                        energy_consumption = metric.get('energy_consumption')
+                        total_POut_val = metric.get('total_POut')
+                        total_PIn_val = metric.get('total_PIn')
+                        power_efficiency = metric.get('power_efficiency')
+                        eer = metric.get('eer')
+                        pue = metric.get('pue')
 
-                    count += 1
+                        if energy_consumption is not None:
+                            total_energy_consumption += energy_consumption
+                        if total_POut_val is not None:
+                            total_POut += total_POut_val
+                        if total_PIn_val is not None:
+                            total_PIn += total_PIn_val
+                        if power_efficiency is not None:
+                            total_power_efficiency += power_efficiency
+                        if eer is not None:
+                            total_eer += eer
+                        if pue is not None:
+                            total_pue += pue
 
-        print(f"Total energy consumption: {total_energy_consumption}", file=sys.stderr)
-        print(f"Total POut: {total_POut}", file=sys.stderr)
-        print(f"Total PIn: {total_PIn}", file=sys.stderr)
-        print(f"Total power efficiency: {total_power_efficiency}", file=sys.stderr)
-        print(f"Total EER: {total_eer}", file=sys.stderr)
-        print(f"Total PUE: {total_pue}", file=sys.stderr)
-        print(f"Count: {count}", file=sys.stderr)
+                        count += 1
+
+                        # Merge device details into each metric
+                        metric["device_name"] = device.device_name  # Add device name from site repository
+                        metric["apic_controller_ip"] = device_ip  # Add IP address as apic_controller_ip
+                        aggregated_metrics.append(metric)
 
         if count == 0:
             return {"time": f"{start_date} - {end_date}"}
 
         return {
             "time": f"{start_date} - {end_date}",
-            "energy_consumption": round(total_energy_consumption / count, 2) if count > 0 else None,
-            "total_POut": round(total_POut /.3 count, 2) if count > 0 else None,
-            "total_PIn": round(total_PIn / count, 2) if count > 0 else None,
-            "power_efficiency": round(total_power_efficiency / count, 2) if count > 0 else None,
-            "eer": round(total_eer / count, 2) if count > 0 else None,  # Average EER
-            "pue": round(total_pue / count, 2) if count > 0 else None  # Average PUE
+            "metrics": aggregated_metrics
         }
