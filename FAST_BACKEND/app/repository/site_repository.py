@@ -123,8 +123,8 @@ class SiteRepository(BaseRepository):
     def get_devices_by_site_id(self, site_id: int) -> List[APICControllers]:
         with self.session_factory() as session:
             devices = (
-                session.query(APICControllers)
-                .filter(APICControllers.site_id == site_id)
+                session.query(DeviceInventory)
+                .filter(DeviceInventory.site_id == site_id)
                 .all()
             )
             return devices
