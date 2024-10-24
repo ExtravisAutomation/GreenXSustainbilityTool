@@ -1789,7 +1789,7 @@ class SiteService:
 
     def calculate_energy_metrics_by_device_id(self, site_id: int, device_id: int, duration_str: str) -> dict:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
-        device = self.site_repository.get_device_by_site_id_and_device_id_pue(site_id)
+        device = self.site_repository.get_device_by_site_id_and_device_id_pue(site_id, device_id)
         #print("DEVICESSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS", devices, file=sys.stderr)
         #device = next((device for device in devices if device.id == device_id), None)
 
