@@ -448,8 +448,8 @@ class SiteRepository(BaseRepository):
     def get_device_names_by_site_id2(self, site_id: int) -> List[dict[str, str]]:
         with self.session_factory() as session:
             device_names = (
-                session.query(DeviceInventory.id, DeviceInventory.device_name)
-                .filter(DeviceInventory.site_id == site_id)
+                session.query(APICControllers.id, APICControllers.device_name)
+                .filter(APICControllers.site_id == site_id)
                 .distinct()
                 .all()
             )
