@@ -2783,7 +2783,7 @@ class InfluxDBRepository:
                         pout = row['total_POut']
 
                         eer = pout / pin if pin > 0 else 0
-                        pue = pin * 1.2 / pout if pout > 0 else 1.0
+                        pue = pin / pout if pout > 0 else 1.0
 
                         energy_consumption = (pout / pin) * 100 if pin > 0 else 0
                         power_efficiency = (pin / pout) if pout > 0 else 0
