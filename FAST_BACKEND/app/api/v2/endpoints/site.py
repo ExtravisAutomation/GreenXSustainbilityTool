@@ -683,22 +683,22 @@ def parse_time12(time_str: str):
     raise HTTPException(status_code=400, detail="Timestamp format not recognized")
 
 
-@router.get("/site/detailed_energy_metrics/{site_id}", response_model=HourlyEnergyMetricsResponse)
-@inject
-def get_detailed_energy_metrics(
-        site_id: int,
-        timestamp: str,
-        current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    try:
-        exact_time, granularity = parse_time12(timestamp)
-        metrics = site_service.get_energy_metrics_for_time(site_id, exact_time, granularity)
-        if not metrics:
-            raise HTTPException(status_code=404, detail="No metrics found for the specified timestamp.")
-        return metrics
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# @router.get("/site/detailed_energy_metrics/{site_id}", response_model=HourlyEnergyMetricsResponse)
+# @inject
+# def get_detailed_energy_metrics(
+#         site_id: int,
+#         timestamp: str,
+#         current_user: User = Depends(get_current_active_user),
+#         site_service: SiteService = Depends(Provide[Container.site_service])
+# ):
+#     try:
+#         exact_time, granularity = parse_time12(timestamp)
+#         metrics = site_service.get_energy_metrics_for_time(site_id, exact_time, granularity)
+#         if not metrics:
+#             raise HTTPException(status_code=404, detail="No metrics found for the specified timestamp.")
+#         return metrics
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/site/getallsites", response_model=CustomResponse1[GetSitesResponse])
@@ -1700,3 +1700,45 @@ def get_device_energy_metrics(
 
 
 
+
+
+@router.get("/site/detailed_energy_metrics/{site_id}",
+            response_model=CustomResponse[List[EnergyConsumptionMetricsDetails2]])
+@inject
+def get_device_energy_metrics_by_timestamp(
+        site_id: int,
+        timestamp: Optional[str] = Query(None, alias="timestamp"),  # Optional timestamp parameter
+        device_id: Optional[int] = Query(None, alias="device_id"),
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+
+    print(f"Request received for site_id: {site_id}, device_id: {device_id}, duration: {duration}, timestamp: {timestamp}", file=sys.stderr)
+
+    if device_id:
+        metrics = site_service.calculate_energy_metrics_by_device_id(site_id, device_id, duration)
+    else:
+        metrics = site_service.calculate_average_energy_metrics_by_site_id(site_id, duration)
+
+    print(f"Metrics retrieved: {metrics}", file=sys.stderr)
+
+    if not metrics or not metrics.get("metrics"):
+        print(f"No metrics found for site_id: {site_id}, device_id: {device_id}, duration: {duration}", file=sys.stderr)
+        raise HTTPException(status_code=404, detail="No metrics found for the given site/device and duration.")
+
+    # Filter the metrics by timestamp if provided
+    if timestamp:
+        filtered_metrics = [metric for metric in metrics.get("metrics", []) if metric["time"] == timestamp]
+        if not filtered_metrics:
+            print(f"No metrics found for the given timestamp: {timestamp}", file=sys.stderr)
+            raise HTTPException(status_code=404, detail=f"No metrics found for the timestamp: {timestamp}")
+    else:
+        filtered_metrics = metrics.get("metrics")
+
+    return CustomResponse(
+        message="Device energy metrics retrieved successfully.",
+        data=filtered_metrics,
+        status_code=status.HTTP_200_OK
+    )
