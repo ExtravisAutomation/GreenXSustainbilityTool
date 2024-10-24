@@ -1030,13 +1030,34 @@ class SiteRepository(BaseRepository):
         with self.session_factory() as session:
             device = (
                 session.query(
-                    DeviceInventory,
+                    DeviceInventory.id,
+                    DeviceInventory.device_name,
                     APICControllers.ip_address,
-                    Site.site_name
+                    Site.site_name,
+                    DeviceInventory.hardware_version,
+                    DeviceInventory.manufacturer,
+                    DeviceInventory.pn_code,
+                    DeviceInventory.serial_number,
+                    DeviceInventory.software_version,
+                    DeviceInventory.status
                 )
                 .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.id == device_id)
                 .first()
             )
-            return device
+            if device:
+                return {
+                    "device_id": device.id,
+                    "device_name": device.device_name,
+                    "ip_address": device.ip_address,
+                    "site_name": device.site_name,
+                    "hardware_version": device.hardware_version,
+                    "manufacturer": device.manufacturer,
+                    "pn_code": device.pn_code,
+                    "serial_number": device.serial_number,
+                    "software_version": device.software_version,
+                    "status": device.status
+                }
+            else:
+                return None

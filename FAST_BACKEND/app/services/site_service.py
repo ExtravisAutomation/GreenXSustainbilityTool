@@ -1788,40 +1788,44 @@ class SiteService:
         return [CSPCDevicesWithSntcResponse(**device) for device in devices]
 
     def calculate_energy_metrics_by_device_id(self, site_id: int, device_id: int, duration_str: str) -> dict:
+        # Calculate the start and end dates for the given duration
         start_date, end_date = self.calculate_start_end_dates(duration_str)
+
+        # Fetch the device details using site_id and device_id
         device = self.site_repository.get_device_by_site_id_and_device_id_pue(site_id, device_id)
-        #print("DEVICESSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS", devices, file=sys.stderr)
-        #device = next((device for device in devices if device.id == device_id), None)
 
-        print(f"Device fetched for site_id {site_id}: {device}", file=sys.stderr)
+        print(f"Device fetched for site_id {site_id}, device_id {device_id}: {device}", file=sys.stderr)
 
+        # Check if the device exists
         if not device:
             print(f"No device found with device_id {device_id} for site_id {site_id}", file=sys.stderr)
             return {"time": f"{start_date} - {end_date}", "metrics": []}
 
-        device_ip = device.ip_address
+        # Extract the device IP address
+        device_ip = device.get('ip_address')  # Using .get() for safe extraction
         if not device_ip:
-            print(f"Device IP not found for device_id {device_id}", file=sys.stderr)
+            print(f"Device IP not found for device_id {device_id} at site_id {site_id}", file=sys.stderr)
             return {"time": f"{start_date} - {end_date}", "metrics": []}
 
-        # Fetch metrics from InfluxDB using device IP
+        # Fetch metrics from InfluxDB using the device IP for the given date range and duration
         metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date, end_date,
                                                                                duration_str)
 
-        print(f"Metrics from InfluxDB for device {device.device_name} ({device_ip}): {metrics}", file=sys.stderr)
+        print(f"Metrics from InfluxDB for device {device['device_name']} ({device_ip}): {metrics}", file=sys.stderr)
 
-        # Merge device details (device_name, apic_controller_ip) into each metric
+        # If metrics are found, add device details to each metric
         if metrics:
             for metric in metrics:
-                metric["device_name"] = device.device_name  # Add device name from site repository
+                metric["device_name"] = device["device_name"]  # Add device name from the fetched device
                 metric["apic_controller_ip"] = device_ip  # Add IP address as apic_controller_ip
 
             return {
                 "time": f"{start_date} - {end_date}",
-                "metrics": metrics  # Return metrics as a list of records for each time point
+                "metrics": metrics  # Return the list of metrics with device details
             }
         else:
-            print(f"No metrics available for device {device.device_name} ({device_ip})", file=sys.stderr)
+            # No metrics available, log and return an empty metrics list
+            print(f"No metrics available for device {device['device_name']} ({device_ip})", file=sys.stderr)
             return {"time": f"{start_date} - {end_date}", "metrics": []}
 
     def calculate_average_energy_metrics_by_site_id(self, site_id: int, duration_str: str) -> dict:
