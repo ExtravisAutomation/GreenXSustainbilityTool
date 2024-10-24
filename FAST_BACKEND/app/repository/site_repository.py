@@ -1025,3 +1025,18 @@ class SiteRepository(BaseRepository):
                 result.append(device_data)
 
             return result
+
+    def get_device_by_site_id_and_device_id_pue(self, site_id: int, device_id: int):
+        with self.session_factory() as session:
+            device = (
+                session.query(
+                    DeviceInventory,
+                    APICControllers.ip_address,
+                    Site.site_name
+                )
+                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Site, DeviceInventory.site_id == Site.id)
+                .filter(DeviceInventory.site_id == site_id, DeviceInventory.id == device_id)
+                .first()
+            )
+            return device
