@@ -1,4 +1,5 @@
 import random
+import sys
 from datetime import datetime
 # Setup logging
 import re
@@ -94,7 +95,7 @@ class DataStorage:
                 )
                 session.add(new_apic)
                 logging.info(f"Added new APIC controller with IP: {node_info['address']}")
-
+                print("REACHED AT ADD INVENTORY FUNCTIONNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", file=sys.stderr)
                 new_device = DeviceInventory(
                     pn_code=node_info['model'],
                     serial_number=node_info['serial'],
