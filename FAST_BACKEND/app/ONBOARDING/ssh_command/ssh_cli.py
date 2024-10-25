@@ -27,6 +27,7 @@ class sshCommand:
             logging.info(f"Successfully connected to {self.hostname}")
         except Exception as e:
             logging.error(f"Failed to connect to {self.hostname}: {str(e)}")
+            self.message = "Failed to connect to", + self.hostname
             self.device = None
 
     def disconnect(self):
