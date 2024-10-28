@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 from fastapi import HTTPException
 from app.model.rack import Rack
 from app.model.site import Site
-from app.model.DevicesSntc import DevicesSntc as DeviceSNTC
+from app.model.DevicesSntc import DevicesSntc as DeviceSNTC, ChassisDevice
 from app.repository.InfluxQuery import get_24hDevice_dataTraffic, get_24hDevice_power, get_device_power
 from app.model.device_inventory import ChassisFan, ChassisModule, ChassisPowerSupply, DeviceInventory, ChassisDevice
 from app.model.apic_controller import APICController
@@ -18,29 +18,19 @@ class DeviceInventoryRepository(BaseRepository):
         super().__init__(session_factory, DeviceInventory)
         self.influxdb_repository = influxdb_repository
 
-    def get_all_devices(self) -> List[DeviceInventory]:
+    def get_all_devices(self):
         with self.session_factory() as session:
             devices = (
                 session.query(DeviceInventory)
                 .options(
+                    joinedload(DeviceInventory.apic_controller),
                     joinedload(DeviceInventory.rack),
                     joinedload(DeviceInventory.site),
-                    joinedload(DeviceInventory.apic_controller)
+                    joinedload(DeviceInventory.chassis_devices)
+                    .joinedload(ChassisDevice.device_sntc)  # Load SNTC data via ChassisDevice
                 )
                 .all()
             )
-
-            # Add SNTC data to each device
-            for device in devices:
-                sntc = session.query(DeviceSNTC).filter(DeviceSNTC.model_name == device.pn_code).first()
-                if sntc:
-                    device.hw_eol_ad = sntc.hw_eol_ad
-                    device.hw_eos = sntc.hw_eos
-                    device.sw_EoSWM = sntc.sw_EoSWM
-                    device.hw_EoRFA = sntc.hw_EoRFA
-                    device.sw_EoVSS = sntc.sw_EoVSS
-                    device.hw_EoSCR = sntc.hw_EoSCR
-                    device.hw_ldos = sntc.hw_ldos
             return devices
 
     def get_device_by_id(self, device_id: int) -> DeviceInventory:
