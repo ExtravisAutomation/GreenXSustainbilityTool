@@ -50,6 +50,7 @@ class DeviceInventory(BaseModel):
 
 class DeviceSNTC(BaseModel):
     __tablename__ = 'devices_sntc'
+    __table_args__ = {'extend_existing': True}  # This line prevents redefinition errors
 
     #id = Column(Integer, primary_key=True, autoincrement=True)
     model_name = Column(String(255), nullable=True)
