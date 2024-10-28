@@ -17,6 +17,7 @@ class DeviceInventoryService:
         for device in devices:
             enriched_device = DeviceInventoryInDB(
                 # Set only required fields explicitly
+                id=device.id,
                 cisco_domain=device.cisco_domain,
                 contract_expiry=device.contract_expiry,
                 contract_number=device.contract_number,
