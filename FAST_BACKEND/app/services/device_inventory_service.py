@@ -13,6 +13,13 @@ class DeviceInventoryService:
         for device in devices:
             enriched_device = DeviceInventoryInDB(
                 **device.__dict__,
+                hw_eol_ad=str(device.hw_eol_ad) if device.hw_eol_ad is not None else None,
+                hw_eos=str(device.hw_eos) if device.hw_eos is not None else None,
+                sw_EoSWM=str(device.sw_EoSWM) if device.sw_EoSWM is not None else None,
+                hw_EoRFA=str(device.hw_EoRFA) if device.hw_EoRFA is not None else None,
+                sw_EoVSS=str(device.sw_EoVSS) if device.sw_EoVSS is not None else None,
+                hw_EoSCR=str(device.hw_EoSCR) if device.hw_EoSCR is not None else None,
+                hw_ldos=str(device.hw_ldos) if device.hw_ldos is not None else None,
                 site_name=device.site.site_name if device.site else None,
                 rack_name=device.rack.rack_name if device.rack else None,
                 device_ip=device.apic_controller.ip_address if device.apic_controller else None
