@@ -19,65 +19,48 @@ class DeviceInventoryRepository(BaseRepository):
         self.influxdb_repository = influxdb_repository
 
     def get_all_devices(self) -> List[dict]:
-        # Get devices with SNTC and relationship data as dictionaries from the repository
-        devices = self.device_inventory_repository.get_all_devices()
         enriched_devices = []
 
-        for device in devices:
-            # Enrich data with SNTC fields and handle potential missing data
-            enriched_device = {
-                "id": device.get("id"),
-                "cisco_domain": device.get("cisco_domain"),
-                "contract_expiry": device.get("contract_expiry"),
-                "contract_number": device.get("contract_number"),
-                "created_by": device.get("created_by"),
-                "criticality": device.get("criticality"),
-                "department": device.get("department"),
-                "device_id": device.get("device_id"),
-                "device_name": device.get("device_name"),
-                "device_ru": device.get("device_ru"),
-                "domain": device.get("domain"),
-                "hardware_version": device.get("hardware_version"),
-                "hw_eol_date": device.get("hw_eol_date"),
-                "hw_eos_date": device.get("hw_eos_date"),
-                "item_code": device.get("item_code"),
-                "item_desc": device.get("item_desc"),
-                "manufacturer_date": device.get("manufacturer_date"),
-                "manufacturer": device.get("manufacturer"),
-                "modified_by": device.get("modified_by"),
-                "parent": device.get("parent"),
-                "patch_version": device.get("patch_version"),
-                "pn_code": device.get("pn_code"),
-                "site_id": device.get("site_id"),
-                "rack_id": device.get("rack_id"),
-                "rfs_date": device.get("rfs_date"),
-                "section": device.get("section"),
-                "serial_number": device.get("serial_number"),
-                "software_version": device.get("software_version"),
-                "source": device.get("source"),
-                "stack": device.get("stack"),
-                "status": device.get("status"),
-                "sw_eol_date": device.get("sw_eol_date"),
-                "sw_eos_date": device.get("sw_eos_date"),
-                "tag_id": device.get("tag_id"),
-                "apic_controller_id": device.get("apic_controller_id"),
+        with self.session_factory() as session:
+            devices = (
+                session.query(DeviceInventory)
+                .options(
+                    joinedload(DeviceInventory.rack),
+                    joinedload(DeviceInventory.site),
+                    joinedload(DeviceInventory.apic_controller),
+                )
+                .all()
+            )
 
-                # SNTC fields
-                "hw_eol_ad": device.get("hw_eol_ad"),
-                "hw_eos": device.get("hw_eos"),
-                "sw_EoSWM": device.get("sw_EoSWM"),
-                "hw_EoRFA": device.get("hw_EoRFA"),
-                "sw_EoVSS": device.get("sw_EoVSS"),
-                "hw_EoSCR": device.get("hw_EoSCR"),
-                "hw_ldos": device.get("hw_ldos"),
+            for device in devices:
+                # Fetch the matching DeviceSNTC data based on model_name and pn_code
+                sntc_data = (
+                    session.query(DeviceSNTC)
+                    .filter(DeviceSNTC.model_name == device.pn_code)
+                    .first()
+                )
 
-                # Additional fields from relationships
-                "site_name": device.get("site_name"),
-                "rack_name": device.get("rack_name"),
-                "device_ip": device.get("device_ip")
-            }
+                # Prepare attributes for DeviceSNTC if exists, else set to None
+                sntc_info = {
+                    "hw_eol_ad": sntc_data.hw_eol_ad if sntc_data else None,
+                    "hw_eos": sntc_data.hw_eos if sntc_data else None,
+                    "sw_EoSWM": sntc_data.sw_EoSWM if sntc_data else None,
+                    "hw_EoRFA": sntc_data.hw_EoRFA if sntc_data else None,
+                    "sw_EoVSS": sntc_data.sw_EoVSS if sntc_data else None,
+                    "hw_EoSCR": sntc_data.hw_EoSCR if sntc_data else None,
+                    "hw_ldos": sntc_data.hw_ldos if sntc_data else None,
+                }
 
-            enriched_devices.append(enriched_device)
+                # Collect device information with relationships and SNTC data
+                enriched_device = {
+                    **device.__dict__,
+                    **sntc_info,
+                    "rack_name": device.rack.rack_name if device.rack else None,
+                    "site_name": device.site.site_name if device.site else None,
+                    "device_ip": device.apic_controller.ip_address if device.apic_controller else None,
+                }
+
+                enriched_devices.append(enriched_device)
 
         return enriched_devices
 
