@@ -11,13 +11,14 @@ class DeviceInventoryService:
     def to_datetime(self, value):
         # Helper function to convert Date to datetime
         return datetime.combine(value, datetime.min.time()) if value else None
+
     def get_all_devices(self) -> List[DeviceInventoryInDB]:
         devices = self.device_inventory_repository.get_all_devices()
         enriched_devices = []
         for device in devices:
-            sntc_data = device.chassis_devices[0].device_sntc if device.chassis_devices else None
+            # Access SNTC fields from joined `DeviceSNTC` relationship
+            sntc_data = device.DeviceSNTC if hasattr(device, 'DeviceSNTC') else None
             enriched_device = DeviceInventoryInDB(
-                # Set only required fields explicitly
                 id=device.id,
                 cisco_domain=device.cisco_domain,
                 contract_expiry=device.contract_expiry,
@@ -54,14 +55,14 @@ class DeviceInventoryService:
                 tag_id=device.tag_id,
                 apic_controller_id=device.apic_controller_id,
 
-                # Convert SNTC fields
-                hw_eol_ad=self.to_datetime(sntc_data.hw_eol_ad),
-                hw_eos=self.to_datetime(sntc_data.hw_eos),
-                sw_EoSWM=self.to_datetime(sntc_data.sw_EoSWM),
-                hw_EoRFA=self.to_datetime(sntc_data.hw_EoRFA),
-                sw_EoVSS=self.to_datetime(sntc_data.sw_EoVSS),
-                hw_EoSCR=self.to_datetime(sntc_data.hw_EoSCR),
-                hw_ldos=self.to_datetime(sntc_data.hw_ldos),
+                # SNTC fields if available
+                hw_eol_ad=self.to_datetime(sntc_data.hw_eol_ad) if sntc_data else None,
+                hw_eos=self.to_datetime(sntc_data.hw_eos) if sntc_data else None,
+                sw_EoSWM=self.to_datetime(sntc_data.sw_EoSWM) if sntc_data else None,
+                hw_EoRFA=self.to_datetime(sntc_data.hw_EoRFA) if sntc_data else None,
+                sw_EoVSS=self.to_datetime(sntc_data.sw_EoVSS) if sntc_data else None,
+                hw_EoSCR=self.to_datetime(sntc_data.hw_EoSCR) if sntc_data else None,
+                hw_ldos=self.to_datetime(sntc_data.hw_ldos) if sntc_data else None,
 
                 # Additional fields
                 site_name=device.site.site_name if device.site else None,

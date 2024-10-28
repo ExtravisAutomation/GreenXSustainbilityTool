@@ -48,21 +48,21 @@ class DeviceInventory(BaseModel):
     
     
 
-# class DeviceSNTC(BaseModel):
-#     __tablename__ = 'devices_sntc'
+class DeviceSNTC(BaseModel):
+    __tablename__ = 'devices_sntc'
 
-#     id = Column(Integer, primary_key=True, autoincrement=True)
-#     model_name = Column(String(255), nullable=True)
-#     hw_eol_ad = Column(Date, nullable=True)
-#     hw_eos = Column(Date, nullable=True)
-#     sw_EoSWM = Column(Date, nullable=True)
-#     hw_EoRFA = Column(Date, nullable=True)
-#     sw_EoVSS = Column(Date, nullable=True)
-#     hw_EoSCR = Column(Date, nullable=True)
-#     hw_ldos = Column(Date, nullable=True)
+    #id = Column(Integer, primary_key=True, autoincrement=True)
+    model_name = Column(String(255), nullable=True)
+    hw_eol_ad = Column(Date, nullable=True)
+    hw_eos = Column(Date, nullable=True)
+    sw_EoSWM = Column(Date, nullable=True)
+    hw_EoRFA = Column(Date, nullable=True)
+    sw_EoVSS = Column(Date, nullable=True)
+    hw_EoSCR = Column(Date, nullable=True)
+    hw_ldos = Column(Date, nullable=True)
     
-#     # created_at = Column(TIMESTAMP, nullable=False, server_default="CURRENT_TIMESTAMP", onupdate="CURRENT_TIMESTAMP")
-#     # updated_at = Column(TIMESTAMP, nullable=False, server_default="0000-00-00 00:00:00", onupdate="CURRENT_TIMESTAMP")
+    # created_at = Column(TIMESTAMP, nullable=False, server_default="CURRENT_TIMESTAMP", onupdate="CURRENT_TIMESTAMP")
+    # updated_at = Column(TIMESTAMP, nullable=False, server_default="0000-00-00 00:00:00", onupdate="CURRENT_TIMESTAMP")
 
 
 class Chassis(BaseModel):

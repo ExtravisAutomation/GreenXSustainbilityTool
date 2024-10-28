@@ -18,16 +18,17 @@ class DeviceInventoryRepository(BaseRepository):
         super().__init__(session_factory, DeviceInventory)
         self.influxdb_repository = influxdb_repository
 
-    def get_all_devices(self):
+    def get_all_devices(self) -> List[DeviceInventory]:
         with self.session_factory() as session:
+            # Join DeviceInventory with related tables and DeviceSNTC based on matching `pn_code` and `model_name`
             devices = (
                 session.query(DeviceInventory)
+                .outerjoin(DeviceSNTC, DeviceInventory.pn_code == DeviceSNTC.model_name)
                 .options(
-                    joinedload(DeviceInventory.apic_controller),
                     joinedload(DeviceInventory.rack),
                     joinedload(DeviceInventory.site),
-                    joinedload(DeviceInventory.chassis_devices)
-                    .joinedload(ChassisDevice.device_sntc)  # Load SNTC data via ChassisDevice
+                    joinedload(DeviceInventory.apic_controller),
+                    joinedload(DeviceSNTC)  # Include DeviceSNTC for eager loading
                 )
                 .all()
             )
