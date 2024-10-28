@@ -53,6 +53,7 @@ class DeviceInventoryInDB(DeviceInventoryBase):
     power_utilization: Optional[float]
     site_name: Optional[str]
     rack_name: Optional[str]
+    device_ip: Optional[str]
 
     class Config:
         orm_mode = True
