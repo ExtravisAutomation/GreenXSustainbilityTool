@@ -8,7 +8,7 @@ class DeviceInventoryService:
         self.device_inventory_repository = device_inventory_repository
 
     def get_all_devices(self) -> List[DeviceInventoryInDB]:
-        devices = self.repository.get_all_devices()
+        devices = self.device_inventory_repository.get_all_devices()
         enriched_devices = []
         for device in devices:
             enriched_device = DeviceInventoryInDB(
