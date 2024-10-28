@@ -18,21 +18,68 @@ class DeviceInventoryRepository(BaseRepository):
         super().__init__(session_factory, DeviceInventory)
         self.influxdb_repository = influxdb_repository
 
-    def get_all_devices(self) -> List[DeviceInventory]:
-        with self.session_factory() as session:
-            # Join DeviceInventory with related tables and DeviceSNTC based on matching `pn_code` and `model_name`
-            devices = (
-                session.query(DeviceInventory)
-                .outerjoin(DeviceSNTC, DeviceInventory.pn_code == DeviceSNTC.model_name)
-                .options(
-                    joinedload(DeviceInventory.rack),
-                    joinedload(DeviceInventory.site),
-                    joinedload(DeviceInventory.apic_controller),
-                    joinedload(DeviceSNTC)  # Include DeviceSNTC for eager loading
-                )
-                .all()
-            )
-            return devices
+    def get_all_devices(self) -> List[dict]:
+        # Get devices with SNTC and relationship data as dictionaries from the repository
+        devices = self.device_inventory_repository.get_all_devices()
+        enriched_devices = []
+
+        for device in devices:
+            # Enrich data with SNTC fields and handle potential missing data
+            enriched_device = {
+                "id": device.get("id"),
+                "cisco_domain": device.get("cisco_domain"),
+                "contract_expiry": device.get("contract_expiry"),
+                "contract_number": device.get("contract_number"),
+                "created_by": device.get("created_by"),
+                "criticality": device.get("criticality"),
+                "department": device.get("department"),
+                "device_id": device.get("device_id"),
+                "device_name": device.get("device_name"),
+                "device_ru": device.get("device_ru"),
+                "domain": device.get("domain"),
+                "hardware_version": device.get("hardware_version"),
+                "hw_eol_date": device.get("hw_eol_date"),
+                "hw_eos_date": device.get("hw_eos_date"),
+                "item_code": device.get("item_code"),
+                "item_desc": device.get("item_desc"),
+                "manufacturer_date": device.get("manufacturer_date"),
+                "manufacturer": device.get("manufacturer"),
+                "modified_by": device.get("modified_by"),
+                "parent": device.get("parent"),
+                "patch_version": device.get("patch_version"),
+                "pn_code": device.get("pn_code"),
+                "site_id": device.get("site_id"),
+                "rack_id": device.get("rack_id"),
+                "rfs_date": device.get("rfs_date"),
+                "section": device.get("section"),
+                "serial_number": device.get("serial_number"),
+                "software_version": device.get("software_version"),
+                "source": device.get("source"),
+                "stack": device.get("stack"),
+                "status": device.get("status"),
+                "sw_eol_date": device.get("sw_eol_date"),
+                "sw_eos_date": device.get("sw_eos_date"),
+                "tag_id": device.get("tag_id"),
+                "apic_controller_id": device.get("apic_controller_id"),
+
+                # SNTC fields
+                "hw_eol_ad": device.get("hw_eol_ad"),
+                "hw_eos": device.get("hw_eos"),
+                "sw_EoSWM": device.get("sw_EoSWM"),
+                "hw_EoRFA": device.get("hw_EoRFA"),
+                "sw_EoVSS": device.get("sw_EoVSS"),
+                "hw_EoSCR": device.get("hw_EoSCR"),
+                "hw_ldos": device.get("hw_ldos"),
+
+                # Additional fields from relationships
+                "site_name": device.get("site_name"),
+                "rack_name": device.get("rack_name"),
+                "device_ip": device.get("device_ip")
+            }
+
+            enriched_devices.append(enriched_device)
+
+        return enriched_devices
 
     def get_device_by_id(self, device_id: int) -> DeviceInventory:
         with self.session_factory() as session:
