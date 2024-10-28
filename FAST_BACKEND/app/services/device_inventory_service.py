@@ -7,12 +7,22 @@ class DeviceInventoryService:
     def __init__(self, device_inventory_repository: DeviceInventoryRepository):
         self.device_inventory_repository = device_inventory_repository
 
+    def to_datetime(self, value):
+        # Helper function to convert Date to datetime
+        return datetime.combine(value, datetime.min.time()) if value else None
     def get_all_devices(self) -> List[DeviceInventoryInDB]:
         devices = self.device_inventory_repository.get_all_devices()
         enriched_devices = []
         for device in devices:
             enriched_device = DeviceInventoryInDB(
                 **device.__dict__,
+                hw_eol_ad=self.to_datetime(device.hw_eol_ad),
+                hw_eos=self.to_datetime(device.hw_eos),
+                sw_EoSWM=self.to_datetime(device.sw_EoSWM),
+                hw_EoRFA=self.to_datetime(device.hw_EoRFA),
+                sw_EoVSS=self.to_datetime(device.sw_EoVSS),
+                hw_EoSCR=self.to_datetime(device.hw_EoSCR),
+                hw_ldos=self.to_datetime(device.hw_ldos),
                 site_name=device.site.site_name if device.site else None,
                 rack_name=device.rack.rack_name if device.rack else None,
                 device_ip=device.apic_controller.ip_address if device.apic_controller else None
