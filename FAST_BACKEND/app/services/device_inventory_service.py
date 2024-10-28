@@ -11,19 +11,13 @@ class DeviceInventoryService:
         devices = self.device_inventory_repository.get_all_devices()
         enriched_devices = []
         for device in devices:
-            enriched_devices.append(DeviceInventoryInDB(
+            enriched_device = DeviceInventoryInDB(
                 **device.__dict__,
-                hw_eol_ad=device.hw_eol_ad,
-                hw_eos=device.hw_eos,
-                sw_EoSWM=device.sw_EoSWM,
-                hw_EoRFA=device.hw_EoRFA,
-                sw_EoVSS=device.sw_EoVSS,
-                hw_EoSCR=device.hw_EoSCR,
-                hw_ldos=device.hw_ldos,
                 site_name=device.site.site_name if device.site else None,
                 rack_name=device.rack.rack_name if device.rack else None,
                 device_ip=device.apic_controller.ip_address if device.apic_controller else None
-            ))
+            )
+            enriched_devices.append(enriched_device)
         return enriched_devices
 
     def get_device_by_id(self, device_id: int) -> DeviceInventoryInDB:
