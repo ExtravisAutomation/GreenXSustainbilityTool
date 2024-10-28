@@ -12,9 +12,9 @@ class DeviceInventoryService:
         return [
             DeviceInventoryInDB(
                 **device.__dict__,
-                site_name=device.site.name if device.site else None,
-                rack_name=device.rack.name if device.rack else None,
-                device_ip=device.device_ip  # Map device_ip here
+                site_name=device.site.site_name if device.site else None,
+                rack_name=device.rack.rack_name if device.rack else None,
+                device_ip=device.apic_controller.ip_address if device.apic_controller else None
             )
             for device in devices
         ]
