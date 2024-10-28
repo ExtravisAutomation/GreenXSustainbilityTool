@@ -20,7 +20,9 @@ class DeviceInventoryRepository(BaseRepository):
 
     def get_all_devices(self) -> List[DeviceInventory]:
         with self.session_factory() as session:
-            return list(session.query(DeviceInventory).all())
+            return session.query(DeviceInventory) \
+                .options(joinedload(DeviceInventory.site), joinedload(DeviceInventory.rack)) \
+                .all()
 
     def get_device_by_id(self, device_id: int) -> DeviceInventory:
         with self.session_factory() as session:

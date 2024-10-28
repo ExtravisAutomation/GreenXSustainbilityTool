@@ -51,6 +51,8 @@ class DeviceInventoryUpdate(DeviceInventoryBase):
 class DeviceInventoryInDB(DeviceInventoryBase):
     id: int
     power_utilization: Optional[float]
+    site_name: Optional[str]
+    rack_name: Optional[str]
 
     class Config:
         orm_mode = True

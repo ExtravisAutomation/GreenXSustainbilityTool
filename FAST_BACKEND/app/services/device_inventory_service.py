@@ -9,7 +9,15 @@ class DeviceInventoryService:
 
     def get_all_devices(self) -> List[DeviceInventoryInDB]:
         devices = self.device_inventory_repository.get_all_devices()
-        return [DeviceInventoryInDB.from_orm(device) for device in devices]
+        return [
+            DeviceInventoryInDB(
+                **device.__dict__,
+                site_name=device.site.name if device.site else None,
+                rack_name=device.rack.name if device.rack else None,
+                device_ip=device.device_ip  # Map device_ip here
+            )
+            for device in devices
+        ]
 
     def get_device_by_id(self, device_id: int) -> DeviceInventoryInDB:
         device = self.device_inventory_repository.get_device_by_id(device_id)
