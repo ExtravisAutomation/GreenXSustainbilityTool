@@ -37,6 +37,13 @@ class DeviceInventoryBase(BaseModel):
     sw_eol_date: Optional[datetime]
     sw_eos_date: Optional[datetime]
     tag_id: Optional[str]
+    hw_eol_ad: Optional[str]
+    hw_eos: Optional[str]
+    sw_EoSWM: Optional[str]
+    hw_EoRFA: Optional[str]
+    sw_EoVSS: Optional[str]
+    hw_EoSCR: Optional[str]
+    hw_ldos: Optional[str]
     apic_controller_id: Optional[int]
 
 

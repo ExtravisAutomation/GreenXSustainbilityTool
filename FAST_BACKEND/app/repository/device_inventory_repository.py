@@ -27,9 +27,20 @@ class DeviceInventoryRepository(BaseRepository):
                     joinedload(DeviceInventory.site),
                     joinedload(DeviceInventory.apic_controller)
                 )
-                .filter(DeviceInventory.site_id.isnot(None))
                 .all()
             )
+
+            # Add SNTC data to each device
+            for device in devices:
+                sntc = session.query(DeviceSNTC).filter(DeviceSNTC.model_name == device.pn_code).first()
+                if sntc:
+                    device.hw_eol_ad = sntc.hw_eol_ad
+                    device.hw_eos = sntc.hw_eos
+                    device.sw_EoSWM = sntc.sw_EoSWM
+                    device.hw_EoRFA = sntc.hw_EoRFA
+                    device.sw_EoVSS = sntc.sw_EoVSS
+                    device.hw_EoSCR = sntc.hw_EoSCR
+                    device.hw_ldos = sntc.hw_ldos
             return devices
 
     def get_device_by_id(self, device_id: int) -> DeviceInventory:
