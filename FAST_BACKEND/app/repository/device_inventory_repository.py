@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 from fastapi import HTTPException
 from app.model.rack import Rack
 from app.model.site import Site
-from app.model.DevicesSntc import DevicesSntc as DeviceSNTC,
+from app.model.DevicesSntc import DevicesSntc as DeviceSNTC
 from app.repository.InfluxQuery import get_24hDevice_dataTraffic, get_24hDevice_power, get_device_power
 from app.model.device_inventory import ChassisFan, ChassisModule, ChassisPowerSupply, DeviceInventory, ChassisDevice
 from app.model.apic_controller import APICController
