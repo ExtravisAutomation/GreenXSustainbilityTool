@@ -2791,8 +2791,8 @@ class InfluxDBRepository:
                         total_power_metrics.append({
                             "time": row['index'],
                             "energy_consumption": round(energy_consumption, 2),
-                            "total_POut": round(pout, 2),
-                            "total_PIn": round(pin, 2),
+                            "total_POut": round(pout/1000, 2),
+                            "total_PIn": round(pin/1000, 2),
                             "power_efficiency": round(power_efficiency, 2),
                             "eer": round(eer, 2),
                             "pue": round(pue, 2)
