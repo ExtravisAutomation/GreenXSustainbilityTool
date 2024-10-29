@@ -22,6 +22,7 @@ class DeviceInventoryRepository(BaseRepository):
         enriched_devices = []
 
         with self.session_factory() as session:
+            # Query all DeviceInventory records
             devices = (
                 session.query(DeviceInventory)
                 .options(
@@ -40,6 +41,17 @@ class DeviceInventoryRepository(BaseRepository):
                     .first()
                 )
 
+                # Retrieve device_type from APICControllers by matching IP address
+                apic_controller_ip = device.apic_controller.ip_address if device.apic_controller else None
+                device_type = None
+                if apic_controller_ip:
+                    apic_controller_device = (
+                        session.query(APICControllers)
+                        .filter(APICControllers.ip_address == apic_controller_ip)
+                        .first()
+                    )
+                    device_type = apic_controller_device.device_type if apic_controller_device else None
+
                 # Prepare attributes for DeviceSNTC if exists, else set to None
                 sntc_info = {
                     "hw_eol_ad": sntc_data.hw_eol_ad if sntc_data else None,
@@ -57,9 +69,8 @@ class DeviceInventoryRepository(BaseRepository):
                     **sntc_info,
                     "rack_name": device.rack.rack_name if device.rack else None,
                     "site_name": device.site.site_name if device.site else None,
-                    "device_ip": device.apic_controller.ip_address if device.apic_controller else None,
-                    "device_type": device.apic_controller.device_type if device.apic_controller else None,
-                    # Include device_type
+                    "device_ip": apic_controller_ip,
+                    "device_type": device_type,  # Include device_type from APICControllers if found
                 }
 
                 enriched_devices.append(enriched_device)
