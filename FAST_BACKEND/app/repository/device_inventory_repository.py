@@ -22,6 +22,7 @@ class DeviceInventoryRepository(BaseRepository):
         enriched_devices = []
 
         with self.session_factory() as session:
+            # Query all DeviceInventory records
             devices = (
                 session.query(DeviceInventory)
                 .options(
@@ -44,16 +45,30 @@ class DeviceInventoryRepository(BaseRepository):
                 apic_controller_ip = device.apic_controller.ip_address if device.apic_controller else None
                 device_type = None
                 if apic_controller_ip:
+                    print(f"Looking up APICControllers device type for IP: {apic_controller_ip}")
                     apic_controller_device = (
                         session.query(APICControllers)
                         .filter(APICControllers.ip_address == apic_controller_ip)
                         .first()
                     )
-                    device_type = apic_controller_device.device_type if apic_controller_device else None
+                    if apic_controller_device:
+                        device_type = apic_controller_device.device_type
+                        print(f"Device Type found for IP {apic_controller_ip}: {device_type}")
+                    else:
+                        print(f"No APICControllers device found with IP: {apic_controller_ip}")
+                else:
+                    print(f"No IP address found for apic_controller in DeviceInventory ID: {device.id}")
 
-                # Debug: Log devices missing device_type
-                if device_type is None:
-                    print(f"Device with IP {apic_controller_ip} missing device_type.")
+                # Prepare attributes for DeviceSNTC if exists, else set to None
+                sntc_info = {
+                    "hw_eol_ad": sntc_data.hw_eol_ad if sntc_data else None,
+                    "hw_eos": sntc_data.hw_eos if sntc_data else None,
+                    "sw_EoSWM": sntc_data.sw_EoSWM if sntc_data else None,
+                    "hw_EoRFA": sntc_data.hw_EoRFA if sntc_data else None,
+                    "sw_EoVSS": sntc_data.sw_EoVSS if sntc_data else None,
+                    "hw_EoSCR": sntc_data.hw_EoSCR if sntc_data else None,
+                    "hw_ldos": sntc_data.hw_ldos if sntc_data else None,
+                }
 
                 # Collect device information with relationships, SNTC data, and device_type
                 enriched_device = {
@@ -66,6 +81,7 @@ class DeviceInventoryRepository(BaseRepository):
                 }
 
                 enriched_devices.append(enriched_device)
+                print(f"Enriched device added: {enriched_device['device_name']} with IP: {apic_controller_ip}")
 
         return enriched_devices
 
