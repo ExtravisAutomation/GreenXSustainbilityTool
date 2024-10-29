@@ -18,6 +18,23 @@ class DeviceInventoryRepository(BaseRepository):
         super().__init__(session_factory, DeviceInventory)
         self.influxdb_repository = influxdb_repository
 
+    def get_device_type_by_ip(self, session, apic_controller_ip: str) -> str:
+        """Helper method to retrieve device_type from APICControllers based on IP address."""
+        if apic_controller_ip:
+            print(f"Looking up APICControllers device type for IP: {apic_controller_ip}")
+            apic_controller_device = (
+                session.query(APICControllers)
+                .filter(APICControllers.ip_address == apic_controller_ip)
+                .first()
+            )
+            if apic_controller_device:
+                device_type = apic_controller_device.device_type
+                print(f"Device Type found for IP {apic_controller_ip}: {device_type}")
+                return device_type
+            else:
+                print(f"No APICControllers device found with IP: {apic_controller_ip}")
+        return None
+
     def get_all_devices(self) -> List[dict]:
         enriched_devices = []
 
@@ -41,23 +58,9 @@ class DeviceInventoryRepository(BaseRepository):
                     .first()
                 )
 
-                # Retrieve device_type from APICControllers by matching IP address
+                # Retrieve device_type using the helper method
                 apic_controller_ip = device.apic_controller.ip_address if device.apic_controller else None
-                device_type = None
-                if apic_controller_ip:
-                    print(f"Looking up APICControllers device type for IP: {apic_controller_ip}")
-                    apic_controller_device = (
-                        session.query(APICControllers)
-                        .filter(APICControllers.ip_address == apic_controller_ip)
-                        .first()
-                    )
-                    if apic_controller_device:
-                        device_type = apic_controller_device.device_type
-                        print(f"Device Type found for IP {apic_controller_ip}: {device_type}")
-                    else:
-                        print(f"No APICControllers device found with IP: {apic_controller_ip}")
-                else:
-                    print(f"No IP address found for apic_controller in DeviceInventory ID: {device.id}")
+                device_type = self.get_device_type_by_ip(session, apic_controller_ip)
 
                 # Prepare attributes for DeviceSNTC if exists, else set to None
                 sntc_info = {
