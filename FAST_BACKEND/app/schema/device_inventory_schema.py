@@ -64,6 +64,7 @@ class DeviceInventoryInDB(DeviceInventoryBase):
     site_name: Optional[str]
     rack_name: Optional[str]
     device_ip: Optional[str]
+    device_type: Optional[str]
 
     class Config:
         orm_mode = True

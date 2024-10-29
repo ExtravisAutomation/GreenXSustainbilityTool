@@ -68,7 +68,8 @@ class DeviceInventoryService:
                 # Additional fields from relationships
                 "site_name": device.get("site_name"),
                 "rack_name": device.get("rack_name"),
-                "device_ip": device.get("device_ip")
+                "device_ip": device.get("device_ip"),
+                "device_type": device.get("device_type")
             }
 
             enriched_devices.append(enriched_device)

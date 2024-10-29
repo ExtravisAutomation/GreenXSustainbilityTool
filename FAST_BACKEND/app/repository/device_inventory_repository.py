@@ -51,13 +51,15 @@ class DeviceInventoryRepository(BaseRepository):
                     "hw_ldos": sntc_data.hw_ldos if sntc_data else None,
                 }
 
-                # Collect device information with relationships and SNTC data
+                # Collect device information with relationships, SNTC data, and device_type
                 enriched_device = {
                     **device.__dict__,
                     **sntc_info,
                     "rack_name": device.rack.rack_name if device.rack else None,
                     "site_name": device.site.site_name if device.site else None,
                     "device_ip": device.apic_controller.ip_address if device.apic_controller else None,
+                    "device_type": device.apic_controller.device_type if device.apic_controller else None,
+                    # Include device_type
                 }
 
                 enriched_devices.append(enriched_device)
