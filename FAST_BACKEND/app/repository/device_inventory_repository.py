@@ -22,7 +22,6 @@ class DeviceInventoryRepository(BaseRepository):
         enriched_devices = []
 
         with self.session_factory() as session:
-            # Query all DeviceInventory records
             devices = (
                 session.query(DeviceInventory)
                 .options(
@@ -52,16 +51,9 @@ class DeviceInventoryRepository(BaseRepository):
                     )
                     device_type = apic_controller_device.device_type if apic_controller_device else None
 
-                # Prepare attributes for DeviceSNTC if exists, else set to None
-                sntc_info = {
-                    "hw_eol_ad": sntc_data.hw_eol_ad if sntc_data else None,
-                    "hw_eos": sntc_data.hw_eos if sntc_data else None,
-                    "sw_EoSWM": sntc_data.sw_EoSWM if sntc_data else None,
-                    "hw_EoRFA": sntc_data.hw_EoRFA if sntc_data else None,
-                    "sw_EoVSS": sntc_data.sw_EoVSS if sntc_data else None,
-                    "hw_EoSCR": sntc_data.hw_EoSCR if sntc_data else None,
-                    "hw_ldos": sntc_data.hw_ldos if sntc_data else None,
-                }
+                # Debug: Log devices missing device_type
+                if device_type is None:
+                    print(f"Device with IP {apic_controller_ip} missing device_type.")
 
                 # Collect device information with relationships, SNTC data, and device_type
                 enriched_device = {
