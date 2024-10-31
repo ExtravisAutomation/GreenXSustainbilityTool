@@ -138,9 +138,9 @@ def rack_power(
 @router.post("/addbuilding", response_model=CustomResponse_building)
 def create_building(
     building_data: BuildingCreate,
-    building_service: RackService = Depends(Provide[Container.rack_service])
+    rack_service: RackService = Depends(Provide[Container.rack_service])
 ):
-    building = building_service.create_building(building_data)
+    building = rack_service.create_building(building_data)
     return CustomResponse_building(
         message="Building created successfully",
         data=building,
@@ -150,9 +150,9 @@ def create_building(
 @router.get("/getbuilding/{building_id}", response_model=CustomResponse_building)
 def get_building(
     building_id: int,
-    building_service: RackService = Depends(Provide[Container.rack_service])
+    rack_service: RackService = Depends(Provide[Container.rack_service])
 ):
-    building = building_service.get_building(building_id)
+    building = rack_service.get_building(building_id)
     return CustomResponse_building(
         message="Building fetched successfully" if building else "Building not found",
         data=building,
@@ -160,10 +160,11 @@ def get_building(
     )
 
 @router.get("/getallbuildings", response_model=CustomResponse_building)
+@inject
 def get_all_buildings(
-    building_service: RackService = Depends(Provide[Container.rack_service])
+    rack_service: RackService = Depends(Provide[Container.rack_service])
 ):
-    buildings = building_service.get_all_buildings()
+    buildings = rack_service.get_all_buildings()
     return CustomResponse_building(
         message="Fetched all buildings successfully",
         data=buildings,
@@ -171,12 +172,13 @@ def get_all_buildings(
     )
 
 @router.put("/updatebuilding/{building_id}", response_model=CustomResponse_building)
+@inject
 def update_building(
     building_id: int,
     update_data: BuildingUpdate,
-    building_service: RackService = Depends(Provide[Container.rack_service])
+    rack_service: RackService = Depends(Provide[Container.rack_service])
 ):
-    building = building_service.update_building(building_id, update_data)
+    building = rack_service.update_building(building_id, update_data)
     return CustomResponse_building(
         message="Building updated successfully" if building else "Building not found",
         data=building,
