@@ -65,7 +65,11 @@ class DeviceInventoryInDB(DeviceInventoryBase):
     rack_name: Optional[str]
     device_ip: Optional[str]
     device_type: Optional[str]
-
+    power_utilization: Optional[float]
+    pue: Optional[float]
+    power_input: Optional[float]
+    datatraffic: Optional[float]
+    
     class Config:
         orm_mode = True
 

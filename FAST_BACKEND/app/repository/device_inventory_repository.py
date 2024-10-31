@@ -61,6 +61,13 @@ class DeviceInventoryRepository(BaseRepository):
                 # Retrieve device_type using the helper method
                 apic_controller_ip = device.apic_controller.ip_address if device.apic_controller else None
                 device_type = self.get_device_type_by_ip(session, apic_controller_ip)
+                
+                
+                # Ahmed changes 31/10/2024
+                ip = apic_controller_ip[0] if apic_controller_ip else None
+                power = get_24hDevice_power(ip) if ip else None
+                datatraffic = get_24hDevice_dataTraffic(ip) if ip else None
+                
 
                 # Prepare attributes for DeviceSNTC if exists, else set to None
                 sntc_info = {
@@ -81,7 +88,17 @@ class DeviceInventoryRepository(BaseRepository):
                     "site_name": device.site.site_name if device.site else None,
                     "device_ip": apic_controller_ip,
                     "device_type": device_type,  # Include device_type from APICControllers if found
+                    # Ahmed changes
+                    "power_utilization": power[0]['power_utilization'] if power else None,
+                    "pue": power[0]['pue'] if power else None,
+                    "power_input": power[0]['total_supplied'] if power else None,   
                 }
+                
+                # Ahmed changes
+                if datatraffic:
+                    datatraffic_value = datatraffic[0]['traffic_through'] if datatraffic else None
+                    datatraffic = datatraffic_value / (1024 ** 3) if datatraffic_value else 0
+                    enriched_device["datatraffic"] = round(datatraffic, 2)
 
                 enriched_devices.append(enriched_device)
                 print(f"Enriched device added: {enriched_device['device_name']} with IP: {apic_controller_ip}")
