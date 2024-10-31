@@ -205,11 +205,12 @@ class RackRepository(BaseRepository):
             return response
 
     def create_building(self, building_data: BuildingCreate) -> Building:
-        new_building = Building(**building_data.dict())
-        self.session.add(new_building)
-        self.session.commit()
-        self.session.refresh(new_building)
-        return new_building
+        with self.session_factory() as session:
+            new_building = Building(**building_data.dict())
+            session.add(new_building)
+            session.commit()
+            session.refresh(new_building)
+            return new_building
 
     def get_building(self, building_id: int) -> Optional[Building]:
         return self.session.query(Building).filter_by(id=building_id).first()
