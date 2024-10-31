@@ -138,6 +138,7 @@ def rack_power(
 
 
 @router.post("/addbuilding", response_model=BuildingDetails)
+@inject
 def create_building(
     building_data: BuildingCreate,
     rack_service: RackService = Depends(Provide[Container.rack_service])
