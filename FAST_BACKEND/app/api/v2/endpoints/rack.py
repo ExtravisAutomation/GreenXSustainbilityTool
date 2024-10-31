@@ -10,6 +10,12 @@ from app.core.dependencies import get_current_active_user
 
 from app.schema.rack_schema import RackUpdateResponse
 
+from app.schema.building_schema import BuildingCreate, MultiDeleteResponse, CustomResponse_building
+
+from app.schema.building_schema import BuildingUpdate
+
+from app.schema.building_schema import BuildingDetails
+
 router = APIRouter(prefix="/racks", tags=["RACKS"])
 
 @router.get("/getallracks", response_model=CustomResponse_rack[List[RackDetails]])
@@ -29,8 +35,7 @@ def get_racks(
 @router.post("/addrack", response_model=CustomResponse_rack[RackDetails])
 @inject
 def add_rack(
-    rack_data: RackCreate, 
-    # current_user: User = Depends(get_current_active_user),
+    rack_data: RackCreate,
     rack_service: RackService = Depends(Provide[Container.rack_service])
 ):
     rack = rack_service.create_rack(rack_data)
@@ -130,4 +135,72 @@ def rack_power(
     rack_service: RackService = Depends(Provide[Container.rack_service])
 ):
     return rack_service.get_rack_power_utilization(rack_id)
+
+
+@router.post("/addbuilding", response_model=BuildingDetails)
+@inject
+def create_building(
+    building_data: BuildingCreate,
+    rack_service: RackService = Depends(Provide[Container.rack_service])
+):
+    building = rack_service.create_building(building_data)
+    return building
+@router.get("/getbuilding/{building_id}", response_model=CustomResponse_building)
+def get_building(
+    building_id: int,
+    rack_service: RackService = Depends(Provide[Container.rack_service])
+):
+    building = rack_service.get_building(building_id)
+    return CustomResponse_building(
+        message="Building fetched successfully" if building else "Building not found",
+        data=building,
+        status_code=status.HTTP_200_OK if building else status.HTTP_404_NOT_FOUND
+    )
+
+@router.get("/getallbuildings", response_model=List[BuildingDetails])
+@inject
+def get_all_buildings(
+    rack_service: RackService = Depends(Provide[Container.rack_service])
+):
+    buildings = rack_service.get_all_buildings()
+    return buildings
+
+@router.put("/updatebuilding/{building_id}", response_model=CustomResponse_building)
+@inject
+def update_building(
+    building_id: int,
+    update_data: BuildingUpdate,
+    rack_service: RackService = Depends(Provide[Container.rack_service])
+):
+    building = rack_service.update_building(building_id, update_data)
+    return CustomResponse_building(
+        message="Building updated successfully" if building else "Building not found",
+        data=building,
+        status_code=status.HTTP_200_OK if building else status.HTTP_404_NOT_FOUND
+    )
+
+@router.delete("/deletebuilding/{building_id}", response_model=CustomResponse_building)
+def delete_building(
+    building_id: int,
+    building_service: RackService = Depends(Provide[Container.rack_service])
+):
+    success = building_service.delete_building(building_id)
+    return CustomResponse_building(
+        message="Building deleted successfully" if success else "Building not found",
+        data=None,
+        status_code=status.HTTP_200_OK if success else status.HTTP_404_NOT_FOUND
+    )
+
+@router.delete("/deletemultiplebuildings", response_model=MultiDeleteResponse)
+def delete_multiple_buildings(
+    building_ids: List[int],
+    building_service: RackService = Depends(Provide[Container.rack_service])
+):
+    deleted_ids = building_service.delete_multiple_buildings(building_ids)
+    return MultiDeleteResponse(
+        message="Buildings deleted successfully" if deleted_ids else "No buildings were deleted",
+        deleted_ids=deleted_ids,
+        status_code=status.HTTP_200_OK
+    )
+
 

@@ -18,11 +18,13 @@ class RackBase(BaseModel):
 
 
 class RackCreate(RackBase):
+    building_id: int
     pass
 
 
 class RackDetails(RackBase):
     id: int
+    building_name: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -42,6 +44,7 @@ class RackUpdate(BaseModel):
     Width: Optional[int] = None
     Depth: Optional[int] = None
     status: Optional[str] = None
+    building_id: Optional[int] = None
 
 
 # class RackDetails(RackBase):
