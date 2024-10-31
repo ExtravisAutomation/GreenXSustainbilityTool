@@ -21,7 +21,6 @@ class RackService:
 
     def create_rack(self, rack_data: RackCreate) -> RackDetails:
         rack = self.rack_repository.add_rack(rack_data)
-        # Ensure the response is of type RackDetails
         return RackDetails.from_orm(rack)
 
     def update_rack(self, rack_id: int, rack_data: RackUpdate) -> RackDetails:
