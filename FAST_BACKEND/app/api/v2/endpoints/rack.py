@@ -137,18 +137,13 @@ def rack_power(
     return rack_service.get_rack_power_utilization(rack_id)
 
 
-@router.post("/addbuilding", response_model=CustomResponse_building)
+@router.post("/addbuilding", response_model=BuildingDetails)
 def create_building(
     building_data: BuildingCreate,
     rack_service: RackService = Depends(Provide[Container.rack_service])
 ):
     building = rack_service.create_building(building_data)
-    return CustomResponse_building(
-        message="Building created successfully",
-        data=building,
-        status_code=status.HTTP_201_CREATED
-    )
-
+    return building
 @router.get("/getbuilding/{building_id}", response_model=CustomResponse_building)
 def get_building(
     building_id: int,
