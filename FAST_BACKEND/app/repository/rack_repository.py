@@ -20,6 +20,8 @@ from app.schema.building_schema import BuildingUpdate
 
 from app.model.rack import rack_building_association
 
+from app.schema.rack_schema import RackDetails
+
 
 class RackRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
