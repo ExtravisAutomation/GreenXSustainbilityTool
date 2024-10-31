@@ -213,7 +213,8 @@ class RackRepository(BaseRepository):
         return self.session.query(Building).filter_by(id=building_id).first()
 
     def get_all_buildings(self) -> List[Building]:
-        return self.session.query(Building).all()
+        with self.session_factory() as session:
+            return self.session.query(Building).all()
 
     def update_building(self, building_id: int, update_data: BuildingUpdate) -> Optional[Building]:
         building = self.get_building(building_id)
