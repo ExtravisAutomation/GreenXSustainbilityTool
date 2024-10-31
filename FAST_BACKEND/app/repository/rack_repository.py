@@ -24,6 +24,8 @@ from app.schema.rack_schema import RackDetails
 
 from app.schema.building_schema import BuildingCreate
 
+from app.schema.building_schema import BuildingDetails
+
 
 class RackRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
@@ -212,9 +214,10 @@ class RackRepository(BaseRepository):
     def get_building(self, building_id: int) -> Optional[Building]:
         return self.session.query(Building).filter_by(id=building_id).first()
 
-    def get_all_buildings(self) -> List[Building]:
+    def get_all_buildings(self) -> List[BuildingDetails]:
         with self.session_factory() as session:
-            return session.query(Building).all()
+            buildings = session.query(Building).all()
+            return [BuildingDetails.from_orm(b) for b in buildings]
 
     def update_building(self, building_id: int, update_data: BuildingUpdate) -> Optional[Building]:
         building = self.get_building(building_id)
