@@ -2,7 +2,7 @@ from sqlalchemy import Column, String, Integer, Date, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from app.model.base_model import BaseModel  # Assuming BaseModel includes id and timestamp fields
 
-from FAST_BACKEND.app.model.base_model import Base
+from app.model.base_model import Base
 
 
 rack_building_association = Table(
