@@ -12,6 +12,8 @@ from app.schema.rack_schema import RackUpdateResponse
 
 from app.schema.building_schema import BuildingCreate, MultiDeleteResponse, CustomResponse_building
 
+from app.schema.building_schema import BuildingUpdate
+
 router = APIRouter(prefix="/racks", tags=["RACKS"])
 
 @router.get("/getallracks", response_model=CustomResponse_rack[List[RackDetails]])
