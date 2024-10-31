@@ -14,6 +14,8 @@ from app.schema.building_schema import BuildingCreate, MultiDeleteResponse, Cust
 
 from app.schema.building_schema import BuildingUpdate
 
+from app.schema.building_schema import BuildingDetails
+
 router = APIRouter(prefix="/racks", tags=["RACKS"])
 
 @router.get("/getallracks", response_model=CustomResponse_rack[List[RackDetails]])
@@ -159,17 +161,13 @@ def get_building(
         status_code=status.HTTP_200_OK if building else status.HTTP_404_NOT_FOUND
     )
 
-@router.get("/getallbuildings", response_model=CustomResponse_building)
+@router.get("/getallbuildings", response_model=List[BuildingDetails])
 @inject
 def get_all_buildings(
     rack_service: RackService = Depends(Provide[Container.rack_service])
 ):
     buildings = rack_service.get_all_buildings()
-    return CustomResponse_building(
-        message="Fetched all buildings successfully",
-        data=buildings,
-        status_code=status.HTTP_200_OK
-    )
+    return buildings
 
 @router.put("/updatebuilding/{building_id}", response_model=CustomResponse_building)
 @inject
