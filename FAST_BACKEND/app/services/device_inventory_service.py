@@ -76,7 +76,7 @@ class DeviceInventoryService:
                 "power_utilization": device.get("power_utilization"),
                 "pue": device.get("pue"),
                 "power_input": device.get("power_input"),
-                # "datatraffic": device.get("datatraffic"),
+                "datatraffic": device.get("datatraffic"),
             }
             
             # Conditionally add 'datatraffic' if it exists

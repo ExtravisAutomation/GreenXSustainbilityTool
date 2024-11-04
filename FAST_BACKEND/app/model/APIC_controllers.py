@@ -18,7 +18,7 @@ class APICControllers(BaseModel):
     credential_id = Column(Integer, nullable=True)
     password_group_id = Column(Integer, ForeignKey('password_groups.id'), nullable=True)
     node_id = Column(Integer, nullable=True)
-    messages = Column(String(1000), nullable=True)
+    # messages = Column(String(1000), nullable=True)
     rack = relationship("Rack", back_populates="devices")
     site = relationship("Site", back_populates="devices")
     password_group = relationship("PasswordGroup", back_populates="devices")

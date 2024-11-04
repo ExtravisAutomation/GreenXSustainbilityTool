@@ -64,7 +64,7 @@ class DeviceInventoryRepository(BaseRepository):
                 
                 
                 # Ahmed changes 31/10/2024
-                ip = apic_controller_ip[0] if apic_controller_ip else None
+                ip = apic_controller_ip if apic_controller_ip else None
                 power = get_24hDevice_power(ip) if ip else None
                 datatraffic = get_24hDevice_dataTraffic(ip) if ip else None
                 
