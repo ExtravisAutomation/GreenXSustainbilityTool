@@ -933,7 +933,7 @@ def create_device(
 #         )
 #     except Exception as e:
 #         raise HTTPException(status_code=400, detail=str(e))
-
+#fixed
 @router.get("/sites/get_all_devices", response_model=CustomResponse[List[APICControllersResponse]])
 @inject
 def get_all_devices(
