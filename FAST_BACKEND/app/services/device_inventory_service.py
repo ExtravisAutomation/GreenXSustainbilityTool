@@ -16,6 +16,7 @@ class DeviceInventoryService:
         # Get devices with SNTC and relationship data as dictionaries from the repository
         devices = self.device_inventory_repository.get_all_devices()
         enriched_devices = []
+        
 
         for device in devices:
             # Enrich data with SNTC fields and handle potential missing data
@@ -69,8 +70,18 @@ class DeviceInventoryService:
                 "site_name": device.get("site_name"),
                 "rack_name": device.get("rack_name"),
                 "device_ip": device.get("device_ip"),
-                "device_type": device.get("device_type")
+                "device_type": device.get("device_type"),
+                
+                # Ahmed Changes
+                "power_utilization": device.get("power_utilization"),
+                "pue": device.get("pue"),
+                "power_input": device.get("power_input"),
+                "datatraffic": device.get("datatraffic"),
             }
+            
+            # Conditionally add 'datatraffic' if it exists
+            if "datatraffic" in device:
+                enriched_device["datatraffic"] = device["datatraffic"]
 
             enriched_devices.append(enriched_device)
 
