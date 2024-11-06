@@ -63,7 +63,7 @@ class DeviceInventoryRepository(BaseRepository):
                 device_type = self.get_device_type_by_ip(session, apic_controller_ip)
                 
                 
-                # Ahmed changes 31/10/2024
+                # Ahmed changes 31/10/2024 ---------------------
 
                 ip_result = (session.query(APICControllers.ip_address).filter(APICControllers.id == device.apic_controller_id).first())
 
