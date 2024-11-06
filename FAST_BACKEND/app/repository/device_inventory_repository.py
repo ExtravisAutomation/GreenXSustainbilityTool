@@ -64,7 +64,11 @@ class DeviceInventoryRepository(BaseRepository):
                 
                 
                 # Ahmed changes 31/10/2024
-                ip = apic_controller_ip if apic_controller_ip else None
+
+                ip_result = (session.query(APICControllers.ip_address).filter(APICControllers.id == device.apic_controller_id).first())
+
+                # ip = apic_controller_ip if apic_controller_ip else None
+                ip = ip_result[0] if ip_result else None
                 power = get_24hDevice_power(ip) if ip else None
                 datatraffic = get_24hDevice_dataTraffic(ip) if ip else None
                 
