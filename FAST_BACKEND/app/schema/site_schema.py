@@ -374,10 +374,8 @@ class EnergyConsumptionMetricsDetails2(BaseModel):
 class OpenAIResponse(BaseModel):
     answer: str
 
-class CustomResponse_openai(BaseModel):
+class CustomResponse_openai(BaseModel, Generic[T]):
     message: str
-    data: Optional[dict[str, OpenAIResponse]] = None
+    data: Optional[T]
     status_code: int
-
-
 
