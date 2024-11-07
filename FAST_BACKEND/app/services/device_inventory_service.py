@@ -15,8 +15,8 @@ class DeviceInventoryService:
     def get_all_devices(self) -> List[dict]:
         # Get devices with SNTC and relationship data as dictionaries from the repository
         devices = self.device_inventory_repository.get_all_devices()
+
         enriched_devices = []
-        
 
         for device in devices:
             # Enrich data with SNTC fields and handle potential missing data

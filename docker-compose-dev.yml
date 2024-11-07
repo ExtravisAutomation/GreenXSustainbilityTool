@@ -42,7 +42,6 @@ services:
   #   depends_on:
   #     - dcs_backend_dev
 
-
   influxdb_dcs_dev:
     image: influxdb:latest
     container_name: INFLUXDB_CONTAINER_DCS_dev
@@ -56,7 +55,6 @@ services:
       DOCKER_INFLUXDB_INIT_ORG: dcs
       DOCKER_INFLUXDB_INIT_BUCKET: Dcs_db
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: wvsA3xgo8ksWwDJFxgC-iv7YEjWQPn1DSMXXJZyAAGaNJ32x46N433w1J9Jsvf-Nrzn_Mcd7nOT_CksI2bKs5w==
-
 
 volumes:
   dcs-db-volume-dev:
