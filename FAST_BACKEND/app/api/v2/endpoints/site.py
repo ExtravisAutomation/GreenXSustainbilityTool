@@ -58,6 +58,8 @@ from app.schema.site_schema import CSPCDevicesWithSntcResponse
 
 from app.schema.site_schema import EnergyConsumptionMetricsDetails2
 
+from app.schema.site_schema import CustomResponse_openai
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 logger = getLogger(__name__)
 
@@ -1740,3 +1742,24 @@ def get_device_energy_metrics_by_timestamp(
         data=filtered_metrics,
         status_code=status.HTTP_200_OK
     )
+
+@router.get("/ask_openai/{question}", response_model=CustomResponse_openai[dict])
+@inject
+def ask_openai(
+        question: str,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        answer = site_service.ask_openai_question(question)
+        return CustomResponse(
+            message="OpenAI response retrieved successfully.",
+            data={"answer": answer},
+            status_code=200
+        )
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="An error occurred while processing your request.")
+
+

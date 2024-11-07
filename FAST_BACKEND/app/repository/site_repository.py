@@ -37,12 +37,13 @@ from app.model.APIC_controllers import APICControllers as Devices
 
 from app.model.cspc_devices import CSPCDevices
 from app.schema.site_schema import CSPCDevicesWithSntcResponse
-
-
+import openai
+from app.core.config import configs
 class SiteRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
         self.session_factory = session_factory
         super().__init__(session_factory, Site)
+        openai.api_key = configs.OPENAI_API_KEY
 
     # def test_func(self) -> dict[str, list[Row]]:
     #     with self.session_factory() as session:
@@ -1061,3 +1062,21 @@ class SiteRepository(BaseRepository):
                 }
             else:
                 return None
+
+    def get_openai_answer(self, question: str) -> str:
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system",
+                     "content": "You are a Cisco Devices data analyst and expert, specializing in data analysis."},
+                    {"role": "user", "content": question}
+                ],
+                max_tokens=50
+            )
+            answer = response.choices[0].message["content"]
+            return answer
+        except openai.error.AuthenticationError:
+            raise HTTPException(status_code=401, detail="Invalid or inactive OpenAI API key.")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error interacting with OpenAI API: {str(e)}")

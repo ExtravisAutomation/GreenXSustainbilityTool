@@ -367,3 +367,17 @@ class EnergyConsumptionMetricsDetails2(BaseModel):
     pue: Optional[float] = None  # Power Usage Effectiveness
     device_name: Optional[str] = None  # Device name
     apic_controller_ip: Optional[str] = None  # APIC controller IP
+
+
+
+
+class OpenAIResponse(BaseModel):
+    answer: str
+
+class CustomResponse_openai(BaseModel):
+    message: str
+    data: Optional[dict[str, OpenAIResponse]] = None
+    status_code: int
+
+
+

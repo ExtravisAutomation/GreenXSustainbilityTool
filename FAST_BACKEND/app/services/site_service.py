@@ -1862,3 +1862,6 @@ class SiteService:
             "time": f"{start_date} - {end_date}",
             "metrics": aggregated_metrics  # Return all metrics for each device and time
         }
+
+    def ask_openai_question(self, question: str) -> str:
+        return self.site_repository.get_openai_answer(question)

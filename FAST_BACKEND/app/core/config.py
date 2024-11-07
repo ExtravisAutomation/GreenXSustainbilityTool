@@ -61,6 +61,10 @@ class Configs(BaseSettings):
     print("Influxdb token in config", INFLUXDB_TOKEN, file=sys.stderr)
     print("Influxdb org in config", INFLUXDB_ORG, file=sys.stderr)
     print("Influxdb bucket in config", INFLUXDB_BUCKET, file=sys.stderr)
+
+    # openai
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
+
     DATABASE_URI_FORMAT: str = "{db_engine}://{user}:{password}@{host}:{port}/{database}"
 
     DATABASE_URI = "{db_engine}://{user}:{password}@{host}:{port}/{database}".format(
