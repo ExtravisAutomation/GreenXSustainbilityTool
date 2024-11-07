@@ -1865,3 +1865,23 @@ class SiteService:
 
     def ask_openai_question(self, question: str) -> str:
         return self.site_repository.get_openai_answer(question)
+
+    def analyze_csv_and_ask_openai(self, question: str) -> str:
+        # Load the CSV file
+        csv_file_path = "/path/to/your/csvfile.csv"  # Update with the actual path
+        try:
+            df = pd.read_csv(csv_file_path)
+        except FileNotFoundError:
+            raise HTTPException(status_code=500, detail="CSV file not found.")
+
+        # Convert CSV data to a format that OpenAI can analyze
+        csv_data = df.to_dict(orient="records")
+
+        # Generate a prompt for OpenAI with the CSV data
+        prompt = (
+            f"You are an expert in analyzing Cisco device data. Based on the following data from the CSV file, "
+            f"answer the question: '{question}'.\n\nData:\n{csv_data}\n\nAnswer concisely."
+        )
+
+        # Use OpenAI to analyze the CSV data and provide an answer
+        return self.site_repository.get_openai_answer(prompt)

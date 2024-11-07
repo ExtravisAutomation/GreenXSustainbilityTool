@@ -1743,23 +1743,28 @@ def get_device_energy_metrics_by_timestamp(
         status_code=status.HTTP_200_OK
     )
 
-@router.get("/ask_openai/{question}", response_model=CustomResponse_openai[dict])
-@inject
+
+@router.get("/ask_openai", response_model=CustomResponse_openai[dict])
 def ask_openai(
         question: str,
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    try:
+    # Keywords to trigger CSV analysis
+    keywords = ["power", "time", "device", "site"]
+
+    # Check if the question contains the required keywords
+    if all(keyword in question.lower() for keyword in keywords):
+        # Call the new function to analyze CSV data
+        answer = site_service.analyze_csv_and_ask_openai(question)
+    else:
+        # Proceed with a normal question-answer flow
         answer = site_service.ask_openai_question(question)
-        return CustomResponse(
-            message="OpenAI response retrieved successfully.",
-            data={"answer": answer},
-            status_code=200
-        )
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="An error occurred while processing your request.")
+
+    return CustomResponse_openai(
+        message="OpenAI response retrieved successfully.",
+        data={"answer": answer},
+        status_code=200
+    )
 
 
