@@ -1745,6 +1745,7 @@ def get_device_energy_metrics_by_timestamp(
 
 
 @router.get("/ask_openai", response_model=CustomResponse_openai[dict])
+@inject
 def ask_openai(
         question: str,
         current_user: User = Depends(get_current_active_user),
