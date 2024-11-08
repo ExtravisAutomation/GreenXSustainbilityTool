@@ -1069,7 +1069,7 @@ class SiteRepository(BaseRepository):
                 model="gpt-4o",
                 messages=[
                     {"role": "system",
-                     "content": "You are a Cisco Devices data analyst and expert, specializing in data analysis."},
+                     "content": "You are a Data Center Cisco Devices data analyst and expert, specializing in data analysis."},
                     {"role": "user", "content": question}
                 ],
                 max_tokens=20
