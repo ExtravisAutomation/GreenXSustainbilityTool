@@ -1072,7 +1072,7 @@ class SiteRepository(BaseRepository):
                      "content": "You are a Cisco Devices data analyst and expert, specializing in data analysis."},
                     {"role": "user", "content": question}
                 ],
-                max_tokens=50
+                max_tokens=20
             )
             answer = response.choices[0].message["content"]
             return answer
