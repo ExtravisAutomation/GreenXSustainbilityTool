@@ -1,5 +1,6 @@
 import sys
 import time
+from fastapi import File, UploadFile
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any, Union
 from app.api.v2.endpoints.test_script import main
@@ -1632,27 +1633,7 @@ def get_site_names(
     )
 
 
-from fastapi import File, UploadFile
 
-
-@router.post("/sites/upload_devices", response_model=CustomResponse[dict])
-@inject
-def upload_devices(
-        file: UploadFile = File(...),
-        current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    try:
-
-        # Pass the uploaded file to the service layer
-        response_data, exceptions = site_service.upload_devices_from_excel(file)
-        return CustomResponse(
-            message="Devices processed successfully from Excel with exceptions." if exceptions else "Devices processed successfully from Excel.",
-            data={"processed_devices": response_data, "exceptions": exceptions},
-            status_code=201
-        )
-    except Exception as e:
-        raise HTTPException(status_code=400, detail="Failed to process the file.")
 
 
 
@@ -1769,5 +1750,25 @@ def ask_openai(
         data={"answer": answer},
         status_code=200
     )
+
+
+@router.post("/sites/upload_devices", response_model=CustomResponse[dict])
+@inject
+def upload_devices1(
+        file: UploadFile = File(...),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+
+        # Pass the uploaded file to the service layer
+        response_data, exceptions = site_service.upload_devices_from_excel(file)
+        return CustomResponse(
+            message="Devices processed successfully from Excel with exceptions." if exceptions else "Devices processed successfully from Excel.",
+            data={"processed_devices": response_data, "exceptions": exceptions},
+            status_code=201
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Failed to process the file.")
 
 
