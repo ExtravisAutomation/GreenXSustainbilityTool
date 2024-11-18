@@ -25,7 +25,7 @@ class DeviceInventoryService:
                 "cisco_domain": device.get("cisco_domain"),
                 "contract_expiry": device.get("contract_expiry"),
                 "contract_number": device.get("contract_number"),
-                "created_by": device.get("created_by"),
+                "created_at": device.get("created_at"),
                 "criticality": device.get("criticality"),
                 "department": device.get("department"),
                 "device_id": device.get("device_id"),
