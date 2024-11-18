@@ -7,7 +7,7 @@ class DeviceInventoryBase(BaseModel):
     cisco_domain: Optional[str]
     contract_expiry: Optional[datetime]
     contract_number: Optional[str]
-    created_at: Optional[datetime] = None
+    #created_at: Optional[datetime] = None
     criticality: Optional[str]
     department: Optional[str]
     device_id: Optional[int]
@@ -69,6 +69,7 @@ class DeviceInventoryInDB(DeviceInventoryBase):
     pue: Optional[float]
     power_input: Optional[float]
     datatraffic: Optional[float]
+    created_at: Optional[datetime] = None
     #created_at: Optional[datetime] = None
 
     
