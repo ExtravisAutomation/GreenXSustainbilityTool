@@ -69,6 +69,8 @@ class DeviceInventoryInDB(DeviceInventoryBase):
     pue: Optional[float]
     power_input: Optional[float]
     datatraffic: Optional[float]
+    created_at: Optional[datetime] = None
+
     
     class Config:
         orm_mode = True
