@@ -280,6 +280,7 @@ class APICControllersResponse(BaseModel):
     password_group_id: Optional[int]
     password_group_name: Optional[str]
     OnBoardingStatus: Optional[bool]
+    created_at: Optional[datetime]
     messages: Optional[str]
 
     class Config:
