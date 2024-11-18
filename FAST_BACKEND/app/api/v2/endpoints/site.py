@@ -1752,6 +1752,8 @@ def ask_openai(
     )
 
 
+
+
 @router.post("/sites/upload_devices", response_model=CustomResponse[dict])
 @inject
 def upload_devices1(
