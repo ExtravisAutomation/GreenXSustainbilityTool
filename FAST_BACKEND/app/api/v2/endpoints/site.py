@@ -1643,6 +1643,7 @@ def upload_devices(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
+
         # Pass the uploaded file to the service layer
         response_data, exceptions = site_service.upload_devices_from_excel(file)
         return CustomResponse(
