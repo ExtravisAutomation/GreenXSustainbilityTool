@@ -47,6 +47,7 @@ class DeviceInventoryRepository(BaseRepository):
                     joinedload(DeviceInventory.site),
                     joinedload(DeviceInventory.apic_controller),
                 )
+                .order_by(DeviceInventory.id.desc())
                 .all()
             )
 
