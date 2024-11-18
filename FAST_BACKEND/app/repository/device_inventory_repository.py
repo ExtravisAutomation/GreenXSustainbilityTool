@@ -65,7 +65,12 @@ class DeviceInventoryRepository(BaseRepository):
                 
                 # Ahmed changes 31/10/2024 ---------------------
 
-                ip_result = (session.query(APICControllers.ip_address).filter(APICControllers.id == device.apic_controller_id).first())
+                ip_result = (
+                    session.query(APICControllers.ip_address)
+                    .filter(APICControllers.id == device.apic_controller_id)
+                    .order_by(APICControllers.updated_at.desc())  # Fetch by latest update timestamp
+                    .first()
+                )
 
                 # ip = apic_controller_ip if apic_controller_ip else None
                 ip = ip_result[0] if ip_result else None
