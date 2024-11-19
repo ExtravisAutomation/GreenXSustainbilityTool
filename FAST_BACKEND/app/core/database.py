@@ -1,4 +1,5 @@
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator
@@ -19,10 +20,10 @@ class Database:
     def __init__(self, db_url: str) -> None:
         """Initialize the async database engine and session factory."""
         self._engine = create_async_engine(db_url, echo=True)  # Use async engine
-        self._session_factory = async_sessionmaker(
+        self._session_factory = sessionmaker(
             bind=self._engine,
             expire_on_commit=False,  # Prevent expiration of objects after commit
-            class_=AsyncSession  # Use AsyncSession
+            class_=AsyncSession  # Use AsyncSession explicitly
         )
 
     async def create_database(self) -> None:
