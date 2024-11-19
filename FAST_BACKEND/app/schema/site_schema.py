@@ -337,6 +337,7 @@ class OnboardingRequest(BaseModel):
 
 
 class CSPCDevicesWithSntcResponse(BaseModel):
+    id: Optional[int] = None
     # Fields from CSPCDevices
     vendor: Optional[str] = None
     device_family: Optional[str] = None
