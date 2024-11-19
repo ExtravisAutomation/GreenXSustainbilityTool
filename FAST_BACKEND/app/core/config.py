@@ -24,9 +24,13 @@ class Configs(BaseSettings):
         # "dev": "dcs_db", # for local development ahmed laptop
         "test": "test-fca",
     }
+    # DB_ENGINE_MAPPER: dict = {
+    #     "postgresql": "postgresql",
+    #     "mysql": "mysql+pymysql",
+    # }
     DB_ENGINE_MAPPER: dict = {
         "postgresql": "postgresql",
-        "mysql": "mysql+pymysql",
+        "mysql": "mysql+asyncmy",
     }
 
     PROJECT_ROOT: str = os.path.dirname(os.path.dirname(
