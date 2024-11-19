@@ -81,36 +81,19 @@ class DeleteRequest(BaseModel):
 #     )
 
 
-# @router.post("/addsite", response_model=CustomResponse[SiteDetails])
-# @inject
-# def add_site(
-#         site_data: SiteCreate,
-#         # current_user: User = Depends(get_current_active_user),
-#         site_service: SiteService = Depends(Provide[Container.site_service])
-# ):
-#     site = site_service.create_site(site_data)
-#     return CustomResponse(
-#         message="Site created successfully",
-#         data=site,
-#         status_code=status.HTTP_200_OK
-#     )
 @router.post("/addsite", response_model=CustomResponse[SiteDetails])
 @inject
-async def add_site(
+def add_site(
         site_data: SiteCreate,
+        # current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    site = await site_service.create_site(site_data)  # Await the async service method
+    site = site_service.create_site(site_data)
     return CustomResponse(
         message="Site created successfully",
         data=site,
         status_code=status.HTTP_200_OK
     )
-
-
-
-
-
 
 
 @router.post("/updatesite/{id}", response_model=CustomResponse[SiteDetails1])

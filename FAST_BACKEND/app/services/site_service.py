@@ -189,11 +189,8 @@ class SiteService:
         sites = self.site_repository.get_all_sites()
         return [SiteDetails(**site.__dict__) for site in sites]
 
-    # def create_site(self, site_data: SiteCreate) -> SiteDetails:
-    #     site = self.site_repository.add_site(site_data)
-    #     return SiteDetails(**site.__dict__)
-    async def create_site(self, site_data: SiteCreate) -> SiteDetails:
-        site = await self.site_repository.add_site(site_data)  # Await async repository method
+    def create_site(self, site_data: SiteCreate) -> SiteDetails:
+        site = self.site_repository.add_site(site_data)
         return SiteDetails(**site.__dict__)
 
     def update_site(self, id: int, site_data: SiteUpdate) -> SiteDetails1:

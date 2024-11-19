@@ -24,13 +24,9 @@ class Configs(BaseSettings):
         # "dev": "dcs_db", # for local development ahmed laptop
         "test": "test-fca",
     }
-    # DB_ENGINE_MAPPER: dict = {
-    #     "postgresql": "postgresql",
-    #     "mysql": "mysql+pymysql",
-    # }
     DB_ENGINE_MAPPER: dict = {
         "postgresql": "postgresql",
-        "mysql": "mysql+asyncmy",
+        "mysql": "mysql+pymysql",
     }
 
     PROJECT_ROOT: str = os.path.dirname(os.path.dirname(
@@ -54,8 +50,7 @@ class Configs(BaseSettings):
     DB_PASSWORD: str = os.getenv("DB_PASSWORD")
     DB_HOST: str = os.getenv("DB_HOST")
     DB_PORT: str = os.getenv("DB_PORT", "3306")
-    # DB_ENGINE: str = DB_ENGINE_MAPPER.get(DB, "mysql+pymysql")
-    DB_ENGINE: str = DB_ENGINE_MAPPER.get(DB, "mysql+asyncmy")
+    DB_ENGINE: str = DB_ENGINE_MAPPER.get(DB, "mysql+pymysql")
 
     # influxdb
     INFLUXDB_URL: str = os.getenv("INFLUXDB_URL")

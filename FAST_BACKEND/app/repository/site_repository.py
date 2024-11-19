@@ -57,24 +57,12 @@ class SiteRepository(BaseRepository):
         with self.session_factory() as session:
             return session.query(Site).all()
 
-    # def add_site(self, site_data: SiteCreate) -> Site:
-    #     with self.session_factory() as session:
-    #         new_site = Site(**site_data.dict())
-    #         session.add(new_site)
-    #         session.commit()
-    #         session.refresh(new_site)
-    #         return new_site
-
-    async def add_site(self, site_data: SiteCreate) -> Site:
-        async with self.session_factory() as session:
+    def add_site(self, site_data: SiteCreate) -> Site:
+        with self.session_factory() as session:
             new_site = Site(**site_data.dict())
             session.add(new_site)
-            try:
-                await session.commit()
-                await session.refresh(new_site)
-            except Exception as e:
-                await session.rollback()
-                raise e
+            session.commit()
+            session.refresh(new_site)
             return new_site
 
     def update_site(self, id: int, site_data: SiteUpdate) -> Site:
@@ -954,14 +942,79 @@ class SiteRepository(BaseRepository):
             sites = session.query(Site).all()
             return sites
 
+    # def create_device_from_excel(self, device_data: dict):
+    #     with self.session_factory() as session:
+    #         try:
+    #             # Check if the device with the given IP already exists
+    #             existing_device = session.query(APICControllers).filter_by(ip_address=device_data["ip_address"]).first()
+    #             if existing_device:
+    #                 # If device already exists, skip it
+    #                 raise ValueError(f"Device with IP {device_data['ip_address']} already exists.")
+    #         except Exception as e:
+    #             raise ValueError(f"Error checking device existence: {str(e)}")
+    #
+    #         try:
+    #             # Fetch the Site (raise an exception if it doesn't exist)
+    #             site = session.query(Site).filter_by(site_name=device_data["site_name"]).first()
+    #             if not site:
+    #                 raise ValueError(f"Site with name {device_data['site_name']} does not exist.")
+    #         except Exception as e:
+    #             raise ValueError(f"Error fetching site: {str(e)}")
+    #
+    #         try:
+    #             # Fetch the Rack (raise an exception if it doesn't exist)
+    #             rack = session.query(Rack).filter_by(rack_name=device_data["rack_name"], site_id=site.id).first()
+    #             if not rack:
+    #                 raise ValueError(f"Rack with name {device_data['rack_name']} in site {site.site_name} does not exist.")
+    #         except Exception as e:
+    #             raise ValueError(f"Error fetching rack: {str(e)}")
+    #
+    #         try:
+    #             # Fetch the Password Group (raise an exception if it doesn't exist)
+    #             password_group = session.query(PasswordGroup).filter_by(password_group_name=device_data["password_group_name"]).first()
+    #             if not password_group:
+    #                 raise ValueError(f"Password Group with name {device_data['password_group_name']} does not exist.")
+    #         except Exception as e:
+    #             raise ValueError(f"Error fetching password group: {str(e)}")
+    #
+    #         try:
+    #             # Create the new device
+    #             new_device = APICControllers(
+    #                 ip_address=device_data["ip_address"],
+    #                 device_name=device_data["device_name"],
+    #                 site_id=site.id,
+    #                 rack_id=rack.id,
+    #                 password_group_id=password_group.id,
+    #                 device_type=device_data["device_type"],
+    #                 OnBoardingStatus=False  # Default onboarding status to False
+    #             )
+    #             session.add(new_device)
+    #             session.commit()
+    #             session.refresh(new_device)
+    #
+    #             # Return the created device details
+    #             return {
+    #                 "ip_address": new_device.ip_address,
+    #                 "device_name": new_device.device_name,
+    #                 "site_name": site.site_name,
+    #                 "rack_name": rack.rack_name,
+    #                 "password_group_name": password_group.password_group_name,
+    #                 "device_type": new_device.device_type
+    #             }
+    #         except Exception as e:
+    #             session.rollback()
+    #             raise ValueError(f"Error creating device: {str(e)}")
+
     def create_device_from_excel(self, device_data: dict):
         with self.session_factory() as session:
             try:
                 # Check if the device with the given IP already exists
                 existing_device = session.query(APICControllers).filter_by(ip_address=device_data["ip_address"]).first()
                 if existing_device:
-                    # If device already exists, skip it
-                    raise ValueError(f"Device with IP {device_data['ip_address']} already exists.")
+                    # If the device already exists, update the `messages` field
+                    existing_device.messages = f"Device with IP {device_data['ip_address']} already exists."
+                    session.commit()
+                    return {"message": existing_device.messages, "status": "error"}
             except Exception as e:
                 raise ValueError(f"Error checking device existence: {str(e)}")
 
@@ -977,13 +1030,15 @@ class SiteRepository(BaseRepository):
                 # Fetch the Rack (raise an exception if it doesn't exist)
                 rack = session.query(Rack).filter_by(rack_name=device_data["rack_name"], site_id=site.id).first()
                 if not rack:
-                    raise ValueError(f"Rack with name {device_data['rack_name']} in site {site.site_name} does not exist.")
+                    raise ValueError(
+                        f"Rack with name {device_data['rack_name']} in site {site.site_name} does not exist.")
             except Exception as e:
                 raise ValueError(f"Error fetching rack: {str(e)}")
 
             try:
                 # Fetch the Password Group (raise an exception if it doesn't exist)
-                password_group = session.query(PasswordGroup).filter_by(password_group_name=device_data["password_group_name"]).first()
+                password_group = session.query(PasswordGroup).filter_by(
+                    password_group_name=device_data["password_group_name"]).first()
                 if not password_group:
                     raise ValueError(f"Password Group with name {device_data['password_group_name']} does not exist.")
             except Exception as e:
@@ -998,7 +1053,8 @@ class SiteRepository(BaseRepository):
                     rack_id=rack.id,
                     password_group_id=password_group.id,
                     device_type=device_data["device_type"],
-                    OnBoardingStatus=False  # Default onboarding status to False
+                    OnBoardingStatus=False,  # Default onboarding status to False
+                    messages="Device uploaded successfully."  # Default success message
                 )
                 session.add(new_device)
                 session.commit()
@@ -1011,10 +1067,25 @@ class SiteRepository(BaseRepository):
                     "site_name": site.site_name,
                     "rack_name": rack.rack_name,
                     "password_group_name": password_group.password_group_name,
-                    "device_type": new_device.device_type
+                    "device_type": new_device.device_type,
+                    "messages": new_device.messages
                 }
             except Exception as e:
                 session.rollback()
+                # Update the message field with the exception details
+                new_device = APICControllers(
+                    ip_address=device_data["ip_address"],
+                    device_name=device_data["device_name"],
+                    site_id=site.id if site else None,
+                    rack_id=rack.id if rack else None,
+                    password_group_id=password_group.id if password_group else None,
+                    device_type=device_data.get("device_type", "devices"),
+                    OnBoardingStatus=False,
+                    messages=f"Error creating device: {str(e)}"
+                )
+                session.add(new_device)
+                session.commit()
+                session.refresh(new_device)
                 raise ValueError(f"Error creating device: {str(e)}")
 
     def get_cspc_devices_with_sntc(self) -> List[CSPCDevicesWithSntcResponse]:
