@@ -57,12 +57,24 @@ class SiteRepository(BaseRepository):
         with self.session_factory() as session:
             return session.query(Site).all()
 
-    def add_site(self, site_data: SiteCreate) -> Site:
-        with self.session_factory() as session:
+    # def add_site(self, site_data: SiteCreate) -> Site:
+    #     with self.session_factory() as session:
+    #         new_site = Site(**site_data.dict())
+    #         session.add(new_site)
+    #         session.commit()
+    #         session.refresh(new_site)
+    #         return new_site
+
+    async def add_site(self, site_data: SiteCreate) -> Site:
+        async with self.session_factory() as session:
             new_site = Site(**site_data.dict())
             session.add(new_site)
-            session.commit()
-            session.refresh(new_site)
+            try:
+                await session.commit()
+                await session.refresh(new_site)
+            except Exception as e:
+                await session.rollback()
+                raise e
             return new_site
 
     def update_site(self, id: int, site_data: SiteUpdate) -> Site:
