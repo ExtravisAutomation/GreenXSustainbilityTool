@@ -64,7 +64,7 @@ from app.schema.site_schema import CustomResponse_openai
 router = APIRouter(prefix="/sites", tags=["SITES"])
 logger = getLogger(__name__)
 
-
+import time
 class DeleteRequest(BaseModel):
     site_ids: List[int]
 
@@ -702,19 +702,44 @@ def parse_time12(time_str: str):
 #         raise HTTPException(status_code=500, detail=str(e))
 
 
+# @router.get("/site/getallsites", response_model=CustomResponse1[GetSitesResponse])
+# @inject
+# def get_sites(
+#         # current_user: User = Depends(get_current_active_user),
+#         site_service: SiteService = Depends(Provide[Container.site_service])
+# ):
+#     sites = site_service.get_extended_sites()
+#     return CustomResponse(
+#         message="Fetched all sites successfully",
+#         data=sites,
+#         status_code=status.HTTP_200_OK
+#     )
 @router.get("/site/getallsites", response_model=CustomResponse1[GetSitesResponse])
 @inject
 def get_sites(
         # current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
+    # Start timing
+    api_start_time = time.time()
+
+    logger.debug("Starting get_sites API execution")
+
+    # Measure time for site_service call
+    service_start_time = time.time()
     sites = site_service.get_extended_sites()
+    service_end_time = time.time()
+    logger.debug(f"Time taken by site_service.get_extended_sites(): {service_end_time - service_start_time:.2f} seconds")
+
+    # End timing
+    api_end_time = time.time()
+    logger.debug(f"Total time for get_sites API: {api_end_time - api_start_time:.2f} seconds")
+
     return CustomResponse(
         message="Fetched all sites successfully",
         data=sites,
         status_code=status.HTTP_200_OK
     )
-
 
 @router.post("/site/sitePowerUtilization/{site_id}")
 @inject

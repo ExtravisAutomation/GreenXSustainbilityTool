@@ -52,6 +52,14 @@ from io import BytesIO
 
 from app.schema.site_schema import CSPCDevicesWithSntcResponse
 
+import time
+import logging
+
+# Configure logging to show debug messages
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+
 DUMMY_DATA_FIRST_QUARTER = [
     {
         "time": "2024-01",
@@ -1010,23 +1018,100 @@ class SiteService:
 
         return dummy_metrics
 
+    # def get_extended_sites(self) -> List[SiteDetails_get]:
+    #     sites = self.site_repository.get_all_sites()
+    #     for site in sites:
+    #         # Fetch device inventory and count racks and devices
+    #         device_inventory = self.site_repository.get_device_inventory_by_site_id(site.id)
+    #         apic_ips = [device['ip_address'] for device in device_inventory if device['ip_address']]
+    #
+    #         # Fetch the number of racks and devices
+    #         counts = self.site_repository.get_rack_and_device_counts(site.id)
+    #         site.num_racks = counts['num_racks']
+    #         site.num_devices = counts['num_devices']
+    #
+    #         # Fetch power and traffic data from InfluxDB using the ips
+    #         site.power_data = self.influxdb_repository.get_24hsite_power(apic_ips, site.id)
+    #         site.traffic_data = self.influxdb_repository.get_24hsite_datatraffic(apic_ips, site.id)
+    #
+    #         # Aggregate power data
+    #         if site.power_data:
+    #             power_utilization_values = [data['power_utilization'] for data in site.power_data if
+    #                                         data['power_utilization'] is not None]
+    #             power_input_values = [data['power_input'] for data in site.power_data if
+    #                                   data['power_input'] is not None]
+    #             pue_values = [data['pue'] for data in site.power_data if data['pue'] is not None]
+    #             total_power_util = sum(power_utilization_values) if power_utilization_values else 0
+    #             average_power_util = total_power_util / len(power_utilization_values) if power_utilization_values else 0
+    #             site.power_utilization = round(average_power_util, 2)
+    #             # site.power_utilization = self.calculate_average(power_utilization_values)
+    #             # site.power_input = sum(power_input_values) if power_input_values else 0
+    #             total_pue = sum(pue_values) if pue_values else 0
+    #             average_pue = total_pue / len(pue_values) if pue_values else 0
+    #             site.pue = round(average_pue, 2)
+    #             # site.pue = self.calculate_average(pue_values)
+    #             total_power_input = sum(power_input_values) if power_input_values else 0
+    #             site.power_input = round(total_power_input / 1000, 2)
+    #
+    #         # Aggregate traffic data
+    #         if site.traffic_data:
+    #             traffic_throughput_values = [data['traffic_through'] for data in site.traffic_data if
+    #                                          data['traffic_through'] is not None]
+    #             total_traffic_throughput = sum(traffic_throughput_values)
+    #             site.datatraffic = round(total_traffic_throughput / (1024 ** 3), 2)
+    #         else:
+    #             site.datatraffic = 0
+    #     return [SiteDetails_get(**site.__dict__) for site in sites]
+
     def get_extended_sites(self) -> List[SiteDetails_get]:
+        # Start timing the entire function
+        start_time = time.time()
+        logger.debug("Starting get_extended_sites execution")
+
+        # Time get_all_sites
+        sites_start_time = time.time()
         sites = self.site_repository.get_all_sites()
+        sites_end_time = time.time()
+        logger.debug(f"Time taken to fetch all sites: {sites_end_time - sites_start_time:.2f} seconds")
+
         for site in sites:
-            # Fetch device inventory and count racks and devices
+            site_start_time = time.time()
+
+            # Time device inventory fetch
+            device_inventory_start_time = time.time()
             device_inventory = self.site_repository.get_device_inventory_by_site_id(site.id)
+            device_inventory_end_time = time.time()
+            logger.debug(
+                f"Time taken to fetch device inventory for site {site.id}: {device_inventory_end_time - device_inventory_start_time:.2f} seconds")
+
             apic_ips = [device['ip_address'] for device in device_inventory if device['ip_address']]
 
-            # Fetch the number of racks and devices
+            # Time rack and device counts fetch
+            counts_start_time = time.time()
             counts = self.site_repository.get_rack_and_device_counts(site.id)
+            counts_end_time = time.time()
+            logger.debug(
+                f"Time taken to fetch rack and device counts for site {site.id}: {counts_end_time - counts_start_time:.2f} seconds")
+
             site.num_racks = counts['num_racks']
             site.num_devices = counts['num_devices']
 
-            # Fetch power and traffic data from InfluxDB using the ips
+            # Time power data fetch
+            power_data_start_time = time.time()
             site.power_data = self.influxdb_repository.get_24hsite_power(apic_ips, site.id)
-            site.traffic_data = self.influxdb_repository.get_24hsite_datatraffic(apic_ips, site.id)
+            power_data_end_time = time.time()
+            logger.debug(
+                f"Time taken to fetch power data for site {site.id}: {power_data_end_time - power_data_start_time:.2f} seconds")
 
-            # Aggregate power data
+            # Time traffic data fetch
+            traffic_data_start_time = time.time()
+            site.traffic_data = self.influxdb_repository.get_24hsite_datatraffic(apic_ips, site.id)
+            traffic_data_end_time = time.time()
+            logger.debug(
+                f"Time taken to fetch traffic data for site {site.id}: {traffic_data_end_time - traffic_data_start_time:.2f} seconds")
+
+            # Time aggregation of power data
+            power_agg_start_time = time.time()
             if site.power_data:
                 power_utilization_values = [data['power_utilization'] for data in site.power_data if
                                             data['power_utilization'] is not None]
@@ -1036,16 +1121,19 @@ class SiteService:
                 total_power_util = sum(power_utilization_values) if power_utilization_values else 0
                 average_power_util = total_power_util / len(power_utilization_values) if power_utilization_values else 0
                 site.power_utilization = round(average_power_util, 2)
-                # site.power_utilization = self.calculate_average(power_utilization_values)
-                # site.power_input = sum(power_input_values) if power_input_values else 0
+
                 total_pue = sum(pue_values) if pue_values else 0
                 average_pue = total_pue / len(pue_values) if pue_values else 0
                 site.pue = round(average_pue, 2)
-                # site.pue = self.calculate_average(pue_values)
+
                 total_power_input = sum(power_input_values) if power_input_values else 0
                 site.power_input = round(total_power_input / 1000, 2)
+            power_agg_end_time = time.time()
+            logger.debug(
+                f"Time taken for power data aggregation for site {site.id}: {power_agg_end_time - power_agg_start_time:.2f} seconds")
 
-            # Aggregate traffic data
+            # Time aggregation of traffic data
+            traffic_agg_start_time = time.time()
             if site.traffic_data:
                 traffic_throughput_values = [data['traffic_through'] for data in site.traffic_data if
                                              data['traffic_through'] is not None]
@@ -1053,6 +1141,17 @@ class SiteService:
                 site.datatraffic = round(total_traffic_throughput / (1024 ** 3), 2)
             else:
                 site.datatraffic = 0
+            traffic_agg_end_time = time.time()
+            logger.debug(
+                f"Time taken for traffic data aggregation for site {site.id}: {traffic_agg_end_time - traffic_agg_start_time:.2f} seconds")
+
+            site_end_time = time.time()
+            logger.debug(f"Total time for processing site {site.id}: {site_end_time - site_start_time:.2f} seconds")
+
+        # End timing the entire function
+        end_time = time.time()
+        logger.debug(f"Total time for get_extended_sites: {end_time - start_time:.2f} seconds")
+
         return [SiteDetails_get(**site.__dict__) for site in sites]
 
     def calculate_average(self, values):
