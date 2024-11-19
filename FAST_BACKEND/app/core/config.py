@@ -50,7 +50,8 @@ class Configs(BaseSettings):
     DB_PASSWORD: str = os.getenv("DB_PASSWORD")
     DB_HOST: str = os.getenv("DB_HOST")
     DB_PORT: str = os.getenv("DB_PORT", "3306")
-    DB_ENGINE: str = DB_ENGINE_MAPPER.get(DB, "mysql+pymysql")
+    # DB_ENGINE: str = DB_ENGINE_MAPPER.get(DB, "mysql+pymysql")
+    DB_ENGINE: str = DB_ENGINE_MAPPER.get(DB, "mysql+asyncmy")
 
     # influxdb
     INFLUXDB_URL: str = os.getenv("INFLUXDB_URL")
