@@ -11,6 +11,7 @@ from dependency_injector.wiring import Provide, inject
 from app.core.container import Container
 from app.schema.site_schema import CustomResponse
 
+
 router = APIRouter(prefix="/device_inventory", tags=["Device Inventory"])
 
 
