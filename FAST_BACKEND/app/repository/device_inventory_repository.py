@@ -387,7 +387,6 @@ class DeviceInventoryRepository(BaseRepository):
             return device
     def get_models_data(self):
         with self.session_factory() as session:
-            models = session.query(DeviceInventory.id, DeviceInventory.pn_code).all()
 
             result = (
                 session.query(DeviceInventory.pn_code, DeviceInventory.id,
