@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
-from app.services.device_inventory_service import DeviceInventoryService,get_models
+from app.services.device_inventory_service import DeviceInventoryService
 from app.schema.device_inventory_schema import DeviceInventoryCreate, DeviceInventoryUpdate, DeviceInventoryInDB
 from app.core.dependencies import get_db
 
