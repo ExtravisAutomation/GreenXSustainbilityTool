@@ -838,7 +838,7 @@ class SiteRepository(BaseRepository):
                 )
                 .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
-                .filter(DeviceInventory.site_id == site_id, DeviceInventory.id == device_id)
+                .filter(DeviceInventory.site_id == site_id, DeviceInventory.apic_controller_id == device_id)
                 .first()
             )
             if device:
