@@ -11,7 +11,7 @@ from app.model.device_inventory import ChassisFan, ChassisModule, ChassisPowerSu
 from app.model.apic_controller import APICController
 from app.model.APIC_controllers import APICControllers
 from app.repository.base_repository import BaseRepository
-
+from sqlalchemy import func
 
 class DeviceInventoryRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]], influxdb_repository):
@@ -388,5 +388,12 @@ class DeviceInventoryRepository(BaseRepository):
     def get_models_data(self):
         with self.session_factory() as session:
             models = session.query(DeviceInventory.id, DeviceInventory.pn_code).all()
-            return models
+            models_with_count = (
+                session.query(DeviceInventory.id, DeviceInventory.pn_code,
+                              func.count(DeviceInventory.id).label("device_count"))
+                .group_by(DeviceInventory.id, DeviceInventory.pn_code)
+                .all()
+            )
+
+            return models_with_count
 
