@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List
-from app.repository.device_inventory_repository import DeviceInventoryRepository
+from app.repository.device_inventory_repository import DeviceInventoryRepository,get_models
 from app.schema.device_inventory_schema import DeviceInventoryCreate, DeviceInventoryUpdate, DeviceInventoryInDB
 
 
