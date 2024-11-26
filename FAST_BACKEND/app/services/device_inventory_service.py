@@ -124,3 +124,6 @@ class DeviceInventoryService:
     
     def get_spcific_devices(self, device_ip: str):
         return self.device_inventory_repository.get_spcific_devices(device_ip)
+
+    def get_models(self):
+        return self.device_inventory_repository.get_models()
