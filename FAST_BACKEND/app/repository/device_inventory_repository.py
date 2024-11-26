@@ -388,12 +388,13 @@ class DeviceInventoryRepository(BaseRepository):
     def get_models_data(self):
         with self.session_factory() as session:
             models = session.query(DeviceInventory.id, DeviceInventory.pn_code).all()
-            models_with_count = (
-                session.query(DeviceInventory.id, DeviceInventory.pn_code,
-                              func.count(DeviceInventory.id).label("device_count"))
-                .group_by(DeviceInventory.id, DeviceInventory.pn_code)
-                .all()
+
+            result = (
+                session.query(DeviceInventory.pn_code, DeviceInventory.id,
+                              func.count(DeviceInventory.id).label("model_count"))
+                .group_by(DeviceInventory.pn_code, DeviceInventory.id)
+
             )
 
-            return models_with_count
+            return result
 
