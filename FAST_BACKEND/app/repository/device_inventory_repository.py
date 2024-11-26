@@ -389,12 +389,23 @@ class DeviceInventoryRepository(BaseRepository):
         with self.session_factory() as session:
             models = session.query(DeviceInventory.id, DeviceInventory.pn_code).all()
             models_with_count = (
-                session.query(DeviceInventory.id, DeviceInventory.pn_code,
+                session.query(DeviceInventory.pn_code, DeviceInventory.id,
                               func.count(DeviceInventory.id).label("device_count"))
-                .group_by(DeviceInventory.id, DeviceInventory.pn_code)
+                .group_by(DeviceInventory.pn_code)
                 .all()
             )
+            data = []
+            for a in models_with_count:
+                data.append({
+                    "model_name": a[0],  # pn_code
+                    "id": a[1],  # id
+                    "id_count": a[2]  # count
+                })
+
+            print("Processed Data:", data)  # Debugging info
+
+            return data
 
 
-            return models_with_count
+
 
