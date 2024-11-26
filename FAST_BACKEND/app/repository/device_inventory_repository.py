@@ -385,15 +385,16 @@ class DeviceInventoryRepository(BaseRepository):
             device.cost = 13
 
             return device
+
+    from sqlalchemy import func, desc
     def get_models_data(self):
         with self.session_factory() as session:
             models = session.query( DeviceInventory.pn_code).all()
             models_with_count = session.query(
-    DeviceInventory.pn_code,
-    func.min(DeviceInventory.id).label("id"),  # Representative `id`
-    func.count(DeviceInventory.id).label("id_count")
-).group_by(DeviceInventory.pn_code).all()
-
+        DeviceInventory.pn_code,
+        func.min(DeviceInventory.id).label("id"),  # Representative `id`
+        func.count(DeviceInventory.id).label("id_count")
+    ).group_by(DeviceInventory.pn_code).order_by(desc("id_count")).all()
 
             data = []
             for a in models_with_count:
