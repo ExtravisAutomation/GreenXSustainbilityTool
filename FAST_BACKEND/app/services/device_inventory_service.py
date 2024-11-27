@@ -135,4 +135,4 @@ class DeviceInventoryService:
     def get_vendor(self):
         return self.device_inventory_repository.get_vendors()
     def get_count(self):
-        return self.device_inventory_repository.get_vendors()
+        return self.device_inventory_repository.get_count()
