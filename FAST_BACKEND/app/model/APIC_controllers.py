@@ -23,7 +23,7 @@ class APICControllers(BaseModel):
     rack = relationship("Rack", back_populates="devices")
     site = relationship("Site", back_populates="devices")
 
-    vendor_id = Column(Integer, ForeignKey('vendors.id'), nullable=True)
+    vendor_id = Column(Integer, ForeignKey('vendor.id'), nullable=True)
 
     password_group = relationship("PasswordGroup", back_populates="devices")
     vendor = relationship("Vendor", back_populates="devices")
