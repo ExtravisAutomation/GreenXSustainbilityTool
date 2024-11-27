@@ -399,7 +399,7 @@ class DeviceInventoryRepository(BaseRepository):
             )
 
             # Join with Device
-            query = query.join(APICControllers, APICController.id == DeviceInventory.apic_controller_id)
+            query = query.join(APICControllers, APICControllers.id == DeviceInventory.apic_controller_id)
             # Apply filters dynamically
             conditions = []
             if site_id:
@@ -407,7 +407,7 @@ class DeviceInventoryRepository(BaseRepository):
             if rack_id:
                 conditions.append(DeviceInventory.rack_id == rack_id)
             if vendor_id:
-                conditions.append(APICController.vendor_id == vendor_id)
+                conditions.append(APICControllers.vendor_id == vendor_id)
             # Apply the conditions to the query if any
             if conditions:
                 query = query.filter(and_(*conditions))
