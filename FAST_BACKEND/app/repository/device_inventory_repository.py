@@ -495,13 +495,14 @@ class DeviceInventoryRepository(BaseRepository):
 
             # Create the response as a list of dictionaries
             data = [
-                {"name": "vendors", "count": vendor_count},
-                {"name": "sites", "count": site_count},
-                {"name": "racks", "count": rack_count},
-                {"name": "devices", "count": device_count},
+
+                {"name": "Sites", "count": site_count},
+                {"name": "Racks", "count": rack_count},
+                {"name": "Devices", "count": device_count},
+                {"name": "Vendors", "count": vendor_count},
             ]
             return data
-    def  get_device_nature(self,model_data):
+    def  get_device_natures(self,model_data):
         with self.session_factory() as session:
             site_id = model_data.site_id
             rack_id = model_data.rack_id

@@ -281,7 +281,7 @@ def get_count(
         current_user: User = Depends(get_current_active_user),
         device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
-    models = device_inventory_service.device_nature()
+    models = device_inventory_service.get_device_nature(device_nature)
 
     return CustomResponse(
         message="Fetched model data successfully",
