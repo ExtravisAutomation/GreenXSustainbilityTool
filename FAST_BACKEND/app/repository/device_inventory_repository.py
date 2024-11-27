@@ -432,6 +432,7 @@ class DeviceInventoryRepository(BaseRepository):
 
         return data
 
+
     def get_device_type(self, model_data):
         with self.session_factory() as session:
             site_id = model_data.site_id
