@@ -128,3 +128,7 @@ class DeviceInventoryService:
 
     def get_models(self,model_data):
         return self.device_inventory_repository.get_models_data(model_data)
+
+    def get_device_type(self, model_data):
+        return self.device_inventory_repository.get_device_type(model_data)
+

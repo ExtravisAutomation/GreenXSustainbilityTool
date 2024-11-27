@@ -234,19 +234,33 @@ def get_model_names(
     )
 
 
-@router.post("/get_model_power", response_model=CustomResponse)
+# @router.post("/get_devicetype", response_model=CustomResponse)
+# @inject
+# def get_model_power(
+#         device_ip: str,
+#         current_user: User = Depends(get_current_active_user),
+#         device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+# ):
+#     devices = device_inventory_service.get_spcific_devices(device_ip)
+#
+#     return CustomResponse(
+#         message="Fetched device data successfully",
+#         data=devices,
+#         status_code=200
+#     )
+#
+#
+@router.post("/get_device_type", response_model=CustomResponse)
 @inject
-def get_model_power(
-        device_ip: str,
+def get_model_names(
+        model_data:modelCreate,
         current_user: User = Depends(get_current_active_user),
         device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
-    devices = device_inventory_service.get_spcific_devices(device_ip)
+    models = device_inventory_service.get_device_type(model_data)
 
     return CustomResponse(
-        message="Fetched device data successfully",
-        data=devices,
+        message="Fetched model data successfully",
+        data=models,
         status_code=200
     )
-
-    
