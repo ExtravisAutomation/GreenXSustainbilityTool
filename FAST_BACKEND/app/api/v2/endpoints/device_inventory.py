@@ -274,13 +274,14 @@ def get_count(
         data=models,
         status_code=200
     )
-@router.get("/get_devicenature", response_model=CustomResponse)
+@router.post("/get_device_nature", response_model=CustomResponse)
 @inject
 def get_count(
+        device_nature: modelCreate,
         current_user: User = Depends(get_current_active_user),
         device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
-    models = device_inventory_service.get_device_nature()
+    models = device_inventory_service.device_nature()
 
     return CustomResponse(
         message="Fetched model data successfully",
