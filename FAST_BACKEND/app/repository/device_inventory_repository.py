@@ -500,3 +500,18 @@ class DeviceInventoryRepository(BaseRepository):
                 "rack_count": rack_count,
                 "device_count": device_count,
             }
+    def  get_device_nature(self,):
+        with self.session_factory() as session:
+            # Fetch all chassis fan records with related fan data efficiently
+            vendor_count = session.query(Vendor).count()
+            site_count = session.query(Site).count()
+            rack_count = session.query(Rack).count()
+            device_count = session.query(APICControllers).count()
+
+            # Return the counts as a structured dictionary
+            return {
+                "vendor_count": vendor_count,
+                "site_count": site_count,
+                "rack_count": rack_count,
+                "device_count": device_count,
+            }

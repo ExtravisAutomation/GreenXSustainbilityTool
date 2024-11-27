@@ -261,13 +261,26 @@ def get_vendors(
         data=vendors,
         status_code=200
     )
-@router.get("/get_Count", response_model=CustomResponse)
+@router.get("/get_count", response_model=CustomResponse)
 @inject
 def get_count(
         current_user: User = Depends(get_current_active_user),
         device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
     models = device_inventory_service.get_count()
+
+    return CustomResponse(
+        message="Fetched model data successfully",
+        data=models,
+        status_code=200
+    )
+@router.get("/get_devicenature", response_model=CustomResponse)
+@inject
+def get_count(
+        current_user: User = Depends(get_current_active_user),
+        device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    models = device_inventory_service.get_device_nature()
 
     return CustomResponse(
         message="Fetched model data successfully",
