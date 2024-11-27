@@ -9,7 +9,7 @@ from app.model.DevicesSntc import DevicesSntc as DeviceSNTC
 from app.repository.InfluxQuery import get_24hDevice_dataTraffic, get_24hDevice_power, get_device_power
 from app.model.device_inventory import ChassisFan, ChassisModule, ChassisPowerSupply, DeviceInventory, ChassisDevice
 from app.model.apic_controller import APICController
-from app.model.APIC_controllers import APICControllers
+from app.model.APIC_controllers import APICControllers,Vendor
 from app.repository.base_repository import BaseRepository
 # from app.model.devices import
 from sqlalchemy import func, desc,and_
@@ -478,4 +478,25 @@ class DeviceInventoryRepository(BaseRepository):
 
             return data
 
+    def get_vendors(self):
+        with self.session_factory() as session:
+            # Fetch all chassis fan records with related fan data efficiently
+            ventors = session.query(Vendor).all()
 
+            return ventors
+
+    def get_count(self):
+        with self.session_factory() as session:
+            # Fetch all chassis fan records with related fan data efficiently
+            vendor_count = session.query(Vendor).count()
+            site_count = session.query(Site).count()
+            rack_count = session.query(Rack).count()
+            device_count = session.query(APICControllers).count()
+
+            # Return the counts as a structured dictionary
+            return {
+                "vendor_count": vendor_count,
+                "site_count": site_count,
+                "rack_count": rack_count,
+                "device_count": device_count,
+            }

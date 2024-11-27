@@ -234,33 +234,45 @@ def get_model_names(
     )
 
 
-# @router.post("/get_devicetype", response_model=CustomResponse)
-# @inject
-# def get_model_power(
-#         device_ip: str,
-#         current_user: User = Depends(get_current_active_user),
-#         device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
-# ):
-#     devices = device_inventory_service.get_spcific_devices(device_ip)
-#
-#     return CustomResponse(
-#         message="Fetched device data successfully",
-#         data=devices,
-#         status_code=200
-#     )
-#
-#
 @router.post("/devicetype_count", response_model=CustomResponse)
 @inject
-def get_model_names(
+def device_type(
         model_data:modelCreate,
         current_user: User = Depends(get_current_active_user),
         device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
-    models = device_inventory_service.get_device_type(model_data)
+    devices = device_inventory_service.get_device_type(model_data)
+
+    return CustomResponse(
+        message="Fetched devices type count successfully",
+        data=devices,
+        status_code=200
+    )
+@router.get("/get_vendors", response_model=CustomResponse)
+@inject
+def get_vendors(
+        current_user: User = Depends(get_current_active_user),
+        device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    vendors = device_inventory_service.get_vendor()
+
+    return CustomResponse(
+        message="Fetched vendors data successfully",
+        data=vendors,
+        status_code=200
+    )
+@router.get("/get_Count", response_model=CustomResponse)
+@inject
+def get_count(
+        current_user: User = Depends(get_current_active_user),
+        device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    models = device_inventory_service.get_count()
 
     return CustomResponse(
         message="Fetched model data successfully",
         data=models,
         status_code=200
     )
+
+

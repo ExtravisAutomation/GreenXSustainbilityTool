@@ -132,3 +132,7 @@ class DeviceInventoryService:
     def get_device_type(self, model_data):
         return self.device_inventory_repository.get_device_type(model_data)
 
+    def get_vendor(self):
+        return self.device_inventory_repository.get_vendors()
+    def get_count(self):
+        return self.device_inventory_repository.get_vendors()
