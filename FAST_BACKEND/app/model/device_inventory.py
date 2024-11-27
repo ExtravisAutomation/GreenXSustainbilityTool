@@ -210,4 +210,5 @@ class ChassisModule(BaseModel):
     chassis = relationship("Chassis", back_populates="chassis_modules")
     module = relationship("Module", back_populates="chassis_modules")
     
-    
+
+

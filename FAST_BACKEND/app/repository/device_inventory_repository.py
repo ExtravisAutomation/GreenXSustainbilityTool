@@ -11,7 +11,8 @@ from app.model.device_inventory import ChassisFan, ChassisModule, ChassisPowerSu
 from app.model.apic_controller import APICController
 from app.model.APIC_controllers import APICControllers
 from app.repository.base_repository import BaseRepository
-from sqlalchemy import func, desc
+# from app.model.devices import
+from sqlalchemy import func, desc,and_
 
 class DeviceInventoryRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]], influxdb_repository):
@@ -387,27 +388,46 @@ class DeviceInventoryRepository(BaseRepository):
             return device
 
 
-    def get_models_data(self):
+    def get_models_data(self,model_data):
         with self.session_factory() as session:
-            models = session.query( DeviceInventory.pn_code).all()
-            models_with_count = session.query(
-        DeviceInventory.pn_code,
-        func.min(DeviceInventory.id).label("id"),  # Representative `id`
-        func.count(DeviceInventory.id).label("id_count")
-    ).group_by(DeviceInventory.pn_code).order_by(desc("id_count")).all()
+            site_id=model_data.site_id
+            rack_id=model_data.rack_id
+            query = session.query(
+                DeviceInventory.pn_code,
+                func.count(DeviceInventory.id).label("id_count"),
+            )
 
-            data = []
-            for a in models_with_count:
-                data.append({
+            # Join with Device
+            query = query.join(APICControllers, APICController.id == DeviceInventory.apic_controller_id)
+            # Apply filters dynamically
+            conditions = []
+            if site_id:
+                conditions.append(DeviceInventory.site_id == site_id)
+            if rack_id:
+                conditions.append(DeviceInventory.rack_id == rack_id)
+
+            # Apply the conditions to the query if any
+            if conditions:
+                query = query.filter(and_(*conditions))
+
+            # Group by and order
+            apic = (
+                query.group_by(DeviceInventory.pn_code)
+                .order_by(desc("id_count"))
+                .all()
+            )
+            # Process the results into a list of dictionaries
+            data = [
+                {
                     "model_name": a[0],  # pn_code
-                    "id": a[1],  # id
-                    "id_count": a[2]  # count
-                })
+                    "id_count": a[1],  # count
+                }
+                for a in apic
+            ]
 
+            print(f"Total Records: {len(apic)}")  # Debugging info
             print("Processed Data:", data)  # Debugging info
 
             return data
-
-
 
 

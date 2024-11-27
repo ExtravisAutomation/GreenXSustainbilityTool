@@ -4,7 +4,7 @@ from app.services.device_inventory_service import DeviceInventoryService
 from app.schema.device_inventory_schema import DeviceInventoryCreate, DeviceInventoryUpdate, DeviceInventoryInDB
 from app.core.dependencies import get_db
 
-from app.schema.device_inventory_schema import Custom_Response_Inventory
+from app.schema.device_inventory_schema import Custom_Response_Inventory,modelCreate
 from app.core.dependencies import get_current_active_user
 from app.model.user import User
 from dependency_injector.wiring import Provide, inject
@@ -218,13 +218,14 @@ def get_spcific_devices(
     )
 
 
-@router.get("/get_model_names", response_model=CustomResponse)
+@router.post("/get_model_Count", response_model=CustomResponse)
 @inject
 def get_model_names(
+        model_data:modelCreate,
         current_user: User = Depends(get_current_active_user),
         device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
-    models = device_inventory_service.get_models()
+    models = device_inventory_service.get_models(model_data)
 
     return CustomResponse(
         message="Fetched model data successfully",
