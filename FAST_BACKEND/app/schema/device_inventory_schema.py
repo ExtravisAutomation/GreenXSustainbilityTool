@@ -88,3 +88,4 @@ class Custom_Response_Inventory(BaseModel, Generic[T]):
 class modelCreate(BaseModel):
     site_id : Optional[int]
     rack_id : Optional[int]
+    ventor_id : Optional[int]
