@@ -1800,18 +1800,18 @@ def upload_devices1(
 
 
 
-@router.get("/sites/model_no_device_energy_consumption/{site_id}/{model_no}",
+@router.get("/sites/model_no_device_energy_consumption/{model_no}",
             response_model=CustomResponse[List[EnergyConsumptionMetricsDetails]])
 @inject
 def get_device_energy_consumption_metrics(
-        site_id: int,
         model_no: str,
+        site_id: Optional[int] = None,
         duration: Optional[str] = Query(None, alias="duration"),
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     duration = duration or "24 hours"
-    metrics = site_service.calculate_energy_consumption_by_model_no_with_filter(site_id, model_no, duration)
+    metrics = site_service.calculate_energy_consumption_by_model_no_with_filter(model_no, duration, site_id)
     print("METRIXXX ENDPOINTTTTTTTTTTTTTTT", metrics, file=sys.stderr)
     if not metrics:
         raise HTTPException(status_code=404, detail="No metrics found for the given model number and duration.")

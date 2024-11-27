@@ -1164,11 +1164,10 @@ class SiteRepository(BaseRepository):
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error interacting with OpenAI API: {str(e)}")
 
-    def get_device_by_site_id_and_model_no(self, site_id: int, model_no: str) -> Optional[dict]:
-        print(f"Querying device: site_id={site_id}, model_no={model_no}")
+    def get_device_by_model_no(self, model_no: str, site_id: Optional[int] = None) -> Optional[dict]:
+        print(f"Querying device: model_no={model_no}, site_id={site_id}")
         with self.session_factory() as session:
-            # Query for the device with the given pn_code (model_no)
-            device = (
+            query = (
                 session.query(
                     DeviceInventory.id,
                     DeviceInventory.device_name,
@@ -1184,9 +1183,14 @@ class SiteRepository(BaseRepository):
                 )
                 .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
-                .filter(DeviceInventory.site_id == site_id, DeviceInventory.pn_code == model_no)
-                .first()
+                .filter(DeviceInventory.pn_code == model_no)
             )
+
+            # Apply additional filter for site_id if provided
+            if site_id:
+                query = query.filter(DeviceInventory.site_id == site_id)
+
+            device = query.first()
 
             if device:
                 print(f"Device found: {device}")
