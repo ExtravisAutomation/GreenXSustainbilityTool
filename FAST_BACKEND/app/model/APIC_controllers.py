@@ -32,3 +32,4 @@ class Vendor(BaseModel):
     __tablename__ = "vendor"
     id = Column(Integer, primary_key=True)
     vendor_name = Column(String(200), nullable=True)
+    devices = relationship("APICControllers", back_populates="vendor")
