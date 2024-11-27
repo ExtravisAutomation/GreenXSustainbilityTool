@@ -220,7 +220,7 @@ def get_spcific_devices(
 
 @router.post("/get_model_Count", response_model=CustomResponse)
 @inject
-def get_device_type_count(
+def get_model_names(
         model_data:modelCreate,
         current_user: User = Depends(get_current_active_user),
         device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
@@ -250,7 +250,7 @@ def get_device_type_count(
 #     )
 #
 #
-@router.post("/get_device_type", response_model=CustomResponse)
+@router.post("/devicetype_count", response_model=CustomResponse)
 @inject
 def get_model_names(
         model_data:modelCreate,
