@@ -1163,3 +1163,46 @@ class SiteRepository(BaseRepository):
             raise HTTPException(status_code=401, detail="Invalid or inactive OpenAI API key.")
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error interacting with OpenAI API: {str(e)}")
+
+    def get_device_by_site_id_and_model_no(self, site_id: int, model_no: str) -> Optional[dict]:
+        print(f"Querying device: site_id={site_id}, model_no={model_no}")
+        with self.session_factory() as session:
+            # Query for the device with the given pn_code (model_no)
+            device = (
+                session.query(
+                    DeviceInventory.id,
+                    DeviceInventory.device_name,
+                    DeviceInventory.apic_controller_id,  # Use this to get the controller ID
+                    DeviceInventory.pn_code,
+                    APICControllers.ip_address,
+                    Site.site_name,
+                    DeviceInventory.hardware_version,
+                    DeviceInventory.manufacturer,
+                    DeviceInventory.serial_number,
+                    DeviceInventory.software_version,
+                    DeviceInventory.status
+                )
+                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Site, DeviceInventory.site_id == Site.id)
+                .filter(DeviceInventory.site_id == site_id, DeviceInventory.pn_code == model_no)
+                .first()
+            )
+
+            if device:
+                print(f"Device found: {device}")
+                return {
+                    "device_id": device.id,
+                    "device_name": device.device_name,
+                    "ip_address": device.ip_address,
+                    "site_name": device.site_name,
+                    "hardware_version": device.hardware_version,
+                    "manufacturer": device.manufacturer,
+                    "pn_code": device.pn_code,
+                    "serial_number": device.serial_number,
+                    "software_version": device.software_version,
+                    "status": device.status
+                }
+            else:
+                print("Device not found.")
+                return None
+

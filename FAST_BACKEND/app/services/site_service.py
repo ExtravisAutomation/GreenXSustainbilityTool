@@ -1984,3 +1984,21 @@ class SiteService:
 
         # Use OpenAI to analyze the CSV data and provide an answer
         return self.site_repository.get_openai_answer(prompt)
+
+    def calculate_energy_consumption_by_model_no_with_filter(self, site_id: int, model_no: str, duration_str: str) -> \
+    List[dict]:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+
+        # Update repository call to fetch device based on model_no
+        device = self.site_repository.get_device_by_site_id_and_model_no(site_id, model_no)
+        print("DEVICE DATAAAAAAAAAAAAAAAA", device, file=sys.stderr)
+
+        if not device or not device["ip_address"]:
+            print("No device found for site_id:", site_id, " and model_no:", model_no, file=sys.stderr)
+            return []
+
+        energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter123(
+            [device["ip_address"]], start_date, end_date, duration_str
+        )
+        print("RETURNNNN METRIX FROM INFLUX", energy_metrics, file=sys.stderr)
+        return energy_metrics

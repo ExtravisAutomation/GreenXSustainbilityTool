@@ -1799,3 +1799,27 @@ def upload_devices1(
         raise HTTPException(status_code=400, detail="Failed to process the file.")
 
 
+
+@router.get("/sites/model_no_device_energy_consumption/{site_id}/{model_no}",
+            response_model=CustomResponse[List[EnergyConsumptionMetricsDetails]])
+@inject
+def get_device_energy_consumption_metrics(
+        site_id: int,
+        model_no: str,
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+    metrics = site_service.calculate_energy_consumption_by_model_no_with_filter(site_id, model_no, duration)
+    print("METRIXXX ENDPOINTTTTTTTTTTTTTTT", metrics, file=sys.stderr)
+    if not metrics:
+        raise HTTPException(status_code=404, detail="No metrics found for the given model number and duration.")
+
+    return CustomResponse(
+        message="Energy consumption metrics retrieved successfully.",
+        data=metrics,
+        status_code=status.HTTP_200_OK
+    )
+
+
