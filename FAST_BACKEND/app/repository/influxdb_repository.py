@@ -2325,13 +2325,18 @@ class InfluxDBRepository:
 
                         energy_consumption = pout / pin if pin > 0 else 0
                         power_efficiency = pin / pout if pout > 0 else 0
+                        pin_kg = pin / 1000
+                        pout_kg = pout / 1000
+                        co2 = pin_kg * 0.4716
+                        co2_tons = co2 / 1000
 
                         total_power_metrics.append({
                             "time": row['index'],
                             "energy_efficiency": round(energy_consumption, 2),
-                            "total_POut": round(pout, 2),
-                            "total_PIn": round(pin, 2),
-                            "power_efficiency": round(power_efficiency, 2)
+                            "total_POut": round(pout/1000, 2),
+                            "total_PIn": round(pin/1000, 2),
+                            "power_efficiency": round(power_efficiency, 2),
+                            "co2_tons": round(co2_tons, 2)
                         })
 
         df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')

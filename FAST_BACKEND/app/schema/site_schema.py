@@ -114,6 +114,7 @@ class EnergyConsumptionMetricsDetails(BaseModel):
     total_PIn: Optional[float] = None
     average_energy_consumed: Optional[float] = None
     power_efficiency: Optional[float] = None
+    co2_tons: Optional[float] = None
 
 
 class DeviceEnergyMetric(BaseModel):
