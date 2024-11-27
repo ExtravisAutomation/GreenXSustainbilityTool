@@ -2337,7 +2337,7 @@ class InfluxDBRepository:
                             "total_PIn": round(pin/1000, 2),
                             "power_efficiency": round(power_efficiency, 2),
                             "co2_tons": co2_tons,
-                            "co2_kgs": co2
+                            "co2_kgs": round(co2, 2)
                         })
 
         df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
