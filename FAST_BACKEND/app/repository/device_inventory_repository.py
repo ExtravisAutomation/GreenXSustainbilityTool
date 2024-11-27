@@ -512,6 +512,7 @@ class DeviceInventoryRepository(BaseRepository):
                 func.count(DeviceInventory.id).label("device_count"),
             )
 
+
             # Join with Device
             query = query.join(APICControllers, APICControllers.id == DeviceInventory.apic_controller_id)
 
