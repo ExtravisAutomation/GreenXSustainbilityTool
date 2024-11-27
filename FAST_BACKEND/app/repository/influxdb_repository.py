@@ -1033,58 +1033,88 @@ class InfluxDBRepository:
     #
     #     return throughput_metrics
 
-    def get_traffic_throughput_metrics_with_ener(self, device_ip: str, start_date: datetime, end_date: datetime,
-                                                 duration_str: str) -> List[dict]:
-        throughput_metrics = []
+    def get_energy_consumption_metrics_with_filter123(self, device_ips: List[str], start_date: datetime,
+                                                      end_date: datetime, duration_str: str) -> List[dict]:
+        total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
-        aggregate_window, time_format = self.determine_aggregate_window(duration_str)
+        # Define the aggregate window and time format based on the duration string
+        if duration_str in ["24 hours"]:
+            aggregate_window = "1h"
+            time_format = '%Y-%m-%d %H:00'
+        elif duration_str in ["7 Days", "Current Month", "Last Month"]:
+            aggregate_window = "1d"
+            time_format = '%Y-%m-%d'
+        else:  # For "last 6 months", "last year", "current year"
+            aggregate_window = "1m"
+            time_format = '%Y-%m'
 
-        # Traffic metrics query
-        traffic_query = f'''
-               from(bucket: "{self.bucket}")
-               |> range(start: {start_time}, stop: {end_time})
-               |> filter(fn: (r) => r["ApicController_IP"] == "{device_ip}")
-               |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
-               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
-               |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-           '''
-        traffic_result = self.query_api1.query_data_frame(traffic_query)
-        if traffic_result.empty:
-            return throughput_metrics  # Return empty if no traffic data found
+        for ip in device_ips:
+            print("Processing Device IP:", ip, file=sys.stderr)
 
-        # Power metrics query
-        power_query = f'''
-               from(bucket: "{self.bucket}")
-               |> range(start: {start_time}, stop: {end_time})
-               |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{device_ip}")
-               |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
-               |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-           '''
-        power_result = self.query_api1.query_data_frame(power_query)
-        if power_result.empty:
-            return throughput_metrics  # Return if no power data found
+            # Query for power metrics
+            power_query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+            power_result = self.query_api1.query_data_frame(power_query)
 
-        # Combine traffic and power results
-        traffic_result['_time'] = pd.to_datetime(traffic_result['_time']).dt.strftime(time_format)
-        power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
-        combined_result = pd.merge(traffic_result, power_result, on='_time', how='outer').fillna(0)
+            # Query for data traffic
+            traffic_query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+            traffic_result = self.query_api1.query_data_frame(traffic_query)
 
-        for _, row in combined_result.iterrows():
-            total_bytes_rate_last_gb = self.convert_bytes(row['total_bytesRateLast']) if row[
-                                                                                             'total_bytesRateLast'] > 0 else 0
-            pin = row['total_PIn'] if row['total_PIn'] > 0 else 1  # Avoid division by zero
-            pout = row['total_POut'] if row['total_POut'] > 0 else 0
-            energy_consumption = pout / pin  # Calculate energy consumption
+            # If both results are empty, skip this device
+            if power_result.empty and traffic_result.empty:
+                print(f"No data for IP: {ip}", file=sys.stderr)
+                continue
 
-            throughput_metrics.append({
-                "time": row['_time'],
-                "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2),
-                "energy_consumption": round(pin, 2)
-            })
-        return throughput_metrics
+            # Format timestamps
+            if not power_result.empty:
+                power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
+            if not traffic_result.empty:
+                traffic_result['_time'] = pd.to_datetime(traffic_result['_time']).dt.strftime(time_format)
+
+            # Merge traffic and power data
+            combined_result = pd.merge(power_result, traffic_result, on='_time', how='outer').fillna(0)
+
+            for _, row in combined_result.iterrows():
+                pin = row['total_PIn'] if 'total_PIn' in row else 0
+                pout = row['total_POut'] if 'total_POut' in row else 0
+                total_bytes_rate_last = row['total_bytesRateLast'] if 'total_bytesRateLast' in row else 0
+
+                energy_consumption = pout / pin if pin > 0 else 0
+                power_efficiency = pin / pout if pout > 0 else 0
+                pin_kg = pin / 1000
+                co2 = pin_kg * 0.4716
+                co2_tons = co2 / 1000
+                total_bytes_rate_last_gb = self.convert_bytes(total_bytes_rate_last)
+
+                total_power_metrics.append({
+                    "time": row['_time'],
+                    "energy_efficiency": round(energy_consumption, 2),
+                    "total_POut": round(pout / 1000, 2),  # Convert to kW
+                    "total_PIn": round(pin / 1000, 2),  # Convert to kW
+                    "power_efficiency": round(power_efficiency, 2),
+                    "co2_tons": co2_tons,
+                    "co2_kgs": round(co2, 2),
+                    "data_traffic": round(total_bytes_rate_last_gb, 2)
+                })
+
+        # Convert results to DataFrame and remove duplicates by time
+        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
+        return df
 
     def get_traffic_throughput_metrics_with_ener00(self, device_ip: str, start_date: datetime, end_date: datetime,
                                                    duration_str: str) -> List[dict]:
