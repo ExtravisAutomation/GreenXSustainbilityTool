@@ -513,6 +513,7 @@ class DeviceInventoryRepository(BaseRepository):
             )
 
 
+
             # Join with Device
             query = query.join(APICControllers, APICControllers.id == DeviceInventory.apic_controller_id)
 
