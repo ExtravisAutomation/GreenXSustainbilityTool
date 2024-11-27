@@ -415,7 +415,7 @@ class DeviceInventoryRepository(BaseRepository):
             # Group by and order
             apic = (
                 query.group_by(DeviceInventory.pn_code)
-                .order_by(desc("id_count"))
+                .order_by(desc("count"))
                 .all()
             )
             # Process the results into a list of dictionaries
