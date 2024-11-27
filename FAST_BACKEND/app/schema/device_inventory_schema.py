@@ -84,3 +84,8 @@ class Custom_Response_Inventory(BaseModel, Generic[T]):
     message: str
     data: T
     status_code: int
+
+class modelCreate(BaseModel):
+    site_id : Optional[int]
+    rack_id : Optional[int]
+    ventor_id : Optional[int]
