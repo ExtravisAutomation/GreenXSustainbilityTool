@@ -403,9 +403,9 @@ class DeviceInventoryRepository(BaseRepository):
             # Apply filters dynamically
             conditions = []
             if site_id:
-                conditions.append(APICController.site_id == site_id)
+                conditions.append(DeviceInventory.site_id == site_id)
             if rack_id:
-                conditions.append(APICController.rack_id == rack_id)
+                conditions.append(DeviceInventory.rack_id == rack_id)
             if vendor_id:
                 conditions.append(APICController.vendor_id == vendor_id)
             # Apply the conditions to the query if any
