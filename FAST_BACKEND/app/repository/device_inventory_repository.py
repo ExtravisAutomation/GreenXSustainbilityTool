@@ -9,9 +9,10 @@ from app.model.DevicesSntc import DevicesSntc as DeviceSNTC
 from app.repository.InfluxQuery import get_24hDevice_dataTraffic, get_24hDevice_power, get_device_power
 from app.model.device_inventory import ChassisFan, ChassisModule, ChassisPowerSupply, DeviceInventory, ChassisDevice
 from app.model.apic_controller import APICController
-from app.model.APIC_controllers import APICControllers
+from app.model.APIC_controllers import APICControllers,Vendor
 from app.repository.base_repository import BaseRepository
-
+# from app.model.devices import
+from sqlalchemy import func, desc,and_
 
 class DeviceInventoryRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]], influxdb_repository):
@@ -385,3 +386,161 @@ class DeviceInventoryRepository(BaseRepository):
             device.cost = 13
 
             return device
+
+
+    def get_models_data(self,model_data):
+        with self.session_factory() as session:
+            site_id=model_data.site_id
+            rack_id=model_data.rack_id
+            vendor_id=model_data.vendor_id
+            query = session.query(
+                DeviceInventory.pn_code,
+                func.count(DeviceInventory.id).label("count"),
+            )
+
+            # Join with Device
+            query = query.join(APICControllers, APICControllers.id == DeviceInventory.apic_controller_id)
+            # Apply filters dynamically
+            conditions = []
+            if site_id:
+                conditions.append(DeviceInventory.site_id == site_id)
+            if rack_id:
+                conditions.append(DeviceInventory.rack_id == rack_id)
+            if vendor_id:
+                conditions.append(APICControllers.vendor_id == vendor_id)
+            # Apply the conditions to the query if any
+            if conditions:
+                query = query.filter(and_(*conditions))
+
+            # Group by and order
+            apic = (
+                query.group_by(DeviceInventory.pn_code)
+                .order_by(desc("count"))
+                .all()
+            )
+            print("daat",apic)
+            # Process the results into a list of dictionaries
+            data = [
+                {
+                    "model_name": a[0],  # pn_code
+                    "count": a[1],  # count
+                }
+                for a in apic
+            ]
+
+            print(f"Total Records: {len(apic)}")  # Debugging info
+            print("Processed Data:", data)  # Debugging info
+
+        return data
+
+
+    def get_device_type(self, model_data):
+        with self.session_factory() as session:
+            site_id = model_data.site_id
+            rack_id = model_data.rack_id
+            vendor_id = model_data.vendor_id
+            query = session.query(
+                APICControllers.device_type,  # Group by device_type
+                func.count(DeviceInventory.id).label("device_count"),
+            )
+
+            # Join with Device
+            query = query.join(APICControllers, APICControllers.id == DeviceInventory.apic_controller_id)
+
+            # Apply filters dynamically
+            conditions = []
+            if site_id:
+                conditions.append(DeviceInventory.site_id == site_id)
+            if rack_id:
+                conditions.append(DeviceInventory.rack_id == rack_id)
+            if vendor_id:
+                conditions.append(APICControllers.vendor_id == vendor_id)
+            # Apply the conditions to the query if any
+            if conditions:
+                query = query.filter(and_(*conditions))
+            # Group by and order
+            device_type_count = (
+                query.group_by(APICControllers.device_type)
+                .order_by(desc("device_count"))  # Order by count of devices per type
+                .all()
+            )
+            # Process the results into a list of dictionaries
+            data = [
+                {
+                    "device_type": a[0],  # pn_code
+                    "count": a[1],  # count
+                }
+                for a in device_type_count
+            ]
+
+            print(f"Total Records: {len(device_type_count)}")  # Debugging info
+            print("Processed Data:", data)  # Debugging info
+
+            return data
+
+    def get_vendors(self):
+        with self.session_factory() as session:
+            # Fetch all chassis fan records with related fan data efficiently
+            ventors = session.query(Vendor).all()
+
+            return ventors
+
+    def get_count(self):
+        with self.session_factory() as session:
+            # Fetch all chassis fan records with related fan data efficiently
+            vendor_count = session.query(Vendor).count()
+            site_count = session.query(Site).count()
+            rack_count = session.query(Rack).count()
+            device_count = session.query(APICControllers).count()
+
+            # Create the response as a list of dictionaries
+            data = [
+                {"name": "vendors", "count": vendor_count},
+                {"name": "sites", "count": site_count},
+                {"name": "racks", "count": rack_count},
+                {"name": "devices", "count": device_count},
+            ]
+            return data
+    def  get_device_nature(self,model_data):
+        with self.session_factory() as session:
+            site_id = model_data.site_id
+            rack_id = model_data.rack_id
+            vendor_id = model_data.vendor_id
+            query = session.query(
+                APICControllers.device_nature,  # Group by device_type
+                func.count(DeviceInventory.id).label("device_count"),
+            )
+
+            # Join with Device
+            query = query.join(APICControllers, APICControllers.id == DeviceInventory.apic_controller_id)
+
+            # Apply filters dynamically
+            conditions = []
+            if site_id:
+                conditions.append(DeviceInventory.site_id == site_id)
+            if rack_id:
+                conditions.append(DeviceInventory.rack_id == rack_id)
+            if vendor_id:
+                conditions.append(APICControllers.vendor_id == vendor_id)
+            # Apply the conditions to the query if any
+            if conditions:
+                query = query.filter(and_(*conditions))
+            # Group by and order
+            device_type_count = (
+                query.group_by(APICControllers.device_nature)
+                .order_by(desc("device_count"))  # Order by count of devices per type
+                .all()
+            )
+            # Process the results into a list of dictionaries
+            data = [
+                {
+                    "device_nature": a[0],  # pn_code
+                    "count": a[1],  # count
+                }
+                for a in device_type_count
+            ]
+
+            print(f"Total Records: {len(device_type_count)}")  # Debugging info
+            print("Processed Data:", data)  # Debugging info
+
+            return data

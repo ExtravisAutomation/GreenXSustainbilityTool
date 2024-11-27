@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List
 from app.repository.device_inventory_repository import DeviceInventoryRepository
+
 from app.schema.device_inventory_schema import DeviceInventoryCreate, DeviceInventoryUpdate, DeviceInventoryInDB
 
 
@@ -124,3 +125,16 @@ class DeviceInventoryService:
     
     def get_spcific_devices(self, device_ip: str):
         return self.device_inventory_repository.get_spcific_devices(device_ip)
+
+    def get_models(self,model_data):
+        return self.device_inventory_repository.get_models_data(model_data)
+
+    def get_device_type(self, model_data):
+        return self.device_inventory_repository.get_device_type(model_data)
+
+    def get_vendor(self):
+        return self.device_inventory_repository.get_vendors()
+    def get_count(self):
+        return self.device_inventory_repository.get_count()
+    def get_device_nature(self):
+        return self.device_inventory_repository.get_device_nature(model_data)
