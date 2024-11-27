@@ -464,19 +464,26 @@ class DeviceInventoryRepository(BaseRepository):
                 .order_by(desc("device_count"))  # Order by count of devices per type
                 .all()
             )
+            total_count=0
             # Process the results into a list of dictionaries
-            data = [
-                {
-                    "device_type": a[0],  # pn_code
-                    "count": a[1],  # count
-                }
-                for a in device_type_count
-            ]
+            data = []
+            for record in device_type_count:
+                data.append({
+                    "device_type": record[0],  # APICControllers.device_type
+                    "count": record[1],  # Device count
+                })
+                total_count += record[1]
 
-            print(f"Total Records: {len(device_type_count)}")  # Debugging info
-            print("Processed Data:", data)  # Debugging info
+            # Debugging info
+            print(f"Total Records: {len(device_type_count)}")
+            print("Processed Data:", data)
 
-            return data
+            # Final result
+            result = {
+                "device_type_count": data,
+                "count": total_count
+            }
+            return result
 
     def get_vendors(self):
         with self.session_factory() as session:
