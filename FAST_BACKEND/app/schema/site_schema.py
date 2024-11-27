@@ -115,6 +115,7 @@ class EnergyConsumptionMetricsDetails(BaseModel):
     average_energy_consumed: Optional[float] = None
     power_efficiency: Optional[float] = None
     co2_tons: Optional[float] = None
+    co2_kgs : Optional[float] = None
 
 
 class DeviceEnergyMetric(BaseModel):
