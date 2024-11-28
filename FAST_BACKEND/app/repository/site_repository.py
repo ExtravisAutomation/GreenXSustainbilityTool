@@ -1210,3 +1210,12 @@ class SiteRepository(BaseRepository):
                 print("Device not found.")
                 return None
 
+    def get_vendor_data(self):
+        with self.session_factory() as session:
+            query = session.query(APICControllers.device_type).filter(id==1).all()
+            data_list = [item[0] for item in query]
+
+            print(data_list)  # Debugging
+            return data_list
+
+
