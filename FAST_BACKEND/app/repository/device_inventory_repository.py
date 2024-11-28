@@ -519,11 +519,8 @@ class DeviceInventoryRepository(BaseRepository):
                 func.count(DeviceInventory.id).label("device_count"),
             )
 
-
-
             # Join with Device
             query = query.join(APICControllers, APICControllers.id == DeviceInventory.apic_controller_id)
-
             # Apply filters dynamically
             conditions = []
             if site_id:
@@ -542,15 +539,24 @@ class DeviceInventoryRepository(BaseRepository):
                 .all()
             )
             # Process the results into a list of dictionaries
-            data = [
-                {
-                    "device_nature": a[0],  # pn_code
-                    "count": a[1],  # count
-                }
-                for a in device_type_count
-            ]
+            data = []
+            total_count = 0  # Initialize total count
 
-            print(f"Total Records: {len(device_type_count)}")  # Debugging info
-            print("Processed Data:", data)  # Debugging info
+            for a in device_type_count:
+                data.append({
+                    "device_nature": a[0],  # device type or nature
+                    "count": a[1],  # count of devices
+                })
+                total_count += a[1]  # Accumulate the count
 
-            return data
+            # Debugging info
+            print(f"Total Records: {len(device_type_count)}")
+            print("Processed Data:", data)
+
+            # Return both data and total count
+            result = {
+                "device_nature_count": data,
+                "total_count": total_count
+            }
+
+            return result

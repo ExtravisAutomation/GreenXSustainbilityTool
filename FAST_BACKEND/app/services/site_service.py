@@ -1787,7 +1787,8 @@ class SiteService:
     def get_device_types_by_vendor(self, vendor: str) -> List[str]:
         # Check vendor and return specific device types for Cisco
         if vendor.lower() == "cisco":
-            return ["apic", "cisco_ios", "cisco_nxos"]
+            data=self.site_repository.get_vendor_data()
+            return data
         else:
             return []
 
