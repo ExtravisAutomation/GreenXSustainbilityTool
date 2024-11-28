@@ -1800,7 +1800,7 @@ def upload_devices1(
 
 
 
-@router.get("/sites/model_no_device_energy_consumption/{model_no}",
+@router.post("/sites/model_no_device_energy_consumption/",
             response_model=CustomResponse[List[EnergyConsumptionMetricsDetails]])
 @inject
 def get_device_energy_consumption_metrics(
