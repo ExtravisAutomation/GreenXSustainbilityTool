@@ -323,7 +323,7 @@ def get_count(
 
 
 
-@router.post("/get_vendor_count", response_model=CustomResponse)
+@router.get("/get_vendor_count", response_model=CustomResponse)
 @inject
 def get_count(
 
