@@ -326,11 +326,11 @@ def get_count(
 @router.post("/get_vendor_count", response_model=CustomResponse)
 @inject
 def get_count(
-        device_nature: modelCreate,
+
         current_user: User = Depends(get_current_active_user),
         device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
-    models = device_inventory_service.get_vendor_count(device_nature)
+    models = device_inventory_service.get_vendor_count()
 
     return CustomResponse(
         message="Fetched vendor data successfully",
