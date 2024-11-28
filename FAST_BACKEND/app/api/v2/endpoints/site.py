@@ -822,11 +822,12 @@ def get_carbon_emission_metrics(
     pin_value, carbon_emission, carbon_car, carbon_flight, carbon_solution = site_service.calculate_carbon_emission(
         site_id, duration)
     print("FINALLLLLLLL", carbon_emission, file=sys.stderr)
+    carbon_intons = carbon_emission / 1000
     return CustomResponse(
         message="Carbon emission metrics retrieved successfully.",
         data={
             "total_PIn": pin_value,
-            "carbon_emission": carbon_emission,
+            "carbon_emission": carbon_intons,
             "carbon_effect_car": carbon_car,
             "carbon_effect_flight": carbon_flight,
             "carbon_solution": carbon_solution
