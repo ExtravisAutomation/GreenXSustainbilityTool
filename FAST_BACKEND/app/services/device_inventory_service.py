@@ -138,3 +138,5 @@ class DeviceInventoryService:
         return self.device_inventory_repository.get_count()
     def get_device_nature(self,model_data):
         return self.device_inventory_repository.get_device_natures(model_data)
+    def get_vendor_count(self):
+        return self.device_inventory_repository.get_vendor_device_count()

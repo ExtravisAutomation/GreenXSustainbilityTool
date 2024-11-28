@@ -560,3 +560,31 @@ class DeviceInventoryRepository(BaseRepository):
             }
 
             return result
+
+    def get_vendor_device_count(self):
+        with self.session_factory() as session:
+            # Query to get vendor_name and the count of devices associated with each vendor
+            result = session.query(
+                Vendor.vendor_name,
+                func.count(APICControllers.id).label('device_count')
+            ).join(APICControllers, APICControllers.vendor_id == Vendor.id) \
+                .group_by(Vendor.vendor_name) \
+                .all()  # This will return a list of tuples (vendor_name, device_count)
+
+            data = []
+            total_count = 0  # Initialize total count
+
+            for vendor_name, device_count in result:
+                data.append({
+                    "vendor_name": vendor_name,  # device type or nature
+                    "count": device_count,  # count of devices
+                })
+                total_count += device_count  # Accumulate the count
+
+            # Return both data and total count
+            vendor_data = {
+                "vendor_data": data,
+                "total_count": total_count
+            }
+
+            return vendor_data
