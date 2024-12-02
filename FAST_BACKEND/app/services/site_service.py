@@ -2040,15 +2040,27 @@ class SiteService:
         if not devices:
             return {}
 
-        total_power_in = 0
-        total_power_out = 0
-        total_data_traffic = 0
-        total_co2_emissions = 0
-        total_count = 0
+        # Create a dictionary to store metrics by model_no
+        model_metrics = {}
 
         # For each device, calculate energy consumption and metrics
         for device in devices:
             ip_address = device["ip_address"]
+            model = device["pn_code"]
+
+            # Initialize dictionary for model if not present
+            if model not in model_metrics:
+                model_metrics[model] = {
+                    "total_power_in": 0,
+                    "total_power_out": 0,
+                    "total_data_traffic": 0,
+                    "total_co2_emissions": 0,
+                    "total_count": 0,
+                    "device_name": device["device_name"],
+                    "ip_address": device["ip_address"],
+                    "site_name": device["site_name"],
+                    "rack_name": device["rack_name"]
+                }
 
             # Fetch energy consumption metrics from InfluxDB
             energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter123(
@@ -2056,32 +2068,29 @@ class SiteService:
             )
 
             if energy_metrics:
-                total_count += 1
+                model_metrics[model]["total_count"] += 1
                 # Sum up the relevant values from energy metrics
                 for metric in energy_metrics:
-                    total_power_in += metric["total_PIn"]
-                    total_power_out += metric["total_POut"]
-                    #total_data_traffic += metric["data_traffic"]
-                    total_co2_emissions += metric["co2_kgs"]
+                    model_metrics[model]["total_power_in"] += metric["total_PIn"]
+                    model_metrics[model]["total_power_out"] += metric["total_POut"]
+                    model_metrics[model]["total_data_traffic"] += metric.get("data_traffic", 0)
+                    model_metrics[model]["total_co2_emissions"] += metric["co2_kgs"]
 
-        # Calculate averages
-        avg_power_in = total_power_in / total_count if total_count else 0
-        avg_power_out = total_power_out / total_count if total_count else 0
-        avg_data_traffic = total_data_traffic / total_count if total_count else 0
-        avg_co2_emissions = total_co2_emissions / total_count if total_count else 0
-
-        # Construct the response dictionary updated
-        avg_metrics = {
-            "model_no": model_no or "",
-            "device_name": devices[0]["device_name"] if devices else "Unknown",  # Using first device name if exists
-            "ip_address": devices[0]["ip_address"] if devices else "Unknown",  # Using first device IP if exists
-            "site_name": devices[0]["site_name"] if devices else "Unknown",  # Using first site name
-            "rack_name": devices[0]["rack_name"] if devices else "Unknown",  # Using first rack name
-            "model_count": total_count,
-            "avg_total_PIn": round(avg_power_in, 2),  # kW
-            "avg_total_POut": round(avg_power_out, 2),  # kW
-            #"avg_data_traffic": round(avg_data_traffic, 2),  # GB
-            "avg_co2_emissions": round(avg_co2_emissions, 2)  # kg
-        }
+        # Calculate averages for each model
+        avg_metrics = {}
+        for model, metrics in model_metrics.items():
+            total_count = metrics["total_count"]
+            avg_metrics[model] = {
+                "model_no": model,
+                "device_name": metrics["device_name"],
+                "ip_address": metrics["ip_address"],
+                "site_name": metrics["site_name"],
+                "rack_name": metrics["rack_name"],
+                "model_count": total_count,
+                "avg_total_PIn": round(metrics["total_power_in"] / total_count, 2) if total_count else 0,
+                "avg_total_POut": round(metrics["total_power_out"] / total_count, 2) if total_count else 0,
+                "avg_data_traffic": round(metrics["total_data_traffic"] / total_count, 2) if total_count else 0,
+                "avg_co2_emissions": round(metrics["total_co2_emissions"] / total_count, 2) if total_count else 0
+            }
 
         return avg_metrics
