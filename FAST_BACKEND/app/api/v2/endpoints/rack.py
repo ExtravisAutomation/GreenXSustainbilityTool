@@ -204,3 +204,18 @@ def delete_multiple_buildings(
     )
 
 
+@router.post("/rackbyid/{rack_id}/{site_id}", response_model=CustomResponse_rack)
+@inject
+def get_rack_by_id(
+    rack_id: int,
+    site_id: int,
+    rack_service: RackService = Depends(Provide[Container.rack_service])
+):
+    racks = rack_service.get_specific_racks(rack_id, site_id)
+    return CustomResponse_rack(
+        message = "Rack details",
+        data = racks[0] if len(racks) > 0 else None,
+        status_code = status.HTTP_200_OK
+    )
+
+
