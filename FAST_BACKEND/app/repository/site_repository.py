@@ -1274,6 +1274,64 @@ class SiteRepository(BaseRepository):
                 print("No devices found.")
                 return []
 
+    def get_devices_by_filters(self, site_id: Optional[int], rack_id: Optional[int],
+                                 model_no: Optional[str], vendor_name: Optional[str]) -> List[dict]:
+        print(
+            f"Querying devices with filters: site_id={site_id}, rack_id={rack_id}, model_no={model_no}, vendor_name={vendor_name}")
+        with self.session_factory() as session:
+            query = (
+                session.query(
+                    DeviceInventory.id,
+                    DeviceInventory.device_name,
+                    DeviceInventory.apic_controller_id,
+                    DeviceInventory.pn_code,
+                    APICControllers.ip_address,
+                    Site.site_name,
+                    DeviceInventory.hardware_version,
+                    DeviceInventory.manufacturer,
+                    DeviceInventory.serial_number,
+                    DeviceInventory.software_version,
+                    DeviceInventory.status,
+                    DeviceInventory.rack_name  # Assuming rack_name is part of DeviceInventory
+                )
+                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Site, DeviceInventory.site_id == Site.id)
+            )
+
+            # Apply filters based on provided parameters
+            if site_id:
+                query = query.filter(DeviceInventory.site_id == site_id)
+            if rack_id:
+                query = query.filter(DeviceInventory.rack_id == rack_id)
+            if model_no:
+                query = query.filter(DeviceInventory.pn_code == model_no)
+            if vendor_name:
+                query = query.join(Vendor, APICControllers.vendor_id == Vendor.id).filter(
+                    Vendor.vendor_name == vendor_name)
+
+            devices = query.all()
+
+            if devices:
+                print(f"Devices found: {len(devices)}")
+                return [
+                    {
+                        "device_id": device.id,
+                        "device_name": device.device_name,
+                        "ip_address": device.ip_address,
+                        "site_name": device.site_name,
+                        "hardware_version": device.hardware_version,
+                        "manufacturer": device.manufacturer,
+                        "pn_code": device.pn_code,
+                        "serial_number": device.serial_number,
+                        "software_version": device.software_version,
+                        "status": device.status,
+                        "rack_name": device.rack_name  # Return rack_name in the response
+                    } for device in devices
+                ]
+            else:
+                print("No devices found.")
+                return []
+
 
 
 

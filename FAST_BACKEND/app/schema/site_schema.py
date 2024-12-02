@@ -384,3 +384,26 @@ class CustomResponse_openai(BaseModel, Generic[T]):
     data: Optional[T]
     status_code: int
 
+
+
+
+
+class EnergyConsumptionMetricsDetailsNew(BaseModel):
+    model_no: str
+    device_name: str
+    ip_address: str
+    site_name: str
+    rack_name: str
+    model_count: int
+    average_energy_efficiency: Optional[float] = None
+    average_total_POut: Optional[float] = None
+    average_total_PIn: Optional[float] = None
+    average_energy_consumed: Optional[float] = None
+    average_power_efficiency: Optional[float] = None
+    average_co2_tons: Optional[float] = None
+    average_co2_kgs: Optional[float] = None
+    average_data_traffic: Optional[float] = None
+
+    class Config:
+        orm_mode = True
+

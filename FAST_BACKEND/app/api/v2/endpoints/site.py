@@ -61,6 +61,8 @@ from app.schema.site_schema import EnergyConsumptionMetricsDetails2
 
 from app.schema.site_schema import CustomResponse_openai
 
+from app.schema.site_schema import EnergyConsumptionMetricsDetailsNew
+
 router = APIRouter(prefix="/sites", tags=["SITES"])
 logger = getLogger(__name__)
 
@@ -1860,3 +1862,32 @@ def get_device_energy_consumption_metrics(
         status_code=status.HTTP_200_OK
     )
 
+
+@router.post("/sites/avg_energy_consumption_with_model_count/",
+             response_model=CustomResponse[EnergyConsumptionMetricsDetailsNew])
+@inject
+def get_device_avg_energy_consumption_metrics(
+        site_id: Optional[int] = None,
+        rack_id: Optional[int] = None,
+        model_no: Optional[str] = None,
+        vendor_name: Optional[str] = None,
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+
+    # Fetch the average metrics based on filters
+    avg_metrics = site_service.calculate_avg_energy_consumption_with_filters(site_id, rack_id, model_no, vendor_name,
+                                                                             duration)
+
+    print("Average Metrics:", avg_metrics, file=sys.stderr)
+
+    if not avg_metrics:
+        raise HTTPException(status_code=404, detail="No metrics found for the given filters.")
+
+    return CustomResponse(
+        message="Energy consumption average metrics retrieved successfully.",
+        data=avg_metrics,
+        status_code=status.HTTP_200_OK
+    )
