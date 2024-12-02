@@ -1274,10 +1274,11 @@ class SiteRepository(BaseRepository):
                 print("No devices found.")
                 return []
 
-    def get_devices_by_filters(self, site_id: Optional[int], rack_id: Optional[int],
-                                 model_no: Optional[str], vendor_name: Optional[str]) -> List[dict]:
+    def get_devices_by_filters(self, site_id: Optional[int], rack_id: Optional[int], model_no: Optional[str],
+                               vendor_name: Optional[str]) -> List[dict]:
         print(
             f"Querying devices with filters: site_id={site_id}, rack_id={rack_id}, model_no={model_no}, vendor_name={vendor_name}")
+
         with self.session_factory() as session:
             query = (
                 session.query(
@@ -1292,10 +1293,11 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.serial_number,
                     DeviceInventory.software_version,
                     DeviceInventory.status,
-                    DeviceInventory.rack_name  # Assuming rack_name is part of DeviceInventory
+                    Rack.rack_name  # Join and select the rack_name from the Rack table
                 )
                 .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
+                .join(Rack, DeviceInventory.rack_id == Rack.id)  # Join the Rack table
             )
 
             # Apply filters based on provided parameters
@@ -1319,13 +1321,13 @@ class SiteRepository(BaseRepository):
                         "device_name": device.device_name,
                         "ip_address": device.ip_address,
                         "site_name": device.site_name,
+                        "rack_name": device.rack_name,  # Now you can return rack_name
                         "hardware_version": device.hardware_version,
                         "manufacturer": device.manufacturer,
                         "pn_code": device.pn_code,
                         "serial_number": device.serial_number,
                         "software_version": device.software_version,
-                        "status": device.status,
-                        "rack_name": device.rack_name  # Return rack_name in the response
+                        "status": device.status
                     } for device in devices
                 ]
             else:
