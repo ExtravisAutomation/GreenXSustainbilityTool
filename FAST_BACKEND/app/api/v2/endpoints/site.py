@@ -1824,22 +1824,33 @@ def upload_devices1(
 #     )
 
 
+class EnergyConsumptionRequest(BaseModel):
+    site_id: Optional[int] = None
+    rack_id: Optional[int] = None
+    model_no: Optional[str] = None
+    vendor_name: Optional[str] = None
+    duration: Optional[str] = "24 hours"  # Default to "24 hours" if not provided
+
 
 @router.post("/sites/model_no_device_energy_consumption/",
-            response_model=CustomResponse[List[EnergyConsumptionMetricsDetails]])
+             response_model=CustomResponse[List[EnergyConsumptionMetricsDetails]])
 @inject
 def get_device_energy_consumption_metrics(
-        site_id: Optional[int] = None,
-        rack_id: Optional[int] = None,
-        model_no: Optional[str] = None,
-        vendor_name: Optional[str] = None,
-        duration: Optional[str] = Query(None, alias="duration"),
+        request: EnergyConsumptionRequest,  # Accepting data as a body
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    duration = duration or "24 hours"
+    # Extract parameters from the request body
+    site_id = request.site_id
+    rack_id = request.rack_id
+    model_no = request.model_no
+    vendor_name = request.vendor_name
+    duration = request.duration or "24 hours"
+
+    # Fetch metrics based on the provided filters
     metrics = site_service.calculate_energy_consumption_with_filters(site_id, rack_id, model_no, vendor_name, duration)
     print("METRIXXX ENDPOINTTTTTTTTTTTTTTT", metrics, file=sys.stderr)
+
     if not metrics:
         raise HTTPException(status_code=404, detail="No metrics found for the given filters.")
 
@@ -1848,5 +1859,4 @@ def get_device_energy_consumption_metrics(
         data=metrics,
         status_code=status.HTTP_200_OK
     )
-
 
