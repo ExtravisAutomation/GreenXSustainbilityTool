@@ -2070,7 +2070,7 @@ class SiteService:
         avg_data_traffic = total_data_traffic / total_count if total_count else 0
         avg_co2_emissions = total_co2_emissions / total_count if total_count else 0
 
-        # Construct the response dictionary
+        # Construct the response dictionary updated
         avg_metrics = {
             "model_no": model_no or "",
             "device_name": devices[0]["device_name"] if devices else "Unknown",  # Using first device name if exists
