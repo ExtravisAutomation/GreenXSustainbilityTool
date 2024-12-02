@@ -395,15 +395,10 @@ class EnergyConsumptionMetricsDetailsNew(BaseModel):
     site_name: str
     rack_name: str
     model_count: int
-    average_energy_efficiency: Optional[float] = None
-    average_total_POut: Optional[float] = None
-    average_total_PIn: Optional[float] = None
-    average_energy_consumed: Optional[float] = None
-    average_power_efficiency: Optional[float] = None
-    average_co2_tons: Optional[float] = None
-    average_co2_kgs: Optional[float] = None
-    average_data_traffic: Optional[float] = None
-
+    avg_total_PIn: Optional[float] = 0
+    avg_total_POut: Optional[float] = 0
+    avg_data_traffic: Optional[float] = 0
+    avg_co2_emissions: Optional[float] = 0
     class Config:
         orm_mode = True
 
