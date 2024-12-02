@@ -2061,7 +2061,7 @@ class SiteService:
                 for metric in energy_metrics:
                     total_power_in += metric["total_PIn"]
                     total_power_out += metric["total_POut"]
-                    total_data_traffic += metric["data_traffic"]
+                    #total_data_traffic += metric["data_traffic"]
                     total_co2_emissions += metric["co2_kgs"]
 
         # Calculate averages
@@ -2080,7 +2080,7 @@ class SiteService:
             "model_count": total_count,
             "avg_total_PIn": round(avg_power_in, 2),  # kW
             "avg_total_POut": round(avg_power_out, 2),  # kW
-            "avg_data_traffic": round(avg_data_traffic, 2),  # GB
+            #"avg_data_traffic": round(avg_data_traffic, 2),  # GB
             "avg_co2_emissions": round(avg_co2_emissions, 2)  # kg
         }
 
