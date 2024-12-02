@@ -2030,7 +2030,7 @@ class SiteService:
 
     def calculate_avg_energy_consumption_with_filters(self, site_id: Optional[int], rack_id: Optional[int],
                                                       model_no: Optional[str], vendor_name: Optional[str],
-                                                      duration_str: str) -> dict:
+                                                      duration_str: str) -> list:
         # Define the start and end date for the given duration
         start_date, end_date = self.calculate_start_end_dates(duration_str)
 
@@ -2038,7 +2038,7 @@ class SiteService:
         devices = self.site_repository.get_devices_by_filters(site_id, rack_id, model_no, vendor_name)
 
         if not devices:
-            return {}
+            return []
 
         # Create a dictionary to store metrics by model_no
         model_metrics = {}
@@ -2076,11 +2076,11 @@ class SiteService:
                     model_metrics[model]["total_data_traffic"] += metric.get("data_traffic", 0)
                     model_metrics[model]["total_co2_emissions"] += metric["co2_kgs"]
 
-        # Calculate averages for each model
-        avg_metrics = {}
+        # Prepare the list of models for the response
+        avg_metrics = []
         for model, metrics in model_metrics.items():
             total_count = metrics["total_count"]
-            avg_metrics[model] = {
+            avg_metrics.append({
                 "model_no": model,
                 "device_name": metrics["device_name"],
                 "ip_address": metrics["ip_address"],
@@ -2091,6 +2091,6 @@ class SiteService:
                 "avg_total_POut": round(metrics["total_power_out"] / total_count, 2) if total_count else 0,
                 "avg_data_traffic": round(metrics["total_data_traffic"] / total_count, 2) if total_count else 0,
                 "avg_co2_emissions": round(metrics["total_co2_emissions"] / total_count, 2) if total_count else 0
-            }
+            })
 
         return avg_metrics
