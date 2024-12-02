@@ -1863,8 +1863,7 @@ def get_device_energy_consumption_metrics(
     )
 
 
-@router.post("/sites/avg_energy_consumption_with_model_count/",
-             response_model=CustomResponse[EnergyConsumptionMetricsDetailsNew])
+@router.post("/sites/avg_energy_consumption_with_model_count/")
 @inject
 def get_device_avg_energy_consumption_metrics(
         site_id: Optional[int] = None,
@@ -1886,8 +1885,4 @@ def get_device_avg_energy_consumption_metrics(
     if not avg_metrics:
         raise HTTPException(status_code=404, detail="No metrics found for the given filters.")
 
-    return CustomResponse(
-        message="Energy consumption average metrics retrieved successfully.",
-        data=avg_metrics,
-        status_code=status.HTTP_200_OK
-    )
+    return avg_metrics
