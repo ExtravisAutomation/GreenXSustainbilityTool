@@ -2051,7 +2051,7 @@ class SiteService:
             ip_address = device["ip_address"]
 
             # Fetch energy consumption metrics from InfluxDB
-            energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter(
+            energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter123(
                 [ip_address], start_date, end_date, duration_str
             )
 
