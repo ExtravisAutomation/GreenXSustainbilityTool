@@ -21,6 +21,12 @@ class RackService:
         # Convert the ORM models to schema models
         # return [RackDetails.from_orm(rack) for rack in racks]
 
+
+    def get_specific_racks(self, rack_id: int, site_id: int):
+        racks = self.rack_repository.get_specific_racks(rack_id, site_id)
+        return racks
+
+
     def create_rack(self, rack_data: RackCreate) -> RackDetails:
         try:
             rack = self.rack_repository.add_rack(rack_data)
