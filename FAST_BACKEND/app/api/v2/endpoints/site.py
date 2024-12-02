@@ -1801,21 +1801,47 @@ def upload_devices1(
 
 
 
+# @router.post("/sites/model_no_device_energy_consumption/",
+#             response_model=CustomResponse[List[EnergyConsumptionMetricsDetails]])
+# @inject
+# def get_device_energy_consumption_metrics(
+#         model_no: str,
+#         site_id: Optional[int] = None,
+#         duration: Optional[str] = Query(None, alias="duration"),
+#         current_user: User = Depends(get_current_active_user),
+#         site_service: SiteService = Depends(Provide[Container.site_service])
+# ):
+#     duration = duration or "24 hours"
+#     metrics = site_service.calculate_energy_consumption_by_model_no_with_filter(model_no, duration, site_id)
+#     print("METRIXXX ENDPOINTTTTTTTTTTTTTTT", metrics, file=sys.stderr)
+#     if not metrics:
+#         raise HTTPException(status_code=404, detail="No metrics found for the given model number and duration.")
+#
+#     return CustomResponse(
+#         message="Energy consumption metrics retrieved successfully.",
+#         data=metrics,
+#         status_code=status.HTTP_200_OK
+#     )
+
+
+
 @router.post("/sites/model_no_device_energy_consumption/",
             response_model=CustomResponse[List[EnergyConsumptionMetricsDetails]])
 @inject
 def get_device_energy_consumption_metrics(
-        model_no: str,
         site_id: Optional[int] = None,
+        rack_id: Optional[int] = None,
+        model_no: Optional[str] = None,
+        vendor_name: Optional[str] = None,
         duration: Optional[str] = Query(None, alias="duration"),
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     duration = duration or "24 hours"
-    metrics = site_service.calculate_energy_consumption_by_model_no_with_filter(model_no, duration, site_id)
+    metrics = site_service.calculate_energy_consumption_with_filters(site_id, rack_id, model_no, vendor_name, duration)
     print("METRIXXX ENDPOINTTTTTTTTTTTTTTT", metrics, file=sys.stderr)
     if not metrics:
-        raise HTTPException(status_code=404, detail="No metrics found for the given model number and duration.")
+        raise HTTPException(status_code=404, detail="No metrics found for the given filters.")
 
     return CustomResponse(
         message="Energy consumption metrics retrieved successfully.",

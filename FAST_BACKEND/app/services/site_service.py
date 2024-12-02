@@ -2003,3 +2003,27 @@ class SiteService:
         )
         print("RETURNNNN METRIX FROM INFLUX", energy_metrics, file=sys.stderr)
         return energy_metrics
+
+    def calculate_energy_consumption_with_filters(self, site_id: Optional[int], rack_id: Optional[int],
+                                                  model_no: Optional[str], vendor_name: Optional[str],
+                                                  duration_str: str) -> List[dict]:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+
+        # Fetch devices using the provided filters
+        devices = self.site_repository.get_devices_with_filters(site_id, rack_id, model_no, vendor_name)
+        print("DEVICE DATAAAAAAAAAAAAAAAA", devices, file=sys.stderr)
+
+        if not devices:
+            print("No devices found with the given filters.", file=sys.stderr)
+            return []
+
+        device_ips = [device["ip_address"] for device in devices if device["ip_address"]]
+        if not device_ips:
+            print("No valid IP addresses found for the devices.", file=sys.stderr)
+            return []
+
+        energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter123(
+            device_ips, start_date, end_date, duration_str
+        )
+        print("RETURNNNN METRIX FROM INFLUX", energy_metrics, file=sys.stderr)
+        return energy_metrics
