@@ -86,6 +86,13 @@ class CustomResponse1(BaseModel, Generic[T]):
 class PCRMetricsDetails(BaseModel):
     time: Optional[str]
     PCR: Optional[float]
+    data_traffic: Optional[float]
+    energy_efficiency: Optional[float]
+    power_efficiency: Optional[float]
+    total_POut: Optional[float]
+    total_PIn: Optional[float]
+    co2_kgs: Optional[float]
+    co2_tons: Optional[float]
 
 
 class SiteDetails1(BaseModel):

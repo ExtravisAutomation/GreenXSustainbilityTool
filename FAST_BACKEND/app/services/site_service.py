@@ -1734,13 +1734,26 @@ class SiteService:
                 energy_consumption = metric.get("energy_consumption", 1)  # Avoid division by zero
                 print("TTTTTTTTTTTTTTTTTT", total_bytes_rate_last_gb, file=sys.stderr)
                 print("EEEEEEEEEEEEEEEE", energy_consumption, file=sys.stderr)
-                if total_bytes_rate_last_gb > 0:
+                energy_efficiency = metric.get("energy_efficiency", 0)
+                power_efficiency = metric.get("power_efficiency", 0)
+                total_POut = metric.get("total_POut", 0)
+                total_PIN = metric.get("total_PIN", 0)
+                if total_bytes_rate_last_gb:
                     pcr = energy_consumption / total_bytes_rate_last_gb
                 else:
                     pcr = None
                 pcr_metrics.append({
                     "time": metric["time"],
-                    "PCR": round(pcr, 2) if pcr is not None else 0
+                    "PCR": round(pcr, 2) if pcr is not None else 0,
+                    "data_traffic": round(total_bytes_rate_last_gb,2),
+                    "energy_efficiency": round(energy_efficiency, 2),
+                    "power_efficiency": round(power_efficiency, 2),
+                    "total_POut": round(total_POut, 2),
+                    "total_PIn": round(total_PIN, 2),
+                    "co2_kg": round(total_PIN * 0.4716, 2),
+                    "co2_tons": round(((total_PIN * 0.4716) / 1000) , 2)
+
+
                 })
 
         return pcr_metrics
