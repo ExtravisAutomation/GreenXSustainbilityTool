@@ -1734,13 +1734,26 @@ class SiteService:
                 energy_consumption = metric.get("energy_consumption", 1)  # Avoid division by zero
                 print("TTTTTTTTTTTTTTTTTT", total_bytes_rate_last_gb, file=sys.stderr)
                 print("EEEEEEEEEEEEEEEE", energy_consumption, file=sys.stderr)
-                if total_bytes_rate_last_gb > 0:
+                energy_efficiency = metric.get("energy_efficiency", 0)
+                power_efficiency = metric.get("power_efficiency", 0)
+                total_POut = metric.get("total_POut", 0)
+                total_PIN = metric.get("total_PIN", 0)
+                if total_bytes_rate_last_gb:
                     pcr = energy_consumption / total_bytes_rate_last_gb
                 else:
                     pcr = None
                 pcr_metrics.append({
                     "time": metric["time"],
-                    "PCR": round(pcr, 2) if pcr is not None else 0
+                    "PCR": round(pcr, 2) if pcr is not None else 0,
+                    "data_traffic": round(total_bytes_rate_last_gb,2),
+                    "energy_efficiency": round(energy_efficiency, 2),
+                    "power_efficiency": round(power_efficiency, 2),
+                    "total_POut": round(total_POut, 2),
+                    "total_PIn": round(total_PIN, 2),
+                    "co2_kg": round(total_PIN * 0.4716, 2),
+                    "co2_tons": round(((total_PIN * 0.4716) / 1000) , 2)
+
+
                 })
 
         return pcr_metrics
@@ -2088,8 +2101,8 @@ class SiteService:
                 "rack_name": metrics["rack_name"],
                 "model_count": total_count,
                 "avg_total_PIn": round(metrics["total_power_in"] / total_count, 2) if total_count else 0,
-                "avg_energy_efficiency": round(metrics["total_power_out"] / metrics["total_power_in"], 2) if total_count else 0,
-                "avg_power_efficiency": round(metrics["total_power_in"] / metrics["total_power_out"], 2) if total_count else 0,
+                "avg_energy_efficiency": round(metrics["total_power_out"] / metrics["total_power_in"], 2) if metrics["total_power_in"] > 0 else 0,
+                "avg_power_efficiency": round(metrics["total_power_in"] / metrics["total_power_out"], 2) if metrics["total_power_out"] > 0 else 0,
                 "avg_total_POut": round(metrics["total_power_out"] / total_count, 2) if total_count else 0,
                 "avg_data_traffic": round(metrics["total_data_traffic"] / total_count, 2) if total_count else 0,
                 "avg_co2_emissions": round(metrics["total_co2_emissions"] / total_count, 2) if total_count else 0
