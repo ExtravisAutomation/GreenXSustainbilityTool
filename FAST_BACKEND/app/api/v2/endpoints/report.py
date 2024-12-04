@@ -40,3 +40,14 @@ def add_report(
     return report_service.add_report(report_data)
 
 
+
+@router.post("/edit_Report", response_model=dict)
+@inject
+def add_report(
+    report_data: ReportCreate,
+    # current_user: User = Depends(get_current_active_user),
+    report_service: ReportService = Depends(Provide[Container.report_service])
+):
+    return report_service.add_report(report_data)
+
+

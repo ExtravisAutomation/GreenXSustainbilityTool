@@ -1892,10 +1892,10 @@ def get_device_energy_consumption_metrics(
 @router.post("/sites/avg_energy_consumption_with_model_count/")
 @inject
 def get_device_avg_energy_consumption_metrics(
+        limit:Optional[int]=None,
         site_id: Optional[int] = None,
         rack_id: Optional[int] = None,
-        model_no: Optional[str] = None,
-        vendor_name: Optional[str] = None,
+        vendor_id: Optional[int] = None,
         duration: Optional[str] = Query(None, alias="duration"),
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
@@ -1903,7 +1903,7 @@ def get_device_avg_energy_consumption_metrics(
     duration = duration or "24 hours"
 
     # Fetch the average metrics based on filters
-    avg_metrics = site_service.calculate_avg_energy_consumption_with_filters(site_id, rack_id, model_no, vendor_name,
+    avg_metrics = site_service.calculate_avg_energy_consumption_with_filters(limit,site_id, rack_id, vendor_id,
                                                                              duration)
 
     print("Average Metrics:", avg_metrics, file=sys.stderr)
@@ -1912,3 +1912,5 @@ def get_device_avg_energy_consumption_metrics(
         raise HTTPException(status_code=404, detail="No metrics found for the given filters.")
 
     return avg_metrics
+
+

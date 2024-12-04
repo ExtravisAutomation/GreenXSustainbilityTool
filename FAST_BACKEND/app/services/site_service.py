@@ -2041,14 +2041,14 @@ class SiteService:
         print("RETURNNNN METRIX FROM INFLUX", energy_metrics, file=sys.stderr)
         return energy_metrics
 
-    def calculate_avg_energy_consumption_with_filters(self, site_id: Optional[int], rack_id: Optional[int],
-                                                      model_no: Optional[str], vendor_name: Optional[str],
+    def calculate_avg_energy_consumption_with_filters(self,limit, site_id: Optional[int], rack_id: Optional[int],
+                                                     vendor_id: Optional[int],
                                                       duration_str: str) -> list:
         # Define the start and end date for the given duration
         start_date, end_date = self.calculate_start_end_dates(duration_str)
 
         # Fetch the relevant devices
-        devices = self.site_repository.get_devices_by_filters(site_id, rack_id, model_no, vendor_name)
+        devices = self.site_repository.get_devices_by_filters(limit,site_id, rack_id, vendor_id)
 
         if not devices:
             return []

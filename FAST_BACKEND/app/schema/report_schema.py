@@ -10,3 +10,4 @@ class ReportsBase(BaseModel):
 
 class ReportCreate(ReportsBase):
     Duration: List[str] = []  # New field to handle duration
+
