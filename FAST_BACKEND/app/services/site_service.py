@@ -1717,9 +1717,9 @@ class SiteService:
 
         return devices_carbon_emission
 
-    def calculate_device_pcr_by_name_with_filter(self, site_id: int, device_name: str, duration_str: str) -> List[dict]:
+    def calculate_device_pcr_by_name_with_filter(self, site_id: int, device_name: str, duration_str: str, limit: Optional[int]) -> List[dict]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
-        device_info_list = self.site_repository.get_device_ips_by_names_and_site_id(site_id, [device_name])
+        device_info_list = self.site_repository.get_device_ips_by_names_and_site_id123(site_id, [device_name], limit)
 
         if not device_info_list:
             return []

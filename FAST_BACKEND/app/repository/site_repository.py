@@ -1334,6 +1334,33 @@ class SiteRepository(BaseRepository):
                 print("No devices found.")
                 return []
 
+    def get_device_ips_by_names_and_site_id123(self, site_id: int, device_names: List[str], limit: Optional[int] = None) -> \
+    list[dict[str, Any]]:
+        with self.session_factory() as session:
+            query = (
+                session.query(
+                    DeviceInventory.device_name,
+                    APICControllers.ip_address,
+                    Site.site_name
+                )
+                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Site, DeviceInventory.site_id == Site.id)
+                .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name.in_(device_names))
+            )
+
+            # Apply limit if provided
+            if limit:
+                query = query.limit(limit)
+
+            device_ips_and_details = query.all()
+
+            devices_info = [
+                {"device_name": device_name, "ip_address": ip_address, "site_name": site_name}
+                for device_name, ip_address, site_name in device_ips_and_details
+            ]
+
+            return devices_info
+
 
 
 
