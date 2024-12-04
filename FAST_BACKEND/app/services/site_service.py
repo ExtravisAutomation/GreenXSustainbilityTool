@@ -2101,8 +2101,8 @@ class SiteService:
                 "rack_name": metrics["rack_name"],
                 "model_count": total_count,
                 "avg_total_PIn": round(metrics["total_power_in"] / total_count, 2) if total_count else 0,
-                "avg_energy_efficiency": round(metrics["total_power_out"] / metrics["total_power_in"], 2) if total_count else 0,
-                "avg_power_efficiency": round(metrics["total_power_in"] / metrics["total_power_out"], 2) if total_count else 0,
+                "avg_energy_efficiency": round(metrics["total_power_out"] / metrics["total_power_in"], 2) if metrics["total_power_in"] > 0 else 0,
+                "avg_power_efficiency": round(metrics["total_power_in"] / metrics["total_power_out"], 2) if metrics["total_power_out"] > 0 else 0,
                 "avg_total_POut": round(metrics["total_power_out"] / total_count, 2) if total_count else 0,
                 "avg_data_traffic": round(metrics["total_data_traffic"] / total_count, 2) if total_count else 0,
                 "avg_co2_emissions": round(metrics["total_co2_emissions"] / total_count, 2) if total_count else 0
