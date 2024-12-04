@@ -15,7 +15,7 @@ from app.schema.site_schema import GetSitesResponse, SiteUpdate
 
 from app.schema.site_schema import SiteCreate
 
-from app.model.APIC_controllers import APICControllers
+from app.model.APIC_controllers import APICControllers,Vendor
 
 from app.model.device_inventory import DeviceInventory
 
@@ -1274,10 +1274,10 @@ class SiteRepository(BaseRepository):
                 print("No devices found.")
                 return []
 
-    def get_devices_by_filters(self, site_id: Optional[int], rack_id: Optional[int], model_no: Optional[str],
-                               vendor_name: Optional[str]) -> List[dict]:
+    def get_devices_by_filters(self, limit,site_id: Optional[int], rack_id: Optional[int],
+                               vendor_id: Optional[int]) -> List[dict]:
         print(
-            f"Querying devices with filters: site_id={site_id}, rack_id={rack_id}, model_no={model_no}, vendor_name={vendor_name}")
+            f"Querying devices with filters: site_id={site_id}, rack_id={rack_id} vendor_name={vendor_id}")
 
         with self.session_factory() as session:
             query = (
@@ -1305,11 +1305,11 @@ class SiteRepository(BaseRepository):
                 query = query.filter(DeviceInventory.site_id == site_id)
             if rack_id:
                 query = query.filter(DeviceInventory.rack_id == rack_id)
-            if model_no:
-                query = query.filter(DeviceInventory.pn_code == model_no)
-            if vendor_name:
-                query = query.join(Vendor, APICControllers.vendor_id == Vendor.id).filter(
-                    Vendor.vendor_name == vendor_name)
+            if vendor_id:
+                query = query.join(Vendor, APICControllers.vendor_id == Vendor.id)
+            if limit:
+                # Apply the limit (to fetch only 10 results)
+                query = query.limit(limit)
 
             devices = query.all()
 

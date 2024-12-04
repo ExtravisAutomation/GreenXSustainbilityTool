@@ -588,3 +588,4 @@ class DeviceInventoryRepository(BaseRepository):
             }
 
             return vendor_data
+
