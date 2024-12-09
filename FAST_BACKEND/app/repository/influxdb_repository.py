@@ -982,7 +982,8 @@ class InfluxDBRepository:
 
         aggregate_window, time_format = self.determine_aggregate_window(duration_str)
         print(f"Aggregate window: {aggregate_window}, Time format: {time_format}", file=sys.stderr)
-        device_ips = [device_ips]
+
+        device_ips = [device_ips]  # Ensure list of device IPs is processed correctly
         for ip in device_ips:
             # Query for traffic data
             traffic_query = f'''
@@ -1019,20 +1020,27 @@ class InfluxDBRepository:
                 print(f"Combined results for IP: {ip}: {combined_result}", file=sys.stderr)
 
                 for _, row in combined_result.iterrows():
-                    total_bytes_rate_last_gb = row['total_bytesRateLast'] / (2 ** 30) if row[
-                                                                                             'total_bytesRateLast'] > 0 else 0
-                    pin = row['total_PIn'] if row['total_PIn'] > 0 else 1  # Avoid division by zero
-                    pout = row['total_POut'] if row['total_POut'] > 0 else 0
+                    total_bytes_rate_last_gb = (
+                        row['total_bytesRateLast'] / (2 ** 30)
+                        if row['total_bytesRateLast'] > 0
+                        else 0
+                    )
+                    pin = row.get('total_PIn', 0) or 0  # Default to 0 if missing or NaN
+                    pout = row.get('total_POut', 0) or 0  # Default to 0 if missing or NaN
 
-                    energy_consumption = (pout / pin) * 100
+                    # Safeguard against zero or invalid values
+                    energy_efficiency = round(pout / pin, 2) if pin > 0 else 0
+                    power_efficiency = round(pin / pout, 2) if pout > 0 else 0
+                    energy_consumption = (pout / pin) * 100 if pin > 0 else 0
+
                     throughput_metrics.append({
                         "time": row['_time'],
-                        "energy_efficiency": round(pout / pin, 2),
-                        "power_efficiency" : round(pin / pout, 2),
-                        "total_POut": round(pout/1000, 2),
-                        "total_PIn": round(pin/1000, 2),
+                        "energy_efficiency": energy_efficiency,
+                        "power_efficiency": power_efficiency,
+                        "total_POut": round(pout / 1000, 2),
+                        "total_PIn": round(pin / 1000, 2),
                         "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2),
-                        "energy_consumption": round(energy_consumption, 2)  # Add energy consumption
+                        "energy_consumption": round(energy_consumption, 2)
                     })
 
         return throughput_metrics
