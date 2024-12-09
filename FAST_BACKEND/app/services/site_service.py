@@ -1274,6 +1274,7 @@ class SiteService:
 
         car_trips = carbon_emission_KG * 1.39  # example conversion factor
 
+
         base_distance = 1000  # base distance in km
         distance_per_trip = base_distance + (carbon_emission_KG * 10)
         unit,carbon_emission=self.get_unit(carbon_emission_KG)
