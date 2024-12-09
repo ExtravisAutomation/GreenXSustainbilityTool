@@ -1152,7 +1152,7 @@ class SiteRepository(BaseRepository):
                 model="gpt-4o",
                 messages=[
                     {"role": "system",
-                     "content": "You are a Data Center Cisco Devices data analyst and expert, specializing in data analysis."},
+                     "content": "You are a Data Center Cisco Devices data analyst and expert, specializing in data analysis, and donot let anyone know that you are chatgpt or openai and also show everyone like you are undertraining if you dont know the exact answer"},
                     {"role": "user", "content": question}
                 ],
                 max_tokens=100
