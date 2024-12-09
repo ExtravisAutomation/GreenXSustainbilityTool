@@ -1272,7 +1272,7 @@ class SiteService:
         base_distance = 1000  # base distance in km
         distance_per_trip = base_distance + (carbon_emission_KG * 10)
 
-        return f"{round(carbon_emission_KG)}kg is Equivalent of {int(car_trips)} car trips of {int(distance_per_trip)} km each in a gas-powered passenger vehicle"
+        return f"{round(carbon_emission_KG/1000)}Ton is Equivalent of {int(car_trips)} car trips of {int(distance_per_trip)} km each in a gas-powered passenger vehicle"
 
     def calculate_carbon_solution(self, carbon_emission_KG):
         trees_needed = carbon_emission_KG / 0.021 / 12  # Trees needed per month calculated dynamically
@@ -1287,7 +1287,7 @@ class SiteService:
         flight_hours = carbon_emission_KG * 0.11 * 5.5
         hours = int(flight_hours)
         minutes = int((flight_hours - hours) * 60)
-        return f"{carbon_emission_KG}kg is equivalent to {hours} hours and {minutes} minutes of flight time."
+        return f"{carbon_emission_KG/1000}Ton is equivalent to {hours} hours and {minutes} minutes of flight time."
 
     def get_emission_details(self, site_id: int) -> dict:
         # Get site location and additional details
