@@ -81,8 +81,8 @@ class VcenterRepository(BaseRepository):
                 data = get_all_vm(vm.hostname)
 
                 if data:
-                    used_cpu = data[0].get("used_cpu_MHz")
-                    used_memory = data[0].get("used_memory_MB")
+                    used_cpu = data[0].get("cpu_usage")
+                    used_memory = data[0].get("memory_usage(%)")
                     used_space = data[0].get("used_space_GB")
 
                     # Ensure the variables are not None and are numbers before rounding

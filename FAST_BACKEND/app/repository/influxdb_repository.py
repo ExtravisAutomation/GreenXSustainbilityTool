@@ -2718,7 +2718,7 @@ class InfluxDBRepository:
                             "time": row['_time'],  # Hour of the day
                             "energy_efficiency": energy_consumption,
                             "total_POut": round(pout / 1000, 2) if pout is not None else None,
-                            "total_PIn": pin,
+                            "total_PIn": round(pin/1000,2) if pin is not None else None,
                             "power_efficiency": power_efficiency
                         })
 
