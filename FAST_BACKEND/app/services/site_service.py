@@ -1287,7 +1287,7 @@ class SiteService:
         flight_hours = carbon_emission_KG * 0.11 * 5.5
         hours = int(flight_hours)
         minutes = int((flight_hours - hours) * 60)
-        return f"{round((carbon_emission_KG/1000),4))}Ton is equivalent to {hours} hours and {minutes} minutes of flight time."
+        return f"{round((carbon_emission_KG/1000),4)}Ton is equivalent to {hours} hours and {minutes} minutes of flight time."
 
     def get_emission_details(self, site_id: int) -> dict:
         # Get site location and additional details
