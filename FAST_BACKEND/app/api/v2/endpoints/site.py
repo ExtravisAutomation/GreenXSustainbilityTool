@@ -829,7 +829,7 @@ def get_carbon_emission_metrics(
         message="Carbon emission metrics retrieved successfully.",
         data={
             "total_PIn": pin_value,
-            "carbon_emission": carbon_intons,
+            "carbon_emission": round(carbon_intons, 3),
             "carbon_effect_car": carbon_car,
             "carbon_effect_flight": carbon_flight,
             "carbon_solution": carbon_solution
