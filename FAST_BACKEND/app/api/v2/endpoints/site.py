@@ -1411,10 +1411,10 @@ def get_total_power_output_prediction(
     # Usage comparison - higher or lower than last period
     if predicted_pout > total_pout_value_KW:
         usage_message = "Higher"
-        analysis_message = "October 2024 energy consumption will be higher than September 2024 based on AI/ML Data."
+        analysis_message = "December 2024 energy consumption will be higher than November 2024 based on AI Predicted Data."
     else:
         usage_message = "Higher"
-        analysis_message = "October 2024 energy consumption will be higher than September 2024 based on AI/ML Data."
+        analysis_message = "December 2024 energy consumption will be higher than November 2024 based on AI Predicted Data."
 
     # Predictive analysis message (dynamic change)
     if total_pout_value_KW != 0:
@@ -1423,7 +1423,7 @@ def get_total_power_output_prediction(
     else:
         percentage_change = 0.0  # Handle edge case if total pout is zero
 
-    predictive_analysis_message = f"From January to September, estimated cost will be more than {percentage_change:.1f}% for this month."
+    predictive_analysis_message = f"From January to December, estimated cost will be more than {percentage_change:.1f}% for this month."
 
     # Return the response with the dynamic text
     return CustomResponse(
