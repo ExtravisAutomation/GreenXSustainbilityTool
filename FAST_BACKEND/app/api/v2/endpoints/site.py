@@ -826,14 +826,14 @@ def get_carbon_emission_metrics(
     print("FINALLLLLLLL", carbon_emission, file=sys.stderr)
     carbon_em=0
     if carbon_emission < 1000:
-        carbon_ems=str(carbon_emission) + 'kg'
+        carbon_ems = str(round(carbon_emission, 3)) + ' kg'
     else:
-        carbon_ems = str(carbon_emission / 1000) +'Tons'
+        carbon_ems = str(round(carbon_emission / 1000, 3)) + ' Tons'
     return CustomResponse(
         message="Carbon emission metrics retrieved successfully.",
         data={
             "total_PIn": pin_value,
-            "carbon_emission": round(carbon_ems, 3),
+            "carbon_emission": carbon_ems,
             "carbon_effect_car": carbon_car,
             "carbon_effect_flight": carbon_flight,
             "carbon_solution": carbon_solution
