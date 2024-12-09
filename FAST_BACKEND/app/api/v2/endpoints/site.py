@@ -826,9 +826,9 @@ def get_carbon_emission_metrics(
     print("FINALLLLLLLL", carbon_emission, file=sys.stderr)
     carbon_em=0
     if carbon_emission < 1000:
-        carbon_ems=carbon_emission
+        carbon_ems=carbon_emission + 'kg'
     else:
-        carbon_ems = carbon_emission / 1000
+        carbon_ems = carbon_emission / 1000 +'Tons'
     return CustomResponse(
         message="Carbon emission metrics retrieved successfully.",
         data={
