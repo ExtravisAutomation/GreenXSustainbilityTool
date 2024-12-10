@@ -2151,7 +2151,7 @@ class SiteService:
             # Return a response with the calculation and "training phase" note
             return (
                 f"The total power consumption of the device with IP {ip} over the {duration} is approximately "
-                f"{round(total_power, 2)} kWh, assuming a power usage rate of {power_per_hour} kW per hour. "
+                f"{round(total_power, 2)} kWh."
                 f"Please note, I am currently in a training phase and there is a chance I might be wrong. "
                 f"Verify the data for accuracy if needed."
             )
