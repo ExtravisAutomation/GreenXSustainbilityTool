@@ -1791,8 +1791,11 @@ def ask_openai(
     # Keywords to trigger CSV analysis
     keywords = ["power", "time", "device", "site"]
 
-    # Check if the question contains the required keywords
-    if all(keyword in question.lower() for keyword in keywords):
+    # Check if the question asks for power over a specific time
+    if "power" in question.lower() and "ip" in question.lower():
+        # Handle the specific use case of querying power consumption by IP
+        answer = site_service.calculate_power_for_ip(question)
+    elif all(keyword in question.lower() for keyword in keywords):
         # Call the new function to analyze CSV data
         answer = site_service.analyze_csv_and_ask_openai(question)
     else:
@@ -1804,7 +1807,6 @@ def ask_openai(
         data={"answer": answer},
         status_code=200
     )
-
 
 
 

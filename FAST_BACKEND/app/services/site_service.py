@@ -1999,6 +1999,47 @@ class SiteService:
         # Use OpenAI to analyze the CSV data and provide an answer
         return self.site_repository.get_openai_answer(prompt)
 
+
+    def calculate_power_for_ip(self, question: str) -> str:
+    # Extract IP and duration from the question
+    try:
+        import re
+        # Example question: "What is the power of 192.168.1.1 over the last 24 hours?"
+        ip_match = re.search(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', question)
+        duration_match = re.search(r'(last \d+ (hours|days))', question.lower())
+
+        if not ip_match:
+            raise HTTPException(status_code=400, detail="Invalid or missing IP address in the question.")
+        if not duration_match:
+            raise HTTPException(status_code=400, detail="Invalid or missing time duration in the question.")
+
+        ip = ip_match.group(1)
+        duration = duration_match.group(1)
+
+        # Parse the duration (default to 24 hours if not specified)
+        hours = 24
+        if "days" in duration:
+            days = int(re.search(r'\d+', duration).group())
+            hours = days * 24
+        elif "hours" in duration:
+            hours = int(re.search(r'\d+', duration).group())
+
+        # Fixed power per hour
+        power_per_hour = 0.2  # kW
+        total_power = power_per_hour * hours  # Total power consumption in kWh
+
+        # Return a response with the calculation and "training phase" note
+        return (
+            f"The total power consumption of the device with IP {ip} over the {duration} is approximately "
+            f"{round(total_power, 2)} kWh, assuming a power usage rate of {power_per_hour} kW per hour. "
+            f"Please note, I am currently in a training phase and there is a chance I might be wrong. "
+            f"Verify the data for accuracy if needed."
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing the power calculation: {str(e)}")
+
+
+
     def calculate_energy_consumption_by_model_no_with_filter(self, model_no: str, duration_str: str,
                                                              site_id: Optional[int]) -> List[dict]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
