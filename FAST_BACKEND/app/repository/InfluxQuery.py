@@ -795,6 +795,7 @@ def get_all_vm(hostname) -> List[dict]:
                     used_space = record.get_value()
                 elif record.get_field() == "used_cpu_MHz":
                     used_cpu = record.get_value()
+
                 elif record.get_field() == "used_memory_MB":
                     used_memory = record.get_value()
                 elif record.get_field() == "cpu_usage_percent":
