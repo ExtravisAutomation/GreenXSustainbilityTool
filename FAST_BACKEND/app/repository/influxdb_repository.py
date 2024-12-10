@@ -2676,6 +2676,70 @@ class InfluxDBRepository:
 
         return df.to_dict(orient='records')
 
+    # def get_energy_metrics_for_last_24_hours(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> \
+    # List[dict]:
+    #     total_power_metrics = []
+    #     start_time = start_date.isoformat() + 'Z'
+    #     end_time = end_date.isoformat() + 'Z'
+    #
+    #     aggregate_window = "1h"
+    #     time_format = '%H'  # Hour of the day (e.g., 00, 01, 02, ..., 23)
+    #
+    #     for ip in device_ips:
+    #         query = f'''
+    #             from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #             |> range(start: {start_time}, stop: {end_time})
+    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+    #             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+    #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #         '''
+    #
+    #         try:
+    #             result = self.query_api1.query_data_frame(query)
+    #         except Exception as e:
+    #             print(f"Error executing query for IP {ip}: {e}")
+    #             continue
+    #
+    #         if not result.empty:
+    #             result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+    #             numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+    #             if '_time' in result.columns and numeric_cols:
+    #                 grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
+    #
+    #                 for _, row in grouped.iterrows():
+    #                     pin = row['total_PIn'] if 'total_PIn' in row and not pd.isna(row['total_PIn']) else 0
+    #                     pout = row['total_POut'] if 'total_POut' in row and not pd.isna(row['total_POut']) else 0
+    #
+    #                     pin = round(pin, 2)
+    #                     pout = round(pout, 2)
+    #
+    #                     energy_consumption = round(pout / pin, 2) if pin > 0 else 0
+    #                     power_efficiency = round(((pin / pout - 1) * 100), 2) if pout > 0 else 0
+    #
+    #                     total_power_metrics.append({
+    #                         "time": row['_time'],  # Hour of the day
+    #                         "energy_efficiency": energy_consumption,
+    #                         "total_POut": round(pout / 1000, 2) if pout else 0,
+    #                         "total_PIn": round(pin / 1000, 2) if pin else 0,
+    #                         "power_efficiency": power_efficiency
+    #                     })
+    #
+    #     df = pd.DataFrame(total_power_metrics).fillna(0.0)
+    #
+    #     # Ensure rounding after aggregation
+    #     df = df.groupby('time').mean().reset_index()
+    #     df = df.round(2)  # Apply rounding to the entire DataFrame
+    #
+    #     df = df.sort_values('time')
+    #
+    #     if len(df) > 24:
+    #         df = df.head(24)
+    #
+    #     print("Final DataFrame:", df)  # Debug print to check the final output
+    #
+    #     return df.to_dict(orient='records')
+
     def get_energy_metrics_for_last_24_hours(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> \
     List[dict]:
         total_power_metrics = []
@@ -2727,18 +2791,25 @@ class InfluxDBRepository:
 
         df = pd.DataFrame(total_power_metrics).fillna(0.0)
 
+        # Group by time and calculate sum for total_PIn and total_POut
+        grouped_df = df.groupby('time').agg({
+            'total_PIn': 'sum',  # Sum for all devices in the same hour
+            'total_POut': 'sum',
+            'energy_efficiency': 'mean',  # Keep mean for energy efficiency
+            'power_efficiency': 'mean'  # Keep mean for power efficiency
+        }).reset_index()
+
         # Ensure rounding after aggregation
-        df = df.groupby('time').mean().reset_index()
-        df = df.round(2)  # Apply rounding to the entire DataFrame
+        grouped_df = grouped_df.round(2)
 
-        df = df.sort_values('time')
+        grouped_df = grouped_df.sort_values('time')
 
-        if len(df) > 24:
-            df = df.head(24)
+        if len(grouped_df) > 24:
+            grouped_df = grouped_df.head(24)
 
-        print("Final DataFrame:", df)  # Debug print to check the final output
+        print("Final DataFrame with Total Values:", grouped_df)  # Debug print to check the final output
 
-        return df.to_dict(orient='records')
+        return grouped_df.to_dict(orient='records')
 
     def get_total_pout_value(self, device_ips: List[str], start_date: datetime, end_date: datetime,
                              duration_str: str) -> float:
