@@ -1724,6 +1724,40 @@ class SiteService:
             processed_device_names.add(device.device_name)
 
         return devices_carbon_emission
+    def get_all_devices_pcr(self, site_id: int, duration_str: str) -> List[dict]:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+
+        if not devices:
+            raise HTTPException(status_code=404, detail="No devices found for the given site.")
+
+        devices_datatraffic = []
+        processed_device_names = set()
+
+        for device in devices:
+            if not device or not device.ip_address:
+                continue
+
+            if device.device_name in processed_device_names:
+                continue
+
+            total_pin_value = self.influxdb_repository.get_device_total_pin_value(
+                device.ip_address, start_date, end_date, duration_str)
+            datatraffic = self.influxdb_repository.get_device_datatraffic(start_date, end_date, duration_str)
+
+            total_pin_value_KW = total_pin_value / 1000
+            data_TB = datatraffic / (1024**4)
+            pcr = total_pin_value_KW/data_TB
+
+            devices_datatraffic.append({
+                "device_id": device.id,
+                "device_name": device.device_name,
+                "pcr": pcr
+            })
+
+            processed_device_names.add(device.device_name)
+
+        return devices_datatraffic
 
     def calculate_device_pcr_by_name_with_filter(self, site_id: int, device_name: str, duration_str: str, limit: Optional[int]) -> List[dict]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)

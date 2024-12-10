@@ -2600,6 +2600,33 @@ class InfluxDBRepository:
 
         return total_pin
 
+    def get_device_datatraffic(self, device_ip: str, start_date: datetime, end_date: datetime,
+                                   duration_str: str) -> float:
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+
+        if duration_str in ["24 hours"]:
+            aggregate_window = "1h"
+        elif duration_str in ["7 Days", "Current Month", "Last Month"]:
+            aggregate_window = "1d"
+        else:  # For "last 6 months", "last year", "current year"
+            aggregate_window = "1m"
+
+        datatraffic= 0
+        query = f'''
+               from(bucket: "{configs.INFLUXDB_BUCKET}")
+               |> range(start: {start_time}, stop: {end_time})
+               |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["ApicController_IP"] == "{device_ip}")
+               |> filter(fn: (r) => r["_field"] == "total_bytesRateLast")
+               |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+           '''
+
+        result = self.query_api1.query_data_frame(query)
+        if not result.empty:
+            datatraffic += result['_value'].sum()
+
+        return datatraffic
+
     def get_energy_metrics_for_last_7_days(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> \
             List[dict]:
         total_power_metrics = []
