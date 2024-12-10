@@ -2677,7 +2677,7 @@ class InfluxDBRepository:
         return df.to_dict(orient='records')
 
     def get_energy_metrics_for_last_24_hours(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> \
-            List[dict]:
+    List[dict]:
         total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
@@ -2708,8 +2708,11 @@ class InfluxDBRepository:
                     grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
 
                     for _, row in grouped.iterrows():
-                        pin = round(row['total_PIn'], 2)
-                        pout = round(row['total_POut'], 2)
+                        pin = row['total_PIn'] if 'total_PIn' in row and not pd.isna(row['total_PIn']) else 0
+                        pout = row['total_POut'] if 'total_POut' in row and not pd.isna(row['total_POut']) else 0
+
+                        pin = round(pin, 2)
+                        pout = round(pout, 2)
 
                         energy_consumption = round(pout / pin, 2) if pin > 0 else 0
                         power_efficiency = round(((pin / pout - 1) * 100), 2) if pout > 0 else 0
@@ -2717,13 +2720,16 @@ class InfluxDBRepository:
                         total_power_metrics.append({
                             "time": row['_time'],  # Hour of the day
                             "energy_efficiency": energy_consumption,
-                            "total_POut": round(pout / 1000, 2) if pout is not None else None,
-                            "total_PIn": round(pin/1000,2) if pin is not None else None,
+                            "total_POut": round(pout / 1000, 2) if pout else 0,
+                            "total_PIn": round(pin / 1000, 2) if pin else 0,
                             "power_efficiency": power_efficiency
                         })
 
         df = pd.DataFrame(total_power_metrics).fillna(0.0)
+
+        # Ensure rounding after aggregation
         df = df.groupby('time').mean().reset_index()
+        df = df.round(2)  # Apply rounding to the entire DataFrame
 
         df = df.sort_values('time')
 
