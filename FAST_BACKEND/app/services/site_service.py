@@ -1751,6 +1751,8 @@ class SiteService:
 
             devices_datatraffic.append({
                 "device_id": device.id,
+                "total_pin_value_KW":total_pin_value_KW,
+                "data_TB":data_TB,
                 "device_name": device.device_name,
                 "pcr": pcr
             })
