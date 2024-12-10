@@ -1751,10 +1751,10 @@ class SiteService:
 
             devices_datatraffic.append({
                 "device_id": device.id,
-                "total_pin_value_KW":total_pin_value_KW,
-                "data_TB":data_TB,
+                "total_pin_value_KW":round(total_pin_value_KW,2),
+                "data_TB":round(data_TB,2),
                 "device_name": device.device_name,
-                "pcr": pcr
+                "pcr": round(pcr,2)
             })
 
             processed_device_names.add(device.device_name)
