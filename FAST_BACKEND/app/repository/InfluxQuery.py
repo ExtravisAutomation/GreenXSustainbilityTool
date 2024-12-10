@@ -785,7 +785,7 @@ def get_all_vm(hostname) -> List[dict]:
 
     result = query_api.query(query)
     data = []
-    used_space,used_cpu,used_memory=None,None,None
+    used_space,used_cpu,used_memory,cpu_usage_percent,memory_usage_percent=None,None,None,None,None
     try:
         result = query_api.query(query)
 
