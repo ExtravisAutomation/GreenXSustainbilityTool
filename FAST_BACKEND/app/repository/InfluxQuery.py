@@ -797,12 +797,18 @@ def get_all_vm(hostname) -> List[dict]:
                     used_cpu = record.get_value()
                 elif record.get_field() == "used_memory_MB":
                     used_memory = record.get_value()
+                elif record.get_field() == "cpu_usage_percent":
+                    cpu_usage_percent = record.get_value()
+                elif record.get_field() == "memory_usage_percent":
+                    memory_usage_percent = record.get_value()
 
         data.append({
             "hostname": hostname,
             "used_space_GB":used_space,
             "used_cpu_MHz":used_cpu,
-            "used_memory_MB":used_memory
+            "used_memory_MB":used_memory,
+            "memory_usage_percent":memory_usage_percent,
+            "cpu_usage_percent":cpu_usage_percent
          })
 
     except Exception as e:
