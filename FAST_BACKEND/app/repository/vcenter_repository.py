@@ -81,18 +81,18 @@ class VcenterRepository(BaseRepository):
                 data = get_all_vm(vm.hostname)
 
                 if data:
-                    used_cpu = data[0].get("cpu_usage_percent")
-                    used_memory = data[0].get("memory_usage_percent")
+                    used_cpu = data[0].get("used_cpu_MHz")
+                    used_memory = data[0].get("used_memory_MB")
                     used_space = data[0].get("used_space_GB")
-                    # cpu_usage_percent = data[0].get("cpu_usage_percent")
-                    # memory_usage_percent=data[0].get("memory_usage_percent")
+                    cpu_usage_percent = data[0].get("cpu_usage_percent")
+                    memory_usage_percent=data[0].get("memory_usage_percent")
 
                     # Ensure the variables are not None and are numbers before rounding
                     vm.used_space_GB = round(float(used_space), 2) if used_space is not None else 0
                     vm.used_cpu_MHz = round(float(used_cpu), 2) if used_cpu is not None else 0
                     vm.used_memory_MB = round(float(used_memory), 2) if used_memory is not None else 0
-                    # vm.cpu_usage_percent = round(float(cpu_usage_percent), 2) if cpu_usage_percent is not None else 0
-                    # vm.memory_usage_percent = round(float(memory_usage_percent), 2) if memory_usage_percent is not None else 0
+                    vm.cpu_usage_percent = round(float(cpu_usage_percent), 2) if cpu_usage_percent is not None else 0
+                    vm.memory_usage_percent = round(float(memory_usage_percent), 2) if memory_usage_percent is not None else 0
             return VCenterVM
         
         

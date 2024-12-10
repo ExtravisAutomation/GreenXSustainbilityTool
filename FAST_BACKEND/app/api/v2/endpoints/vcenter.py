@@ -36,6 +36,7 @@ def get_vms(
     vcenter_service: VcenterService = Depends(Provide[Container.vcenter_service])
 ):
     all_vms = vcenter_service.get_all_vms()
+    print(all_vms)
     return CustomResponse(
         message="Fetched all vcenter VMs successfully",
         data=all_vms,

@@ -785,7 +785,7 @@ def get_all_vm(hostname) -> List[dict]:
 
     result = query_api.query(query)
     data = []
-    used_space,used_cpu,used_memory=None,None,None
+    used_space,used_cpu,used_memory,cpu_usage_percent,memory_usage_percent=None,None,None,None,None
     try:
         result = query_api.query(query)
 
@@ -795,6 +795,7 @@ def get_all_vm(hostname) -> List[dict]:
                     used_space = record.get_value()
                 elif record.get_field() == "used_cpu_MHz":
                     used_cpu = record.get_value()
+
                 elif record.get_field() == "used_memory_MB":
                     used_memory = record.get_value()
                 elif record.get_field() == "cpu_usage_percent":
