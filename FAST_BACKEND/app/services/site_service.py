@@ -1743,7 +1743,7 @@ class SiteService:
 
             total_pin_value = self.influxdb_repository.get_device_total_pin_value(
                 device.ip_address, start_date, end_date, duration_str)
-            datatraffic = self.influxdb_repository.get_device_datatraffic(start_date, end_date, duration_str)
+            datatraffic = self.influxdb_repository.get_device_datatraffic(device.ip_address, start_date, end_date, duration_str)
 
             total_pin_value_KW = total_pin_value / 1000
             data_TB = datatraffic / (1024**4)
