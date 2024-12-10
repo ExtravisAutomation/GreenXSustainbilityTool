@@ -1988,23 +1988,19 @@ class SiteService:
         return self.site_repository.get_openai_answer(question)
 
     def analyze_csv_and_ask_openai(self, question: str) -> str:
-        # Load the CSV file
-        csv_file_path = "/path/to/your/csvfile.csv"  # Update with the actual path
+        csv_file_path = "/path/to/your/csvfile.csv" 
         try:
             df = pd.read_csv(csv_file_path)
         except FileNotFoundError:
             raise HTTPException(status_code=500, detail="CSV file not found.")
 
-        # Convert CSV data to a format that OpenAI can analyze
         csv_data = df.to_dict(orient="records")
 
-        # Generate a prompt for OpenAI with the CSV data
         prompt = (
             f"You are an expert in analyzing Cisco device data. Based on the following data from the CSV file, "
             f"answer the question: '{question}'.\n\nData:\n{csv_data}\n\nAnswer concisely."
         )
 
-        # Use OpenAI to analyze the CSV data and provide an answer
         return self.site_repository.get_openai_answer(prompt)
 
 
@@ -2121,10 +2117,8 @@ class SiteService:
         return avg_metrics
 
     def calculate_power_for_ip(self, question: str) -> str:
-        # Extract IP and duration from the question
         try:
             import re
-            # Example question: "What is the power of 192.168.1.1 over the last 24 hours?"
             ip_match = re.search(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', question)
             duration_match = re.search(r'(last \d+ (hours|days))', question.lower())
 
@@ -2136,7 +2130,6 @@ class SiteService:
             ip = ip_match.group(1)
             duration = duration_match.group(1)
 
-            # Parse the duration (default to 24 hours if not specified)
             hours = 24
             if "days" in duration:
                 days = int(re.search(r'\d+', duration).group())
@@ -2144,11 +2137,9 @@ class SiteService:
             elif "hours" in duration:
                 hours = int(re.search(r'\d+', duration).group())
 
-            # Fixed power per hour
-            power_per_hour = 0.2  # kW
-            total_power = power_per_hour * hours  # Total power consumption in kWh
+            power_per_hour = 0.2  
+            total_power = power_per_hour * hours  
 
-            # Return a response with the calculation and "training phase" note
             return (
                 f"The total power consumption of the device with IP {ip} over the {duration} is approximately "
                 f"{round(total_power, 2)} kWh."

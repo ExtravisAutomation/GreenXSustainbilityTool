@@ -1792,18 +1792,13 @@ def ask_openai(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    # Keywords to trigger CSV analysis
     keywords = ["power", "time", "device", "site"]
 
-    # Check if the question asks for power over a specific time
     if "power" in question.lower() and "ip" in question.lower():
-        # Handle the specific use case of querying power consumption by IP
         answer = site_service.calculate_power_for_ip(question)
     elif all(keyword in question.lower() for keyword in keywords):
-        # Call the new function to analyze CSV data
         answer = site_service.analyze_csv_and_ask_openai(question)
     else:
-        # Proceed with a normal question-answer flow
         answer = site_service.ask_openai_question(question)
 
     return CustomResponse_openai(
