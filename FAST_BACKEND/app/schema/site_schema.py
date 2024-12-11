@@ -281,7 +281,7 @@ class APICControllersUpdate(BaseModel):
 
 class APICControllersResponse(BaseModel):
     id: int
-    ip_address: str
+    device_ip: str
     device_type: Optional[str]
     device_name: Optional[str]
     site_name: Optional[str]
@@ -291,6 +291,7 @@ class APICControllersResponse(BaseModel):
     password_group_name: Optional[str]
     OnBoardingStatus: Optional[bool]
     created_at: Optional[datetime]
+    site_id: Optional[int]
     messages: Optional[str]
 
     class Config:

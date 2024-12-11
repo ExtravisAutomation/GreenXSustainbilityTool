@@ -762,6 +762,8 @@ class SiteRepository(BaseRepository):
                 device_data["rack_unit"] = device.rack_unit
                 device_data["OnBoardingStatus"] = device.OnBoardingStatus
                 device_data["messages"] = device.messages if device.messages else None
+                device_data["site_id"] = device.site_id
+                device_data["device_ip"] = device.ip_address
                 result.append(device_data)
 
             return result
