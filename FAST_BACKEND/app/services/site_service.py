@@ -2187,69 +2187,69 @@ class SiteService:
 
 
     def calculate_traffic_for_ip(self, question: str) -> str:
-    try:
-        import re
-        ip_match = re.search(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', question)
-        duration_match = re.search(r'(last \d+ (hours|days))', question.lower())
+        try:
+            import re
+            ip_match = re.search(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', question)
+            duration_match = re.search(r'(last \d+ (hours|days))', question.lower())
 
-        if not ip_match:
-            raise HTTPException(status_code=400, detail="Invalid or missing IP address in the question.")
-        if not duration_match:
-            raise HTTPException(status_code=400, detail="Invalid or missing time duration in the question.")
+            if not ip_match:
+                raise HTTPException(status_code=400, detail="Invalid or missing IP address in the question.")
+            if not duration_match:
+                raise HTTPException(status_code=400, detail="Invalid or missing time duration in the question.")
 
-        ip = ip_match.group(1)
-        duration = duration_match.group(1)
+            ip = ip_match.group(1)
+            duration = duration_match.group(1)
 
-        hours = 24
-        if "days" in duration:
-            days = int(re.search(r'\d+', duration).group())
-            hours = days * 24
-        elif "hours" in duration:
-            hours = int(re.search(r'\d+', duration).group())
+            hours = 24
+            if "days" in duration:
+                days = int(re.search(r'\d+', duration).group())
+                hours = days * 24
+            elif "hours" in duration:
+                hours = int(re.search(r'\d+', duration).group())
 
-        data_per_hour = 500  
-        total_data = data_per_hour * hours
+            data_per_hour = 500  
+            total_data = data_per_hour * hours
 
-        return (
-            f"The total data traffic of the device with IP {ip} over the {duration} is approximately "
-            f"{total_data} MB."
-            f"Please note, I am currently in a training phase and there is a chance I might be wrong. "
-            f"Verify the data for accuracy if needed."
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing the traffic calculation: {str(e)}")
+            return (
+                f"The total data traffic of the device with IP {ip} over the {duration} is approximately "
+                f"{total_data} MB."
+                f"Please note, I am currently in a training phase and there is a chance I might be wrong. "
+                f"Verify the data for accuracy if needed."
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error processing the traffic calculation: {str(e)}")
 
     
 
     def calculate_co2_for_ip(self, question: str) -> str:
-    try:
-        import re
-        ip_match = re.search(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', question)
-        duration_match = re.search(r'(last \d+ (hours|days))', question.lower())
+        try:
+            import re
+            ip_match = re.search(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', question)
+            duration_match = re.search(r'(last \d+ (hours|days))', question.lower())
 
-        if not ip_match:
-            raise HTTPException(status_code=400, detail="Invalid or missing IP address in the question.")
-        if not duration_match:
-            raise HTTPException(status_code=400, detail="Invalid or missing time duration in the question.")
+            if not ip_match:
+                raise HTTPException(status_code=400, detail="Invalid or missing IP address in the question.")
+            if not duration_match:
+                raise HTTPException(status_code=400, detail="Invalid or missing time duration in the question.")
 
-        ip = ip_match.group(1)
-        duration = duration_match.group(1)
+            ip = ip_match.group(1)
+            duration = duration_match.group(1)
 
-        hours = 24
-        if "days" in duration:
-            days = int(re.search(r'\d+', duration).group())
-            hours = days * 24
-        elif "hours" in duration:
-            hours = int(re.search(r'\d+', duration).group())
+            hours = 24
+            if "days" in duration:
+                days = int(re.search(r'\d+', duration).group())
+                hours = days * 24
+            elif "hours" in duration:
+                hours = int(re.search(r'\d+', duration).group())
 
-        co2_per_hour = 0.5 
-        total_co2 = co2_per_hour * hours
+            co2_per_hour = 0.5 
+            total_co2 = co2_per_hour * hours
 
-        return (
-            f"The total CO2 emissions of the device with IP {ip} over the {duration} is approximately "
-            f"{round(total_co2, 2)} kg."
-            f"Please note, I am currently in a training phase and there is a chance I might be wrong. "
-            f"Verify the data for accuracy if needed."
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing the CO2 calculation: {str(e)}")
+            return (
+                f"The total CO2 emissions of the device with IP {ip} over the {duration} is approximately "
+                f"{round(total_co2, 2)} kg."
+                f"Please note, I am currently in a training phase and there is a chance I might be wrong. "
+                f"Verify the data for accuracy if needed."
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error processing the CO2 calculation: {str(e)}")
