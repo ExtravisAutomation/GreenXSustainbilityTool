@@ -1790,6 +1790,10 @@ def ask_openai(
 
     if "power" in question.lower() and "ip" in question.lower():
         answer = site_service.calculate_power_for_ip(question)
+    elif "traffic" in question.lower() and "ip" in question.lower():
+        answer = site_service.calculate_traffic_for_ip(question)
+    elif "co2" in question.lower() and "ip" in question.lower():
+        answer = site_service.calculate_co2_for_ip(question)
     elif all(keyword in question.lower() for keyword in keywords):
         answer = site_service.analyze_csv_and_ask_openai(question)
     else:
@@ -1800,6 +1804,7 @@ def ask_openai(
         data={"answer": answer},
         status_code=200
     )
+
 
 
 
