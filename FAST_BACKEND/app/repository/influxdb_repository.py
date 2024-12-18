@@ -878,22 +878,22 @@ class InfluxDBRepository:
 
             # Flux query to calculate sum and mean
             flux_query = f"""
-                           sum_result = from(bucket: "{self.bucket}")
-                               |> range(start: {start_time}, stop: {end_time})
-                               |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-                               |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
-                               |> sum(column: "_value")
-                               |> map(fn: (r) => ({"_field": "sum", _value: r._value}))
+            sum_result = from(bucket: "{self.bucket}")
+                |> range(start: {start_date!r}, stop: {end_date!r})
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+                |> sum(column: "_value")
+                |> map(fn: (r) => ({"_field": "sum", _value: r._value}))
 
-                           mean_result = from(bucket: "{self.bucket}")
-                               |> range(start: {start_time}, stop: {end_time})
-                               |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-                               |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
-                               |> mean(column: "_value")
-                               |> map(fn: (r) => ({"_field": "mean", _value: r._value}))
+            mean_result = from(bucket: "{self.bucket}")
+                |> range(start: {start_date!r}, stop: {end_date!r})
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+                |> mean(column: "_value")
+                |> map(fn: (r) => ({"_field": "mean", _value: r._value}))
 
-                           union(tables: [sum_result, mean_result])
-                           """
+            union(tables: [sum_result, mean_result])
+            """
 
             # Execute the query
             result = self.query_api.query(flux_query)
