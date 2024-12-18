@@ -71,14 +71,40 @@ class AuthService(BaseService):
 
         return sign_in_result
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
+
+    
+
+    
+
+
+    
+
+
     def sign_up(self, user_info: SignUp):
         user_token = get_rand_hash()
         user_data = user_info.dict(exclude_none=True)
         role = user_data.pop('role', 'user')
+        is_superuser = True if role != 'user' else False
+
         user = User(
             **user_data,
             is_active=True,
-            is_superuser=False,
+            is_superuser=is_superuser,  
             user_token=user_token,
             role=role
         )
@@ -90,6 +116,11 @@ class AuthService(BaseService):
         delattr(created_user, "password")
 
         return created_user
+
+
+
+
+
 
     def blacklist_token(self, email: str, token: str):
         blacklisted_token = BlacklistedToken(email=email, token=token)

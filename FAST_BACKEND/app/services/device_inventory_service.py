@@ -10,17 +10,17 @@ class DeviceInventoryService:
         self.device_inventory_repository = device_inventory_repository
 
     def to_datetime(self, value):
-        # Helper function to convert Date to datetime
+        
         return datetime.combine(value, datetime.min.time()) if value else None
 
     def get_all_devices(self) -> List[dict]:
-        # Get devices with SNTC and relationship data as dictionaries from the repository
+        
         devices = self.device_inventory_repository.get_all_devices()
 
         enriched_devices = []
 
         for device in devices:
-            # Enrich data with SNTC fields and handle potential missing data
+            
             enriched_device = {
                 "id": device.get("id"),
                 "cisco_domain": device.get("cisco_domain"),
@@ -58,7 +58,7 @@ class DeviceInventoryService:
                 "tag_id": device.get("tag_id"),
                 "apic_controller_id": device.get("apic_controller_id"),
 
-                # SNTC fields
+                
                 "hw_eol_ad": device.get("hw_eol_ad"),
                 "hw_eos": device.get("hw_eos"),
                 "sw_EoSWM": device.get("sw_EoSWM"),
@@ -67,20 +67,20 @@ class DeviceInventoryService:
                 "hw_EoSCR": device.get("hw_EoSCR"),
                 "hw_ldos": device.get("hw_ldos"),
 
-                # Additional fields from relationships
+                
                 "site_name": device.get("site_name"),
                 "rack_name": device.get("rack_name"),
                 "device_ip": device.get("device_ip"),
                 "device_type": device.get("device_type"),
                 
-                # Ahmed Changes
+                
                 "power_utilization": device.get("power_utilization"),
                 "pue": device.get("pue"),
                 "power_input": device.get("power_input"),
                 "datatraffic": device.get("datatraffic"),
             }
             
-            # Conditionally add 'datatraffic' if it exists
+            
             if "datatraffic" in device:
                 enriched_device["datatraffic"] = device["datatraffic"]
 

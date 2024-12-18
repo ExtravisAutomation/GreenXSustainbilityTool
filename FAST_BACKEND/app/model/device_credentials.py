@@ -10,5 +10,3 @@ class DeviceCredential(BaseModel):
     password = Column(String(100), nullable=True)
 
     Device_id = Column(Integer, ForeignKey('Devices.id'), nullable=False)
-
-    #device = relationship("APICControllers", back_populates="credential")

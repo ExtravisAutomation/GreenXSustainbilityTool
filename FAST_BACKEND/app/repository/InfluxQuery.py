@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import os
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS
-# from Database.db import *
+
 
 bucket = os.getenv("INFLUXDB_BUCKET")
 org = os.getenv("INFLUXDB_ORG")
@@ -56,12 +56,12 @@ import sys
 import datetime
 
 def get_power_data_per_hour(apic_ip: str) -> list:
-    # Generate a list of all hours in the last 24 hours
+    
     end_time = datetime.datetime.now()
     start_time = end_time - datetime.timedelta(days=1)
     all_hours = [(start_time + datetime.timedelta(hours=i)).strftime('%Y-%m-%d %H:00') for i in range(24)]
 
-    # Prepare your InfluxDB query
+    
     query = f'''
           from(bucket: "{bucket}")
           |> range(start: -24h)
@@ -74,7 +74,7 @@ def get_power_data_per_hour(apic_ip: str) -> list:
     print("RESULT", result, file=sys.stderr)
     hourly_data = {}
 
-    # Initialize hourly_data with all hours set to zero
+    
     now = datetime.datetime.utcnow()
     for i in range(24):
         hour = (now - datetime.timedelta(hours=i)).strftime('%Y-%m-%d %H:00')
@@ -98,9 +98,9 @@ def get_power_data_per_hour(apic_ip: str) -> list:
                 "power_utilization": round(power_utilization, 2) if power_utilization is not None else  0
             }
 
-    # Convert the hourly_data dictionary back to a list
+    
     hourly_data_list = list(hourly_data.values())
-    # Sort the list by hour in descending order to match the original design
+    
     hourly_data_list.sort(key=lambda x: x["hour"], reverse=True)
     return hourly_data_list
 
@@ -124,7 +124,7 @@ def get_traffic_data_per_hour(apic_ip: str) -> List[dict]:
             "apic_controller_ip": apic_ip,
             "hour": hour,
             "traffic": round(random.uniform(24000000000, 33000000000), 4)
-  # Change key to 'traffic' to reflect the data type
+  
         }
 
     for table in result:
@@ -134,16 +134,16 @@ def get_traffic_data_per_hour(apic_ip: str) -> List[dict]:
             hourly_data[hour] = {
                 "apic_controller_ip": apic_ip,
                 "hour": hour,
-                "traffic": total_bytesRateLast if total_bytesRateLast is not None else  0# Ensure 0 if None
+                "traffic": total_bytesRateLast if total_bytesRateLast is not None else  0
             }
 
-    # Convert the hourly_data dictionary back to a list and sort by hour
+    
     hourly_data_list = list(hourly_data.values())
     hourly_data_list.sort(key=lambda x: x["hour"], reverse=True)
     return hourly_data_list
 
 def get_site_power_data_per_hour(apic_ips, site_id) -> List[dict]:
-# Convert the query result to a list of IP addresses
+
     apic_ip_list = [ip[0] for ip in apic_ips if ip[0]]
 
     if not apic_ip_list:
@@ -190,18 +190,18 @@ def get_site_power_data_per_hour(apic_ips, site_id) -> List[dict]:
             "count": 0
         }
 
-    # Aggregate power utilization for each hour as provided in hourly_data
+    
     for data in hourly_data:
         hour = data["hour"]
-        power_utilization = data.get("power_utilization", )  # Default to 0 if not present
+        power_utilization = data.get("power_utilization", )  
 
-        # Assuming the presence of a "power_utilization" key, even if its value is None
+        
         if power_utilization is not None:
             aggregated_data[hour]["total_power_utilization"] += power_utilization
             aggregated_data[hour]["count"] += 1
 
 
-    # Calculate average power utilization for each hour, including those with no data
+    
     final_data = []
     for hour, values in aggregated_data.items():
         if values["count"] > 0:
@@ -209,7 +209,7 @@ def get_site_power_data_per_hour(apic_ips, site_id) -> List[dict]:
 
             avg_power_utilization = values["total_power_utilization"]
         else:
-            avg_power_utilization = round(random.uniform(86, 261), 2)  # Assign 0 if no data exists for the hour
+            avg_power_utilization = round(random.uniform(86, 261), 2)  
 
         final_data.append({
             "site_id": site_id,
@@ -217,7 +217,7 @@ def get_site_power_data_per_hour(apic_ips, site_id) -> List[dict]:
             "average_power_utilization": round(avg_power_utilization, 2)
         })
 
-    # Ensure the final data is sorted by hour in descending order
+    
     final_data.sort(key=lambda x: x["hour"], reverse=True)
 
     return final_data
@@ -307,7 +307,7 @@ def get_site_powerRequired(apic_ips, site_id) -> List[dict]:
 
         PowerIn, PowerOut,TotalPower = None, None,None
 
-        # Retrieve PowerIn
+        
         for table in result:
             for record in table.records:
                 if record.get_field() == "total_PIn":
@@ -316,13 +316,13 @@ def get_site_powerRequired(apic_ips, site_id) -> List[dict]:
                     PowerOut = record.get_value()
 
         print(PowerIn, PowerOut,"4444444444444")
-        # Retrieve TotalPower
+        
         for table in result1:
             for record in table.records:
                 if record.get_field() == "total_Power":
                     TotalPower = record.get_value()
         print(TotalPower, "666666")
-        # Calculate power efficiency
+        
 
 
         power_Required_data.append({
@@ -381,7 +381,7 @@ def get_rack_power(apic_ips, rack_id) -> List[dict]:
 
         except Exception as e:
             print(f"Error querying InfluxDB for {apic_ip}: {e}")
-            # Handle exception or continue
+            
 
     return rack_data
 def get_24hrack_power(apic_ips, rack_id) -> List[dict]:
@@ -435,7 +435,7 @@ def get_24hrack_power(apic_ips, rack_id) -> List[dict]:
 
         except Exception as e:
             print(f"Error querying InfluxDB for {apic_ip}: {e}")
-            # Handle exception or continue
+            
 
     return rack_data
 def get_24h_rack_datatraffic(apic_ips, rack_id) -> List[dict]:
@@ -469,8 +469,8 @@ def get_24h_rack_datatraffic(apic_ips, rack_id) -> List[dict]:
                     total_byterate += byterate
             print(total_byterate, "total_bytesRateLast")
 
-            # data_gb = total_byterate/ (1024 ** 3)
-            # print(data_gb,"data_gb")
+            
+            
 
 
 
@@ -479,7 +479,7 @@ def get_24h_rack_datatraffic(apic_ips, rack_id) -> List[dict]:
                 "traffic_through": total_byterate  })
         except Exception as e:
             print(f"Error querying InfluxDB for {apic_ip}: {e}")
-            # Handle exception or continue
+            
 
     return Traffic_rack_data
 
@@ -530,7 +530,7 @@ def get_24hDevice_power(apic_ip: str) -> List[dict]:
 
     except Exception as e:
         print(f"Error querying InfluxDB for {apic_ip}: {e}")
-        # Handle exception or continue
+        
 
     return data
 
@@ -608,7 +608,7 @@ def get_device_power(apic_ip) -> List[dict]:
 
     except Exception as e:
         print(f"Error querying InfluxDB for {apic_ip}: {e}")
-        # Handle exception or continue
+        
 
     return data
 
@@ -687,7 +687,7 @@ def get_24hsite_power(apic_ips, site_id) -> List[dict]:
 
         except Exception as e:
             print(f"Error querying InfluxDB for {apic_ip}: {e}")
-            # Handle exception or continue
+            
 
     return site_data
 
@@ -723,8 +723,8 @@ def get_24hsite_datatraffc(apic_ips, site_id) -> List[dict]:
                     total_byterate += byterate
             print(total_byterate, "total_bytesRateLast")
 
-            # data_gb = total_byterate/ (1024 ** 3)
-            # print(data_gb,"data_gb")
+            
+            
 
 
 
@@ -733,7 +733,7 @@ def get_24hsite_datatraffc(apic_ips, site_id) -> List[dict]:
                 "traffic_through": total_byterate  })
         except Exception as e:
             print(f"Error querying InfluxDB for {apic_ip}: {e}")
-            # Handle exception or continue
+            
 
     return site_data
 def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
@@ -769,7 +769,7 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
 
     except Exception as e:
         print(f"Error querying InfluxDB for {apic_ip}: {e}")
-        # Handle exception or continue
+        
     print(data)
     return data
 def get_all_vm(hostname) -> List[dict]:
@@ -814,11 +814,11 @@ def get_all_vm(hostname) -> List[dict]:
 
     except Exception as e:
         print(f"Error querying InfluxDB for {hostname}: {e}")
-        # Handle exception or continue
+        
 
     return data
 def get_24_vm_stoage(hostname: str) -> List[dict]:
-    # Query to fetch data from the past 24 hours
+    
     query = f'''
         from(bucket: "{bucket}")
         |> range(start: -24h)
@@ -829,7 +829,7 @@ def get_24_vm_stoage(hostname: str) -> List[dict]:
     '''
     results = query_api.query(query)
 
-    # Initialize a dictionary to store hourly data
+    
     hourly_data = {}
     now = datetime.datetime.utcnow()
     for i in range(24):
@@ -840,7 +840,7 @@ def get_24_vm_stoage(hostname: str) -> List[dict]:
             "Used_space_GB": 0,
         }
 
-    # Process the results and fill the hourly data
+    
     for table in results:
         for record in table.records:
             hour = record.get_time().strftime('%Y-%m-%d %H:00')
@@ -848,13 +848,13 @@ def get_24_vm_stoage(hostname: str) -> List[dict]:
                 "Used_space_GB": record.values.get('used_space_GB', 0),
             })
 
-    # Convert the hourly_data dictionary back to a sorted list
+    
     hourly_data_list = sorted(hourly_data.values(), key=lambda x: x["hour"], reverse=True)
     return hourly_data_list
 
 
 def get_24_vm_usage(hostname: str) -> List[dict]:
-    # Query to fetch data from the past 24 hours
+    
     query = f'''
         from(bucket: "{bucket}")
         |> range(start: -24h)
@@ -865,7 +865,7 @@ def get_24_vm_usage(hostname: str) -> List[dict]:
     '''
     results = query_api.query(query)
 
-    # Initialize a dictionary to store hourly data
+    
     hourly_data = {}
     now = datetime.datetime.utcnow()
     for i in range(24):
@@ -878,7 +878,7 @@ def get_24_vm_usage(hostname: str) -> List[dict]:
             "cpu_ready_percent": 0
         }
 
-    # Process the results and fill the hourly data
+    
     for table in results:
         for record in table.records:
             hour = record.get_time().strftime('%Y-%m-%d %H:00')
@@ -888,13 +888,13 @@ def get_24_vm_usage(hostname: str) -> List[dict]:
                 "cpu_ready_percent": record.values.get('cpu_ready_percent', 0)
             })
 
-    # Convert the hourly_data dictionary back to a sorted list
+    
     hourly_data_list = sorted(hourly_data.values(), key=lambda x: x["hour"], reverse=True)
     return hourly_data_list
 
 
 def get_24_host_storage(hostname: str) -> List[dict]:
-    # Query to fetch data from the past 24 hours
+    
     print("we are here")
     query = f'''
            from(bucket: "Dcs_db")
@@ -938,7 +938,7 @@ def get_24_host_storage(hostname: str) -> List[dict]:
 
 
 def get_24_host_usage(hostname: str) -> List[dict]:
-    # Query to fetch data from the past 24 hours
+    
     query = f'''
        from(bucket: "Dcs_db")
   |> range(start: -24h)
@@ -952,7 +952,7 @@ def get_24_host_usage(hostname: str) -> List[dict]:
     '''
     results = query_api.query(query)
 
-    # Initialize a dictionary to store hourly data
+    
     hourly_data = {}
     if results:
         now = datetime.datetime.utcnow()
@@ -967,7 +967,7 @@ def get_24_host_usage(hostname: str) -> List[dict]:
                 "PUE": 0
             }
 
-            # Process the results and fill the hourly data
+            
         powerutilization, pue = 0, 0
         for table in results:
             for record in table.records:
@@ -988,7 +988,7 @@ def get_24_host_usage(hostname: str) -> List[dict]:
 
                 })
 
-        # Convert the hourly_data dictionary back to a sorted list
+        
     else:
         print("no data available")
     hourly_data_list = sorted(hourly_data.values(), key=lambda x: x["hour"], reverse=True)
@@ -1019,7 +1019,7 @@ def get_all_hostutilizaton(hostname) -> List[dict]:
                     value = record.get_value()
                     host_info[field_name] = round(value, 2)
     
-            # Append host information with all fields dynamically added
+            
             host_info["hostname"] = hostname
             data.append(host_info)
         else:

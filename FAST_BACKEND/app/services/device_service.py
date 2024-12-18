@@ -31,18 +31,18 @@ def fetch_device_output(ip, username, password, command):
         return None
 
 
-# def parse_output(output):
-#     if output is None:
-#         print("No output received to parse.>>>>>>>>>.>>>>>>", file=sys.stderr)
-#         return None
-#     try:
-#
-#         power_output = int(output.split()[-2])
-#         print("Power output is: ", power_output)
-#         return power_output
-#     except (ValueError, IndexError):
-#         print("Failed to parse power output", file=sys.stderr)
-#         return None
+
+
+
+
+
+
+
+
+
+
+
+
 
 def parse_output(output):
     if output is None:
@@ -92,17 +92,17 @@ class DeviceService(BaseService):
         self.influxdb_repository = influxdb_repository
         super().__init__(influxdb_repository)
 
-    # def handle_device(self, ip, username, password, command):
-    #     output = fetch_device_output(ip, username, password, command)
-    #     print("OUTTTTTTTTTTTTTTTTTTTTTTTTTT", output, file=sys.stderr)
-    #     power_output = parse_output(output)
-    #     if power_output is not None:
-    #         self.store_in_influxdb(ip, power_output)
-    #         return f"Data stored for IP {ip}: {power_output} W"
-    #     else:
-    #         error_message = f"Failed to parse power output for {ip}"
-    #         print(error_message, file=sys.stderr)
-    #         return "Failed to parse power output"
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     def handle_device(self, ip, username, password, command):
         output = fetch_device_output(ip, username, password, command)
@@ -122,11 +122,11 @@ class DeviceService(BaseService):
         point = point.time(datetime.utcnow(), WritePrecision.NS)
         self.influxdb_repository.write_data(point)
 
-    # def get_device_data(self, ip: str) -> list:
-    #     records = self.influxdb_repository.get_last_records(ip)
-    #     data = [PowerUsageRecord(ip=record['device'], time=record['_time'], output=record['_value']) for record in
-    #             records]
-    #     return DeviceDataResponse(data=data)
+    
+    
+    
+    
+    
 
     def get_device_data(self, ip: str) -> DeviceDataResponse:
         records = self.influxdb_repository.get_last_records(ip)

@@ -10,7 +10,7 @@ from app.schema.vcenter_schema import hostnameInput
 class VcenterRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
         self.session_factory = session_factory
-        # super().__init__(session_factory, Reports)
+        
         
         
     def get_host_details(self):
@@ -66,7 +66,7 @@ class VcenterRepository(BaseRepository):
                     "datastores": datastores,
                     "networkings": networkings,
                     "adapters": adapters,
-                    "cpu_models": cpu_models  # Include CPU models in the details
+                    "cpu_models": cpu_models  
                 }
                 
                 host_details_list.append(host_details)
@@ -87,7 +87,7 @@ class VcenterRepository(BaseRepository):
                     cpu_usage_percent = data[0].get("cpu_usage_percent")
                     memory_usage_percent=data[0].get("memory_usage_percent")
 
-                    # Ensure the variables are not None and are numbers before rounding
+                    
                     vm.used_space_GB = round(float(used_space), 2) if used_space is not None else 0
                     vm.used_cpu_MHz = round(float(used_cpu), 2) if used_cpu is not None else 0
                     vm.used_memory_MB = round(float(used_memory), 2) if used_memory is not None else 0
@@ -97,7 +97,7 @@ class VcenterRepository(BaseRepository):
         
         
     def get_hourly_storage(self, hostname_data: hostnameInput):
-        hourly_data = get_24_vm_stoage(hostname_data.hostname)  # Assuming get_power_data_per_hour is an async function
+        hourly_data = get_24_vm_stoage(hostname_data.hostname)  
 
         response = []
         for data in hourly_data:
@@ -112,7 +112,7 @@ class VcenterRepository(BaseRepository):
     
     
     def get_usages(self, hostname_data: hostnameInput):
-        hourly_data = get_24_vm_usage(hostname_data.hostname)  # Assuming get_power_data_per_hour is an async function
+        hourly_data = get_24_vm_usage(hostname_data.hostname)  
 
         response = []
         for data in hourly_data:

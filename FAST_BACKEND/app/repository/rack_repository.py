@@ -36,33 +36,33 @@ class RackRepository(BaseRepository):
             racks = session.query(Rack).all()
 
             for rack in racks:
-                # Fetch associated building name
+                
                 building = (
                     session.query(Building.building_name)
                     .join(rack_building_association, Building.id == rack_building_association.c.building_id)
                     .filter(rack_building_association.c.rack_id == rack.id)
                     .first()
                 )
-                rack.building_name = building[0] if building else None  # Assign building name if found
+                rack.building_name = building[0] if building else None  
 
-                # Fetch APIC IPs and other rack details
+                
                 apic_ips = session.query(APICController.ip_address).filter(
                     rack.id == DeviceInventory.rack_id, APICController.id == DeviceInventory.apic_controller_id
                 ).distinct().all()
 
-                # Fetch site name
+                
                 site_result = session.query(Site.site_name).filter(Site.id == rack.site_id).first()
                 rack.site_name = site_result[0] if site_result else None
 
-                # Fetch device count
+                
                 num_devices = session.query(func.count(Devices.id)).filter(Devices.rack_id == rack.id).scalar()
                 rack.num_devices = num_devices
 
-                # Calculate power and traffic data
+                
                 rack_power_data = get_24hrack_power(apic_ips, rack.id)
                 rack_traffic_data = get_24h_rack_datatraffic(apic_ips, rack.id)
 
-                # Process power utilization, PUE, and power input
+                
                 if rack_power_data:
                     power_utilization_values = [data.get('power_utilization', 0) for data in rack_power_data]
                     total_power_utilization = sum(power_utilization_values)
@@ -82,11 +82,11 @@ class RackRepository(BaseRepository):
                     rack.pue = 0
                     rack.power_input = 0
 
-                # Process traffic data
+                
                 if rack_traffic_data:
                     traffic_throughput_values = [data.get('traffic_through', 0) for data in rack_traffic_data]
                     total_traffic_throughput = sum(traffic_throughput_values)
-                    rack.datatraffic = round(total_traffic_throughput / (1024 ** 3), 2)  # Convert to GB
+                    rack.datatraffic = round(total_traffic_throughput / (1024 ** 3), 2)  
                 else:
                     rack.datatraffic = 0
 
@@ -134,7 +134,7 @@ class RackRepository(BaseRepository):
                 if rack_traffic_data:
                     traffic_throughput_values = [data.get('traffic_through', 0) for data in rack_traffic_data]
                     total_traffic_throughput = sum(traffic_throughput_values)
-                    # average_traffic_throughput = total_traffic_throughput / len(traffic_throughput_values)
+                    
                     datatraffic = total_traffic_throughput / (1024 ** 3)
                     rack.datatraffic = round(datatraffic, 2)
 
@@ -146,17 +146,17 @@ class RackRepository(BaseRepository):
 
     def add_rack(self, rack_data: RackCreate) -> Rack:
         with self.session_factory() as session:
-            # Check if the building_id exists
+            
             building = session.query(Building).filter_by(id=rack_data.building_id).first()
             if not building:
                 raise ValueError("Building ID not found")
 
-            # Create a new rack and associate it with the building
+            
             new_rack = Rack(**rack_data.dict(exclude={"building_id"}))
             session.add(new_rack)
             session.commit()
 
-            # Add entry in the rack_building association table
+            
             session.execute(
                 rack_building_association.insert().values(rack_id=new_rack.id, building_id=rack_data.building_id))
             session.commit()
@@ -170,13 +170,13 @@ class RackRepository(BaseRepository):
             if not rack:
                 raise HTTPException(status_code=404, detail="Rack not found")
 
-            # Check and update building association if building_id is provided
+            
             if rack_data.building_id is not None:
                 building = session.query(Building).filter_by(id=rack_data.building_id).first()
                 if not building:
                     raise HTTPException(status_code=404, detail="Building ID not found")
 
-                # Update the association in the rack_building table
+                
                 session.execute(
                     rack_building_association.delete().where(rack_building_association.c.rack_id == rack.id)
                 )
@@ -184,23 +184,23 @@ class RackRepository(BaseRepository):
                     rack_building_association.insert().values(rack_id=rack.id, building_id=rack_data.building_id)
                 )
 
-            # Update rack attributes with additional checks
+            
             for key, value in rack_data.dict(exclude_unset=True).items():
-                if key != "building_id":  # building_id is handled separately
-                    if value is not None and value != '' and value != 'string':  # Additional checks
+                if key != "building_id":  
+                    if value is not None and value != '' and value != 'string':  
                         setattr(rack, key, value)
 
             session.commit()
-            session.refresh(rack)  # Refresh the instance to ensure it's fully loaded
+            session.refresh(rack)  
             return rack
 
     def delete_rack(self, rack_ids: List[int]):
         with self.session_factory() as session:
-            # rack = session.query(Rack).filter(Rack.id == rack_ids).first()
-            # if rack is None:
-            #     raise HTTPException(status_code=404, detail="Rack not found")
-            # session.delete(rack)
-            # session.commit()
+            
+            
+            
+            
+            
             rack = session.query(Rack).filter(Rack.id.in_(rack_ids)).delete(synchronize_session='fetch')
             session.commit()
 
@@ -223,17 +223,17 @@ class RackRepository(BaseRepository):
                 total_power_utilization = sum(item['power_utilization'] for item in rack_data)
                 average_power_utilization = total_power_utilization / len(rack_data)
             else:
-                average_power_utilization = 0  # Default to 0 if no data is available
+                average_power_utilization = 0  
 
-                # Create a response that includes the rack ID and the average power utilization
+                
             response = {
                 'Rack_id': rack_id,
                 'power_utilization': round(average_power_utilization, 2)}
-            # for data in rack_data:
-            #     response.append({
-            #         'Rack_id': rack_id,
-            #         'power_utilization': data['power_utilization']
-            #     })
+            
+            
+            
+            
+            
             return response
         
         

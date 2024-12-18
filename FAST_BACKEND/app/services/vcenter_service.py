@@ -15,7 +15,7 @@ from app.schema.vcenter_schema import hostnameInput
 class VcenterService:
     def __init__(self, vcenter_repository: VcenterRepository):
         self.vcenter_repository = vcenter_repository
-        # super().__init__(site_repository)
+        
         pass
     
         

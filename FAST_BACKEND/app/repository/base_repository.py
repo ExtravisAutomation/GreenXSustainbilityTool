@@ -23,11 +23,9 @@ class BaseRepository:
                 if ordering.startswith("-")
                 else getattr(self.model, ordering).asc()
             )
-            # Ensure we include a username filter if provided
             filter_options = dict_to_sqlalchemy_filter_options(self.model, schema.dict(exclude_none=True))
 
             if "user_name" in schema_as_dict:
-                # Assuming 'name' is the column for username in the User model
                 filter_options = filter_options & (self.model.name == schema_as_dict['user_name'])
 
             query = session.query(self.model)
@@ -36,7 +34,7 @@ class BaseRepository:
                     query = query.options(joinedload(getattr(self.model, eager)))
             filtered_query = query.filter(filter_options)
             query = filtered_query.order_by(order_query)
-            user = query.first()  # Get the first matched user
+            user = query.first() 
             total_count = filtered_query.count() if user else 0
             return {
                 "found": user,

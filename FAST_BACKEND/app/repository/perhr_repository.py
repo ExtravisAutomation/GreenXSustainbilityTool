@@ -10,13 +10,13 @@ from app.model.APIC_controllers import APICControllers as Devices
 class PerhrRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
         self.session_factory = session_factory
-        # super().__init__(session_factory, Reports)
+        
         
         
     def device_power_perhr(self, apic_ip_data: ApicControllerInput):
         with self.session_factory() as session:
             print(apic_ip_data.apic_controller_ip)
-            hourly_data = get_power_data_per_hour(apic_ip_data.apic_controller_ip)  # Assuming get_power_data_per_hour is an async function
+            hourly_data = get_power_data_per_hour(apic_ip_data.apic_controller_ip)  
 
             response = []
             
@@ -37,7 +37,7 @@ class PerhrRepository(BaseRepository):
         
     def device_traffic_perhr(self, apic_ip_data: ApicControllerInput):
         with self.session_factory() as session:
-            hourly_data = get_traffic_data_per_hour(apic_ip_data.apic_controller_ip)  # Assuming get_power_data_per_hour is an async function
+            hourly_data = get_traffic_data_per_hour(apic_ip_data.apic_controller_ip)  
             
             response = []
             
