@@ -36,9 +36,6 @@ load_dotenv()
 class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(
         modules=[
-            # "app.api.v1.endpoints.auth",
-            # "app.api.v1.endpoints.post",
-            # "app.api.v1.endpoints.tag",
             "app.api.v1.endpoints.user",
             "app.api.v2.endpoints.auth",
             "app.api.v2.endpoints.site",

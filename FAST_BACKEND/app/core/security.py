@@ -59,15 +59,6 @@ class JWTBearer(HTTPBearer):
         else:
             raise AuthError(detail="Invalid authorization code.")
 
-    # def verify_jwt(self, jwt_token: str) -> bool:
-    #     is_token_valid: bool = False
-    #     try:
-    #         payload = decode_jwt(jwt_token)
-    #     except Exception as e:
-    #         payload = None
-    #     if payload:
-    #         is_token_valid = True
-    #     return is_token_valid
 
     def verify_jwt(self, jwt_token: str) -> bool:
         is_token_valid: bool = False
@@ -77,7 +68,6 @@ class JWTBearer(HTTPBearer):
             payload = None
 
         if payload:
-            # Check if token is blacklisted
             with Database(configs.DATABASE_URI).session() as db:
                 blacklisted = db.query(BlacklistedToken).filter(BlacklistedToken.token == jwt_token).first()
                 if blacklisted is None:

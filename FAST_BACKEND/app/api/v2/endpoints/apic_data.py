@@ -6,8 +6,8 @@ from app.services.apic_service import APICService
 from dependency_injector.wiring import Provide, inject
 from app.core.dependencies import get_current_active_user
 from app.model.user import User
-from app.schema.site_schema import CustomResponse  # Assuming you have this schema
-# from .models import APICDataRequest  # Ensure you import your APICDataRequest correctly
+from app.schema.site_schema import CustomResponse  
+
 from pydantic import BaseModel, Field
 
 from app.schema.fabric_node import FabricNodeResponse
@@ -16,7 +16,6 @@ from app.schema.site_schema import CustomResponse1
 
 from app.schema.fabric_node import FabricNodeDetails
 
-# from app.schema.fabric_node import PowerUtilizationResponse
 
 from app.schema.fabric_node import PowerUtilizationResponse_per_day, PowerUtilizationResponse_5min
 

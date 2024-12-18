@@ -7,7 +7,7 @@ class DeviceInventoryBase(BaseModel):
     cisco_domain: Optional[str]
     contract_expiry: Optional[datetime]
     contract_number: Optional[str]
-    #created_at: Optional[datetime] = None
+    
     criticality: Optional[str]
     department: Optional[str]
     device_id: Optional[int]
@@ -38,7 +38,7 @@ class DeviceInventoryBase(BaseModel):
     sw_eos_date: Optional[datetime]
     tag_id: Optional[str]
 
-    # Update SNTC fields to match `Date` type in database
+    
     hw_eol_ad: Optional[datetime]
     hw_eos: Optional[datetime]
     sw_EoSWM: Optional[datetime]
@@ -70,7 +70,7 @@ class DeviceInventoryInDB(DeviceInventoryBase):
     power_input: Optional[float]
     datatraffic: Optional[float]
     created_at: Optional[datetime] = None
-    #created_at: Optional[datetime] = None
+    
 
     
     class Config:

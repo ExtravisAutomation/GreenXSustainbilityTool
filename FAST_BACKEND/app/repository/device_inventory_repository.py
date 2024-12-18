@@ -11,7 +11,6 @@ from app.model.device_inventory import ChassisFan, ChassisModule, ChassisPowerSu
 from app.model.apic_controller import APICController
 from app.model.APIC_controllers import APICControllers,Vendor
 from app.repository.base_repository import BaseRepository
-# from app.model.devices import
 from sqlalchemy import func, desc,and_
 
 class DeviceInventoryRepository(BaseRepository):
@@ -20,7 +19,6 @@ class DeviceInventoryRepository(BaseRepository):
         self.influxdb_repository = influxdb_repository
 
     def get_device_type_by_ip(self, session, apic_controller_ip: str) -> str:
-        """Helper method to retrieve device_type from APICControllers based on IP address."""
         if apic_controller_ip:
             print(f"Looking up APICControllers device type for IP: {apic_controller_ip}")
             apic_controller_device = (
@@ -40,7 +38,6 @@ class DeviceInventoryRepository(BaseRepository):
         enriched_devices = []
 
         with self.session_factory() as session:
-            # Query all DeviceInventory records
             devices = (
                 session.query(DeviceInventory)
                 .options(
@@ -53,14 +50,12 @@ class DeviceInventoryRepository(BaseRepository):
             )
 
             for device in devices:
-                # Fetch the matching DeviceSNTC data based on model_name and pn_code
                 sntc_data = (
                     session.query(DeviceSNTC)
                     .filter(DeviceSNTC.model_name == device.pn_code)
                     .first()
                 )
 
-                # Retrieve device_type using the helper method
                 apic_controller_ip = device.apic_controller.ip_address if device.apic_controller else None
                 device_type = self.get_device_type_by_ip(session, apic_controller_ip)
                 
@@ -175,7 +170,6 @@ class DeviceInventoryRepository(BaseRepository):
 
     def chasis(self):
         with self.session_factory() as session:
-            # Fetch all chassis devices with related chassis data and pre-load related DeviceSNTC data
             chassis_devices = session.query(ChassisDevice).options(
                 joinedload(ChassisDevice.chassis),
                 selectinload(ChassisDevice.device_sntc)
@@ -187,7 +181,6 @@ class DeviceInventoryRepository(BaseRepository):
                 chassis = chasis_device.chassis
                 device_sntc = chasis_device.device_sntc
 
-                # Check if device_sntc is loaded and has a model_name, safely access model_name
                 model_name = device_sntc.model_name if device_sntc else None
 
                 device_details = {
@@ -213,7 +206,6 @@ class DeviceInventoryRepository(BaseRepository):
         
     def modules(self):
         with self.session_factory() as session:
-            # Fetch all chassis-module relationships with pre-loaded Module and Chassis data
             chassis_modules = session.query(ChassisModule).options(
                 joinedload(ChassisModule.module),
                 joinedload(ChassisModule.chassis)
@@ -221,12 +213,10 @@ class DeviceInventoryRepository(BaseRepository):
 
             enriched_modules = []
 
-            # Iterate over ChassisModule entries to construct the output data
             for chassis_module in chassis_modules:
-                module = chassis_module.module  # Get the related Module
-                chassis = chassis_module.chassis  # Get the related Chassis
+                module = chassis_module.module  
+                chassis = chassis_module.chassis 
 
-                # Create a dictionary for each module containing all relevant details
                 module_details = {
                     "module_id": module.id if module else None,
                     "module_name": module.module_name if module else "Unknown",
@@ -251,19 +241,16 @@ class DeviceInventoryRepository(BaseRepository):
         
     def power_supply(self):
         with self.session_factory() as session:
-            # Fetch all chassis power supply records with related power supply data efficiently
             chassis_power_supplies = session.query(ChassisPowerSupply).options(
                 joinedload(ChassisPowerSupply.power_supply),
                 joinedload(ChassisPowerSupply.chassis)
             ).all()
 
-            # List to hold enhanced power supply details
             enriched_power_supplies = []
 
             for cps in chassis_power_supplies:
                 power_supply = cps.power_supply
 
-                # Prepare a dictionary to capture details about each power supply along with its chassis information
                 power_supply_details = {
                     "id": cps.id,
                     "chassis_id": cps.chassis_id,
@@ -280,10 +267,9 @@ class DeviceInventoryRepository(BaseRepository):
                     "sw_EoVSS": power_supply.sw_EoVSS if power_supply else None,
                     "hw_EoSCR": power_supply.hw_EoSCR if power_supply else None,
                     "hw_ldos": power_supply.hw_ldos if power_supply else None,
-                    "chassis_name": cps.chassis.chassis_name if cps.chassis else None  # assuming Chassis has a 'chassis_name' attribute
+                    "chassis_name": cps.chassis.chassis_name if cps.chassis else None  
                 }
 
-                # Add the detailed record to the list
                 enriched_power_supplies.append(power_supply_details)
 
             return enriched_power_supplies
@@ -291,7 +277,6 @@ class DeviceInventoryRepository(BaseRepository):
         
     def fans(self):
         with self.session_factory() as session:
-            # Fetch all chassis fan records with related fan data efficiently
             chassis_fans = session.query(ChassisFan).options(
                 joinedload(ChassisFan.fan),
                 joinedload(ChassisFan.chassis)
@@ -348,14 +333,9 @@ class DeviceInventoryRepository(BaseRepository):
             query = session.query(DeviceInventory).filter(APICController.ip_address == device_ip)
             device = query.first()
             print("Here we are")
-            # return device
-            # exit()
-
-            # device_ip = session.query(Devices.ip_address).filter(Devices.id == device.apic_controller_id).first()
 
             power = get_24hDevice_power(device_ip )
             datatraffic = get_24hDevice_dataTraffic(device_ip)
-                # powerIn = get_24hDevice_powerIn(ip)
 
             rack = session.query(Rack.rack_name).filter(Rack.id == device.rack_id).first()
             site = session.query(Site.site_name).filter(Site.id == device.site_id).first()
@@ -369,7 +349,6 @@ class DeviceInventoryRepository(BaseRepository):
 
             sntc_result = session.query(DeviceSNTC).filter(DeviceSNTC.model_name == device.pn_code).first()
 
-            # Assign SNTC attributes
             if sntc_result:
                 attrs = ['hw_eol_ad', 'hw_eos', 'sw_EoSWM', 'hw_EoRFA', 'sw_EoVSS', 'hw_EoSCR', 'hw_ldos']
                 for attr in attrs:
@@ -398,9 +377,7 @@ class DeviceInventoryRepository(BaseRepository):
                 func.count(DeviceInventory.id).label("count"),
             )
 
-            # Join with Device
             query = query.join(APICControllers, APICControllers.id == DeviceInventory.apic_controller_id)
-            # Apply filters dynamically
             conditions = []
             if site_id:
                 conditions.append(DeviceInventory.site_id == site_id)
@@ -408,18 +385,15 @@ class DeviceInventoryRepository(BaseRepository):
                 conditions.append(DeviceInventory.rack_id == rack_id)
             if vendor_id:
                 conditions.append(APICControllers.vendor_id == vendor_id)
-            # Apply the conditions to the query if any
             if conditions:
                 query = query.filter(and_(*conditions))
 
-            # Group by and order
             apic = (
                 query.group_by(DeviceInventory.pn_code)
                 .order_by(desc("count"))
                 .all()
             )
             print("daat",apic)
-            # Process the results into a list of dictionaries
             data = [
                 {
                     "model_name": a[0],  # pn_code
@@ -444,10 +418,8 @@ class DeviceInventoryRepository(BaseRepository):
                 func.count(DeviceInventory.id).label("device_count"),
             )
 
-            # Join with Device
             query = query.join(APICControllers, APICControllers.id == DeviceInventory.apic_controller_id)
 
-            # Apply filters dynamically
             conditions = []
             if site_id:
                 conditions.append(DeviceInventory.site_id == site_id)
@@ -455,17 +427,14 @@ class DeviceInventoryRepository(BaseRepository):
                 conditions.append(DeviceInventory.rack_id == rack_id)
             if vendor_id:
                 conditions.append(APICControllers.vendor_id == vendor_id)
-            # Apply the conditions to the query if any
             if conditions:
                 query = query.filter(and_(*conditions))
-            # Group by and order
             device_type_count = (
                 query.group_by(APICControllers.device_type)
                 .order_by(desc("device_count"))  # Order by count of devices per type
                 .all()
             )
             total_count=0
-            # Process the results into a list of dictionaries
             data = []
             for record in device_type_count:
                 data.append({
@@ -474,11 +443,9 @@ class DeviceInventoryRepository(BaseRepository):
                 })
                 total_count += record[1]
 
-            # Debugging info
             print(f"Total Records: {len(device_type_count)}")
             print("Processed Data:", data)
 
-            # Final result
             result = {
                 "device_type_count": data,
                 "count": total_count
@@ -487,20 +454,17 @@ class DeviceInventoryRepository(BaseRepository):
 
     def get_vendors(self):
         with self.session_factory() as session:
-            # Fetch all chassis fan records with related fan data efficiently
             ventors = session.query(Vendor).all()
 
             return ventors
 
     def get_count(self):
         with self.session_factory() as session:
-            # Fetch all chassis fan records with related fan data efficiently
             vendor_count = session.query(Vendor).count()
             site_count = session.query(Site).count()
             rack_count = session.query(Rack).count()
             device_count = session.query(APICControllers).count()
 
-            # Create the response as a list of dictionaries
             data = [
 
                 {"name": "Sites", "count": site_count},
@@ -519,9 +483,7 @@ class DeviceInventoryRepository(BaseRepository):
                 func.count(DeviceInventory.id).label("device_count"),
             )
 
-            # Join with Device
             query = query.join(APICControllers, APICControllers.id == DeviceInventory.apic_controller_id)
-            # Apply filters dynamically
             conditions = []
             if site_id:
                 conditions.append(DeviceInventory.site_id == site_id)
@@ -529,18 +491,15 @@ class DeviceInventoryRepository(BaseRepository):
                 conditions.append(DeviceInventory.rack_id == rack_id)
             if vendor_id:
                 conditions.append(APICControllers.vendor_id == vendor_id)
-            # Apply the conditions to the query if any
             if conditions:
                 query = query.filter(and_(*conditions))
-            # Group by and order
             device_type_count = (
                 query.group_by(APICControllers.device_nature)
                 .order_by(desc("device_count"))  # Order by count of devices per type
                 .all()
             )
-            # Process the results into a list of dictionaries
             data = []
-            total_count = 0  # Initialize total count
+            total_count = 0  
 
             for a in device_type_count:
                 data.append({
@@ -549,11 +508,9 @@ class DeviceInventoryRepository(BaseRepository):
                 })
                 total_count += a[1]  # Accumulate the count
 
-            # Debugging info
             print(f"Total Records: {len(device_type_count)}")
             print("Processed Data:", data)
 
-            # Return both data and total count
             result = {
                 "device_nature_count": data,
                 "total_count": total_count
@@ -563,25 +520,23 @@ class DeviceInventoryRepository(BaseRepository):
 
     def get_vendor_device_count(self):
         with self.session_factory() as session:
-            # Query to get vendor_name and the count of devices associated with each vendor
             result = session.query(
                 Vendor.vendor_name,
                 func.count(APICControllers.id).label('device_count')
             ).join(APICControllers, APICControllers.vendor_id == Vendor.id) \
                 .group_by(Vendor.vendor_name) \
-                .all()  # This will return a list of tuples (vendor_name, device_count)
+                .all() 
 
             data = []
-            total_count = 0  # Initialize total count
+            total_count = 0 
 
             for vendor_name, device_count in result:
                 data.append({
-                    "vendor_name": vendor_name,  # device type or nature
-                    "count": device_count,  # count of devices
+                    "vendor_name": vendor_name,  
+                    "count": device_count,  
                 })
-                total_count += device_count  # Accumulate the count
+                total_count += device_count 
 
-            # Return both data and total count
             vendor_data = {
                 "vendor_data": data,
                 "total_count": total_count

@@ -57,10 +57,6 @@ class Configs(BaseSettings):
     INFLUXDB_TOKEN: str = os.getenv("INFLUXDB_TOKEN")
     INFLUXDB_ORG: str = os.getenv("INFLUXDB_ORG")
     INFLUXDB_BUCKET: str = os.getenv("INFLUXDB_BUCKET")
-    print("Influxdb url in config", INFLUXDB_URL, file=sys.stderr)
-    print("Influxdb token in config", INFLUXDB_TOKEN, file=sys.stderr)
-    print("Influxdb org in config", INFLUXDB_ORG, file=sys.stderr)
-    print("Influxdb bucket in config", INFLUXDB_BUCKET, file=sys.stderr)
 
     # openai
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")

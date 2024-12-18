@@ -14,13 +14,13 @@ from app.schema.report_schema import ReportCreate
 class ReportService:
     def __init__(self, report_repository: ReportRepository):
         self.report_repository = report_repository
-        # super().__init__(site_repository)
+        
         pass
     
     def calculate_start_end_dates(self, duration_str: str) -> (datetime, datetime):
         today = datetime.today()
 
-        # Mapping the quarters to corresponding durations
+        
         if duration_str == "First Quarter":
             duration_str = "Last 3 Months"
         elif duration_str == "Second Quarter":
@@ -73,16 +73,16 @@ class ReportService:
         
     
     def add_report(self, report: ReportCreate):
-        # Determine startTime and endTime from Duration
+        
         if len(report.Duration) == 1:
             duration_str = report.Duration[0]
             print(duration_str)
 
         else:
-            duration_str ='' # Create report entries for each ReportType
+            duration_str ='' 
         reports = []
         for report_type in report.ReportType:
-            # Here, insert the new report into your database (placeholder logic)
+            
             print(report)
             new_report = {
                 "report_title": report.report_title,
@@ -95,7 +95,7 @@ class ReportService:
                 "Message": "Success"
             }
             reports.append(new_report)
-            print(f"Report added: {new_report}")  # Placeholder for actual database insertion
+            print(f"Report added: {new_report}")  
             data= self.report_repository.create_report(new_report)
             
         return {"message": "Reports added successfully", "data": reports}

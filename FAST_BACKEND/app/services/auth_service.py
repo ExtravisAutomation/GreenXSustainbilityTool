@@ -71,25 +71,25 @@ class AuthService(BaseService):
 
         return sign_in_result
 
-    # def sign_up(self, user_info: SignUp):
-    #     user_token = get_rand_hash()
-    #     user_data = user_info.dict(exclude_none=True)
-    #     role = user_data.pop('role', 'user')
-    #     user = User(
-    #         **user_data,
-    #         is_active=True,
-    #         is_superuser=False,
-    #         user_token=user_token,
-    #         role=role
-    #     )
-    #     print("USERRRRRR", user)
-    #     user.password = get_password_hash(user_info.password)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
-    #     created_user = self.user_repository.create(user)
+    
 
-    #     delattr(created_user, "password")
+    
 
-    #     return created_user
+    
 
 
     
@@ -104,7 +104,7 @@ class AuthService(BaseService):
         user = User(
             **user_data,
             is_active=True,
-            is_superuser=is_superuser,  # Set based on role
+            is_superuser=is_superuser,  
             user_token=user_token,
             role=role
         )

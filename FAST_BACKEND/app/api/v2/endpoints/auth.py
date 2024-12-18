@@ -7,7 +7,6 @@ from app.model.user import User
 from app.schema.auth_schema import SignIn, SignUp, SignInResponse, SignInNew
 from app.schema.user_schema import User as UserSchema
 from app.services.auth_service import AuthService
-# from fastapi.status import HTTP_204_NO_CONTENT
 
 from app.core.security import JWTBearer
 

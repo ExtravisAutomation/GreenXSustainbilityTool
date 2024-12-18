@@ -16,7 +16,7 @@ from app.schema.vcenter_schema import hostnameInput
 class PerhrService:
     def __init__(self, perhr_repository: PerhrRepository):
         self.perhr_repository = perhr_repository
-        # super().__init__(site_repository)
+        
         pass
     
     

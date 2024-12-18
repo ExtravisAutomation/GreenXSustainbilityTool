@@ -15,4 +15,3 @@ class CommunicationRoom(BaseModel):
     ad_pair = Column(String)
     remark = Column(String)
     entered_on = Column(DateTime(timezone=True), default=func.now())
-    #site_id = Column(Integer, ForeignKey("sites.site_id"), nullable=False, index=True)

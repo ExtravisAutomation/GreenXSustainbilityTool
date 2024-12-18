@@ -27,7 +27,6 @@ class APICControllers(BaseModel):
 
     password_group = relationship("PasswordGroup", back_populates="devices")
     vendor = relationship("Vendor", back_populates="devices")
-    #deviceInventory = relationship("DeviceInventory", back_populates="apic_controller")
 class Vendor(BaseModel):
     __tablename__ = "vendor"
     id = Column(Integer, primary_key=True)

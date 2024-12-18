@@ -50,12 +50,9 @@ class APICRepository(BaseRepository):
                 fabric_nodes = session.query(FabricNode).options(joinedload(FabricNode.apic_controller)).all()
                 for node in fabric_nodes:
                     try:
-                        # Fetching power data for each node
                         drawn_avg, supplied_avg = self.influxdb_repository.get_power_data(
                             node.apic_controller.ip_address, str(node.node))
-                        # Ensure both drawn_avg and supplied_avg are not None and supplied_avg is greater than 0
                         if drawn_avg is not None and supplied_avg is not None and supplied_avg > 0:
-                            # Calculating power utilization and updating the node object
                             node.power_utilization = (drawn_avg / supplied_avg) * 100
                             print(f"Updated node {node.name} with power utilization: {node.power_utilization}",
                                   file=sys.stderr)
@@ -67,7 +64,6 @@ class APICRepository(BaseRepository):
                         print(f"Failed to calculate power utilization for node {node.name}. Error: {inner_e}",
                               file=sys.stderr)
                         traceback.print_exc()
-                # session.commit()
                 return fabric_nodes
         except Exception as outer_e:
             print(f"Failed to fetch fabric nodes with power utilization. Error: {outer_e}", file=sys.stderr)
