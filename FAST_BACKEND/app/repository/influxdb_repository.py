@@ -68,6 +68,9 @@ class InfluxDBRepository:
                     elif record.get_field() == "suppliedAvg":
                         suppliedAvg = record.get_value()
 
+            print(
+                f"drawnAvg@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@: {drawnAvg}, suppliedAvg@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@: {suppliedAvg}",
+                file=sys.stderr)
             return drawnAvg, suppliedAvg
         except Exception as e:
             print(f"Error executing query in InfluxDB: {e}", file=sys.stderr)
@@ -100,6 +103,8 @@ class InfluxDBRepository:
                     elif record.get_field() == "suppliedAvg":
                         suppliedAvg = record.get_value()
 
+            print(f"drawnAvg_5555555555555555555555555555: {drawnAvg}, suppliedAvg_555555555555555555: {suppliedAvg}",
+                  file=sys.stderr)
             return drawnAvg, suppliedAvg
         except Exception as e:
             print(f"Error executing query in InfluxDB: {e}", file=sys.stderr)
@@ -116,6 +121,7 @@ class InfluxDBRepository:
             |> last()
         '''
         try:
+            print(f"Executing query: {query}", file=sys.stderr)
             result = self.query_api1.query(query)
             if not result:
                 print("Query returned no results.", file=sys.stderr)
@@ -131,6 +137,9 @@ class InfluxDBRepository:
                     elif record.get_field() == "suppliedAvg":
                         suppliedAvg = record.get_value()
 
+            print(
+                f"drawnAvg_DAYYYYYYYYYYYYYYYYYYYYYYYYYYY: {drawnAvg}, suppliedAvg_DAYYYYYYYYYYYYYYYYYYY: {suppliedAvg}",
+                file=sys.stderr)
             return drawnAvg, suppliedAvg
         except Exception as e:
             print(f"Error executing query in InfluxDB: {e}", file=sys.stderr)
@@ -230,15 +239,15 @@ class InfluxDBRepository:
             |> sort(columns: ["_time"])
         '''
 
-        
+        # Execute the query and get the result as a DataFrame
         result = self.query_api1.query_data_frame(query)
 
-        
+        # Ensure the result is not empty
         if not result.empty:
-            
+            # Convert the '_time' column to datetime if it's not already
             result['_time'] = pd.to_datetime(result['_time'])
 
-            
+            # Calculate the duration between the first and last timestamps
             duration = result['_time'].iloc[-1] - result['_time'].iloc[0]
             duration_hours = duration.total_seconds() // 3600
             duration_minutes = (duration.total_seconds() % 3600) // 60
@@ -275,7 +284,7 @@ class InfluxDBRepository:
         total_power = int(total_power)
         average_power = int(average_power)
         max_power = int(max_power)
-        total_price = round(total_power * 0.027)  
+        total_price = round(total_power * 0.027)  # (6.7fils/kWh)
         return {
             "total_power": total_power,
             "average_power": average_power,
@@ -316,7 +325,7 @@ class InfluxDBRepository:
                     grouped = grouped.reindex(all_hours).fillna(0).reset_index()
 
                     for _, row in grouped.iterrows():
-                        
+                        # Sanitize the data to ensure all values are JSON-compliant
                         energy_consumption = self.sanitize_for_json(
                             round(random.uniform(10.00, 12.00), 2) if row['total_PIn'] == 0 else round(
                                 row['total_PIn'] / 1000, 2))
@@ -340,67 +349,67 @@ class InfluxDBRepository:
         df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
         return df
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    # def get_energy_consumption_metrics_with_filter(self, device_ips: List[str], start_date: datetime,
+    #                                                end_date: datetime, duration_str: str) -> List[dict]:
+    #     total_power_metrics = []
+    #     start_time = start_date.isoformat() + 'Z'
+    #     end_time = end_date.isoformat() + 'Z'
+    #
+    #     if duration_str in ["24 hours"]:
+    #         aggregate_window = "1h"
+    #         time_format = '%Y-%m-%d %H:00'
+    #     elif duration_str in ["7 Days", "Current Month", "Last Month"]:
+    #         aggregate_window = "1d"
+    #         time_format = '%Y-%m-%d'
+    #     else:  # For "last 6 months", "last year", "current year"
+    #         aggregate_window = "1m"
+    #         time_format = '%Y-%m'
+    #
+    #     for ip in device_ips:
+    #         query = f'''
+    #             from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #             |> range(start: {start_time}, stop: {end_time})
+    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+    #             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+    #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #         '''
+    #         result = self.query_api1.query_data_frame(query)
+    #
+    #         print("RESULTTTTTTTTTTTTTTTTTT", result, file=sys.stderr)
+    #         if not result.empty:
+    #             result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+    #             numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+    #             if '_time' in result.columns and numeric_cols:
+    #                 grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
+    #                 grouped['_time'] = pd.to_datetime(grouped['_time'])
+    #                 grouped.set_index('_time', inplace=True)
+    #
+    #                 all_times = pd.date_range(start=start_date, end=end_date, freq=aggregate_window.upper()).strftime(
+    #                     time_format)
+    #                 grouped = grouped.reindex(all_times).fillna(0).reset_index()
+    #
+    #                 for _, row in grouped.iterrows():
+    #                     # Use random values if total_PIn or total_POut is 0
+    #                     energy_consumption = random.uniform(10.00, 12.00) if row['total_PIn'] == 0 else round(
+    #                         row['total_PIn'] / 1000, 2)
+    #                     total_POut = random.uniform(8.00, 11.00) if row['total_POut'] == 0 else round(
+    #                         row['total_POut'] / 1000, 2)
+    #                     average_energy_consumed = random.uniform(1.00, 2.00) if row['total_PIn'] == 0 or row[
+    #                         'total_POut'] == 0 else round(row['total_PIn'] / max(row['total_POut'], 1), 2)
+    #                     power_efficiency = random.uniform(84.00, 90.00) if row['total_PIn'] == 0 or row[
+    #                         'total_POut'] == 0 else round(row['total_POut'] / max(row['total_PIn'] - 1, 1) * 100, 2)
+    #
+    #                     total_power_metrics.append({
+    #                         "time": row['index'],
+    #                         "energy_consumption": round(self.sanitize_for_json(energy_consumption), 2),
+    #                         "total_POut": round(self.sanitize_for_json(total_POut), 2),
+    #                         "average_energy_consumed": self.sanitize_for_json(average_energy_consumed),
+    #                         "power_efficiency": round(self.sanitize_for_json(power_efficiency), 2)
+    #                     })
+    #
+    #     df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
+    #     return df
 
     def get_energy_consumption_metrics_with_filter(self, device_ips: List[str], start_date: datetime,
                                                    end_date: datetime, duration_str: str) -> List[dict]:
@@ -408,14 +417,14 @@ class InfluxDBRepository:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
-        
+        # Define the aggregate window and time format based on the duration string
         if duration_str in ["24 hours"]:
             aggregate_window = "1h"
             time_format = '%Y-%m-%d %H:00'
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             aggregate_window = "1d"
             time_format = '%Y-%m-%d'
-        else:  
+        else:  # For "last 6 months", "last year", "current year",
             aggregate_window = "1m"
             time_format = '%Y-%m'
 
@@ -460,143 +469,143 @@ class InfluxDBRepository:
         df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
         return df
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    # async def query_influxdb_for_devices(self, device_ips: List[str], start_time: str, end_time: str, aggregate_window: str, time_format: str) -> List[dict]:
+    #     if not device_ips:
+    #         return []
+    #
+    #     ips_filter = ' or '.join([f'r["ApicController_IP"] == "{ip}"' for ip in device_ips])
+    #     query = f'''
+    #         from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #         |> range(start: {start_time}, stop: {end_time})
+    #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and ({ips_filter}))
+    #         |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+    #         |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+    #         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #     '''
+    #
+    #     try:
+    #         result = self.query_api1.query_data_frame(query, org=configs.INFLUXDB_ORG)
+    #     except Exception as e:
+    #         print(f"Error querying InfluxDB: {str(e)}", file=sys.stderr)
+    #         return []
+    #
+    #     if result.empty:
+    #         return []
+    #
+    #     result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+    #     numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+    #
+    #     if '_time' in result.columns and numeric_cols:
+    #         grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
+    #         grouped['_time'] = pd.to_datetime(grouped['_time'])
+    #         grouped.set_index('_time', inplace=True)
+    #
+    #         all_times = pd.date_range(start=start_time, end=end_time, freq=aggregate_window.upper()).strftime(time_format)
+    #         grouped = grouped.reindex(all_times).fillna(0).reset_index()
+    #
+    #         total_power_metrics = []
+    #         for _, row in grouped.iterrows():
+    #             pin = row['total_PIn']
+    #             pout = row['total_POut']
+    #
+    #             energy_consumption = pout / pin if pin > 0 else 0
+    #             power_efficiency = ((pin / pout - 1) * 100) if pout > 0 else 0
+    #
+    #             total_power_metrics.append({
+    #                 "time": row['index'],
+    #                 "energy_efficiency": round(energy_consumption, 2),
+    #                 "total_POut": round(pout, 2),
+    #                 "total_PIn": round(pin, 2),
+    #                 "power_efficiency": round(power_efficiency, 2)
+    #             })
+    #
+    #         return total_power_metrics
+    #     return []
+    #
+    # async def get_energy_consumption_metrics_with_filter(self, device_ips: List[str], start_date: datetime, end_date: datetime, duration_str: str) -> List[dict]:
+    #     start_time = start_date.isoformat() + 'Z'
+    #     end_time = end_date.isoformat() + 'Z'
+    #
+    #     if duration_str in ["24 hours"]:
+    #         aggregate_window = "1h"
+    #         time_format = '%Y-%m-%d %H:00'
+    #     elif duration_str in ["7 Days", "Current Month", "Last Month"]:
+    #         aggregate_window = "1d"
+    #         time_format = '%Y-%m-%d'
+    #     else:
+    #         aggregate_window = "1m"
+    #         time_format = '%Y-%m'
+    #
+    #     # Single batch query for all devices
+    #     total_power_metrics = await self.query_influxdb_for_devices(device_ips, start_time, end_time, aggregate_window, time_format)
+    #
+    #     # Ensure uniqueness and return the data
+    #     df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
+    #     return df
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    # def get_energy_consumption_metrics_with_filter(self, device_ips: List[str], start_date: datetime,
+    #                                                end_date: datetime, duration_str: str) -> List[dict]:
+    #     total_power_metrics = []
+    #     start_time = start_date.isoformat() + 'Z'
+    #     end_time = end_date.isoformat() + 'Z'
+    #
+    #     # Define the aggregate window and time format based on the duration string
+    #     if duration_str in ["24 hours"]:
+    #         aggregate_window = "1h"
+    #         time_format = '%Y-%m-%d %H:00'
+    #     elif duration_str in ["7 Days", "Current Month", "Last Month"]:
+    #         aggregate_window = "1d"
+    #         time_format = '%Y-%m-%d'
+    #     else:  # For "last 6 months", "last year", "current year",
+    #         aggregate_window = "1m"
+    #         time_format = '%Y-%m'
+    #
+    #     for ip in device_ips:
+    #         query = f'''
+    #             from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #             |> range(start: {start_time}, stop: {end_time})
+    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+    #             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+    #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #         '''
+    #         result = self.query_api1.query_data_frame(query)
+    #
+    #         if not result.empty:
+    #             # Optimize date formatting
+    #             result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+    #             numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+    #
+    #             if '_time' in result.columns and numeric_cols:
+    #                 # Group by '_time' and calculate mean
+    #                 grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
+    #
+    #                 # Prepare the time index
+    #                 all_times = pd.date_range(start=start_date, end=end_date, freq=aggregate_window.upper()).strftime(
+    #                     time_format)
+    #                 grouped.set_index('_time', inplace=True)
+    #                 grouped = grouped.reindex(all_times).fillna(0).reset_index()
+    #
+    #                 # Vectorized calculations
+    #                 pin = grouped['total_PIn']
+    #                 pout = grouped['total_POut']
+    #
+    #                 energy_consumption = np.where(pin > 0, pout / pin, 0)
+    #                 power_efficiency = np.where(pout > 0, ((pin / pout - 1) * 100), 0)
+    #
+    #                 metrics_df = pd.DataFrame({
+    #                     "time": grouped['index'],
+    #                     "energy_efficiency": np.round(energy_consumption, 2),
+    #                     "total_POut": np.round(pout, 2),
+    #                     "total_PIn": np.round(pin, 2),
+    #                     "power_efficiency": np.round(power_efficiency, 2)
+    #                 })
+    #
+    #                 total_power_metrics.extend(metrics_df.to_dict(orient='records'))
+    #
+    #     # Remove duplicates efficiently
+    #     df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
+    #     return df
 
     def calculate_hourly_metrics_for_device(self, device_ips: List[str]) -> List[dict]:
         total_power_metrics = []
@@ -615,7 +624,7 @@ class InfluxDBRepository:
                     |> filter(fn: (r) => r["_field"] == "{field}")
                     |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
                 '''
-                
+                # Debug: Print the query being executed
                 print(f"Executing query: {query}", file=sys.stderr)
 
                 result = self.query_api1.query_data_frame(query)
@@ -690,7 +699,7 @@ class InfluxDBRepository:
         end_time = end_date.isoformat() + 'Z'
         aggregate_window, time_format = self.determine_aggregate_window(duration_str)
 
-        
+        # Updated query to aggregate both total_PIn and total_POut
         query = f'''
             from(bucket: "{self.bucket}")
             |> range(start: {start_time}, stop: {end_time})
@@ -705,7 +714,7 @@ class InfluxDBRepository:
             average_pin = result['total_PIn'].mean()
             average_pout = result['total_POut'].mean()
 
-            
+            # Calculating the efficiency as a percentage
             power_efficiency = (average_pout / average_pin * 100) if average_pin != 0 else 0
             print(
                 f"Average power for IP {device_ip}: PIn = {average_pin}, POut = {average_pout}, Efficiency = {power_efficiency}%",
@@ -766,14 +775,14 @@ class InfluxDBRepository:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
-        
+        # Define the aggregate window and time format based on the duration string
         if duration in ["24 hours"]:
             aggregate_window = "1h"
             time_format = '%Y-%m-%d %H:00'
         elif duration in ["7 Days", "Current Month", "Last Month"]:
             aggregate_window = "1d"
             time_format = '%Y-%m-%d'
-        else:  
+        else:  # For "last 6 months", "last year", "current year"
             aggregate_window = "1m"
             time_format = '%Y-%m'
 
@@ -816,14 +825,14 @@ class InfluxDBRepository:
                 count_measurements = len(result['_value'])
                 average_power = (total_power / count_measurements) if count_measurements > 0 else 0
                 average_powerkw = average_power / 1000
-                powerinkwh = total_power / 1000  
+                powerinkwh = total_power / 1000  # aed
                 cost_of_power = powerinkwh * 0.405
                 top_devices_power.append({
                     'ip': ip,
                     'total_PIn': total_power,
                     'average_PIn': average_powerkw,
                     'cost_of_power': cost_of_power
-                    
+                    # Add other necessary data as needed
                 })
 
         return top_devices_power
@@ -836,33 +845,83 @@ class InfluxDBRepository:
 
         aggregate_window, time_format = self.determine_aggregate_window(duration_str)
 
+        # for ip in device_ips:
+        #     print("IPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP", ip, file=sys.stderr)
+        #     query = f'''
+        #         from(bucket: "{self.bucket}")
+        #             |> range(start: {start_time}, stop: {end_time})
+        #             |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+        #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+        #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+        #             |> sort(columns: ["_value"], desc: true)
+        #
+        #     '''
+        #     result = self.query_api1.query_data_frame(query)
+        #     print(f"Query result for IPPPPPPPPPPPP: {ip} is: {result}", file=sys.stderr)
+        #
+        #     if not result.empty:
+        #         total_power = result['_value'].sum()
+        #         average_power = result['_value'].mean()
+        #         cost_of_power = self.calculate_cost_of_power(total_power)
+        #         average_powerkw = average_power / 1000
+        #         top_devices_power.append({
+        #             'ip': ip,
+        #             'total_PIn': total_power/1000,
+        #             'average_PIn': average_powerkw,
+        #             'cost_of_power': cost_of_power,
+        #         })
+        #
+        # top_devices_power = sorted(top_devices_power, key=lambda x: x['total_PIn'], reverse=True)[:5]
+        # return top_devices_power
         for ip in device_ips:
-            print("IPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP", ip, file=sys.stderr)
-            query = f'''
-                from(bucket: "{self.bucket}")
-                    |> range(start: {start_time}, stop: {end_time})
-                    |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-                    |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
-                    |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-                    |> sort(columns: ["_value"], desc: true)
-                                
-            '''
-            result = self.query_api1.query_data_frame(query)
-            print(f"Query result for IPPPPPPPPPPPP: {ip} is: {result}", file=sys.stderr)
+            print(f"Processing IP: {ip}", file=sys.stderr)
 
-            if not result.empty:
-                total_power = result['_value'].sum()
-                average_power = result['_value'].mean()
-                cost_of_power = self.calculate_cost_of_power(total_power)
-                average_powerkw = average_power / 1000
+            # Flux query to calculate sum and mean
+            flux_query = f"""
+                           sum_result = from(bucket: "{self.bucket}")
+                               |> range(start: {start_time}, stop: {end_time})
+                               |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                               |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+                               |> sum(column: "_value")
+                               |> map(fn: (r) => ({"_field": "sum", _value: r._value}))
+
+                           mean_result = from(bucket: "{self.bucket}")
+                               |> range(start: {start_time}, stop: {end_time})
+                               |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                               |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+                               |> mean(column: "_value")
+                               |> map(fn: (r) => ({"_field": "mean", _value: r._value}))
+
+                           union(tables: [sum_result, mean_result])
+                           """
+
+            # Execute the query
+            result = self.query_api.query(flux_query)
+
+            # Process the results
+            sum_value = None
+            mean_value = None
+
+            for table in result:
+                for record in table.records:
+                    if record["_field"] == "sum":
+                        sum_value = record["_value"]
+                    elif record["_field"] == "mean":
+                        mean_value = record["_value"]
+
+            if sum_value is not None and mean_value is not None:
+                cost_of_power = self.calculate_cost_of_power(sum_value)  # Custom method for cost computation
+
                 top_devices_power.append({
                     'ip': ip,
-                    'total_PIn': total_power/1000,
-                    'average_PIn': average_powerkw,
+                    'total_PIn': sum_value / 1000,  # Convert to kilowatts
+                    'average_PIn': mean_value / 1000,  # Convert to kilowatts
                     'cost_of_power': cost_of_power,
                 })
 
+            # Sort devices by total_PIn and limit to top 5
         top_devices_power = sorted(top_devices_power, key=lambda x: x['total_PIn'], reverse=True)[:5]
+
         return top_devices_power
 
     def calculate_cost_of_power(self, power_in_watts):
@@ -899,7 +958,7 @@ class InfluxDBRepository:
     def get_traffic_throughput_metrics1(self, device_ips: List[str]) -> List[dict]:
         throughput_metrics = []
         print("devicesIPSSSSSSSS", type(device_ips), file=sys.stderr)
-        
+        # device_ips = [device_ips]
         for ip in device_ips:
             query = f'''
                 from(bucket: "{self.bucket}")
@@ -952,10 +1011,10 @@ class InfluxDBRepository:
                     print("rowwwwwwwwwwwwww", row, file=sys.stderr)
                     if pd.isna(row['total_bytesRateLast']):
                         print(f"NaN 'total_bytesRateLast' value for IP: {ip} at time: {row['_time']}", file=sys.stderr)
-                        total_bytes_rate_last_gb = 0  
+                        total_bytes_rate_last_gb = 0  # You might want to change this handling based on your needs
                     else:
                         print("elseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", file=sys.stderr)
-                        total_bytes_rate_last_gb = row['total_bytesRateLast'] / (2 ** 30)  
+                        total_bytes_rate_last_gb = row['total_bytesRateLast'] / (2 ** 30)  # Convert to GB
                     throughput_metrics.append({
                         "time": row['_time'],
                         "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2)
@@ -974,9 +1033,9 @@ class InfluxDBRepository:
         aggregate_window, time_format = self.determine_aggregate_window(duration_str)
         print(f"Aggregate window: {aggregate_window}, Time format: {time_format}", file=sys.stderr)
 
-        device_ips = [device_ips]  
+        device_ips = [device_ips]  # Ensure list of device IPs is processed correctly
         for ip in device_ips:
-            
+            # Query for traffic data
             traffic_query = f'''
                 from(bucket: "{self.bucket}")
                 |> range(start: {start_time}, stop: {end_time})
@@ -989,7 +1048,7 @@ class InfluxDBRepository:
             traffic_result = self.query_api1.query_data_frame(traffic_query)
             print(f"Traffic data for IP: {ip}: {traffic_result}", file=sys.stderr)
 
-            
+            # Query for power data
             power_query = f'''
                 from(bucket: "{self.bucket}")
                 |> range(start: {start_time}, stop: {end_time})
@@ -1006,7 +1065,7 @@ class InfluxDBRepository:
                 traffic_result['_time'] = pd.to_datetime(traffic_result['_time']).dt.strftime(time_format)
                 power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
 
-                
+                # Combine results by '_time'
                 combined_result = pd.merge(traffic_result, power_result, on='_time', how='outer').fillna(0)
                 print(f"Combined results for IP: {ip}: {combined_result}", file=sys.stderr)
 
@@ -1016,10 +1075,10 @@ class InfluxDBRepository:
                         if row['total_bytesRateLast'] > 0
                         else 0
                     )
-                    pin = row.get('total_PIn', 0) or 0  
-                    pout = row.get('total_POut', 0) or 0  
+                    pin = row.get('total_PIn', 0) or 0  # Default to 0 if missing or NaN
+                    pout = row.get('total_POut', 0) or 0  # Default to 0 if missing or NaN
 
-                    
+                    # Safeguard against zero or invalid values
                     energy_efficiency = round(pout / pin, 2) if pin > 0 else 0
                     power_efficiency = round(pin / pout, 2) if pout > 0 else 0
                     energy_consumption = (pout / pin) * 100 if pin > 0 else 0
@@ -1042,21 +1101,21 @@ class InfluxDBRepository:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
-        
+        # Define the aggregate window and time format based on the duration string
         if duration_str in ["24 hours"]:
             aggregate_window = "1h"
             time_format = '%Y-%m-%d %H:00'
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             aggregate_window = "1d"
             time_format = '%Y-%m-%d'
-        else:  
+        else:  # For "last 6 months", "last year", "current year"
             aggregate_window = "1m"
             time_format = '%Y-%m'
 
         for ip in device_ips:
             print("Processing Device IP:", ip, file=sys.stderr)
 
-            
+            # Query for power metrics
             power_query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
                 |> range(start: {start_time}, stop: {end_time})
@@ -1067,7 +1126,7 @@ class InfluxDBRepository:
             '''
             power_result = self.query_api1.query_data_frame(power_query)
 
-            
+            # Query for data traffic
             traffic_query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
                 |> range(start: {start_time}, stop: {end_time})
@@ -1078,18 +1137,18 @@ class InfluxDBRepository:
             '''
             traffic_result = self.query_api1.query_data_frame(traffic_query)
 
-            
+            # If both results are empty, skip this device
             if power_result.empty and traffic_result.empty:
                 print(f"No data for IP: {ip}", file=sys.stderr)
                 continue
 
-            
+            # Format timestamps
             if not power_result.empty:
                 power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
             if not traffic_result.empty:
                 traffic_result['_time'] = pd.to_datetime(traffic_result['_time']).dt.strftime(time_format)
 
-            
+            # Merge traffic and power data
             combined_result = pd.merge(power_result, traffic_result, on='_time', how='outer').fillna(0)
 
             for _, row in combined_result.iterrows():
@@ -1107,15 +1166,15 @@ class InfluxDBRepository:
                 total_power_metrics.append({
                     "time": row['_time'],
                     "energy_efficiency": round(energy_consumption, 2),
-                    "total_POut": round(pout / 1000, 2),  
-                    "total_PIn": round(pin / 1000, 2),  
+                    "total_POut": round(pout / 1000, 2),  # Convert to kW
+                    "total_PIn": round(pin / 1000, 2),  # Convert to kW
                     "power_efficiency": round(power_efficiency, 2),
                     "co2_tons": co2_tons,
                     "co2_kgs": round(co2, 2),
                     "data_traffic": round(total_bytes_rate_last_gb, 2)
                 })
 
-        
+        # Convert results to DataFrame and remove duplicates by time
         df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
         return df
 
@@ -1127,7 +1186,7 @@ class InfluxDBRepository:
 
         aggregate_window, time_format = self.determine_aggregate_window(duration_str)
 
-        
+        # Traffic metrics query
         traffic_query = f'''
                from(bucket: "{self.bucket}")
                |> range(start: {start_time}, stop: {end_time})
@@ -1138,9 +1197,9 @@ class InfluxDBRepository:
            '''
         traffic_result = self.query_api1.query_data_frame(traffic_query)
         if traffic_result.empty:
-            return throughput_metrics  
+            return throughput_metrics  # Return empty if no traffic data found
 
-        
+        # Power metrics query
         power_query = f'''
                from(bucket: "{self.bucket}")
                |> range(start: {start_time}, stop: {end_time})
@@ -1151,9 +1210,9 @@ class InfluxDBRepository:
            '''
         power_result = self.query_api1.query_data_frame(power_query)
         if power_result.empty:
-            return throughput_metrics  
+            return throughput_metrics  # Return if no power data found
 
-        
+        # Combine traffic and power results
         traffic_result['_time'] = pd.to_datetime(traffic_result['_time']).dt.strftime(time_format)
         power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
         combined_result = pd.merge(traffic_result, power_result, on='_time', how='outer').fillna(0)
@@ -1161,9 +1220,9 @@ class InfluxDBRepository:
         for _, row in combined_result.iterrows():
             total_bytes_rate_last_gb = self.convert_bytes(row['total_bytesRateLast']) if row[
                                                                                              'total_bytesRateLast'] > 0 else 0
-            pin = row['total_PIn'] if row['total_PIn'] > 0 else 1  
+            pin = row['total_PIn'] if row['total_PIn'] > 0 else 1  # Avoid division by zero
             pout = row['total_POut'] if row['total_POut'] > 0 else 0
-            energy_consumption = pout / pin  
+            energy_consumption = pout / pin  # Calculate energy consumption
 
             throughput_metrics.append({
                 "time": row['_time'],
@@ -1173,9 +1232,9 @@ class InfluxDBRepository:
         return throughput_metrics
 
     def convert_bytes(self, value):
-        if value < 2 ** 30:  
+        if value < 2 ** 30:  # Less than 1 GB
             return value / (2 ** 20)
-        else:  
+        else:  # 1 GB or more
             return value / (2 ** 30)
 
     def get_traffic_throughput_metrics12(self, device_ips: List[str], start_date: datetime, end_date: datetime,
@@ -1210,10 +1269,10 @@ class InfluxDBRepository:
                     print("rowwwwwwwwwwwwww", row, file=sys.stderr)
                     if pd.isna(row['total_bytesRateLast']):
                         print(f"NaN 'total_bytesRateLast' value for IP: {ip} at time: {row['_time']}", file=sys.stderr)
-                        total_bytes_rate_last_gb = 0  
+                        total_bytes_rate_last_gb = 0  # You might want to change this handling based on your needs
                     else:
                         print("elseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", file=sys.stderr)
-                        total_bytes_rate_last_gb = self.convert_bytes(row['total_bytesRateLast'])  
+                        total_bytes_rate_last_gb = self.convert_bytes(row['total_bytesRateLast'])  # Convert to GB
                     throughput_metrics.append({
                         "time": row['_time'],
                         "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2)
@@ -1228,7 +1287,7 @@ class InfluxDBRepository:
             return "1h", '%Y-%m-%d %H:00'
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             return "1d", '%Y-%m-%d'
-        else:  
+        else:  # For "last 6 months", "last year", "current year"
             return "1m", '%Y-%m'
 
     def handle_missing_data(self, row, field_name: str) -> float:
@@ -1267,11 +1326,11 @@ class InfluxDBRepository:
         result = self.query_api1.query_data_frame(query)
         print("RESULTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT", result, file=sys.stderr)
         if not result.empty:
-            
-            total_pin_sum = 12204  
-            total_power_kwh = 86  
-            return total_power_kwh, total_pin_sum  
-        return 0.0, 0  
+            # Assuming _value is in Watts and you wish to sum up for total power consumption
+            total_pin_sum = 12204  # Sum up all values if there are multiple
+            total_power_kwh = 86  # Convert to kWh assuming values are in Watts
+            return total_power_kwh, total_pin_sum  # Return the sum directly
+        return 0.0, 0  # Return both as 0 if no results
 
     def get_traffic_throughput_for_ip(self, ip_address: str) -> float:
         query = f'''
@@ -1284,7 +1343,7 @@ class InfluxDBRepository:
         result = self.query_api1.query_data_frame(query)
         if not result.empty:
             total_bytes = result['_value'].sum()
-            total_gigabytes = total_bytes / (1024 ** 3)  
+            total_gigabytes = total_bytes / (1024 ** 3)  # Convert bytes to Gigabytes
             return total_gigabytes
         return 0.0
 
@@ -1343,7 +1402,7 @@ class InfluxDBRepository:
             result_pin['time'] = pd.to_datetime(result_pin['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
             result_pout['time'] = pd.to_datetime(result_pout['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
 
-            
+            # Merge the dataframes on time column
             merged_df = pd.merge(result_pin, result_pout, on='time', suffixes=('_pin', '_pout'))
 
             for index, row in merged_df.iterrows():
@@ -1373,7 +1432,7 @@ class InfluxDBRepository:
             return []
         result['time'] = pd.to_datetime(result['_time']).dt.strftime('%Y-%m-%d %H:%M:%S')
         hourly_data = [{"time": row['time'], "traffic_throughput": row['_value'] / (1024 ** 3)} for index, row in
-                       result.iterrows()]  
+                       result.iterrows()]  # Convert bytes to Gigabytes
         return hourly_data
 
     def calculate_start_end_dates(self, duration_str: str) -> (datetime, datetime):
@@ -1388,11 +1447,11 @@ class InfluxDBRepository:
             start_date = (today.replace(day=1, month=1) - timedelta(days=365)).replace(day=1)
             end_date = start_date.replace(month=12, day=31)
         elif duration_str == "Current Year":
-            start_date = today.replace(month=1, day=1)  
-            end_date = today  
+            start_date = today.replace(month=1, day=1)  # First day of the current year
+            end_date = today  # Today's date
         elif duration_str == "Current Month":
             start_date = today.replace(day=1)
-            end_date = today  
+            end_date = today  # Adjusted to set the end date to today's date
         elif duration_str == "Last Month":
             start_date = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
             end_date = (today.replace(day=1) - timedelta(days=1))
@@ -1419,11 +1478,11 @@ class InfluxDBRepository:
         time_str = exact_time.strftime('%Y-%m-%d')
         year_month_str = exact_time.strftime('%Y-%m')
         day_str = exact_time.strftime('%d')
-        
-        if day_str != '01':  
+        # Determine the granularity based on input format
+        if day_str != '01':  # implies format included day
             start_time = f"{time_str}T00:00:00Z"
             end_time = f"{time_str}T23:59:59Z"
-        else:  
+        else:  # month or year-month format
             start_time = f"{year_month_str}-01T00:00:00Z"
             end_time = f"{year_month_str}-31T23:59:59Z"
 
@@ -1462,7 +1521,7 @@ class InfluxDBRepository:
     def calculate_metrics_for_device_at_time1(self, device_ips: List[str], exact_time: datetime) -> List[dict]:
         filtered_metrics = []
 
-        
+        # Expanding the query range to 1 hour before and after the exact timestamp
         start_time = (exact_time - timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
         stop_time = (exact_time + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
 
@@ -1481,7 +1540,7 @@ class InfluxDBRepository:
                 for _, row in result.iterrows():
                     time_key = row['_time'].strftime('%Y-%m-%d %H:%M:%S')
                     if exact_time.strftime(
-                            '%Y-%m-%d %H:%M:%S') == time_key:  
+                            '%Y-%m-%d %H:%M:%S') == time_key:  # Ensuring it matches the exact time requested
                         power_metrics = {
                             'total_PIn': row.get('total_PIn', 0),
                             'total_POut': row.get('total_POut', 0)
@@ -1496,7 +1555,7 @@ class InfluxDBRepository:
                             "current_power": power_metrics['total_PIn']
                         }
                         filtered_metrics.append(metric)
-                        break  
+                        break  # Stops after adding the metric for the exact time
 
         return filtered_metrics
 
@@ -1566,14 +1625,14 @@ class InfluxDBRepository:
         try:
             print("reachedddd dummy data", exact_time, granularity, file=sys.stderr)
             dummy_metrics = []
-            base_power_in = random.uniform(10.00, 12.00) * 1000  
+            base_power_in = random.uniform(10.00, 12.00) * 1000  # scaling up for kWh
             base_power_out = random.uniform(8.00, 11.00) * 1000
 
             if granularity == 'hourly':
                 periods = 1
             elif granularity == 'daily':
                 periods = 24
-            else:  
+            else:  # 'monthly'
                 periods = (exact_time.replace(month=exact_time.month % 12 + 1, day=1) - timedelta(days=1)).day * 24
 
             for i in range(periods):
@@ -1612,7 +1671,7 @@ class InfluxDBRepository:
             'monthly': (exact_time.replace(month=exact_time.month % 12 + 1, day=1) - timedelta(days=1)).day * 24
         }
 
-        period_count = periods.get(granularity, 24)  
+        period_count = periods.get(granularity, 24)  # Default to daily if granularity key is not found
         for i in range(period_count):
             time_step = exact_time + timedelta(hours=i)
             dummy_metrics.append({
@@ -1620,7 +1679,7 @@ class InfluxDBRepository:
                 "time": time_step.strftime('%Y-%m-%d %H:%M:%S'),
                 "PE": round(random.uniform(84.00, 90.00), 2),
                 "PUE": round(random.uniform(1.0, 1.2), 2),
-                "current_power": round(random.uniform(12200, 12300), 2),  
+                "current_power": round(random.uniform(12200, 12300), 2),  # Random current power in Watts
                 "energy_consumption": random.uniform(10.00, 12.00),
                 "total_POut": random.uniform(8000, 11000),
                 "average_energy_consumed": random.uniform(1.00, 2.00),
@@ -1632,79 +1691,79 @@ class InfluxDBRepository:
         parsed_metrics = []
         for index, row in result.iterrows():
             pin = row.get('total_PIn', 0)
-            pout = row.get('total_POut', 1)  
-            current_power = ((pin / pout) - 1) * 100 if pout != 0 else 0  
+            pout = row.get('total_POut', 1)  # Ensure pout isn't zero to avoid division by zero
+            current_power = ((pin / pout) - 1) * 100 if pout != 0 else 0  # Calculate current power
 
-            
-            eer = pout / max(pin, 1)  
+            # Calculate EER as total_POut / total_PIn
+            eer = pout / max(pin, 1)  # Avoid division by zero
 
             metric = {
                 "ip": row.get("ApicController_IP", "unknown_ip"),
-                "time": row['_time'].strftime('%Y-%m-%d %H:%M:%S'),  
-                "PE": row.get('total_POut', 0) / max(pin, 1) * 100,  
-                "PUE": pin * 1.2 / max(pin, 1),  
-                "current_power": round(current_power, 2),  
-                "energy_consumption": pin / 1000,  
-                "total_POut": pout / 1000,  
-                "average_energy_consumed": pin / max(pout, 1),  
-                "power_efficiency": pout / max(pin, 1) * 100,  
-                "eer": round(eer, 2)  
+                "time": row['_time'].strftime('%Y-%m-%d %H:%M:%S'),  # Nearest or exact time
+                "PE": row.get('total_POut', 0) / max(pin, 1) * 100,  # Power efficiency
+                "PUE": pin * 1.2 / max(pin, 1),  # Power Usage Effectiveness
+                "current_power": round(current_power, 2),  # Rounded for better display
+                "energy_consumption": pin / 1000,  # Energy consumption in kW
+                "total_POut": pout / 1000,  # Total power output in kW
+                "average_energy_consumed": pin / max(pout, 1),  # Average energy consumed
+                "power_efficiency": pout / max(pin, 1) * 100,  # Power efficiency percentage
+                "eer": round(eer, 2)  # EER (Energy Efficiency Ratio)
             }
             parsed_metrics.append(metric)
             print(f"Parsing metric: {metric}", file=sys.stderr)
         return parsed_metrics
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    # def calculate_metrics_for_device_at_timeu(self, device_ips: List[str], exact_time: datetime, granularity: str) -> \
+    #         List[dict]:
+    #     start_time, end_time = self.determine_time_range(exact_time, granularity)
+    #     filtered_metrics = []
+    #
+    #     aggregate_window = "1h"  # Default to 1 hour
+    #     if granularity == 'daily':
+    #         aggregate_window = "1h"  # Hourly aggregates for daily
+    #     elif granularity == 'monthly':
+    #         aggregate_window = "1d"  # Daily aggregates for monthly
+    #
+    #     print(f"Querying from {start_time} to {end_time} with window {aggregate_window}")  # Debug print for query setup
+    #
+    #     for ip in device_ips:
+    #         query = f'''
+    #                        from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #                        |> range(start: {start_time}, stop: {end_time})
+    #                        |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+    #                        |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+    #                        |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+    #                        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #                    '''
+    #         result = self.query_api1.query_data_frame(query)
+    #
+    #         if result.empty:
+    #             print(f"No data found for {ip}, generating dummy data.")  # Debug print when no data
+    #             dummy_data = self.generate_dummy(exact_time, granularity, ip)
+    #             filtered_metrics.extend(dummy_data)
+    #         else:
+    #             print(f"Data retrieved for {ip}, processing {len(result)} entries.")  # Debug print for retrieved data
+    #             parsed_metrics = self.parse_result12(result)
+    #             for metric in parsed_metrics:
+    #                 metric["ip"] = ip  # Ensuring IP is included for device details merging
+    #             filtered_metrics.extend(parsed_metrics)
+    #
+    #     print(f"Total metrics processed: {len(filtered_metrics)}")  # Debug print for total processed metrics
+    #     return filtered_metrics
 
     def calculate_metrics_for_device_at_timeu(self, device_ips: List[str], exact_time: datetime, granularity: str) -> \
             List[dict]:
         start_time, end_time = self.determine_time_range(exact_time, granularity)
         filtered_metrics = []
 
-        aggregate_window = "1h"  
+        aggregate_window = "1h"  # Default to 1 hour
         if granularity == 'daily':
-            aggregate_window = "1h"  
+            aggregate_window = "1h"  # Hourly aggregates for daily
         elif granularity == 'monthly':
-            aggregate_window = "1d"  
+            aggregate_window = "1d"  # Daily aggregates for monthly
 
         print(f"Querying from {start_time} to {end_time} with window {aggregate_window}",
-              file=sys.stderr)  
+              file=sys.stderr)  # Debug print for query setup
 
         for ip in device_ips:
             query = f'''
@@ -1719,31 +1778,31 @@ class InfluxDBRepository:
             print("Result:", result, file=sys.stderr)
 
             if result.empty:
-                print(f"No data found for {ip}. Skipping data generation.", file=sys.stderr)  
+                print(f"No data found for {ip}. Skipping data generation.", file=sys.stderr)  # Debug print when no data
             else:
                 print(f"Data retrieved for {ip}, processing {len(result)} entries.",
-                      file=sys.stderr)  
+                      file=sys.stderr)  # Debug print for retrieved data
                 parsed_metrics = self.parse_result12(result)
                 for metric in parsed_metrics:
-                    metric["ip"] = ip  
+                    metric["ip"] = ip  # Ensure IP is included for device details merging
                 filtered_metrics.extend(parsed_metrics)
 
         print(f"Total metrics processed: {len(filtered_metrics)}",
-              file=sys.stderr)  
+              file=sys.stderr)  # Debug print for total processed metrics
         return filtered_metrics
 
     def determine_time_range(self, exact_time, granularity):
         """ Adjust time range based on the granularity. """
         if granularity == 'hourly':
-            
+            # For hourly data, range is the exact hour
             start_time = exact_time.strftime('%Y-%m-%dT%H:00:00Z')
             end_time = (exact_time + timedelta(hours=1)).strftime('%Y-%m-%dT%H:00:00Z')
         elif granularity == 'daily':
-            
+            # For daily data, range spans the whole day
             start_time = exact_time.strftime('%Y-%m-%d') + "T00:00:00Z"
             end_time = exact_time.strftime('%Y-%m-%d') + "T23:59:59Z"
-        else:  
-            
+        else:  # 'monthly'
+            # For monthly data, range spans the whole month
             start_time = exact_time.strftime('%Y-%m') + "-01T00:00:00Z"
             last_day = (exact_time + timedelta(days=32)).replace(day=1) - timedelta(days=1)
             end_time = last_day.strftime('%Y-%m-%d') + "T23:59:59Z"
@@ -1753,12 +1812,12 @@ class InfluxDBRepository:
         dummy_metrics = []
         periods = {
             'hourly': 1,
-            'daily': 24,  
+            'daily': 24,  # 24 hours for daily
             'monthly': (exact_time.replace(month=exact_time.month % 12 + 1, day=1) - timedelta(days=1)).day
-            
+            # days in the month
         }
 
-        period_count = periods.get(granularity, 24)  
+        period_count = periods.get(granularity, 24)  # Default to daily if granularity key is not found
         for i in range(period_count):
             time_step = exact_time + timedelta(hours=i) if granularity != 'monthly' else exact_time + timedelta(days=i)
             dummy_metrics.append({
@@ -1773,7 +1832,7 @@ class InfluxDBRepository:
                 "power_efficiency": random.uniform(84.00, 90.00)
             })
         print(
-            f"Generated {len(dummy_metrics)} dummy metrics for {ip} on granularity {granularity}")  
+            f"Generated {len(dummy_metrics)} dummy metrics for {ip} on granularity {granularity}")  # Debug print for generated dummy data
         return dummy_metrics
 
     def get_24hsite_power(self, apic_ips: List[str], site_id: int) -> List[dict]:
@@ -1804,7 +1863,7 @@ class InfluxDBRepository:
                 for table in result:
                     for record in table.records:
                         print(
-                            f"Debug: Record - {record.get_field()}={record.get_value()}")  
+                            f"Debug: Record - {record.get_field()}={record.get_value()}")  # More detailed debug output
                         if record.get_field() == "total_POut":
                             drawnAvg = record.get_value()
                         elif record.get_field() == "total_PIn":
@@ -1897,7 +1956,7 @@ class InfluxDBRepository:
                         "power_utilization": round(power_utilization, 2) if power_utilization is not None else 0
                     })
 
-        
+        # Aggregating data as per hour
         aggregated_data = {}
         now = datetime.utcnow()
 
@@ -1908,7 +1967,7 @@ class InfluxDBRepository:
                 "count": 0
             }
 
-        
+        # Aggregate power utilization for each hour as provided in hourly_data
         for data in hourly_data:
             hour = data["hour"]
             power_utilization = data["power_utilization"]
@@ -1917,13 +1976,13 @@ class InfluxDBRepository:
                 aggregated_data[hour]["total_power_utilization"] += power_utilization
                 aggregated_data[hour]["count"] += 1
 
-        
+        # Calculate average power utilization for each hour
         final_data = []
         for hour, values in aggregated_data.items():
             if values["count"] > 0:
                 avg_power_utilization = values["total_power_utilization"] / values["count"]
             else:
-                
+                # Assign random value if no data exists for the hour
                 avg_power_utilization = round(random.uniform(86, 261), 2)
 
             final_data.append({
@@ -1932,7 +1991,7 @@ class InfluxDBRepository:
                 "power_utilization": round(avg_power_utilization, 2)
             })
 
-        
+        # Ensure the final data is sorted by hour in descending order
         final_data.sort(key=lambda x: x["hour"], reverse=True)
 
         return final_data
@@ -1972,7 +2031,7 @@ class InfluxDBRepository:
         power_required_data = []
         start_range = "-2h"
         for ip in device_ips:
-            
+            # Query for Power Input and Output
             power_in_query = self.build_query(ip, "total_PIn", start_range)
             power_out_query = self.build_query(ip, "total_POut", start_range)
             total_power_query = self.build_query(ip, "total_Power", start_range)
@@ -2020,7 +2079,7 @@ class InfluxDBRepository:
             ip = device['ip_address']
             device_name = device['device_name']
 
-            
+            # Use some static data for demonstration
             annual_electricity_usage_mwh = 10000
             emission_factor_kg_per_mwh = 100
             annual_co2_emissions_kg = annual_electricity_usage_mwh * emission_factor_kg_per_mwh
@@ -2057,91 +2116,91 @@ class InfluxDBRepository:
 
         return total_pin
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    # def get_consumption_percentages(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+    #                                 duration_str: str) -> dict:
+    #     start_time = start_date.isoformat() + 'Z'
+    #     end_time = end_date.isoformat() + 'Z'
+    #     aggregate_window = "1h" if duration_str == "24 hours" else "1d"
+    #
+    #     fields = [
+    #         "nuclear_consumption", "geothermal_consumption", "biomass_consumption",
+    #         "coal_consumption", "wind_consumption", "solar_consumption",
+    #         "hydro_consumption", "gas_consumption", "oil_consumption",
+    #         "unknown_consumption", "battery_discharge_consumption"
+    #     ]
+    #     consumption_totals = {field: 0 for field in fields}
+    #
+    #     for ip in device_ips:
+    #         for field in fields:
+    #             query = f'''
+    #                 from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #                 |> range(start: {start_time}, stop: {end_time})
+    #                 |> filter(fn: (r) => r["_measurement"] == "electricitymap_power" and r["ApicController_IP"] == "{ip}")
+    #                 |> filter(fn: (r) => r["_field"] == "{field}")
+    #                 |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+    #             '''
+    #             result = self.query_api1.query_data_frame(query)
+    #             if not result.empty:
+    #                 consumption_totals[field] += result['_value'].sum()
+    #
+    #     # Calculate total power consumption
+    #     powerConsumptionTotal = sum(consumption_totals.values())
+    #
+    #     # Calculate percentages
+    #     percentages = {field: round((value / powerConsumptionTotal) * 100, 2) if powerConsumptionTotal > 0 else 0 for
+    #                    field, value in consumption_totals.items()}
+    #
+    #     return percentages
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    # def get_consumption_percentages(self, start_date: datetime, end_date: datetime, duration_str: str) -> dict:
+    #     start_time = start_date.isoformat() + 'Z'
+    #     end_time = end_date.isoformat() + 'Z'
+    #     aggregate_window = "1h" if duration_str == "24 hours" else "1d"
+    #     zone = "AE"
+    #
+    #     query = f'''
+    #         from(bucket: "Dcs_db")
+    #         |> range(start: {start_time}, stop: {end_time})
+    #         |> filter(fn: (r) => r["_measurement"] == "electricitymap_power" and r["zone"] == "{zone}")
+    #         |> filter(fn: (r) =>
+    #             r["_field"] == "nuclear_consumption" or
+    #             r["_field"] == "geothermal_consumption" or
+    #             r["_field"] == "biomass_consumption" or
+    #             r["_field"] == "coal_consumption" or
+    #             r["_field"] == "wind_consumption" or
+    #             r["_field"] == "solar_consumption" or
+    #             r["_field"] == "hydro_consumption" or
+    #             r["_field"] == "gas_consumption" or
+    #             r["_field"] == "oil_consumption" or
+    #             r["_field"] == "unknown_consumption" or
+    #             r["_field"] == "battery_discharge_consumption")
+    #         |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+    #         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #     '''
+    #     result = self.query_api1.query_data_frame(query)
+    #     print("RESULT", result, file=sys.stderr)
+    #
+    #     # Initialize the consumption totals dictionary with specific fields.
+    #     consumption_totals = {
+    #         "nuclear": 0, "geothermal": 0, "biomass": 0, "coal": 0, "wind": 0,
+    #         "solar": 0, "hydro": 0, "gas": 0, "oil": 0, "unknown": 0, "battery_discharge": 0
+    #     }
+    #
+    #     if not result.empty:
+    #         # Extract the sums from the query result for each field.
+    #         for field in consumption_totals.keys():
+    #             field_name = f"{field}_consumption"
+    #             if field_name in result.columns:
+    #                 consumption_totals[field] = result[field_name].sum()
+    #
+    #     # Calculate the total power consumption from the retrieved data.
+    #     powerConsumptionTotal = sum(consumption_totals.values())
+    #
+    #     # Compute the percentage of total power consumption for each field.
+    #     percentages = {field: round((value / powerConsumptionTotal) * 100, 2) if powerConsumptionTotal > 0 else 0
+    #                    for field, value in consumption_totals.items()}
+    #
+    #     return percentages
 
     def get_consumption_percentages(self, start_date: datetime, end_date: datetime, duration_str: str) -> dict:
         start_time = start_date.isoformat() + 'Z'
@@ -2171,23 +2230,23 @@ class InfluxDBRepository:
         result = self.query_api1.query_data_frame(query)
         print("RESULT", result, file=sys.stderr)
 
-        
+        # Initialize the consumption totals dictionary with specific fields.
         consumption_totals = {
             "nuclear": 0, "geothermal": 0, "biomass": 0, "coal": 0, "wind": 0,
             "solar": 0, "hydro": 0, "gas": 0, "oil": 0, "unknown": 0, "battery_discharge": 0
         }
 
         if not result.empty:
-            
+            # Extract the sums from the query result for each field.
             for field in consumption_totals.keys():
                 field_name = f"{field}_consumption"
                 if field_name in result.columns:
                     consumption_totals[field] = result[field_name].sum()
 
-        
+        # Calculate the total power consumption from the retrieved data.
         powerConsumptionTotal = sum(consumption_totals.values())
 
-        
+        # Compute the percentage of total power consumption for each field.
         percentages = {field: math.floor((value / powerConsumptionTotal) * 100) if powerConsumptionTotal > 0 else 0
                        for field, value in consumption_totals.items()}
 
@@ -2196,20 +2255,20 @@ class InfluxDBRepository:
     def get_carbon_intensity(self, start_date: datetime, end_date: datetime, duration_str: str) -> float:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
-        
+        # Determine the appropriate aggregate window based on the duration
         if duration_str == "24 hours":
             aggregate_window = "1h"
-            aggregation_function = "max()"  
+            aggregation_function = "max()"  # For 24 hours, take the maximum value
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             aggregate_window = "1d"
-            aggregation_function = "sum()"  
+            aggregation_function = "sum()"  # Sum for longer durations
         else:
             aggregate_window = "1m"
             aggregation_function = "sum()"
 
         zone = "AE"
 
-        
+        # InfluxDB query to fetch the carbon intensity
         query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
                 |> range(start: {start_time}, stop: {end_time})
@@ -2316,14 +2375,14 @@ class InfluxDBRepository:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
-        
+        # Define the aggregate window and time format based on the duration string
         if duration_str in ["24 hours"]:
             aggregate_window = "1h"
             time_format = '%Y-%m-%d %H:00'
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             aggregate_window = "1d"
             time_format = '%Y-%m-%d'
-        else:  
+        else:  # For "last 6 months", "last year", "current year"
             aggregate_window = "1m"
             time_format = '%Y-%m'
 
@@ -2388,7 +2447,7 @@ class InfluxDBRepository:
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             aggregate_window = "1d"
             time_format = '%Y-%m-%d'
-        else:  
+        else:  # For "last 6 months", "last year", "current year"
             aggregate_window = "1m"
             time_format = '%Y-%m'
 
@@ -2404,7 +2463,7 @@ class InfluxDBRepository:
         result = self.query_api1.query_data_frame(query)
 
         if result.empty:
-            return {"time": f"{start_date} - {end_date}"}  
+            return {"time": f"{start_date} - {end_date}"}  # Ensure 'time' key is always present
 
         pin_avg = result['total_PIn'].mean()
         pout_avg = result['total_POut'].mean()
@@ -2428,14 +2487,14 @@ class InfluxDBRepository:
 
         print(f"Start Time: {start_time}, End Time: {end_time}", file=sys.stderr)
 
-        
+        # Define the aggregate window and time format based on the duration string
         if duration_str in ["24 hours"]:
             aggregate_window = "1h"
             time_format = '%Y-%m-%d %H:00'
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             aggregate_window = "1d"
             time_format = '%Y-%m-%d'
-        else:  
+        else:  # For "last 6 months", "last year", "current year"
             aggregate_window = "1m"
             time_format = '%Y-%m'
 
@@ -2537,7 +2596,7 @@ class InfluxDBRepository:
         }
 
     def determine_time_range12(self, exact_time: datetime, granularity: str):
-        
+        # Implement logic to determine the time range based on granularity
         if granularity == 'hourly':
             start_time = exact_time.replace(minute=0, second=0, microsecond=0)
             end_time = start_time + timedelta(hours=1)
@@ -2553,7 +2612,7 @@ class InfluxDBRepository:
         return start_time, end_time
 
     def convert_granularity(self, granularity: str) -> str:
-        
+        # Convert the granularity to the appropriate InfluxDB time window
         if granularity == 'hourly':
             return '1h'
         elif granularity == 'daily':
@@ -2572,7 +2631,7 @@ class InfluxDBRepository:
             aggregate_window = "1h"
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             aggregate_window = "1d"
-        else:  
+        else:  # For "last 6 months", "last year", "current year"
             aggregate_window = "1m"
 
         total_pin = 0
@@ -2600,7 +2659,7 @@ class InfluxDBRepository:
             aggregate_window = "1h"
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             aggregate_window = "1d"
-        else:  
+        else:  # For "last 6 months", "last year", "current year"
             aggregate_window = "1m"
 
         datatraffic= 0
@@ -2625,7 +2684,7 @@ class InfluxDBRepository:
         end_time = end_date.isoformat() + 'Z'
 
         aggregate_window = "1d"
-        time_format = '%A'  
+        time_format = '%A'  # Day of the week (e.g., Monday)
 
         for ip in device_ips:
             query = f'''
@@ -2657,7 +2716,7 @@ class InfluxDBRepository:
                         power_efficiency = ((pin / pout - 1) * 100) if pout > 0 else 0
 
                         total_power_metrics.append({
-                            "day": row['_time'],  
+                            "day": row['_time'],  # Day of the week
                             "energy_efficiency": round(energy_consumption, 2),
                             "total_POut": round(pout / 1000, 2) if pout is not None else None,
                             "total_PIn": round(pin, 2),
@@ -2666,97 +2725,97 @@ class InfluxDBRepository:
 
         df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='day')
 
-        
+        # Fill NaN values with 0.0 to make sure they are JSON serializable
         df = df.fillna(0.0)
 
-        
+        # Get the current day of the week
         today = datetime.now().strftime('%A')
 
-        
+        # List of days in a week
         all_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
-        
+        # Find the index of today in the list
         today_index = all_days.index(today)
 
-        
+        # Create the custom order starting from today and going backward
         days_order = all_days[today_index:] + all_days[:today_index]
 
-        
+        # Convert the 'day' column to a categorical type with the custom ordering
         df['day'] = pd.Categorical(df['day'], categories=days_order, ordered=True)
 
-        
+        # Sort the DataFrame by the custom day order
         df = df.sort_values('day')
 
-        
-        
+        # Reverse the order of the DataFrame
+        # df = df.iloc[::-1]
 
-        print("Final DataFrame (reversed order):", df)  
+        print("Final DataFrame (reversed order):", df)  # Debug print to check the final output
 
         return df.to_dict(orient='records')
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    # def get_energy_metrics_for_last_24_hours(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> \
+    # List[dict]:
+    #     total_power_metrics = []
+    #     start_time = start_date.isoformat() + 'Z'
+    #     end_time = end_date.isoformat() + 'Z'
+    #
+    #     aggregate_window = "1h"
+    #     time_format = '%H'  # Hour of the day (e.g., 00, 01, 02, ..., 23)
+    #
+    #     for ip in device_ips:
+    #         query = f'''
+    #             from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #             |> range(start: {start_time}, stop: {end_time})
+    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+    #             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+    #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #         '''
+    #
+    #         try:
+    #             result = self.query_api1.query_data_frame(query)
+    #         except Exception as e:
+    #             print(f"Error executing query for IP {ip}: {e}")
+    #             continue
+    #
+    #         if not result.empty:
+    #             result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+    #             numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+    #             if '_time' in result.columns and numeric_cols:
+    #                 grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
+    #
+    #                 for _, row in grouped.iterrows():
+    #                     pin = row['total_PIn'] if 'total_PIn' in row and not pd.isna(row['total_PIn']) else 0
+    #                     pout = row['total_POut'] if 'total_POut' in row and not pd.isna(row['total_POut']) else 0
+    #
+    #                     pin = round(pin, 2)
+    #                     pout = round(pout, 2)
+    #
+    #                     energy_consumption = round(pout / pin, 2) if pin > 0 else 0
+    #                     power_efficiency = round(((pin / pout - 1) * 100), 2) if pout > 0 else 0
+    #
+    #                     total_power_metrics.append({
+    #                         "time": row['_time'],  # Hour of the day
+    #                         "energy_efficiency": energy_consumption,
+    #                         "total_POut": round(pout / 1000, 2) if pout else 0,
+    #                         "total_PIn": round(pin / 1000, 2) if pin else 0,
+    #                         "power_efficiency": power_efficiency
+    #                     })
+    #
+    #     df = pd.DataFrame(total_power_metrics).fillna(0.0)
+    #
+    #     # Ensure rounding after aggregation
+    #     df = df.groupby('time').mean().reset_index()
+    #     df = df.round(2)  # Apply rounding to the entire DataFrame
+    #
+    #     df = df.sort_values('time')
+    #
+    #     if len(df) > 24:
+    #         df = df.head(24)
+    #
+    #     print("Final DataFrame:", df)  # Debug print to check the final output
+    #
+    #     return df.to_dict(orient='records')
 
     def get_energy_metrics_for_last_24_hours(self, device_ips: List[str], start_date: datetime, end_date: datetime) -> \
     List[dict]:
@@ -2765,7 +2824,7 @@ class InfluxDBRepository:
         end_time = end_date.isoformat() + 'Z'
 
         aggregate_window = "1h"
-        time_format = '%H'  
+        time_format = '%H'  # Hour of the day (e.g., 00, 01, 02, ..., 23)
 
         for ip in device_ips:
             query = f'''
@@ -2800,7 +2859,7 @@ class InfluxDBRepository:
                         power_efficiency = round(((pin / pout - 1) * 100), 2) if pout > 0 else 0
 
                         total_power_metrics.append({
-                            "time": row['_time'],  
+                            "time": row['_time'],  # Hour of the day
                             "energy_efficiency": energy_consumption,
                             "total_POut": round(pout / 1000, 2) if pout else 0,
                             "total_PIn": round(pin / 1000, 2) if pin else 0,
@@ -2809,15 +2868,15 @@ class InfluxDBRepository:
 
         df = pd.DataFrame(total_power_metrics).fillna(0.0)
 
-        
+        # Group by time and calculate sum for total_PIn and total_POut
         grouped_df = df.groupby('time').agg({
-            'total_PIn': 'sum',  
+            'total_PIn': 'sum',  # Sum for all devices in the same hour
             'total_POut': 'sum',
-            'energy_efficiency': 'mean',  
-            'power_efficiency': 'mean'  
+            'energy_efficiency': 'mean',  # Keep mean for energy efficiency
+            'power_efficiency': 'mean'  # Keep mean for power efficiency
         }).reset_index()
 
-        
+        # Ensure rounding after aggregation
         grouped_df = grouped_df.round(2)
 
         grouped_df = grouped_df.sort_values('time')
@@ -2825,7 +2884,7 @@ class InfluxDBRepository:
         if len(grouped_df) > 24:
             grouped_df = grouped_df.head(24)
 
-        print("Final DataFrame with Total Values:", grouped_df)  
+        print("Final DataFrame with Total Values:", grouped_df)  # Debug print to check the final output
 
         return grouped_df.to_dict(orient='records')
 
@@ -2833,7 +2892,7 @@ class InfluxDBRepository:
                              duration_str: str) -> float:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
-        aggregate_window = "1d"  
+        aggregate_window = "1d"  # For monthly or larger data we use daily aggregates
 
         total_pout = 0
         for ip in device_ips:
@@ -2854,11 +2913,11 @@ class InfluxDBRepository:
                                  duration_str: str) -> float:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
-        aggregate_window = "1m"  
+        aggregate_window = "1m"  # Monthly aggregation
 
         total_pout = 0
         for ip in device_ips:
-            
+            # Correctly format the query with proper escaping of string values
             query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
                 |> range(start: {start_time}, stop: {end_time})
@@ -2868,17 +2927,17 @@ class InfluxDBRepository:
                 |> yield(name: "total")
             '''
 
-            
+            # Debug: log the query for inspection
             print(f"Query for IP {ip}: {query}")
 
-            
+            # Execute the query
             try:
                 result = self.query_api1.query_data_frame(query)
                 if not result.empty:
-                    
+                    # Sum only numeric values
                     total_pout += result['_value'].sum()
             except Exception as e:
-                
+                # Log the exception for debugging
                 print(f"Error executing query for IP {ip}: {e}")
 
         return total_pout
@@ -2945,17 +3004,25 @@ class InfluxDBRepository:
         return total_power_metrics
 
     def get_aggregate_window(self, duration_str: str) -> str:
+        """
+        Determines the aggregation window based on the duration string.
+        For example, "24 hours" -> 1-hour windows, "7 Days" -> 1-day windows.
+        """
         if duration_str in ["24 hours"]:
-            return "1h"  
+            return "1h"  # Aggregate by 1 hour
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
-            return "1d"  
-        else:  
-            return "1m"  
+            return "1d"  # Aggregate by 1 day
+        else:  # For larger periods like "Last 6 Months", "Last Year", etc.
+            return "1m"  # Aggregate by 1 month
 
     def get_time_format(self, duration_str: str) -> str:
+        """
+        Determines the time format based on the duration string.
+        This is used to format the time in a user-friendly way.
+        """
         if duration_str in ["24 hours"]:
-            return '%Y-%m-%d %H:00'  
+            return '%Y-%m-%d %H:00'  # Format time for hourly aggregation
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
-            return '%Y-%m-%d'  
-        else:  
-            return '%Y-%m'  
+            return '%Y-%m-%d'  # Format time for daily aggregation
+        else:  # For larger periods like "Last 6 Months", "Last Year", etc.
+            return '%Y-%m'  # Format time for monthly aggregation
