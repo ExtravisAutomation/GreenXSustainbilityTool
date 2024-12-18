@@ -849,24 +849,24 @@ class InfluxDBRepository:
             print("IPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP", ip, file=sys.stderr)
             query = f'''
                 from(bucket: "{self.bucket}")
-                |> range(start: {start_time}, stop: {end_time})
-                |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-                |> sort(columns: ["_value"], desc: true)
-                |> limit(n:5)
+                    |> range(start: {start_time}, stop: {end_time})
+                    |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                    |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+                    |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                    |> sort(columns: ["_value"], desc: true)
+                                
             '''
             result = self.query_api1.query_data_frame(query)
             print(f"Query result for IPPPPPPPPPPPP: {ip} is: {result}", file=sys.stderr)
 
             if not result.empty:
                 total_power = result['_value'].sum()
-                average_power = total_power / len(result) if len(result) > 0 else 0
+                average_power = result['_value'].mean()
                 cost_of_power = self.calculate_cost_of_power(total_power)
                 average_powerkw = average_power / 1000
                 top_devices_power.append({
                     'ip': ip,
-                    'total_PIn': total_power,
+                    'total_PIn': total_power/1000,
                     'average_PIn': average_powerkw,
                     'cost_of_power': cost_of_power,
                 })
@@ -877,7 +877,7 @@ class InfluxDBRepository:
     def calculate_cost_of_power(self, power_in_watts):
 
         power_in_kwh = power_in_watts / 1000
-        rate_per_kwh = 0.405
+        rate_per_kwh = 0.24
         cost = power_in_kwh * rate_per_kwh
         return cost
 
