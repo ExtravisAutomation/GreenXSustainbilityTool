@@ -1934,41 +1934,40 @@ class SiteService:
 
 
             # Fetch data from InfluxDB
-        dataframes = self.influxdb_repository.fetch_influx_datass(data.ip_address)
-        # print(dataframes,"dataframes")
-        # # Calculate PUE and EER
-        # combined_data = self.influxdb_repository.calculate_ratios(dataframes)
-        # print(combined_data,"combined_data")
-        # if not combined_data.empty:
-        #     predictions = {}
-        #     for column in ["total_PIn", "total_POut", "PUE", "EER"]:
-        #         if column in combined_data.columns and not combined_data[column].isnull().all():
-        #             predictions[column] = self.influxdb_repository.predict_next_month(combined_data, column)
-        #
-        #     # Add predicted values as the next month's data
-        #     # Add predicted values as the next month's data
-        #     predicted_row = {"time": pd.Timestamp.now().replace(day=1) + pd.DateOffset(months=1)}
-        #     for key, value in predictions.items():
-        #         predicted_row[key] = value
-        #
-        #     # Validate predicted row before appending
-        #     if any(value is None or pd.isna(value) for value in predicted_row.values()):
-        #         print("Skipping invalid predicted row:", predicted_row)
-        #     else:
-        #         combined_data = pd.concat([combined_data, pd.DataFrame([predicted_row])], ignore_index=True)
-        #
-        #     # Remove rows with invalid timestamps
-        #     combined_data = combined_data[combined_data["time"].notna()]
-        #
-        #     # Drop rows where all numerical columns are zero
-        #     numerical_columns = ["total_PIn", "total_POut", "PUE", "EER"]
-        #     combined_data = combined_data[(combined_data[numerical_columns] != 0).any(axis=1)]
-        #
-        #     # Replace invalid values with zero
-        #     combined_data = combined_data.replace([float("inf"), -float("inf"), float("nan")], 0)
-        #     combined_data = combined_data.fillna(0)
-        #     final_response = self.influxdb_repository.prepare_response_ai(combined_data)
+        dataframes = self.influxdb_repository.influx_resp(data.ip_address)
+        print(dataframes,"dataframes")
+        # Calculate PUE and EER
+        combined_data = self.influxdb_repository.calculate_ratios(dataframes)
+        print(combined_data,"combined_data")
+        if not combined_data.empty:
+            predictions = {}
+            for column in ["total_PIn", "total_POut", "PUE", "EER"]:
+                if column in combined_data.columns and not combined_data[column].isnull().all():
+                    predictions[column] = self.influxdb_repository.predict_next_month(combined_data, column)
 
+            # Add predicted values as the next month's data
+            # Add predicted values as the next month's data
+            predicted_row = {"time": pd.Timestamp.now().replace(day=1) + pd.DateOffset(months=1)}
+            for key, value in predictions.items():
+                predicted_row[key] = value
+
+            # Validate predicted row before appending
+            if any(value is None or pd.isna(value) for value in predicted_row.values()):
+                print("Skipping invalid predicted row:", predicted_row)
+            else:
+                combined_data = pd.concat([combined_data, pd.DataFrame([predicted_row])], ignore_index=True)
+
+            # Remove rows with invalid timestamps
+            combined_data = combined_data[combined_data["time"].notna()]
+
+            # Drop rows where all numerical columns are zero
+            numerical_columns = ["total_PIn", "total_POut", "PUE", "EER"]
+            combined_data = combined_data[(combined_data[numerical_columns] != 0).any(axis=1)]
+
+            # Replace invalid values with zero
+            combined_data = combined_data.replace([float("inf"), -float("inf"), float("nan")], 0)
+            combined_data = combined_data.fillna(0)
+            final_response = self.influxdb_repository.prepare_response_ai(combined_data)
         return data
 
         # else:
