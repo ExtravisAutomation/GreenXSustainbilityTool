@@ -20,7 +20,7 @@ from app.core.config import configs
 from datetime import datetime, timedelta, timezone
 import pandas as pd
 import asyncio
-from prophet import Prophet
+# from prophet import Prophet
 
 class InfluxDBRepository:
     def __init__(self, client: InfluxDBClient, bucket: str, org: str, token: str = None):
@@ -3243,102 +3243,102 @@ class InfluxDBRepository:
   #       # Convert to dictionary format for the response
   #       response = response_data.to_dict(orient="records")
   #
-  #       return response
-def get_ai_data_sss(self, ip_address):
-    query = f'''
-          from(bucket: "Dcs_db")
-            |> range(start: -6mo)
-            |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
-            |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
-            |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-            |> aggregateWindow(every: 1mo, fn: mean, createEmpty: true)
-            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-            |> yield(name: "monthly_aggregated_with_ip")
-      '''
-
-    try:
-        # Execute the query
-        results = self.query_api1.query_data_frame(query)
-
-        # Combine data if results is a list of DataFrames
-        if isinstance(results, list):
-            combined_data = pd.concat(results, ignore_index=True)
-        else:
-            combined_data = results
-
-        # Handle empty DataFrame
-        if combined_data.empty:
-            print("No data returned after query execution.")
-            return pd.DataFrame(columns=["time", "total_PIn", "total_POut", "PUE", "EER"])
-
-        # Rename "_time" to "time" and remove timezone
-        combined_data.rename(columns={"_time": "time"}, inplace=True)
-        combined_data["time"] = pd.to_datetime(combined_data["time"]).dt.tz_localize(None)
-
-        # Generate a complete monthly date range
-        all_months = pd.date_range(
-            start=combined_data["time"].min(),
-            end=combined_data["time"].max(),
-            freq="MS"
-        )
-        combined_data = combined_data.set_index("time").reindex(all_months).reset_index()
-        combined_data.rename(columns={"index": "time"}, inplace=True)
-
-        # Fill missing values
-        combined_data.fillna({"total_PIn": 0, "total_POut": 0}, inplace=True)
-
-        # Calculate ratios
-        combined_data = self.calculate_ratios(combined_data)
-
-        # Predict next month's values
-        predictions = {}
-        for column in ["total_PIn", "total_POut", "PUE", "EER"]:
-            if column in combined_data.columns and not combined_data[column].isnull().all():
-                predictions[column] = self.predict_next_month(combined_data, column)
-
-        # Add predicted values as the next month's data
-        predicted_row = {"time": all_months[-1] + pd.DateOffset(months=1)}
-        for key, value in predictions.items():
-            predicted_row[key] = value
-        combined_data = pd.concat([combined_data, pd.DataFrame([predicted_row])], ignore_index=True)
-
-        # Replace invalid values
-        combined_data.replace([float("inf"), -float("inf"), float("nan")], 0, inplace=True)
-
-        return combined_data
-    except Exception as e:
-        raise RuntimeError(f"Error querying InfluxDB: {e}")
-
-
-def calculate_ratios(self, dataframes):
-    print("Calculating ratios", dataframes)
-
-    if "total_PIn" in dataframes.columns and "total_POut" in dataframes.columns:
-        dataframes["PUE"] = dataframes["total_PIn"] / dataframes["total_POut"]
-        dataframes["EER"] = dataframes["total_POut"] / dataframes["total_PIn"]
-        return dataframes
-
-    print("Missing required columns for ratio calculation")
-    return dataframes
-
-
-def predict_next_month(self, data, column_name):
-    try:
-        df = data.rename(columns={"time": "ds", column_name: "y"}).dropna(subset=["ds", "y"])
-        df["ds"] = df["ds"].dt.tz_localize(None)  # Remove timezone from ds column
-
-        if len(df) < 2:
-            print(f"Not enough data to predict for {column_name}.")
-            return float("nan")
-
-        model = Prophet()
-        model.fit(df)
-        future = model.make_future_dataframe(periods=1, freq='M')
-        forecast = model.predict(future)
-
-        predicted_value = forecast.iloc[-1]["yhat"]
-        print(f"Prediction for {column_name}: {predicted_value:.2f}")
-        return predicted_value
-    except Exception as e:
-        print(f"Error predicting next month for {column_name}: {e}")
-        return float("nan")
+#   #       return response
+# def get_ai_data_sss(self, ip_address):
+#     query = f'''
+#           from(bucket: "Dcs_db")
+#             |> range(start: -6mo)
+#             |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
+#             |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
+#             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+#             |> aggregateWindow(every: 1mo, fn: mean, createEmpty: true)
+#             |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+#             |> yield(name: "monthly_aggregated_with_ip")
+#       '''
+#
+#     try:
+#         # Execute the query
+#         results = self.query_api1.query_data_frame(query)
+#
+#         # Combine data if results is a list of DataFrames
+#         if isinstance(results, list):
+#             combined_data = pd.concat(results, ignore_index=True)
+#         else:
+#             combined_data = results
+#
+#         # Handle empty DataFrame
+#         if combined_data.empty:
+#             print("No data returned after query execution.")
+#             return pd.DataFrame(columns=["time", "total_PIn", "total_POut", "PUE", "EER"])
+#
+#         # Rename "_time" to "time" and remove timezone
+#         combined_data.rename(columns={"_time": "time"}, inplace=True)
+#         combined_data["time"] = pd.to_datetime(combined_data["time"]).dt.tz_localize(None)
+#
+#         # Generate a complete monthly date range
+#         all_months = pd.date_range(
+#             start=combined_data["time"].min(),
+#             end=combined_data["time"].max(),
+#             freq="MS"
+#         )
+#         combined_data = combined_data.set_index("time").reindex(all_months).reset_index()
+#         combined_data.rename(columns={"index": "time"}, inplace=True)
+#
+#         # Fill missing values
+#         combined_data.fillna({"total_PIn": 0, "total_POut": 0}, inplace=True)
+#
+#         # Calculate ratios
+#         combined_data = self.calculate_ratios(combined_data)
+#
+#         # Predict next month's values
+#         predictions = {}
+#         for column in ["total_PIn", "total_POut", "PUE", "EER"]:
+#             if column in combined_data.columns and not combined_data[column].isnull().all():
+#                 predictions[column] = self.predict_next_month(combined_data, column)
+#
+#         # Add predicted values as the next month's data
+#         predicted_row = {"time": all_months[-1] + pd.DateOffset(months=1)}
+#         for key, value in predictions.items():
+#             predicted_row[key] = value
+#         combined_data = pd.concat([combined_data, pd.DataFrame([predicted_row])], ignore_index=True)
+#
+#         # Replace invalid values
+#         combined_data.replace([float("inf"), -float("inf"), float("nan")], 0, inplace=True)
+#
+#         return combined_data
+#     except Exception as e:
+#         raise RuntimeError(f"Error querying InfluxDB: {e}")
+#
+#
+# def calculate_ratios(self, dataframes):
+#     print("Calculating ratios", dataframes)
+#
+#     if "total_PIn" in dataframes.columns and "total_POut" in dataframes.columns:
+#         dataframes["PUE"] = dataframes["total_PIn"] / dataframes["total_POut"]
+#         dataframes["EER"] = dataframes["total_POut"] / dataframes["total_PIn"]
+#         return dataframes
+#
+#     print("Missing required columns for ratio calculation")
+#     return dataframes
+#
+#
+# def predict_next_month(self, data, column_name):
+#     try:
+#         df = data.rename(columns={"time": "ds", column_name: "y"}).dropna(subset=["ds", "y"])
+#         df["ds"] = df["ds"].dt.tz_localize(None)  # Remove timezone from ds column
+#
+#         if len(df) < 2:
+#             print(f"Not enough data to predict for {column_name}.")
+#             return float("nan")
+#
+#         model = Prophet()
+#         model.fit(df)
+#         future = model.make_future_dataframe(periods=1, freq='M')
+#         forecast = model.predict(future)
+#
+#         predicted_value = forecast.iloc[-1]["yhat"]
+#         print(f"Prediction for {column_name}: {predicted_value:.2f}")
+#         return predicted_value
+#     except Exception as e:
+#         print(f"Error predicting next month for {column_name}: {e}")
+#         return float("nan")

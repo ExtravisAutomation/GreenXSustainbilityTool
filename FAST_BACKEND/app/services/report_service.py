@@ -20,7 +20,6 @@ class ReportService:
     def calculate_start_end_dates(self, duration_str: str) -> (datetime, datetime):
         today = datetime.today()
 
-        
         if duration_str == "First Quarter":
             duration_str = "Last 3 Months"
         elif duration_str == "Second Quarter":
