@@ -76,3 +76,4 @@ async def get_device_data(
         current_user: User = Depends(get_current_regular_user),
 ):
     return await service.get_device_data(ip)
+

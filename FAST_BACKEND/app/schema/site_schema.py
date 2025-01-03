@@ -410,3 +410,6 @@ class EnergyConsumptionMetricsDetailsNew(BaseModel):
     class Config:
         orm_mode = True
 
+
+class DeviceRequest(BaseModel):
+    device_id: int

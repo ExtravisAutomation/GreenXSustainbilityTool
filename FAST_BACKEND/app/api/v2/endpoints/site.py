@@ -12,7 +12,7 @@ from app.model.user import User
 from app.repository.site_repository import SiteRepository
 from app.schema.site_schema import SiteCreate, SiteUpdate, Site, FindSiteResult, GetSitesResponse, SiteDetails, \
     CustomResponse, CustomResponse1, ComparisonDeviceMetricsDetails, ComparisonTrafficMetricsDetails, \
-    DevicePowerComparisonPercentage
+    DevicePowerComparisonPercentage,DeviceRequest
 from app.services.site_service import SiteService
 from app.core.container import Container
 from dependency_injector.wiring import Provide, inject
@@ -1613,5 +1613,41 @@ def get_device_avg_energy_consumption_metrics(
         raise HTTPException(status_code=404, detail="No metrics found for the given filters.")
 
     return avg_metrics
+
+
+
+
+
+
+
+@router.get("/get_inventory_count", response_model=CustomResponse)
+@inject
+def get_inventory_counts(
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    data = site_service.get_inventory_count()
+    return CustomResponse(
+        message="Fetched all inventory count successfully",
+        data=data,
+        status_code=status.HTTP_200_OK
+    )
+
+
+
+
+
+@router.post("/get_next_month", response_model=CustomResponse)
+@inject
+def get_ai_res(device_data:DeviceRequest,
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    data = site_service.get_device_aidata(device_data)
+    return CustomResponse(
+        message="Fetched all inventory count successfully",
+        data=data,
+        status_code=status.HTTP_200_OK
+    )
 
 

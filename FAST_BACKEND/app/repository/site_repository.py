@@ -944,68 +944,33 @@ class SiteRepository(BaseRepository):
             sites = session.query(Site).all()
             return sites
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    def get_device_inventory(self):
+        with self.session_factory() as session:
+            sites = session.query(Site).all()
+            devices = session.query(APICControllers).all()
+            vendors=session.query(Vendor).all()
+            Racks   = session.query(Rack).all()
+            return {
+                "onboarded_devices": len(devices),
+                "total_devices": len(devices),
+                "total_vendors": len(vendors),
+                "total_racks": len(Racks)
+            }
+
+    def get_ai_data_sss(self,device_data):
+        print("devociedata at ai end",device_data.device_id)
+
+        with self.session_factory() as session:
+            # print(device_data.device_id)
+            try:
+                existing_device = session.query(APICControllers).filter(
+                    APICControllers.id == device_data.device_id).first()
+                print("Found existing",existing_device)
+                return existing_device
+                if not existing_device:
+                    existing_device.messages = f"Device with this id  doesnot exists."
+            except Exception as e:
+                raise ValueError(f"Error checking device existence: {str(e)}")
 
     def create_device_from_excel(self, device_data: dict):
         with self.session_factory() as session:
@@ -1013,21 +978,17 @@ class SiteRepository(BaseRepository):
                 
                 existing_device = session.query(APICControllers).filter_by(ip_address=device_data["ip_address"]).first()
                 if existing_device:
-                    
                     existing_device.messages = f"Device with IP {device_data['ip_address']} already exists."
                     session.commit()
                     return {"message": existing_device.messages, "status": "error"}
             except Exception as e:
                 raise ValueError(f"Error checking device existence: {str(e)}")
-
             try:
-                
                 site = session.query(Site).filter_by(site_name=device_data["site_name"]).first()
                 if not site:
                     raise ValueError(f"Site with name {device_data['site_name']} does not exist.")
             except Exception as e:
                 raise ValueError(f"Error fetching site: {str(e)}")
-
             try:
                 
                 rack = session.query(Rack).filter_by(rack_name=device_data["rack_name"], site_id=site.id).first()
@@ -1038,7 +999,6 @@ class SiteRepository(BaseRepository):
                 raise ValueError(f"Error fetching rack: {str(e)}")
 
             try:
-                
                 password_group = session.query(PasswordGroup).filter_by(
                     password_group_name=device_data["password_group_name"]).first()
                 if not password_group:
