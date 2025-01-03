@@ -22,6 +22,7 @@ import pandas as pd
 import asyncio
 # from prophet import Prophet
 
+
 class InfluxDBRepository:
     def __init__(self, client: InfluxDBClient, bucket: str, org: str, token: str = None):
         self.client = client
