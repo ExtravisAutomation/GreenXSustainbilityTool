@@ -471,33 +471,33 @@ class SiteService:
         device_ips = [device['ip_address'] for device in device_inventory]
         print("DEVIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII", device_ips, file=sys.stderr)
 
-        top_devices_data_raw = self.influxdb_repository.get_top_5_devices_by_power_with_filter(device_ips, start_date,
+        top_devices_data_raw = self.influxdb_repository.get_top_5_devices(device_inventory,device_ips, start_date,
                                                                                                end_date, duration_str)
-        top_devices_data = []
-        processed_ips = set()
+        # top_devices_data = []
+        # processed_ips = set()
+        #
+        # for device_data in top_devices_data_raw:
+        #     ip = device_data['ip']
+        #     if ip in processed_ips:
+        #         continue
+        #
+        #     device_info = next((device for device in device_inventory if device['ip_address'] == ip), None)
+        #     if device_info:
+        #         cost_of_power = device_data['cost_of_power']
+        #         average_power = device_data['average_PIn']
+        #
+        #         top_devices_data.append(DevicePowerConsumption(
+        #             id=device_info['id'],
+        #             device_name=device_info['device_name'],
+        #             ip_address=device_info['ip_address'],
+        #             total_power=round(device_data['total_PIn'] / 1000, 2),
+        #             average_power=round(average_power, 2),
+        #             cost_of_power=round(cost_of_power, 2)
+        #         ))
+        #
+        #         processed_ips.add(ip)
 
-        for device_data in top_devices_data_raw:
-            ip = device_data['ip']
-            if ip in processed_ips:
-                continue
-
-            device_info = next((device for device in device_inventory if device['ip_address'] == ip), None)
-            if device_info:
-                cost_of_power = device_data['cost_of_power']
-                average_power = device_data['average_PIn']
-
-                top_devices_data.append(DevicePowerConsumption(
-                    id=device_info['id'],  
-                    device_name=device_info['device_name'],
-                    ip_address=device_info['ip_address'],
-                    total_power=round(device_data['total_PIn'] / 1000, 2),  
-                    average_power=round(average_power, 2),  
-                    cost_of_power=round(cost_of_power, 2)  
-                ))
-
-                processed_ips.add(ip)
-
-        return TopDevicesPowerResponse(top_devices=top_devices_data)
+        return TopDevicesPowerResponse(top_devices=top_devices_data_raw)
 
     def calculate_hourly_energy_metrics(self, site_id: int) -> HourlyEnergyMetricsResponse:
 

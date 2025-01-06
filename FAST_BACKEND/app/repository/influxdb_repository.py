@@ -838,93 +838,199 @@ class InfluxDBRepository:
 
         return top_devices_power
 
-    def get_top_5_devices_by_power_with_filter(self, device_ips: List[str], start_date: datetime, end_date: datetime,
-                                               duration_str: str) -> List[dict]:
-        top_devices_power = []
+    # def get_top_5_devices_by_power_with_filter(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+    #                                            duration_str: str) -> List[dict]:
+    #     top_devices_power = []
+    #     start_time = start_date.isoformat() + 'Z'
+    #     end_time = end_date.isoformat() + 'Z'
+    #
+    #     aggregate_window, time_format = self.determine_aggregate_window(duration_str)
+    #
+    #     for ip in device_ips:
+    #         print("IPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP", ip, file=sys.stderr)
+    #         query = f'''
+    #             from(bucket: "{self.bucket}")
+    #                 |> range(start: {start_time}, stop: {end_time})
+    #                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+    #                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+    #                 |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+    #                 |> sort(columns: ["_value"], desc: true)
+    #         '''
+    #         result = self.query_api1.query_data_frame(query)
+    #         print(f"Query result for IPPPPPPPPPPPP: {ip} is: {result}", file=sys.stderr)
+    #
+    #         if not result.empty:
+    #             total_power = result['_value'].sum()
+    #             average_power = result['_value'].mean()
+    #             cost_of_power = self.calculate_cost_of_power(total_power)
+    #             average_powerkw = average_power / 1000
+    #             top_devices_power.append({
+    #                 'ip': ip,
+    #                 'total_PIn': total_power,
+    #                 'average_PIn': average_powerkw,
+    #                 'cost_of_power': cost_of_power,
+    #             })
+    #     top_devices_power = sorted(top_devices_power, key=lambda x: x['total_PIn'], reverse=True)[:5]
+    #     return top_devices_power
+    #
+    #     # for ip in device_ips:
+    #     #     print(f"Processing IP: {ip}", file=sys.stderr)
+    #     #
+    #     #     # Flux query to calculate sum and mean
+    #     #     flux_query = f"""
+    #     #     sum_result = from(bucket: "{self.bucket}")
+    #     #         |> range(start: {start_date!r}, stop: {end_date!r})
+    #     #         |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+    #     #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+    #     #         |> sum(column: "_value")
+    #     #         |> map(fn: (r) => ({"_field": "sum", _value: r._value}))
+    #     #
+    #     #     mean_result = from(bucket: "{self.bucket}")
+    #     #         |> range(start: {start_date!r}, stop: {end_date!r})
+    #     #         |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+    #     #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+    #     #         |> mean(column: "_value")
+    #     #         |> map(fn: (r) => ({"_field": "mean", _value: r._value}))
+    #     #
+    #     #     union(tables: [sum_result, mean_result])
+    #     #     """
+    #     #
+    #     #     # Execute the query
+    #     #     result = self.query_api.query(flux_query)
+    #     #
+    #     #     # Process the results
+    #     #     sum_value = None
+    #     #     mean_value = None
+    #     #
+    #     #     for table in result:
+    #     #         for record in table.records:
+    #     #             if record["_field"] == "sum":
+    #     #                 sum_value = record["_value"]
+    #     #             elif record["_field"] == "mean":
+    #     #                 mean_value = record["_value"]
+    #     #
+    #     #     if sum_value is not None and mean_value is not None:
+    #     #         cost_of_power = self.calculate_cost_of_power(sum_value)  # Custom method for cost computation
+    #     #
+    #     #         top_devices_power.append({
+    #     #             'ip': ip,
+    #     #             'total_PIn': sum_value / 1000,  # Convert to kilowatts
+    #     #             'average_PIn': mean_value / 1000,  # Convert to kilowatts
+    #     #             'cost_of_power': cost_of_power,
+    #     #         })
+    #     #
+    #     #     # Sort devices by total_PIn and limit to top 5
+    #     # top_devices_power = sorted(top_devices_power, key=lambda x: x['total_PIn'], reverse=True)[:5]
+    #     #
+    #     # return top_devices_power
+
+    def fetch_device_power_consumption(self, ip, start_time, end_time, aggregate_window):
+        query = f'''
+            from(bucket: "{self.bucket}")
+              |> range(start: {start_time}, stop: {end_time})
+              |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+              |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+              |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+        '''
+
+        try:
+            result = self.query_api1.query_data_frame(query)
+            print(result)
+            if isinstance(result, pd.DataFrame) and not result.empty:
+                total_power = result['_value'].sum()
+            else:
+                total_power = 0
+        except Exception as e:
+            print(f"Error fetching power consumption: {e}")
+            total_power = None
+
+        return total_power
+
+    def fetch_bandwidth_and_traffic(self, ip, start_time, end_time, aggregate_window):
+        query = f'''
+            from(bucket: "{self.bucket}")
+              |> range(start: {start_time}, stop: {end_time})
+              |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic")
+              |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+              |> filter(fn: (r) => r["_field"] == "bandwidth" or r["_field"] == "total_bytesRateLast")
+              |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+        '''
+
+        try:
+            result = self.query_api1.query_data_frame(query)
+            print(result)
+            if isinstance(result, pd.DataFrame) and not result.empty:
+                bandwidth = result.loc[result['_field'] == 'bandwidth', '_value'].mean() / 1000  # Convert Kbps to Mbps
+                traffic_speed = result.loc[result['_field'] == 'total_bytesRateLast', '_value'].mean() * 8 / 1e6  # Convert bytes/sec to Mbps
+                bandwidth_utilization = (traffic_speed / bandwidth) * 100 if bandwidth else 0
+            else:
+                bandwidth = traffic_speed = bandwidth_utilization = 0
+        except Exception as e:
+            print(f"Error fetching bandwidth and traffic: {e}")
+            bandwidth = traffic_speed = bandwidth_utilization = None
+
+        return bandwidth, traffic_speed, bandwidth_utilization
+
+    # def get_device_data(self, ip, start_time, end_time, aggregate_window):
+    #     total_power = self.fetch_device_power_consumption(ip, start_time, end_time, aggregate_window)
+    #     bandwidth, traffic_speed, bandwidth_utilization = self.fetch_bandwidth_and_traffic(ip, start_time, end_time, aggregate_window)
+    #
+    #     pcr = total_power / traffic_speed if traffic_speed else None
+    #
+    #     return DevicePowerConsumption(
+    #         total_power=total_power,
+    #         total_bandwidth=bandwidth,
+    #         traffic_speed=traffic_speed,
+    #         bandwidth_utilization=bandwidth_utilization,
+    #         pcr=pcr
+    #     )
+
+    def get_top_5_devices(self,device_inventory, device_ips: List[str], start_date: datetime, end_date: datetime, duration_str: str) -> \
+    List[dict]:
+        top_devices = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
         aggregate_window, time_format = self.determine_aggregate_window(duration_str)
 
         for ip in device_ips:
-            print("IPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP", ip, file=sys.stderr)
-            query = f'''
-                from(bucket: "{self.bucket}")
-                    |> range(start: {start_time}, stop: {end_time})
-                    |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-                    |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
-                    |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-                    |> sort(columns: ["_value"], desc: true)
+            # Fetch data
 
-            '''
-            result = self.query_api1.query_data_frame(query)
-            print(f"Query result for IPPPPPPPPPPPP: {ip} is: {result}", file=sys.stderr)
+            total_power = self.fetch_device_power_consumption(ip, start_time, end_time, aggregate_window)
+            bandwidth, traffic_speed, bandwidth_utilization = self.fetch_bandwidth_and_traffic(ip, start_time, end_time,
+                                                                                               aggregate_window)
 
-            if not result.empty:
-                total_power = result['_value'].sum()
-                average_power = result['_value'].mean()
-                cost_of_power = self.calculate_cost_of_power(total_power)
-                average_powerkw = average_power / 1000
-                top_devices_power.append({
-                    'ip': ip,
-                    'total_PIn': total_power/1000,
-                    'average_PIn': average_powerkw,
-                    'cost_of_power': cost_of_power,
-                })
+            pcr = total_power / traffic_speed if traffic_speed else None
+            co2em=(total_power/1000) *0.4041
 
-        top_devices_power = sorted(top_devices_power, key=lambda x: x['total_PIn'], reverse=True)[:5]
-        return top_devices_power
+            # Example logic to populate id and device_name (replace with actual data source if available)
+            # device_name = f"Device_{ip}"  # Replace with real device name logic
+            # device_id = hash(ip)  # Replace with actual ID logic
+            device_info = next((device for device in device_inventory if device['ip_address'] == ip), None)
+            print(device_info)
+            print("pcr ", pcr)
+            print("co2emissions ", co2em)
+            print(total_power,"")
+            print(" bandwidth, traffic_speed, bandwidth_utilization ", bandwidth, traffic_speed, bandwidth_utilization )
+            if device_info:
+                device_id = device_info['id']
+                device_name = device_info['device_name']
 
-        # for ip in device_ips:
-        #     print(f"Processing IP: {ip}", file=sys.stderr)
-        #
-        #     # Flux query to calculate sum and mean
-        #     flux_query = f"""
-        #     sum_result = from(bucket: "{self.bucket}")
-        #         |> range(start: {start_date!r}, stop: {end_date!r})
-        #         |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-        #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
-        #         |> sum(column: "_value")
-        #         |> map(fn: (r) => ({"_field": "sum", _value: r._value}))
-        #
-        #     mean_result = from(bucket: "{self.bucket}")
-        #         |> range(start: {start_date!r}, stop: {end_date!r})
-        #         |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-        #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
-        #         |> mean(column: "_value")
-        #         |> map(fn: (r) => ({"_field": "mean", _value: r._value}))
-        #
-        #     union(tables: [sum_result, mean_result])
-        #     """
-        #
-        #     # Execute the query
-        #     result = self.query_api.query(flux_query)
-        #
-        #     # Process the results
-        #     sum_value = None
-        #     mean_value = None
-        #
-        #     for table in result:
-        #         for record in table.records:
-        #             if record["_field"] == "sum":
-        #                 sum_value = record["_value"]
-        #             elif record["_field"] == "mean":
-        #                 mean_value = record["_value"]
-        #
-        #     if sum_value is not None and mean_value is not None:
-        #         cost_of_power = self.calculate_cost_of_power(sum_value)  # Custom method for cost computation
-        #
-        #         top_devices_power.append({
-        #             'ip': ip,
-        #             'total_PIn': sum_value / 1000,  # Convert to kilowatts
-        #             'average_PIn': mean_value / 1000,  # Convert to kilowatts
-        #             'cost_of_power': cost_of_power,
-        #         })
-        #
-        #     # Sort devices by total_PIn and limit to top 5
-        # top_devices_power = sorted(top_devices_power, key=lambda x: x['total_PIn'], reverse=True)[:5]
-        #
-        # return top_devices_power
+            top_devices.append({
+                'id': device_id,
+                'device_name': device_name,
+                'total_power': round(total_power,2),
+                'total_bandwidth': round(bandwidth,2),
+                'traffic_speed': round(traffic_speed,2),
+                'bandwidth_utilization': round(bandwidth_utilization,2),
+                'pcr': round(pcr,2),
+                'co2emmissions':round(co2em,2),
+                'ip_address': ip
+            })
+
+        # Sort and get the top 5 devices
+        top_devices = sorted(top_devices, key=lambda x: x['total_power'], reverse=True)[:5]
+        return top_devices
 
     def calculate_cost_of_power(self, power_in_watts):
 

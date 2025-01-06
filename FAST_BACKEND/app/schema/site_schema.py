@@ -172,8 +172,11 @@ class DevicePowerConsumption(BaseModel):
     id: Optional[int] = None
     device_name: Optional[str] = None
     total_power: Optional[float] = None
-    average_power: Optional[float] = None
-    cost_of_power: Optional[float] = None
+    total_bandwidth: Optional[float] = None
+    traffic_speed: Optional[float] =None
+    bandwidth_utilization: Optional[float] = None
+    pcr:Optional[float]=None
+    co2emmissions: Optional[float]=None
     ip_address: Optional[str] = None
 
 

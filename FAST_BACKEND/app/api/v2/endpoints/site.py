@@ -412,6 +412,7 @@ def get_top_5_power_devices(
     return site_service.get_top_5_power_devices_with_filter(site_id, duration)
 
 
+
 @router.get(
     "/site/traffic_throughput_metrics_by_device_WITH_FILTER/{site_id}",
     response_model=CustomResponse1[List[TrafficThroughputMetricsDetails]]
@@ -1651,3 +1652,16 @@ def get_ai_res(device_data:DeviceRequest,
     )
 
 
+# @router.post("/get_bandwidth wise", response_model=CustomResponse)
+# @inject
+# def get_ai_res(device_data:DeviceRequest,
+#         # current_user: User = Depends(get_current_active_user),
+#         site_service: SiteService = Depends(Provide[Container.site_service])
+# ):
+#     data = site_service.get_device_aidata(device_data)
+#     return CustomResponse(
+#         message="Fetched all inventory count successfully",
+#         data=data,
+#         status_code=status.HTTP_200_OK
+#     )
+#
