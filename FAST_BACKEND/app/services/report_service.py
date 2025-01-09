@@ -64,6 +64,7 @@ class ReportService:
         reports = self.report_repository.get_all_reports()
         
         for report in reports:
+            print(report.duration,"duration")
             starttime, endtime = self.calculate_start_end_dates(report.duration)
             report.starttime = starttime
             report.endtime = endtime

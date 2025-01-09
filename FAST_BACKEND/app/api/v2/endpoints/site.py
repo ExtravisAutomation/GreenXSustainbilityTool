@@ -484,7 +484,6 @@ def compare_two_devices_metrics(
         status_code=status.HTTP_200_OK
     )
 
-
 @router.get("/site/device_traffic_comparison_WITH_FILTER/{site_id}",
             response_model=CustomResponse1[List[List[ComparisonTrafficMetricsDetails]]])
 @inject

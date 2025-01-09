@@ -838,91 +838,91 @@ class InfluxDBRepository:
 
         return top_devices_power
 
-    # def get_top_5_devices_by_power_with_filter(self, device_ips: List[str], start_date: datetime, end_date: datetime,
-    #                                            duration_str: str) -> List[dict]:
-    #     top_devices_power = []
-    #     start_time = start_date.isoformat() + 'Z'
-    #     end_time = end_date.isoformat() + 'Z'
-    #
-    #     aggregate_window, time_format = self.determine_aggregate_window(duration_str)
-    #
-    #     for ip in device_ips:
-    #         print("IPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP", ip, file=sys.stderr)
-    #         query = f'''
-    #             from(bucket: "{self.bucket}")
-    #                 |> range(start: {start_time}, stop: {end_time})
-    #                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-    #                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
-    #                 |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
-    #                 |> sort(columns: ["_value"], desc: true)
-    #         '''
-    #         result = self.query_api1.query_data_frame(query)
-    #         print(f"Query result for IPPPPPPPPPPPP: {ip} is: {result}", file=sys.stderr)
-    #
-    #         if not result.empty:
-    #             total_power = result['_value'].sum()
-    #             average_power = result['_value'].mean()
-    #             cost_of_power = self.calculate_cost_of_power(total_power)
-    #             average_powerkw = average_power / 1000
-    #             top_devices_power.append({
-    #                 'ip': ip,
-    #                 'total_PIn': total_power,
-    #                 'average_PIn': average_powerkw,
-    #                 'cost_of_power': cost_of_power,
-    #             })
-    #     top_devices_power = sorted(top_devices_power, key=lambda x: x['total_PIn'], reverse=True)[:5]
-    #     return top_devices_power
-    #
-    #     # for ip in device_ips:
-    #     #     print(f"Processing IP: {ip}", file=sys.stderr)
-    #     #
-    #     #     # Flux query to calculate sum and mean
-    #     #     flux_query = f"""
-    #     #     sum_result = from(bucket: "{self.bucket}")
-    #     #         |> range(start: {start_date!r}, stop: {end_date!r})
-    #     #         |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-    #     #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
-    #     #         |> sum(column: "_value")
-    #     #         |> map(fn: (r) => ({"_field": "sum", _value: r._value}))
-    #     #
-    #     #     mean_result = from(bucket: "{self.bucket}")
-    #     #         |> range(start: {start_date!r}, stop: {end_date!r})
-    #     #         |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-    #     #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
-    #     #         |> mean(column: "_value")
-    #     #         |> map(fn: (r) => ({"_field": "mean", _value: r._value}))
-    #     #
-    #     #     union(tables: [sum_result, mean_result])
-    #     #     """
-    #     #
-    #     #     # Execute the query
-    #     #     result = self.query_api.query(flux_query)
-    #     #
-    #     #     # Process the results
-    #     #     sum_value = None
-    #     #     mean_value = None
-    #     #
-    #     #     for table in result:
-    #     #         for record in table.records:
-    #     #             if record["_field"] == "sum":
-    #     #                 sum_value = record["_value"]
-    #     #             elif record["_field"] == "mean":
-    #     #                 mean_value = record["_value"]
-    #     #
-    #     #     if sum_value is not None and mean_value is not None:
-    #     #         cost_of_power = self.calculate_cost_of_power(sum_value)  # Custom method for cost computation
-    #     #
-    #     #         top_devices_power.append({
-    #     #             'ip': ip,
-    #     #             'total_PIn': sum_value / 1000,  # Convert to kilowatts
-    #     #             'average_PIn': mean_value / 1000,  # Convert to kilowatts
-    #     #             'cost_of_power': cost_of_power,
-    #     #         })
-    #     #
-    #     #     # Sort devices by total_PIn and limit to top 5
-    #     # top_devices_power = sorted(top_devices_power, key=lambda x: x['total_PIn'], reverse=True)[:5]
-    #     #
-    #     # return top_devices_power
+    def get_top_5_devices_by_power_with_filter(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+                                               duration_str: str) -> List[dict]:
+        top_devices_power = []
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+
+        aggregate_window, time_format = self.determine_aggregate_window(duration_str)
+
+        for ip in device_ips:
+            print("IPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP", ip, file=sys.stderr)
+            query = f'''
+                from(bucket: "{self.bucket}")
+                    |> range(start: {start_time}, stop: {end_time})
+                    |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+                    |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+                    |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+                    |> sort(columns: ["_value"], desc: true)
+            '''
+            result = self.query_api1.query_data_frame(query)
+            print(f"Query result for IPPPPPPPPPPPP: {ip} is: {result}", file=sys.stderr)
+
+            if not result.empty:
+                total_power = result['_value'].sum()
+                average_power = result['_value'].mean()
+                cost_of_power = self.calculate_cost_of_power(total_power)
+                average_powerkw = average_power / 1000
+                top_devices_power.append({
+                    'ip': ip,
+                    'total_PIn': 345,
+                    'average_PIn': average_powerkw,
+                    'cost_of_power': cost_of_power,
+                })
+        top_devices_power = sorted(top_devices_power, key=lambda x: x['total_PIn'], reverse=True)[:5]
+        return top_devices_power
+
+        # for ip in device_ips:
+        #     print(f"Processing IP: {ip}", file=sys.stderr)
+        #
+        #     # Flux query to calculate sum and mean
+        #     flux_query = f"""
+        #     sum_result = from(bucket: "{self.bucket}")
+        #         |> range(start: {start_date!r}, stop: {end_date!r})
+        #         |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+        #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+        #         |> sum(column: "_value")
+        #         |> map(fn: (r) => ({"_field": "sum", _value: r._value}))
+        #
+        #     mean_result = from(bucket: "{self.bucket}")
+        #         |> range(start: {start_date!r}, stop: {end_date!r})
+        #         |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+        #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+        #         |> mean(column: "_value")
+        #         |> map(fn: (r) => ({"_field": "mean", _value: r._value}))
+        #
+        #     union(tables: [sum_result, mean_result])
+        #     """
+        #
+        #     # Execute the query
+        #     result = self.query_api.query(flux_query)
+        #
+        #     # Process the results
+        #     sum_value = None
+        #     mean_value = None
+        #
+        #     for table in result:
+        #         for record in table.records:
+        #             if record["_field"] == "sum":
+        #                 sum_value = record["_value"]
+        #             elif record["_field"] == "mean":
+        #                 mean_value = record["_value"]
+        #
+        #     if sum_value is not None and mean_value is not None:
+        #         cost_of_power = self.calculate_cost_of_power(sum_value)  # Custom method for cost computation
+        #
+        #         top_devices_power.append({
+        #             'ip': ip,
+        #             'total_PIn': sum_value / 1000,  # Convert to kilowatts
+        #             'average_PIn': mean_value / 1000,  # Convert to kilowatts
+        #             'cost_of_power': cost_of_power,
+        #         })
+        #
+        #     # Sort devices by total_PIn and limit to top 5
+        # top_devices_power = sorted(top_devices_power, key=lambda x: x['total_PIn'], reverse=True)[:5]
+        #
+        # return top_devices_power
 
     def fetch_device_power_consumption(self, ip, start_time, end_time, aggregate_window):
         query = f'''
