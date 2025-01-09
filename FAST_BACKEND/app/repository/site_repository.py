@@ -947,7 +947,7 @@ class SiteRepository(BaseRepository):
     def get_device_inventory(self):
         with self.session_factory() as session:
             sites = session.query(Site).all()
-            devices = session.query(APICControllers).all()
+            devices = session.query(APICControllers).filter(APICControllers.site_id==1).all()
             vendors=session.query(Vendor).all()
             Racks   = session.query(Rack).all()
             return {

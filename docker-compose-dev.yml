@@ -28,19 +28,19 @@ services:
       - dcs_db_dev
       - influxdb_dcs_dev
 
-  # dcs_frontend_dev:
-  #   container_name: React_Container-DCS-dev
-  #   image: frontend_dcs_image_dev:latest
-  #   restart: always
-  #   build: ./datacenter
-  #   ports:
-  #     - "3015:3000"
-  #   volumes:
-  #     - ./datacenter:/frontend-app
-  #     - node_modules_dev:/frontend-app/node_modules
-  #   command: ["npm", "start"]
-  #   depends_on:
-  #     - dcs_backend_dev
+#   dcs_frontend_dev:
+#     container_name: React_Container-DCS-dev
+#     image: frontend_dcs_image_dev:latest
+#     restart: always
+#     build: ./datacenter
+#     ports:
+#       - "3015:3000"
+#     volumes:
+#       - ./datacenter:/frontend-app
+#       - node_modules_dev:/frontend-app/node_modules
+#     command: ["npm", "start"]
+#     depends_on:
+#       - dcs_backend_dev
 
   influxdb_dcs_dev:
     image: influxdb:latest

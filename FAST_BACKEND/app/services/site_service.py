@@ -1106,6 +1106,8 @@ class SiteService:
             
             traffic_data_start_time = time.time()
             site.traffic_data = self.influxdb_repository.get_24hsite_datatraffic(apic_ips, site.id)
+            print(site.traffic_data)
+            site.traffic_data=0
             traffic_data_end_time = time.time()
             logger.debug(
                 f"Time taken to fetch traffic data for site {site.id}: {traffic_data_end_time - traffic_data_start_time:.2f} seconds")

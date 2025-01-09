@@ -1944,6 +1944,62 @@ class InfluxDBRepository:
             f"Generated {len(dummy_metrics)} dummy metrics for {ip} on granularity {granularity}")  # Debug print for generated dummy data
         return dummy_metrics
 
+    def get_24hsite_power_test(self, apic_ips: List[str], site_id: int) -> List[dict]:
+        if not apic_ips:
+            return []
+
+        start_range = "-24h"
+        site_data = []
+
+        # Create a filter string for all IPs
+        apic_ips_filter = " or ".join([f'r["ApicController_IP"] == "{ip}"' for ip in apic_ips])
+
+        query = f'''
+            from(bucket: "Dcs_db")
+            |> range(start: {start_range})
+            |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
+            |> filter(fn: (r) => {apic_ips_filter})
+            |> sum()
+            |> yield(name: "total_sum") 
+        '''
+
+        try:
+            result = self.query_api1.query(query)
+            print(f"Debug: Results - {result}")
+
+            # Prepare data storage for each IP
+            ip_data = {ip: {"total_drawn": 0, "total_supplied": 0} for ip in apic_ips}
+
+            for table in result:
+                for record in table.records:
+                    apic_ip = record.get_tag("ApicController_IP")
+                    if apic_ip in ip_data:
+                        if record.get_field() == "total_POut":
+                            ip_data[apic_ip]["total_drawn"] += record.get_value()
+                        elif record.get_field() == "total_PIn":
+                            ip_data[apic_ip]["total_supplied"] += record.get_value()
+
+            # Calculate results for each IP
+            for ip, data in ip_data.items():
+                total_drawn = data["total_drawn"]
+                total_supplied = data["total_supplied"]
+                power_utilization = (total_drawn / total_supplied) * 100 if total_supplied > 0 else 0
+                pue = ((total_supplied / total_drawn) - 1) * 100 if total_drawn > 0 else 0
+
+                site_data.append({
+                    "site_id": site_id,
+                    "apic_ip": ip,
+                    "power_utilization": round(power_utilization, 2),
+                    "power_input": round(total_supplied, 2) if total_supplied != 0 else None,
+                    "pue": round(pue, 2),
+                })
+                print(site_data)
+
+        except Exception as e:
+            print(f"Error querying InfluxDB: {e}")
+
+        return site_data
+
     def get_24hsite_power(self, apic_ips: List[str], site_id: int) -> List[dict]:
         if not apic_ips:
             return []
@@ -2023,7 +2079,7 @@ class InfluxDBRepository:
                             total_byterate = record.get_value()
                         else:
                             total_byterate = 0
-                            t += total_byterate
+                            total_byterate+= total_byterate
 
                 site_data.append({
                     "site_id": site_id,

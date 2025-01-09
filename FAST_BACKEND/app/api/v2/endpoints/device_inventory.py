@@ -21,6 +21,7 @@ def get_all_devices(
     current_user: User = Depends(get_current_active_user),
     device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
+
     devices = device_inventory_service.get_all_devices()
     
     return Custom_Response_Inventory(
