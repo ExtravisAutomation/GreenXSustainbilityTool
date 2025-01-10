@@ -2508,7 +2508,7 @@ class InfluxDBRepository:
                 elif metric.lower() == "eer":
                     value = (average_pout / average_pin) if average_pin != 0 else 0
                     metric_name = "energy efficiency ratio"
-                    round(value, 2)
+                    value=round(value, 2)
                 elif metric.lower() == "carbon emissions":
                     value = average_pin* 0.4  # CO2 emission factor
                     metric_name = "carbon emissions"
