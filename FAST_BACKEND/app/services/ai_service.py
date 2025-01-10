@@ -68,6 +68,9 @@ class AIService:
             if parsed_response["status"] == "error":
                 logger.error(f"Error in parsing input: {parsed_response['message']}")
                 return {"status": "error", "message": parsed_response["message"]}
+            if parsed_response["status"] == "ai":
+                logger.error(f"Ai response in parsing input: {parsed_response['message']}")
+                return {"status": "ai_response", "message": parsed_response["message"]}
 
             # Extract validated data
             ip_address = parsed_response["data"].get("ip_address")
