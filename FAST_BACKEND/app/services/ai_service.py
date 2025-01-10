@@ -178,10 +178,12 @@ class AIService:
                                                               "carbon emissions")
             elif keyword.lower() in ["data traffic"]:
                 logger.info(f"Fetching Data Traffic for {ip_address}")
-                result = self.get_data_traffic(ip_address, start_date, end_date)
+                result = self.influxdb_repository.get_datatraffic(ip_address, start_date, end_date, duration,
+                                                              )
             elif keyword.lower() in ["pcr", "power consumption ratio"]:
                 logger.info(f"Fetching PCR for {ip_address}")
-                result = self.get_pcr_data(ip_address, start_date, end_date)
+                result = self.influxdb_repository.get_metrics(ip_address, start_date, end_date, duration,
+                                                              "pcr")
             else:
                 logger.error("Invalid keyword provided.")
                 raise ValueError("Invalid keyword provided.")

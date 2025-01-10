@@ -2496,6 +2496,7 @@ class InfluxDBRepository:
 
             if 'total_PIn' in result.columns and 'total_POut' in result.columns:
                 average_pin = result['total_PIn'].mean()
+                sum_pin = result['total_PIn'].sum()
                 average_pout = result['total_POut'].mean()
                 print("average_pin", average_pin)
                 print("average_pout", average_pout)
@@ -2503,21 +2504,81 @@ class InfluxDBRepository:
                 if metric.lower() == "pue":
                     value = (average_pin / average_pout) if average_pout != 0 else 0
                     metric_name = "power usage effectiveness"
+                    value=round(value, 2)
                 elif metric.lower() == "eer":
                     value = (average_pout / average_pin) if average_pin != 0 else 0
                     metric_name = "energy efficiency ratio"
+                    round(value, 2)
                 elif metric.lower() == "carbon emissions":
-                    value = average_pin * 0.4  # CO2 emission factor
+                    value = average_pin* 0.4  # CO2 emission factor
                     metric_name = "carbon emissions"
+                    value=f"{round(value, 2)} kgs"
+                elif metric.lower() == "pcr":
+                    datatraffic = self.get_datatraffic(device_ip, start_date, end_date, duration_str)
+                    if datatraffic['status'] == 'error':
+                        return datatraffic  # Propagate error from `get_datatraffic`
+                    total_pin_value_KW = sum_pin / 1000
+
+                    data_TB = datatraffic['data']
+                    value = total_pin_value_KW / data_TB if data_TB != 0 else 0
+                    print(data_TB,"data_intb",total_pin_value_KW,"total_pin")
+                    value=f"{round(value, 2)}"
+                    metric_name = "power consumption ratio"
                 else:
                     raise ValueError("Unsupported metric provided.")
 
                 return {
-
-                    'data': round(value, 2)
+                    'data': value
                 }
 
         return {"status": "error", "message": "No data found for the specified query."}
+
+    def get_datatraffic(self, ip: str, start_date: datetime, end_date: datetime, duration_str: str) -> dict:
+        """
+        Retrieve and process data traffic metrics for the specified IP address and time range.
+        """
+        print("here we are")
+
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+        aggregate_window, time_format = self.determine_aggregate_window(duration_str)
+
+        query = f'''
+            from(bucket: "{self.bucket}")
+            |> range(start: {start_time}, stop: {end_time})
+            |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+            |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
+            |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        '''
+
+
+        try:
+            result = self.query_api1.query_data_frame(query)
+            print(result,"result")
+
+
+            if not result.empty and 'total_bytesRateLast' in result.columns:
+                total_bytesRateLast = result['total_bytesRateLast'].sum()
+                print(total_bytesRateLast,"dskdfd")
+                data_TB = total_bytesRateLast/ (1024 ** 4)
+
+                return {
+                    'status': 'success',
+                    'data': round(data_TB, 2)
+                }
+            else:
+                return {
+                    'status': 'error',
+                    'message': 'No data available for the specified query.'
+                }
+
+        except Exception as e:
+        # logging.error(f"Error executing query for IP {ip}: {str(e)}")
+            return {
+                'status': 'error',
+                'message': f"An error occurred while retrieving data traffic: {str(e)}"
+            }
 
     def get_carbon_intensity1(self, start_time: str, end_time: str) -> float:
         carbon_intensity = 0
