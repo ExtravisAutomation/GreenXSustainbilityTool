@@ -2,6 +2,7 @@ import sys
 import time
 from collections import defaultdict
 from datetime import datetime, timedelta
+from email.utils import parsedate_to_datetime
 from random import random
 from typing import Dict, List, Any, Optional
 
@@ -71,13 +72,29 @@ class AIService:
             # Extract validated data
             ip_address = parsed_response["data"].get("ip_address")
             duration = parsed_response["data"].get("duration")
-            keyword = parsed_response["data"].get("keyword")
+            keywords = parsed_response["data"].get("keywords")  # Now handles multiple keywords
 
             # Process the request using extracted data
-            result = self.process_request(ip_address, duration, keyword)
-            logger.info(f"Request processed successfully. Result: {result}")
+            results = {}
+            for keyword in keywords:
+                try:
+                    result = self.process_request(ip_address, duration, keyword)
+                    results[keyword] = result
+                    logger.info(f"Processed {keyword} successfully for IP {ip_address}.")
+                except Exception as e:
+                    logger.error(f"Error processing keyword {keyword}: {e}")
+                    results[keyword] = {"status": "error", "message": str(e)}
 
-            return {"status": "success", "message": "Processed successfully.", "data": result}
+            # Format the response
+            formatted_message = f"Results for {ip_address} over {duration}:\n"
+            for keyword, result in results.items():
+                if isinstance(result, dict) and "status" in result and result["status"] == "error":
+                    formatted_message += f"  - {keyword}: {result['message']}\n"
+                else:
+                    formatted_message += f"  - {keyword}: {result['data']}\n"
+
+            logger.debug(f"Final formatted message: {formatted_message}")
+            return {"status": "success", "message": formatted_message, "data": results}
 
         except ValueError as e:
             logger.error(f"ValueError occurred: {e}")
@@ -147,22 +164,28 @@ class AIService:
         start_date, end_date = self.calculate_start_end_dates(duration)
         try:
             if keyword.lower() in ["pue", "power usage effectiveness"]:
+                logger.info(f"Fetching PUE for {ip_address}")
                 result = self.influxdb_repository.get_metrics(ip_address, start_date, end_date, duration, "pue")
             elif keyword.lower() in ["eer", "energy efficiency ratio"]:
+                logger.info(f"Fetching EER for {ip_address}")
                 result = self.influxdb_repository.get_metrics(ip_address, start_date, end_date, duration, "eer")
             elif keyword.lower() in ["carbon emissions"]:
-                result = self.influxdb_repository.get_metrics(ip_address, start_date, end_date, duration, "carbon emissions")
+                logger.info(f"Fetching Carbon Emissions for {ip_address}")
+                result = self.influxdb_repository.get_metrics(ip_address, start_date, end_date, duration,
+                                                              "carbon emissions")
             elif keyword.lower() in ["data traffic"]:
+                logger.info(f"Fetching Data Traffic for {ip_address}")
                 result = self.get_data_traffic(ip_address, start_date, end_date)
             elif keyword.lower() in ["pcr", "power consumption ratio"]:
+                logger.info(f"Fetching PCR for {ip_address}")
                 result = self.get_pcr_data(ip_address, start_date, end_date)
             else:
                 logger.error("Invalid keyword provided.")
-                return {"status": "error", "message": "Invalid keyword provided."}
+                raise ValueError("Invalid keyword provided.")
 
-            logger.debug(f"Processed result: {result}")
+            logger.debug(f"Processed result for {keyword}: {result}")
             return result
 
         except Exception as e:
-            logger.error(f"Error in processing request: {e}")
+            logger.error(f"Error in processing request for {keyword}: {e}")
             raise

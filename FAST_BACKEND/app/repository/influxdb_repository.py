@@ -2472,8 +2472,10 @@ class InfluxDBRepository:
                 total_pin += result['_value'].sum()
 
         return total_pin
+
     def get_metrics(self, device_ip: str, start_date: datetime, end_date: datetime, duration_str: str,
                     metric: str) -> dict:
+        print("get_metrics", device_ip)
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
         aggregate_window, time_format = self.determine_aggregate_window(duration_str)
@@ -2488,32 +2490,35 @@ class InfluxDBRepository:
         '''
         result = self.query_api1.query_data_frame(query)
         print(result)
-        if result:
-            print("result is not  empty")
 
-        if not result.empty and 'total_PIn' in result.columns and 'total_POut' in result.columns:
-            average_pin = result['total_PIn'].mean()
-            average_pout = result['total_POut'].mean()
-            print("average_pin", average_pin)
-            print("average_pout", average_pout)
+        if not result.empty:
+            print("result is not empty")
 
+            if 'total_PIn' in result.columns and 'total_POut' in result.columns:
+                average_pin = result['total_PIn'].mean()
+                average_pout = result['total_POut'].mean()
+                print("average_pin", average_pin)
+                print("average_pout", average_pout)
 
-            if metric.lower() == "pue":
-                value = (average_pin / average_pout) if average_pout != 0 else 0
-                metric_name = "power usage effectiveness"
-            elif metric.lower() == "eer":
-                value = (average_pout / average_pin) if average_pin != 0 else 0
-                metric_name = "energy efficiency ratio"
-            elif metric.lower() == "carbon emissions":
-                value = average_pin * 0.4  # CO2 emission factor
-                metric_name = "carbon emissions"
-            else:
-                raise ValueError("Unsupported metric provided.")
+                if metric.lower() == "pue":
+                    value = (average_pin / average_pout) if average_pout != 0 else 0
+                    metric_name = "power usage effectiveness"
+                elif metric.lower() == "eer":
+                    value = (average_pout / average_pin) if average_pin != 0 else 0
+                    metric_name = "energy efficiency ratio"
+                elif metric.lower() == "carbon emissions":
+                    value = average_pin * 0.4  # CO2 emission factor
+                    metric_name = "carbon emissions"
+                else:
+                    raise ValueError("Unsupported metric provided.")
 
-            return {
-                "device_name": device_ip,
-                metric_name: round(value, 2)
-            }
+                return {
+
+                    'data': round(value, 2)
+                }
+
+        return {"status": "error", "message": "No data found for the specified query."}
+
     def get_carbon_intensity1(self, start_time: str, end_time: str) -> float:
         carbon_intensity = 0
         zone = "AE"
