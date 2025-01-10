@@ -9,9 +9,12 @@ from app.api.v2.endpoints.device_inventory import router as device_inventory_rou
 from app.api.v2.endpoints.report import router as report_router
 from app.api.v2.endpoints.vcenter import router as vcenter_router
 from app.api.v2.endpoints.perhr import router as perhr_router
+from app.api.v2.endpoints.aimodule import router as aimodules_router
 
 routers = APIRouter()
-router_list = [auth_router, site_router, device_router, rack_router, apic_router, device_inventory_router, report_router, vcenter_router, perhr_router]
+router_list = [auth_router, site_router, device_router, rack_router,
+               apic_router, device_inventory_router, report_router,
+               vcenter_router,perhr_router,aimodules_router]
 
 for router in router_list:
     router.tags = routers.tags.append("v2")

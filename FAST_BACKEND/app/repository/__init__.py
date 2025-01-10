@@ -8,3 +8,4 @@ from app.repository.device_inventory_repository import DeviceInventoryRepository
 from app.repository.report_repository import ReportRepository
 from app.repository.vcenter_repository import VcenterRepository
 from app.repository.perhr_repository import PerhrRepository
+from app.repository.ai_repository import AIRepository

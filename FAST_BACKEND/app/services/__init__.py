@@ -8,3 +8,4 @@ from app.services.device_inventory_service import DeviceInventoryService
 from app.services.report_service import ReportService
 from app.services.vcenter_service import VcenterService
 from app.services.perhr_service import PerhrService
+from app.services.ai_service import AIService

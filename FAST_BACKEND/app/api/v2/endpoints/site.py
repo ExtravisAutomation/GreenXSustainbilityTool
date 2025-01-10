@@ -1651,6 +1651,9 @@ def get_ai_res(device_data:DeviceRequest,
     )
 
 
+
+
+
 # @router.post("/get_bandwidth wise", response_model=CustomResponse)
 # @inject
 # def get_ai_res(device_data:DeviceRequest,

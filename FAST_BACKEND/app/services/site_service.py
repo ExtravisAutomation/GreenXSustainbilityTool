@@ -13,7 +13,8 @@ from sqlalchemy.orm import Session
 from app.repository.site_repository import SiteRepository  
 from app.schema.site_schema import SiteCreate, SiteUpdate, GetSitesResponse, SiteDetails
 import traceback
-from app.repository.influxdb_repository import InfluxDBRepository  
+from app.repository.influxdb_repository import InfluxDBRepository
+from app.repository.ai_repository import AIRepository
 from app.schema.site_schema import SiteDetails1
 
 from app.schema.site_schema import DeviceEnergyMetric, HourlyEnergyMetricsResponse
@@ -180,9 +181,10 @@ PUE_DUMMY_DATA_THIRD_QUARTER = {
 
 
 class SiteService:
-    def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
+    def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository,ai_repository):
         self.site_repository = site_repository
         self.influxdb_repository = influxdb_repository
+        self.ai_repository = ai_repository
         
 
     def get_sites(self) -> List[SiteDetails]:
@@ -1698,33 +1700,7 @@ class SiteService:
 
         return device, carbon_emission_KG
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
 
     def get_all_devices_carbon_emission(self, site_id: int, duration_str: str) -> List[dict]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)

@@ -37,6 +37,7 @@ from app.model.APIC_controllers import APICControllers as Devices
 
 from app.model.cspc_devices import CSPCDevices
 from app.schema.site_schema import CSPCDevicesWithSntcResponse
+from app.repository.ai_repository import AIRepository
 import openai
 from app.core.config import configs
 class SiteRepository(BaseRepository):
