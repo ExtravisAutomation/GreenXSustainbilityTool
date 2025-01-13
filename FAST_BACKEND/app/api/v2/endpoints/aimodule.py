@@ -20,8 +20,6 @@ def get_all_reports(
         question: str,
         # current_user: User = Depends(get_current_active_user),
         ai_module_service: AIService = Depends(Provide[Container.ai_service])
-
-
 ):
     print("Gettingsads")
 

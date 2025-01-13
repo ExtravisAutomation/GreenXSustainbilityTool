@@ -1905,7 +1905,7 @@ class SiteService:
     def get_inventory_count(self):
         return self.site_repository.get_device_inventory()
 
-    def get_device_aidata(self, device_data):
+    def get_device_aidata_or(self, device_data):
         print("device_data")
         data = self.site_repository.get_ai_data_sss(device_data)
         print(data,"device_data")
@@ -1945,8 +1945,69 @@ class SiteService:
             # Replace invalid values with zero
             combined_data = combined_data.replace([float("inf"), -float("inf"), float("nan")], 0)
             combined_data = combined_data.fillna(0)
+        final_response = self.influxdb_repository.prepare_response_ai(combined_data)
+        print(final_response)
+        return final_response
+
+    def get_device_aidata(self, device_data):
+            print("device_data")
+            data = self.site_repository.get_ai_data_sss(device_data)
+            print(data, "device_data")
+
+            # Fetch data from InfluxDB
+            dataframes = self.influxdb_repository.influx_resp(data.ip_address)
+            print(dataframes, "dataframes")
+
+            # Calculate PUE and EER
+            combined_data = self.influxdb_repository.calculate_ratios(dataframes)
+            print(combined_data, "combined_data")
+
+            if not combined_data.empty:
+                predictions = {}
+                for column in ["total_PIn", "total_POut", "PUE", "EER"]:
+                    if column in combined_data.columns and not combined_data[column].isnull().all():
+                        predictions[column] = self.influxdb_repository.predict_next_month(combined_data, column)
+
+                # Add predicted values as the next month's data
+                predicted_row = {"time": pd.Timestamp.now().replace(day=1) + pd.DateOffset(months=1),
+                                 "Prediction": "False"}
+
+                # Check validity of predictions
+                if all(value is not None and not pd.isna(value) for value in predictions.values()):
+                    for key, value in predictions.items():
+                        predicted_row[key] = value
+                    predicted_row["Prediction"] = "True"
+                else:
+                    print("Skipping invalid predicted row:", predicted_row)
+
+                # Append the predicted row if valid
+                combined_data = combined_data.to_dict('records')
+                for row in combined_data:
+                    if 'Prediction' not in row:
+                        row['Prediction'] = "False"
+
+                if predicted_row["Prediction"] == "True":
+                    combined_data.append(predicted_row)
+
+                # Convert back to DataFrame
+                combined_data = pd.DataFrame(combined_data)
+
+                # Remove rows with invalid timestamps
+                combined_data = combined_data[combined_data["time"].notna()]
+
+                # Drop rows where all numerical columns are zero
+                numerical_columns = ["total_PIn", "total_POut", "PUE", "EER"]
+                combined_data = combined_data[(combined_data[numerical_columns] != 0).any(axis=1)]
+
+                # Replace invalid values with zero
+                combined_data = combined_data.replace([float("inf"), -float("inf"), float("nan")], 0)
+                combined_data = combined_data.fillna(0)
+                print("create combined_data",combined_data)
+
             final_response = self.influxdb_repository.prepare_response_ai(combined_data)
-        return data
+            print("create combined_data", combined_data)
+            print(final_response)
+            return final_response
 
         # else:
         #     print("Insufficient data to calculate predictions.")
