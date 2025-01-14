@@ -179,9 +179,21 @@ class DevicePowerConsumption(BaseModel):
     co2emmissions: Optional[float]=None
     ip_address: Optional[str] = None
 
+class DevicePowerConsumption1(BaseModel):
+    id: Optional[int] = None
+    device_name: Optional[str] = None
+    total_power: Optional[str] = None
+    total_bandwidth: Optional[str] = None
+    traffic_speed: Optional[str] =None
+    bandwidth_utilization: Optional[str] = None
+    pcr:Optional[str]=None
+    co2emmissions: Optional[str]=None
+    ip_address: Optional[str] = None
+
+
 
 class TopDevicesPowerResponse(BaseModel):
-    top_devices: List[DevicePowerConsumption]
+    top_devices: List[DevicePowerConsumption1]
 
 
 class TrafficThroughputMetricsDetails(BaseModel):
