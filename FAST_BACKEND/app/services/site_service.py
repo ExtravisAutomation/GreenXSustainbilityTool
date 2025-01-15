@@ -2006,7 +2006,8 @@ class SiteService:
 
             final_response = self.influxdb_repository.prepare_response_ai(combined_data)
 
-            # print(final_response)
+            print(final_response,"createcombined_data")
+
             return final_response
 
         # else:

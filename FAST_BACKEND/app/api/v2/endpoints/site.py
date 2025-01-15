@@ -1634,9 +1634,6 @@ def get_inventory_counts(
     )
 
 
-
-
-
 @router.post("/get_next_month", response_model=CustomResponse)
 @inject
 def get_ai_res(device_data:DeviceRequest,

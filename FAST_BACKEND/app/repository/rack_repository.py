@@ -150,13 +150,10 @@ class RackRepository(BaseRepository):
             building = session.query(Building).filter_by(id=rack_data.building_id).first()
             if not building:
                 raise ValueError("Building ID not found")
-
-            
             new_rack = Rack(**rack_data.dict(exclude={"building_id"}))
             session.add(new_rack)
             session.commit()
 
-            
             session.execute(
                 rack_building_association.insert().values(rack_id=new_rack.id, building_id=rack_data.building_id))
             session.commit()
