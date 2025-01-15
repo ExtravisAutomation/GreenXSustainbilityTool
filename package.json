@@ -1,9 +1,0 @@
-{
-  "dependencies": {
-    "apexcharts": "^3.44.0",
-    "echarts": "^5.4.3",
-    "echarts-gl": "^2.0.9",
-    "react-apexcharts": "^1.4.1",
-    "react-calendar-heatmap": "^1.9.0"
-  }
-}
