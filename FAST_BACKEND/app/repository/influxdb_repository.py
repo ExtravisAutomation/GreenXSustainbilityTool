@@ -3601,30 +3601,16 @@ class InfluxDBRepository:
         return response
 
     def influx_resp(self, ip_address):
-        # query = f'''
-        #       from(bucket: "Dcs_db")
-        #         |> range(start: -6mo)
-        #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
-        #         |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
-        #         |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-        #         |> aggregateWindow(every: 1mo, fn: mean, createEmpty: true)
-        #         |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-        #         |> yield(name: "monthly_aggregated_with_ip")
-        #   '''
-
-        query =f'''
-from(bucket: "Dcs_db")
-  |> range(start: -1mo)
-  |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
-  |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}"
-  |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-  |> aggregateWindow(every: 1mo, fn: mean, createEmpty: true, offset: -1d)
-  |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-  |> yield(name: "monthly_aggregated_with_ip")
-
-
-
-'''
+        query = f'''
+              from(bucket: "Dcs_db")
+                |> range(start: -6mo)
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
+                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                |> aggregateWindow(every: 1mo, fn: mean, createEmpty: true)
+                |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+                |> yield(name: "monthly_aggregated_with_ip")
+          '''
 
         try:
             # Execute the query
@@ -3665,7 +3651,7 @@ from(bucket: "Dcs_db")
             combined_data.fillna({"total_PIn": 0, "total_POut": 0}, inplace=True)
             print("zxcmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm")
             print(combined_data)
-            exit()
+
 
             # Calculate ratios
             combined_data = self.calculate_ratios(combined_data)

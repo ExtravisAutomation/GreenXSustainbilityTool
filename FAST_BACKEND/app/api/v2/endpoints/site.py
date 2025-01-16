@@ -1640,7 +1640,25 @@ def get_ai_res(device_data:DeviceRequest,
         # current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    data = site_service.get_device_aidata(device_data)
+    # data = site_service.get_device_aidata(device_data)
+    data = [
+        {'month': 'August', 'year': 2024, 'total_PIn': 224.67, 'total_POut': 194.67, 'PUE': 1.15, 'EER': 0.87,
+         'Prediction': 'False'},
+        {'month': 'September', 'year': 2024, 'total_PIn': 222.95, 'total_POut': 192.5, 'PUE': 1.16, 'EER': 0.86,
+         'Prediction': 'False'},
+        {'month': 'October', 'year': 2024, 'total_PIn': 221.37, 'total_POut': 191.79, 'PUE': 1.15, 'EER': 0.87,
+         'Prediction': 'False'},
+        {'month': 'November', 'year': 2024, 'total_PIn': 205.29, 'total_POut': 177.65, 'PUE': 1.16, 'EER': 0.87,
+         'Prediction': 'False'},
+        {'month': 'December', 'year': 2024, 'total_PIn': 223.01, 'total_POut': 193.01, 'PUE': 1.16, 'EER': 0.87,
+         'Prediction': 'False'},
+        {'month': 'January', 'year': 2025, 'total_PIn': 70.33, 'total_POut': 60.85, 'PUE': 1.16, 'EER': 0.87,
+         'Prediction': 'False'},
+        {'month': 'February', 'year': 2025, 'total_PIn': 41.24, 'total_POut': 35.68, 'PUE': 1.16, 'EER': 0.87,
+         'Prediction': 'True'}
+    ]
+    print(data)
+    print(type(data),"$#@@@@@@@@@@@@@@@@")
     return CustomResponse(
         message="Fetched all inventory count successfully",
         data=data,
