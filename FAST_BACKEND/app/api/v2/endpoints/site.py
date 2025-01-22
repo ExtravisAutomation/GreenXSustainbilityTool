@@ -1637,7 +1637,7 @@ def get_inventory_counts(
 @router.post("/get_next_month", response_model=CustomResponse)
 @inject
 def get_ai_res(device_data:DeviceRequest,
-        # current_user: User = Depends(get_current_active_user),
+        current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     # data = site_service.get_device_aidata(device_data)

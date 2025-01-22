@@ -212,12 +212,15 @@ class DeviceInventoryRepository(BaseRepository):
             ).all()
 
             enriched_modules = []
+            id=0
 
             for chassis_module in chassis_modules:
                 module = chassis_module.module  
-                chassis = chassis_module.chassis 
+                chassis = chassis_module.chassis
+                id +=1
 
                 module_details = {
+                    "id": id,  # Added id to uniquely identify each module in the response list
                     "module_id": module.id if module else None,
                     "module_name": module.module_name if module else "Unknown",
                     "hardware_version": module.hardware_version if module else None,
