@@ -962,7 +962,8 @@ class InfluxDBRepository:
             if isinstance(result, pd.DataFrame) and not result.empty:
                 bandwidth = result.loc[result['_field'] == 'bandwidth', '_value'].mean() / 1000  # Convert Kbps to Mbps
                 traffic_speed = result.loc[result['_field'] == 'total_bytesRateLast', '_value'].mean() * 8 / 1e6  # Convert bytes/sec to Mbps
-                # bandwidth_utilization = min((traffic_speed / bandwidth) * 100, 100) if bandwidth else 0
+
+                    # bandwidth_utilization = min((traffic_speed / bandwidth) * 100, 100) if bandwidth else 0
                 bandwidth_utilization = (traffic_speed / bandwidth) * 100 if bandwidth else 0
             else:
                 bandwidth = traffic_speed = bandwidth_utilization = 0
@@ -1041,12 +1042,16 @@ class InfluxDBRepository:
             # Fetch data
 
             total_power = self.fetch_device_power_consumption(ip, start_time, end_time, aggregate_window)
+            print("ip, start_time, end_time,aggregate_window",ip, start_time, end_time,aggregate_window)
             bandwidth, traffic_speed, bandwidth_utilization = self.fetch_bandwidth_and_traffic(ip, start_time, end_time,
                                                                                                aggregate_window)
 
-
+            print(total_power,"dsajfdkjdkjd")
+            print(traffic_speed,"sd;f;sdl;fl;gls")
             pcr = total_power / traffic_speed if traffic_speed else None
             co2em=(total_power/1000) *0.4041
+            print("co2emissions ", co2em)
+            print(pcr,"PCR")
 
 
             # Convert and format the data with units
@@ -1073,7 +1078,7 @@ class InfluxDBRepository:
                 'total_bandwidth': converted_data['bandwidth'],
                 'traffic_speed': converted_data['traffic_speed'],
                 'bandwidth_utilization': converted_data['bandwidth_utilization'],
-                'pcr': round(pcr, 4),
+                'pcr': round(pcr, 4) if pcr else 0,
                 'co2emmissions': converted_data['co2emissions'],
                 'ip_address': ip
             })

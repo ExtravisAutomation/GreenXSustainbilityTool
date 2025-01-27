@@ -1760,7 +1760,13 @@ class SiteService:
             total_pin_value_KW = total_pin_value / 1000
             data_TB = datatraffic / (1024**4)
             pcr = total_pin_value_KW/data_TB
+            print({"device_id": device.id,
+                "total_pin_value_KW":round(total_pin_value_KW,2),
+                "data_TB":round(data_TB,2),
+                "device_name": device.device_name,
+                "pcr": round(pcr,2)})
 
+            print()
             devices_datatraffic.append({
                 "device_id": device.id,
                 "total_pin_value_KW":round(total_pin_value_KW,2),
@@ -1768,8 +1774,9 @@ class SiteService:
                 "device_name": device.device_name,
                 "pcr": round(pcr,2)
             })
-
             processed_device_names.add(device.device_name)
+        print("Device",devices_datatraffic)
+
 
         return devices_datatraffic
 
