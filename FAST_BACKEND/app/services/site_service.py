@@ -1909,8 +1909,8 @@ class SiteService:
     def get_site_names(self):
         return self.site_repository.get_site_names()
 
-    def get_inventory_count(self):
-        return self.site_repository.get_device_inventory()
+    def get_inventory_count(self,site_id):
+        return self.site_repository.get_device_inventory(site_id)
 
     def get_device_aidata_or(self, device_data):
         print("device_data")

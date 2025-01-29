@@ -1,4 +1,9 @@
 import sys
+from concurrent.futures import ThreadPoolExecutor
+
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import JSONResponse
+import os
 import time
 from fastapi import File, UploadFile
 from datetime import datetime, timedelta
@@ -653,6 +658,7 @@ def get_total_power_consumption(
         data={"total_PIn": pin_value, "consumption_percentages": consumption_percentages, "totalpin_kws": totalpin_kws},
         status_code=200
     )
+
 
 
 @router.get("/sites/carbon_emission_details/{site_id}", response_model=CustomResponse[dict])
@@ -1636,10 +1642,11 @@ def get_device_avg_energy_consumption_metrics(
 @router.get("/get_inventory_count", response_model=CustomResponse)
 @inject
 def get_inventory_counts(
+        site_id: Optional[int] = None,
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    data = site_service.get_inventory_count()
+    data = site_service.get_inventory_count(site_id)
     return CustomResponse(
         message="Fetched all inventory count successfully",
         data=data,
@@ -1695,3 +1702,68 @@ def get_ai_res(device_data:DeviceRequest,
 #         status_code=status.HTTP_200_OK
 #     )
 #
+
+@router.post("/generate_reports", response_model=CustomResponse[dict])
+@inject
+def get_reports(
+        site_id: int,
+        duration: Optional[str] = Query(None, alias="duration"),
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+    def calculate_emission():
+        pin_value, consumption_percentages, totalpin_kws = site_service.calculate_total_power_consumption(site_id, duration)
+        return {"total_PIn": pin_value, "consumption_percentages": consumption_percentages, "totalpin_kws": totalpin_kws}
+    def get_device_emission():
+        return site_service.get_all_devices_carbon_emission(site_id, duration)
+
+    # Use ThreadPoolExecutor to run tasks in parallel
+    with ThreadPoolExecutor() as executor:
+        future_emission = executor.submit(calculate_emission)
+        future_device_emission = executor.submit(get_device_emission)
+
+        # Get results from threads
+        co2_emmission = future_emission.result()
+        devices_carbon_emission = future_device_emission.result()
+
+    return CustomResponse(
+        message="Energy and power consumption metrics retrieved successfully.",
+        data={
+            "co2_emmission": co2_emmission,
+            "devices_carbon_emission": devices_carbon_emission,
+        },
+        status_code=200,
+    )
+
+
+# Directory to save uploaded PDF files
+UPLOAD_DIRECTORY = "./uploaded_files/"
+os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)  # Ensure the directory exists
+
+
+
+@router.post("/upload_pdf", response_model=CustomResponse[dict])
+@inject
+async def upload_pdf(file: UploadFile = File(...)):
+    # Check if the uploaded file is a PDF
+    if file.content_type != "application/pdf":
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed.")
+
+    # Generate a unique file name
+    file_path = os.path.join(UPLOAD_DIRECTORY, file.filename)
+
+    # Save the file
+    try:
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save the file: {str(e)}")
+
+    return JSONResponse(
+        content={
+            "message": "PDF file uploaded successfully.",
+            "file_path": file_path,
+        },
+        status_code=201,
+    )

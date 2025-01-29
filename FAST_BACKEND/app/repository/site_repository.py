@@ -48,11 +48,6 @@ class SiteRepository(BaseRepository):
 
     
     
-    
-    
-    
-    
-    
 
     def get_all_sites(self) -> list[Site]:
         with self.session_factory() as session:
@@ -945,17 +940,29 @@ class SiteRepository(BaseRepository):
             sites = session.query(Site).all()
             return sites
 
-    def get_device_inventory(self):
+    def get_device_inventory(self, site_id):
         with self.session_factory() as session:
-            sites = session.query(Site).all()
-            devices = session.query(APICControllers).filter(APICControllers.site_id==1).all()
-            vendors=session.query(Vendor).all()
-            Racks   = session.query(Rack).all()
+            # Fetch all devices for the given site ID
+            devices = session.query(APICControllers).filter(APICControllers.site_id == site_id).all()
+
+            # Count distinct vendors for the given site ID
+            total_vendors = (
+                session.query(func.count(APICControllers.vendor_id.distinct()))
+                .filter(APICControllers.site_id == site_id)
+                .scalar()
+            )
+
+
+            # Fetch all racks for the given site ID
+            racks = session.query(Rack).filter(Rack.site_id == site_id).all()
+
+            # Calculate onboarded devices
+            onboarded_devices = sum(1 for device in devices if device.OnBoardingStatus)
             return {
-                "onboarded_devices": len(devices),
+                "onboarded_devices": onboarded_devices,
                 "total_devices": len(devices),
-                "total_vendors": len(vendors),
-                "total_racks": len(Racks)
+                "total_vendors": total_vendors,
+                "total_racks": len(racks)
             }
 
     def get_ai_data_sss(self,device_data):
