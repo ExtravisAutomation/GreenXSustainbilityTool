@@ -2250,7 +2250,7 @@ class SiteService:
                 }
 
             
-            energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter123(
+            energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter1234(
                 [ip_address], start_date, end_date, duration_str
             )
 

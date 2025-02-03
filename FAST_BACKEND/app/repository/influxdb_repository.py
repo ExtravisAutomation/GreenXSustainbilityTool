@@ -1258,7 +1258,7 @@ class InfluxDBRepository:
 
         return throughput_metrics
 
-    def get_energy_consumption_metrics_with_filter123(self, device_ips: List[str], start_date: datetime,
+    def get_energy_consumption_metrics_with_filter1234(self, device_ips: List[str], start_date: datetime,
                                                       end_date: datetime, duration_str: str) -> List[dict]:
         total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'

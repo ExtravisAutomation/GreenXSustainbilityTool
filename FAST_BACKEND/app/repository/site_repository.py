@@ -653,7 +653,15 @@ class SiteRepository(BaseRepository):
 
     def delete_password_groups12(self, password_group_ids: List[int]):
         with self.session_factory() as session:
+            dependent_records = session.query(APICControllers).filter(APICControllers.password_group_id.in_(password_group_ids)).count()
+
+            if dependent_records > 0:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Cannot delete password groups. {dependent_records} dependent records exist"
+                )
             password_groups = session.query(PasswordGroup).filter(PasswordGroup.id.in_(password_group_ids)).all()
+
             if password_groups:
                 session.query(PasswordGroup).filter(PasswordGroup.id.in_(password_group_ids)).delete(
                     synchronize_session='fetch')

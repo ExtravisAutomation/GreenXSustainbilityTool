@@ -761,7 +761,7 @@ def delete_password_groups(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    delet = site_service.delete_password_groups1(password_group_ids)
+    delete = site_service.delete_password_groups1(password_group_ids)
     return CustomResponse(
         message="Password groups deleted successfully.",
         data=None,
