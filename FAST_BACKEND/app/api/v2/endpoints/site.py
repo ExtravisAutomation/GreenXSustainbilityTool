@@ -1802,7 +1802,7 @@ from fastapi.responses import FileResponse
 @router.get("/view-pdf/")
 @inject
 def view_pdf():
-    pdf_path = "/home/aziz/reports/pue.pdf"
+    pdf_path ="reports/Updated_Energy_Report.pdf"
     if os.path.exists(pdf_path):
         return FileResponse(path=pdf_path, media_type='application/pdf', filename="pue.pdf")
     else:
