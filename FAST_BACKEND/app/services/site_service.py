@@ -1109,7 +1109,7 @@ class SiteService:
             traffic_data_start_time = time.time()
             site.traffic_data = self.influxdb_repository.get_24hsite_datatraffic(apic_ips, site.id)
             print(site.traffic_data)
-            site.traffic_data=0
+            # site.traffic_data=0
             traffic_data_end_time = time.time()
             logger.debug(
                 f"Time taken to fetch traffic data for site {site.id}: {traffic_data_end_time - traffic_data_start_time:.2f} seconds")
@@ -1121,6 +1121,8 @@ class SiteService:
                                             data['power_utilization'] is not None]
                 power_input_values = [data['power_input'] for data in site.power_data if
                                       data['power_input'] is not None]
+                power_output_values = [data['power_output'] for data in site.power_data if
+                                      data['power_output'] is not None]
                 pue_values = [data['pue'] for data in site.power_data if data['pue'] is not None]
                 total_power_util = sum(power_utilization_values) if power_utilization_values else 0
                 average_power_util = total_power_util / len(power_utilization_values) if power_utilization_values else 0
@@ -1132,6 +1134,10 @@ class SiteService:
 
                 total_power_input = sum(power_input_values) if power_input_values else 0
                 site.power_input = round(total_power_input / 1000, 2)
+
+                total_power_output = sum(power_output_values) if power_output_values else 0
+                site.power_output = round(total_power_output / 1000, 2)
+
             power_agg_end_time = time.time()
             logger.debug(
                 f"Time taken for power data aggregation for site {site.id}: {power_agg_end_time - power_agg_start_time:.2f} seconds")
@@ -1139,9 +1145,12 @@ class SiteService:
             
             traffic_agg_start_time = time.time()
             if site.traffic_data:
+                print("Traffic data")
                 traffic_throughput_values = [data['traffic_through'] for data in site.traffic_data if
                                              data['traffic_through'] is not None]
                 total_traffic_throughput = sum(traffic_throughput_values)
+                print("********************************************")
+                print("Total traffic throughput:", total_traffic_throughput)
                 site.datatraffic = round(total_traffic_throughput / (1024 ** 3), 2)
             else:
                 site.datatraffic = 0
@@ -2077,43 +2086,43 @@ class SiteService:
         return [CSPCDevicesWithSntcResponse(**device) for device in devices]
 
     def calculate_energy_metrics_by_device_id(self, site_id: int, device_id: int, duration_str: str) -> dict:
-        
+
         start_date, end_date = self.calculate_start_end_dates(duration_str)
 
-        
+
         device = self.site_repository.get_device_by_site_id_and_device_id_pue(site_id, device_id)
 
         print(f"Device fetched for site_id {site_id}, device_id {device_id}: {device}", file=sys.stderr)
 
-        
+
         if not device:
             print(f"No device found with device_id {device_id} for site_id {site_id}", file=sys.stderr)
             return {"time": f"{start_date} - {end_date}", "metrics": []}
 
-        
-        device_ip = device.get('ip_address')  
+
+        device_ip = device.get('ip_address')
         if not device_ip:
             print(f"Device IP not found for device_id {device_id} at site_id {site_id}", file=sys.stderr)
             return {"time": f"{start_date} - {end_date}", "metrics": []}
 
-        
+
         metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date, end_date,
                                                                                duration_str)
 
         print(f"Metrics from InfluxDB for device {device['device_name']} ({device_ip}): {metrics}", file=sys.stderr)
 
-        
+
         if metrics:
             for metric in metrics:
-                metric["device_name"] = device["device_name"]  
-                metric["apic_controller_ip"] = device_ip  
+                metric["device_name"] = device["device_name"]
+                metric["apic_controller_ip"] = device_ip
 
             return {
                 "time": f"{start_date} - {end_date}",
-                "metrics": metrics  
+                "metrics": metrics
             }
         else:
-            
+
             print(f"No metrics available for device {device['device_name']} ({device_ip})", file=sys.stderr)
             return {"time": f"{start_date} - {end_date}", "metrics": []}
 
@@ -2385,3 +2394,39 @@ class SiteService:
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error processing the CO2 calculation: {str(e)}")
+
+    def calculate_energy_metrics_by_device_id(self, site_id: int, device_id: int, duration_str: str) -> dict:
+
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+
+        device = self.site_repository.get_device_by_site_id_and_device_id_pue(site_id, device_id)
+
+        print(f"Device fetched for site_id {site_id}, device_id {device_id}: {device}", file=sys.stderr)
+
+        if not device:
+            print(f"No device found with device_id {device_id} for site_id {site_id}", file=sys.stderr)
+            return {"time": f"{start_date} - {end_date}", "metrics": []}
+
+        device_ip = device.get('ip_address')
+        if not device_ip:
+            print(f"Device IP not found for device_id {device_id} at site_id {site_id}", file=sys.stderr)
+            return {"time": f"{start_date} - {end_date}", "metrics": []}
+
+        metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date, end_date,
+                                                                               duration_str)
+
+        print(f"Metrics from InfluxDB for device {device['device_name']} ({device_ip}): {metrics}", file=sys.stderr)
+
+        if metrics:
+            for metric in metrics:
+                metric["device_name"] = device["device_name"]
+                metric["apic_controller_ip"] = device_ip
+
+            return {
+                "time": f"{start_date} - {end_date}",
+                "metrics": metrics
+            }
+        else:
+
+            print(f"No metrics available for device {device['device_name']} ({device_ip})", file=sys.stderr)
+            return {"time": f"{start_date} - {end_date}", "metrics": []}

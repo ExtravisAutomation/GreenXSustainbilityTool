@@ -34,6 +34,7 @@ class SiteDetails_get(SiteBase):
     id: int
     power_utilization: Optional[float] = None
     power_input: Optional[float] = None
+    power_output: Optional[float] = None
     pue: Optional[float] = None
     datatraffic: Optional[float] = None
     num_racks: Optional[int] = None
@@ -396,7 +397,17 @@ class EnergyConsumptionMetricsDetails2(BaseModel):
     device_name: Optional[str] = None  # Device name
     apic_controller_ip: Optional[str] = None  # APIC controller IP
 
-
+class co2emmisionDetails(BaseModel):
+    time: Optional[str] = None  # Start and end time of the metrics calculation
+    energy_consumption: Optional[float] = None  # Energy consumption in kW
+    total_POut: Optional[float] = None  # Total Power Output in kW
+    total_PIn: Optional[float] = None  # Total Power Input in kW
+    power_efficiency: Optional[float] = None  # Power Efficiency percentage
+    eer: Optional[float] = None  # Energy Efficiency Ratio
+    pue: Optional[float] = None  # Power Usage Effectiveness
+    device_name: Optional[str] = None  # Device name
+    co2: Optional[float] = None #
+    apic_controller_ip: Optional[str] = None  # APIC controller IP
 
 
 class OpenAIResponse(BaseModel):

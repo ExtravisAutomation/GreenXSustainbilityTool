@@ -1635,10 +1635,6 @@ def get_device_avg_energy_consumption_metrics(
 
 
 
-
-
-
-
 @router.get("/get_inventory_count", response_model=CustomResponse)
 @inject
 def get_inventory_counts(
@@ -1752,7 +1748,6 @@ async def upload_pdf(file: UploadFile = File(...)):
 
     # Generate a unique file name
     file_path = os.path.join(UPLOAD_DIRECTORY, file.filename)
-
     # Save the file
     try:
         with open(file_path, "wb") as f:
@@ -1767,3 +1762,48 @@ async def upload_pdf(file: UploadFile = File(...)):
         },
         status_code=201,
     )
+
+
+
+@router.get("/sites/carbon_onclick/{site_id}",
+            response_model=CustomResponse[List[EnergyConsumptionMetricsDetails2]])
+@inject
+def get_device_cabonemmsion(
+        site_id: int,
+        device_id: Optional[int] = Query(None, alias="device_id"),
+        duration: Optional[str] = Query(None, alias="duration"),
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+
+    print(f"Request received for site_id: {site_id}, device_id: {device_id}, duration: {duration}", file=sys.stderr)
+
+    if device_id:
+        metrics = site_service.calculate_energy_metrics_by_device_id(site_id, device_id, duration)
+    else:
+        metrics = site_service.calculate_average_energy_metrics_by_site_id(site_id, duration)
+
+    print(f"Metrics retrieved: {metrics}", file=sys.stderr)
+
+    if not metrics or not metrics.get("metrics"):
+        print(f"No metrics found for site_id: {site_id}, device_id: {device_id}", file=sys.stderr)
+        raise HTTPException(status_code=404, detail="No metrics found for the given site/device and duration.")
+
+    return CustomResponse(
+        message="Device energy metrics retrieved successfully.",
+        data=metrics.get("metrics"),
+        status_code=status.HTTP_200_OK
+    )
+
+from fastapi.responses import FileResponse
+
+
+@router.get("/view-pdf/")
+@inject
+def view_pdf():
+    pdf_path = "/home/aziz/reports/pue.pdf"
+    if os.path.exists(pdf_path):
+        return FileResponse(path=pdf_path, media_type='application/pdf', filename="pue.pdf")
+    else:
+        return {"error": "File not found"}

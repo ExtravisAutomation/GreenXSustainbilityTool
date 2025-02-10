@@ -35,7 +35,7 @@ def get_all_reports(
 def add_report(
     report_data: ReportCreate,
 
-    # current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
     report_service: ReportService = Depends(Provide[Container.report_service])
 ):
     return report_service.add_report(report_data)

@@ -2102,10 +2102,13 @@ class InfluxDBRepository:
                     "site_id": site_id,
                     "power_utilization": round(power_utilization, 2) if power_utilization is not None else 0,
                     "power_input": round(total_supplied, 2) if total_supplied != 0 else None,
+                    "power_output": round(total_drawn, 2) if total_drawn != 0 else None,
                     "pue": round(pue, 2) if pue is not None else 0
                 })
+
             except Exception as e:
                 print(f"Error querying InfluxDB for {apic_ip}: {e}")
+        print(site_data)
 
         return site_data
 
@@ -3324,6 +3327,7 @@ class InfluxDBRepository:
                             "total_POut": round(pout/1000, 2),
                             "total_PIn": round(pin/1000, 2),
                             "power_efficiency": round(power_efficiency, 2),
+                            "co2": round(pin*0.4),
                             "eer": round(eer, 2),
                             "pue": round(pue, 2)
                         })

@@ -421,9 +421,9 @@ def get_24hrack_power(apic_ips, rack_id) -> List[dict]:
             power_utilization = None
             pue = None
             if total_supplied > 0:
-                power_utilization = (total_drawn / total_supplied) * 100
+                power_utilization = (total_drawn / total_supplied)
             if total_drawn > 0:
-                pue = ((total_supplied / total_drawn) - 1) * 100
+                pue = ((total_supplied / total_drawn) - 1)
 
             rack_data.append({
                 "rack_id": rack_id,
