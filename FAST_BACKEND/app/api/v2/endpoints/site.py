@@ -1797,13 +1797,26 @@ def get_device_cabonemmsion(
     )
 
 from fastapi.responses import FileResponse
+from pathlib import Path
 
+@router.post("/view-pdf/")
+def view_pdf(
+        filename: Optional[str] = None,
+        # current_user: User = Depends(get_current_active_user),
+):
+    if not filename:
+        raise HTTPException(status_code=400, detail="Filename parameter is required.")
 
-@router.get("/view-pdf/")
-@inject
-def view_pdf():
-    pdf_path ="reports/Updated_Energy_Report.pdf"
-    if os.path.exists(pdf_path):
-        return FileResponse(path=pdf_path, media_type='application/pdf', filename="pue.pdf")
+    # Secure the filename to avoid directory traversal attacks
+    safe_filename = os.path.basename(filename)
+    pdf_path = Path(f"reports/{safe_filename}")
+    print("sdakfkdjskdgjk")
+
+    if pdf_path.exists():
+        return FileResponse(
+            path=pdf_path,
+            media_type='application/pdf',
+            filename=safe_filename
+        )
     else:
-        return {"error": "File not found"}
+        raise HTTPException(status_code=404, detail="File not found.")
