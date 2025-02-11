@@ -1054,12 +1054,12 @@ def get_all_devices_pcr(
 ):
     duration = duration or "24 hours"
     devices_carbon_emission = site_service.get_all_devices_pcr(site_id, duration)
-    print("sadbmflkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
+
     print(devices_carbon_emission)
     for device in devices_carbon_emission:
         for key, value in device.items():
             if isinstance(value, float) and (math.isinf(value) or math.isnan(value)):
-                device[key] = None  # Replace with None or a default value like 0
+                device[key] = 0  # Replace with None or a default value like 0
 
     return CustomResponse(
         message="Carbon emission metrics for all devices retrieved successfully.",
@@ -1067,11 +1067,6 @@ def get_all_devices_pcr(
         status_code=200
     )
 
-    return CustomResponse(
-        message="Carbon emission metrics for all devices retrieved successfully.",
-        data=devices_carbon_emission,
-        status_code=200
-    )
 
 
 

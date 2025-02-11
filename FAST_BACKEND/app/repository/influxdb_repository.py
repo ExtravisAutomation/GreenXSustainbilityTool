@@ -962,7 +962,6 @@ class InfluxDBRepository:
             if isinstance(result, pd.DataFrame) and not result.empty:
                 bandwidth = result.loc[result['_field'] == 'bandwidth', '_value'].mean() / 1000  # Convert Kbps to Mbps
                 traffic_speed = result.loc[result['_field'] == 'total_bytesRateLast', '_value'].mean() * 8 / 1e6  # Convert bytes/sec to Mbps
-
                     # bandwidth_utilization = min((traffic_speed / bandwidth) * 100, 100) if bandwidth else 0
                 bandwidth_utilization = (traffic_speed / bandwidth) * 100 if bandwidth else 0
             else:
@@ -970,7 +969,6 @@ class InfluxDBRepository:
         except Exception as e:
             print(f"Error fetching bandwidth and traffic: {e}")
             bandwidth = traffic_speed = bandwidth_utilization = None
-
         return bandwidth, traffic_speed, bandwidth_utilization
 
     # def get_device_data(self, ip, start_time, end_time, aggregate_window):
@@ -1045,7 +1043,6 @@ class InfluxDBRepository:
             print("ip, start_time, end_time,aggregate_window",ip, start_time, end_time,aggregate_window)
             bandwidth, traffic_speed, bandwidth_utilization = self.fetch_bandwidth_and_traffic(ip, start_time, end_time,
                                                                                                aggregate_window)
-
             print(total_power,"dsajfdkjdkjd")
             print(traffic_speed,"sd;f;sdl;fl;gls")
             pcr = total_power / traffic_speed if traffic_speed else None

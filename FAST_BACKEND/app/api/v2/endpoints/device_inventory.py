@@ -18,11 +18,12 @@ router = APIRouter(prefix="/device_inventory", tags=["Device Inventory"])
 @router.get("/get_all_device_inventory", response_model=Custom_Response_Inventory[List[DeviceInventoryInDB]])
 @inject
 def get_all_devices(
-    current_user: User = Depends(get_current_active_user),
+    page:int=None,
+    # current_user: User = Depends(get_current_active_user),
     device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
 
-    devices = device_inventory_service.get_all_devices()
+    devices = device_inventory_service.get_all_devices(page)
     
     return Custom_Response_Inventory(
         message="Fetched all devices successfully",
@@ -321,7 +322,17 @@ def get_count(
         data=models,
         status_code=200
     )
-
+@router.post("/get_sntc_expiry", response_model=CustomResponse)
+@inject
+def get_expiry(site_id: int,
+    device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+               ):
+    data = device_inventory_service.get_device_expiry(site_id)
+    return CustomResponse(
+        message="Fetched  data successfully",
+        data=data,
+        status_code=200
+    )
 
 
 @router.get("/get_vendor_count", response_model=CustomResponse)
@@ -338,5 +349,6 @@ def get_count(
         data=models,
         status_code=200
     )
+
 
 

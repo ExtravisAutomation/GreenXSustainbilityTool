@@ -524,7 +524,8 @@ def get_24hDevice_power(apic_ip: str) -> List[dict]:
             "apic_controller_ip": apic_ip,
             "power_utilization": round(power_utilization, 2) if power_utilization is not None else 0,
             "total_supplied":total_supplied,
-            "pue": round(pue, 2) if pue is not None else 0,
+            "total_drawn":total_drawn,
+            "pue": round(pue, 4) if pue is not None else 0,
 
            })
 
@@ -739,6 +740,7 @@ def get_24hsite_datatraffc(apic_ips, site_id) -> List[dict]:
 def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
     print(apic_ip)
     total_traffic= 0
+    total_bandwidth=0
     start_range = "-24h"
     query = f'''from(bucket: "Dcs_db")
               |> range(start: {start_range})
@@ -749,22 +751,28 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
     data = []
     try:
         result = query_api.query(query)
-        Totalbytes = None
+        Totalbytes ,bandwidth= None,None
 
         for table in result:
             for record in table.records:
+                # field=record.get_field()
                 if record.get_field() == "total_bytesRateLast":
                     Totalbytes = record.get_value()
-
                 else:
                     Totalbytes =0
+                if record.get_field() == "bandwidth":
+                    bandwidth = record.get_value()
+                else:
+                    bandwidth =0
                 if Totalbytes is not None:
                     total_traffic += Totalbytes
-
+                if bandwidth is not None:
+                    total_bandwidth+=bandwidth
 
         data.append({
             "apic_controller_ip": apic_ip,
-            "traffic_through":  total_traffic
+            "traffic_through":  total_traffic,
+            "bandwidth":total_bandwidth
            })
 
     except Exception as e:

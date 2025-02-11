@@ -89,3 +89,16 @@ class modelCreate(BaseModel):
     site_id : Optional[int]
     rack_id : Optional[int]
     vendor_id : Optional[int]
+
+
+#
+# class filterschema(BaseModel):
+#     ip_address: Optional[str]
+#     device_name: Optional[str]
+#     serial_no:Optional[int]
+#     site_id: Optional[int] #dropdown
+#     rack_id: Optional[int]#dropdown
+#     model_no:Optional[str] #dropdown
+#     dept:Optional[str]
+#     device_type=Optional[int]
+#     department=Optional[str]

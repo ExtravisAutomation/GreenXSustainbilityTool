@@ -13,52 +13,107 @@ class DeviceInventoryService:
         
         return datetime.combine(value, datetime.min.time()) if value else None
 
-    def get_all_devices(self) -> List[dict]:
-        
-        devices = self.device_inventory_repository.get_all_devices()
+    # def get_all_devices(self) -> List[dict]:
+    #
+    #     devices = self.device_inventory_repository.get_all_devices()
+    #
+    #     enriched_devices = []
+    #
+    #     for device in devices:
+    #
+    #         enriched_device = {
+    #             "id": device.get("id"),
+    #             "cisco_domain": device.get("cisco_domain"),
+    #             "contract_expiry": device.get("contract_expiry"),
+    #             "contract_number": device.get("contract_number"),
+    #             "created_at": device.get("created_at"),
+    #             "criticality": device.get("criticality"),
+    #             "department": device.get("department"),
+    #             "device_id": device.get("device_id"),
+    #             "device_name": device.get("device_name"),
+    #             "device_ru": device.get("device_ru"),
+    #             "domain": device.get("domain"),
+    #             "hardware_version": device.get("hardware_version"),
+    #             "hw_eol_date": device.get("hw_eol_date"),
+    #             "hw_eos_date": device.get("hw_eos_date"),
+    #             "item_code": device.get("item_code"),
+    #             "item_desc": device.get("item_desc"),
+    #             "manufacturer_date": device.get("manufacturer_date"),
+    #             "manufacturer": device.get("manufacturer"),
+    #             "modified_by": device.get("modified_by"),
+    #             "parent": device.get("parent"),
+    #             "patch_version": device.get("patch_version"),
+    #             "pn_code": device.get("pn_code"),
+    #             "site_id": device.get("site_id"),
+    #             "rack_id": device.get("rack_id"),
+    #             "rfs_date": device.get("rfs_date"),
+    #             "section": device.get("section"),
+    #             "serial_number": device.get("serial_number"),
+    #             "software_version": device.get("software_version"),
+    #             "source": device.get("source"),
+    #             "stack": device.get("stack"),
+    #             "status": device.get("status"),
+    #             "sw_eol_date": device.get("sw_eol_date"),
+    #             "sw_eos_date": device.get("sw_eos_date"),
+    #             "tag_id": device.get("tag_id"),
+    #             "apic_controller_id": device.get("apic_controller_id"),
+    #
+    #
+    #             "hw_eol_ad": device.get("hw_eol_ad"),
+    #             "hw_eos": device.get("hw_eos"),
+    #             "sw_EoSWM": device.get("sw_EoSWM"),
+    #             "hw_EoRFA": device.get("hw_EoRFA"),
+    #             "sw_EoVSS": device.get("sw_EoVSS"),
+    #             "hw_EoSCR": device.get("hw_EoSCR"),
+    #             "hw_ldos": device.get("hw_ldos"),
+    #
+    #
+    #             "site_name": device.get("site_name"),
+    #             "rack_name": device.get("rack_name"),
+    #             "device_ip": device.get("device_ip"),
+    #             "device_type": device.get("device_type"),
+    #
+    #
+    #             "power_utilization": device.get("power_utilization"),
+    #             "pue": device.get("pue"),
+    #             "power_input": device.get("power_input"),
+    #             "datatraffic": device.get("datatraffic"),
+    #         }
+    #
+    #
+    #         if "datatraffic" in device:
+    #             enriched_device["datatraffic"] = device["datatraffic"]
+    #
+    #         enriched_devices.append(enriched_device)
+    #
+    #     return enriched_devices
+    from typing import List
+
+    def get_all_devices(self, page: int , page_size: int = 10) -> dict:
+
+        devices = self.device_inventory_repository.get_all_devices(page)
+
 
         enriched_devices = []
 
-        for device in devices:
-            
+        for device in devices['devices']:
             enriched_device = {
                 "id": device.get("id"),
-                "cisco_domain": device.get("cisco_domain"),
-                "contract_expiry": device.get("contract_expiry"),
-                "contract_number": device.get("contract_number"),
-                "created_at": device.get("created_at"),
                 "criticality": device.get("criticality"),
                 "department": device.get("department"),
-                "device_id": device.get("device_id"),
                 "device_name": device.get("device_name"),
-                "device_ru": device.get("device_ru"),
-                "domain": device.get("domain"),
                 "hardware_version": device.get("hardware_version"),
-                "hw_eol_date": device.get("hw_eol_date"),
-                "hw_eos_date": device.get("hw_eos_date"),
-                "item_code": device.get("item_code"),
-                "item_desc": device.get("item_desc"),
                 "manufacturer_date": device.get("manufacturer_date"),
                 "manufacturer": device.get("manufacturer"),
                 "modified_by": device.get("modified_by"),
-                "parent": device.get("parent"),
-                "patch_version": device.get("patch_version"),
                 "pn_code": device.get("pn_code"),
                 "site_id": device.get("site_id"),
                 "rack_id": device.get("rack_id"),
-                "rfs_date": device.get("rfs_date"),
                 "section": device.get("section"),
                 "serial_number": device.get("serial_number"),
                 "software_version": device.get("software_version"),
-                "source": device.get("source"),
-                "stack": device.get("stack"),
                 "status": device.get("status"),
-                "sw_eol_date": device.get("sw_eol_date"),
-                "sw_eos_date": device.get("sw_eos_date"),
-                "tag_id": device.get("tag_id"),
                 "apic_controller_id": device.get("apic_controller_id"),
-
-                
                 "hw_eol_ad": device.get("hw_eol_ad"),
                 "hw_eos": device.get("hw_eos"),
                 "sw_EoSWM": device.get("sw_EoSWM"),
@@ -66,28 +121,28 @@ class DeviceInventoryService:
                 "sw_EoVSS": device.get("sw_EoVSS"),
                 "hw_EoSCR": device.get("hw_EoSCR"),
                 "hw_ldos": device.get("hw_ldos"),
-
-                
                 "site_name": device.get("site_name"),
                 "rack_name": device.get("rack_name"),
                 "device_ip": device.get("device_ip"),
                 "device_type": device.get("device_type"),
-                
-                
                 "power_utilization": device.get("power_utilization"),
                 "pue": device.get("pue"),
                 "power_input": device.get("power_input"),
                 "datatraffic": device.get("datatraffic"),
+                "bandwidth_utilization": device.get("bandwidth_utilization") ,
+                "power_output": device.get("power_output"),
+                "carbon-emmison" : round(((device.get("power_input")/ 1000) * 0.4041) ,2),
+                "pcr":round(device.get("power_input") / device.get("datatraffic"),2) if device.get("datatraffic") else None
             }
-            
-            
-            if "datatraffic" in device:
-                enriched_device["datatraffic"] = device["datatraffic"]
-
             enriched_devices.append(enriched_device)
 
-        return enriched_devices
-
+        return {
+            "page": page,
+            "page_size": page_size,
+            "total_devices": devices['total_devices'],
+            "total_pages": devices['total_pages'],
+            "devices": enriched_devices
+        }
 
     def get_device_by_id(self, device_id: int) -> DeviceInventoryInDB:
         device = self.device_inventory_repository.get_device_by_id(device_id)
@@ -140,3 +195,6 @@ class DeviceInventoryService:
         return self.device_inventory_repository.get_device_natures(model_data)
     def get_vendor_count(self):
         return self.device_inventory_repository.get_vendor_device_count()
+
+    def get_device_expiry(self,site_id):
+        return self.device_inventory_repository.get_device_expiry(site_id)
