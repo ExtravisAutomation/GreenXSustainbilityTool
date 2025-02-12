@@ -2627,7 +2627,6 @@ class InfluxDBRepository:
                     'status': 'error',
                     'message': 'No data available for the specified query.'
                 }
-
         except Exception as e:
         # logging.error(f"Error executing query for IP {ip}: {str(e)}")
             return {
@@ -3324,13 +3323,77 @@ class InfluxDBRepository:
                             "total_POut": round(pout/1000, 2),
                             "total_PIn": round(pin/1000, 2),
                             "power_efficiency": round(power_efficiency, 2),
-                            "co2": round(pin*0.4),
+                            "co2e": round((pin/1000)*0.4716,2),
                             "eer": round(eer, 2),
                             "pue": round(pue, 2)
                         })
 
         print(f"Final power metrics: {total_power_metrics}", file=sys.stderr)
+
         return total_power_metrics
+
+    def get_energy_metrics_with_datatraffic(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+                                            duration_str: str) -> List[dict]:
+        total_datatraffic_metric = []
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+
+        print(f"Querying InfluxDB from {start_time} to {end_time} for device_ips: {device_ips}", file=sys.stderr)
+
+        aggregate_window = self.get_aggregate_window(duration_str)
+        time_format = self.get_time_format(duration_str)
+
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "bandwidth" or r["_field"] == "total_bytesRateLast")
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+
+
+            print(f"InfluxDB Query for IP {ip}: {query}", file=sys.stderr)
+            result = self.query_api1.query_data_frame(query)
+
+            print(f"Result for IP {ip}: {result}", file=sys.stderr)
+
+            if not result.empty:
+                result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+                numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+                if '_time' in result.columns and numeric_cols:
+                    grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
+                    grouped['_time'] = pd.to_datetime(grouped['_time'])
+                    grouped.set_index('_time', inplace=True)
+
+                    all_times = pd.date_range(start=start_date, end=end_date, freq=aggregate_window.upper()).strftime(
+                        time_format)
+                    grouped = grouped.reindex(all_times).fillna(0).reset_index()
+
+                    for _, row in grouped.iterrows():
+                        bandwidth_value = row['bandwidth']
+                        total_bytesRateLast_value = row['total_bytesRateLast']
+
+                        bandwidth =( bandwidth_value / 1000 ) if bandwidth_value >0 else 0 # Convert Kbps to Mbps
+                        traffic_speed = total_bytesRateLast_value * 8 / 1e6  if total_bytesRateLast_value >0 else 0 # Convert bytes/sec to Mbps
+
+                        # bandwidth_utilization = min((traffic_speed / bandwidth) * 100, 100) if bandwidth else 0
+                        bandwidth_utilization = (traffic_speed / bandwidth) * 100 if bandwidth else 0
+
+
+
+
+                        total_datatraffic_metric.append({
+                            "time": row['index'],
+                            "bandwidth": round(bandwidth, 2),
+                            "datatraffic": round(traffic_speed, 2),
+                            "bandwidth_utilization": round(bandwidth_utilization, 2),
+
+                        })
+
+        print(f"Final power metrics: {total_datatraffic_metric}", file=sys.stderr)
+        return total_datatraffic_metric
 
     def get_aggregate_window(self, duration_str: str) -> str:
         """

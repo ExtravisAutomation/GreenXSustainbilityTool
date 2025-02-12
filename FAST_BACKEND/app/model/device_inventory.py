@@ -12,7 +12,7 @@ class DeviceInventory(BaseModel):
     created_by = Column(String(255), nullable=True)
     criticality = Column(String(255), nullable=True)
     department = Column(String(255), nullable=True)
-    device_id = Column(Integer, nullable=True)
+    device_id = Column(Integer, ForeignKey('Devices.id'), nullable=True)
     device_name = Column(String(255), nullable=True)
     device_ru = Column(Integer, nullable=True)
     domain = Column(String(255), nullable=True)
@@ -45,6 +45,7 @@ class DeviceInventory(BaseModel):
     apic_controller = relationship("APICController", back_populates="deviceInventory")
     rack = relationship("Rack", backref="deviceInventory")
     site = relationship("Site", backref="deviceInventory")
+    device = relationship("APICControllers", backref="deviceInventory")
     
     
 

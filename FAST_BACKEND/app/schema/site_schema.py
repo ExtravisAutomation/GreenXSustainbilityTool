@@ -394,6 +394,10 @@ class EnergyConsumptionMetricsDetails2(BaseModel):
     power_efficiency: Optional[float] = None  # Power Efficiency percentage
     eer: Optional[float] = None  # Energy Efficiency Ratio
     pue: Optional[float] = None  # Power Usage Effectiveness
+    co2e: Optional[float] = None #
+    datatraffic:Optional[float] =None
+    bandwidth:Optional[float] = None # Bandwidth
+    bandwidth_utilization:Optional[float]=None
     device_name: Optional[str] = None  # Device name
     apic_controller_ip: Optional[str] = None  # APIC controller IP
 

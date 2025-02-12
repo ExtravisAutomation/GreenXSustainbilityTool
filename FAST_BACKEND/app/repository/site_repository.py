@@ -1338,7 +1338,48 @@ class SiteRepository(BaseRepository):
             ]
 
             return devices_info
+    def get_device_by_site_id_and_device_id_data(self, site_id: int, device_id: int):
+        with self.session_factory() as session:
+            device = (
+                session.query(
+                    DeviceInventory.id,
+                    DeviceInventory.device_name,
+                    APICControllers.ip_address,
+                    APICControllers.device_type,  # Added device_type
+                    Vendor.vendor_name,  # Added vendor_name
+                    Site.site_name,
+                    DeviceInventory.hardware_version,
+                    DeviceInventory.manufacturer,
+                    DeviceInventory.pn_code,
+                    DeviceInventory.serial_number,
+                    DeviceInventory.software_version,
+                    DeviceInventory.status
+                )
+                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Vendor, APICControllers.vendor_id == Vendor.id)  # Join with Vendor table
+                .join(Site, DeviceInventory.site_id == Site.id)
+                .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_id == device_id)
+                .first()
+            )
 
+            print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+            if device:
+
+                return {
+                    "device_id": device.id,
+                    "device_name": device.device_name,
+                    "ip_address": device.ip_address,
+                    "site_name": device.site_name,
+                    "hardware_version": device.hardware_version,
+                    "manufacturer": device.manufacturer,
+                    "pn_code": device.pn_code,
+                    "serial_number": device.serial_number,
+                    "software_version": device.software_version,
+                    "status": device.status
+                }
+
+            else:
+                return None
 
 
 

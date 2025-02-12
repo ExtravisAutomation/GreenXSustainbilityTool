@@ -133,6 +133,7 @@ class DeviceInventoryRepository(BaseRepository):
         with self.session_factory() as session:
             # Get total device count for pagination
             total_devices = session.query(DeviceInventory).count()
+            print("Total devices",total_devices)
             total_pages = (total_devices + page_size - 1) // page_size
 
             # Ensure page is within bounds
