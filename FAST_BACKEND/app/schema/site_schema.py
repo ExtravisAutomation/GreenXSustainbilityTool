@@ -397,9 +397,13 @@ class EnergyConsumptionMetricsDetails2(BaseModel):
     co2e: Optional[float] = None #
     datatraffic:Optional[float] =None
     bandwidth:Optional[float] = None # Bandwidth
+    pcr:Optional[float] = None #
     bandwidth_utilization:Optional[float]=None
     device_name: Optional[str] = None  # Device name
-    apic_controller_ip: Optional[str] = None  # APIC controller IP
+    ip_address: Optional[str] = None  # APIC controller IP
+    model_no:Optional[str] = None #
+
+
 
 class co2emmisionDetails(BaseModel):
     time: Optional[str] = None  # Start and end time of the metrics calculation

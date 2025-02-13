@@ -3319,13 +3319,13 @@ class InfluxDBRepository:
 
                         total_power_metrics.append({
                             "time": row['index'],
-                            "energy_consumption": round(energy_consumption, 2),
-                            "total_POut": round(pout/1000, 2),
-                            "total_PIn": round(pin/1000, 2),
-                            "power_efficiency": round(power_efficiency, 2),
-                            "co2e": round((pin/1000)*0.4716,2),
-                            "eer": round(eer, 2),
-                            "pue": round(pue, 2)
+                            "energy_consumption": round(energy_consumption, 4),
+                            "total_POut": round(pout/1000, 4),
+                            "total_PIn": round(pin/1000, 4),
+                            "power_efficiency": round(power_efficiency, 4),
+                            "co2e": round((pin/1000)*0.4716,4),
+                            "eer": round(eer, 4),
+                            "pue": round(pue, 4)
                         })
 
         print(f"Final power metrics: {total_power_metrics}", file=sys.stderr)

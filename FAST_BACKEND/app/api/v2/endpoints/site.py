@@ -1835,6 +1835,7 @@ def get_dcs_energy_metrics_by_timestamp(
     print(f"Request received for site_id: {site_id}, device_id: {device_id}, duration: {duration}, timestamp: {timestamp}", file=sys.stderr)
 
     if device_id:
+        print("Request received")
         metrics = site_service.calculate_dcs_metrics_by_device_id(site_id, device_id, duration)
     else:
         metrics = site_service.calculate_average_energy_metrics_by_site_id(site_id, duration)

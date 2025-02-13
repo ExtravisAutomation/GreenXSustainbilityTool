@@ -2085,46 +2085,7 @@ class SiteService:
         
         return [CSPCDevicesWithSntcResponse(**device) for device in devices]
 
-    def calculate_energy_metrics_by_device_id(self, site_id: int, device_id: int, duration_str: str) -> dict:
 
-        start_date, end_date = self.calculate_start_end_dates(duration_str)
-
-
-        device = self.site_repository.get_device_by_site_id_and_device_id_pue(site_id, device_id)
-
-        print(f"Device fetched for site_id {site_id}, device_id {device_id}: {device}", file=sys.stderr)
-
-
-        if not device:
-            print(f"No device found with device_id {device_id} for site_id {site_id}", file=sys.stderr)
-            return {"time": f"{start_date} - {end_date}", "metrics": []}
-
-
-        device_ip = device.get('ip_address')
-        if not device_ip:
-            print(f"Device IP not found for device_id {device_id} at site_id {site_id}", file=sys.stderr)
-            return {"time": f"{start_date} - {end_date}", "metrics": []}
-
-
-        metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date, end_date,
-                                                                               duration_str)
-
-        print(f"Metrics from InfluxDB for device {device['device_name']} ({device_ip}): {metrics}", file=sys.stderr)
-
-
-        if metrics:
-            for metric in metrics:
-                metric["device_name"] = device["device_name"]
-                metric["apic_controller_ip"] = device_ip
-
-            return {
-                "time": f"{start_date} - {end_date}",
-                "metrics": metrics
-            }
-        else:
-
-            print(f"No metrics available for device {device['device_name']} ({device_ip})", file=sys.stderr)
-            return {"time": f"{start_date} - {end_date}", "metrics": []}
 
     def calculate_average_energy_metrics_by_site_id(self, site_id: int, duration_str: str) -> dict:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
@@ -2424,8 +2385,9 @@ class SiteService:
 
         if metrics:
             for metric in metrics:
-                metric["device_name"] = device["device_name"]
-                metric["apic_controller_ip"] = device_ip
+                metric["device_name"] = device.get('device_name')
+                metric["model_no"] = device.get('pn_code')
+                metric["ip_address"] = device_ip
 
             return {
                 "time": f"{start_date} - {end_date}",
@@ -2452,59 +2414,46 @@ class SiteService:
 
 
         device_ip = device.get('ip_address')
+
         if not device_ip:
             print(f"Device IP not found for device_id {device_id} at site_id {site_id}", file=sys.stderr)
             return {"time": f"{start_date} - {end_date}", "metrics": []}
 
 
-        metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date, end_date,
+        power_data = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date, end_date,
                                                                                duration_str)
-        metrics1=self.influxdb_repository.get_energy_metrics_with_datatraffic([device_ip], start_date, end_date,
+        traffic_data=self.influxdb_repository.get_energy_metrics_with_datatraffic([device_ip], start_date, end_date,
                                                                                duration_str)
-        print(f"Metrics", metrics)
-        print(f"Metrics1", metrics1)
-        # Initialize combined list
-        # Initialize combined list
+
         combined_metrics = []
 
-        # Create a lookup dictionary for Metrics1 based on time for quick access
-        metrics1_lookup = {item['time']: item for item in metrics1}
-
-        # Iterate through Metrics and combine with Metrics1 where time matches
-        for metric in metrics:
-            time_key = metric['time']
-
-            if time_key in metrics1_lookup:
-                data_metric = metrics1_lookup[time_key]
-
-                # Calculate PCR (ensure datatraffic is not zero)
-                pcr = round(metric['total_PIn'] * 1000 / data_metric['datatraffic'], 2) if data_metric[
-                                                                                               'datatraffic'] != 0 else None
-
-                # Combine both dictionaries and add PCR
-                combined_entry = {**metric, **data_metric, 'pcr': pcr}
-
-                # Remove duplicate 'time' from the merged dictionary
-                combined_entry.pop('time', None)
-
-                # Add combined data to the list
-                combined_metrics.append({'time': time_key, **combined_entry})
-
-        # Output the combined list of metrics
-        for entry in combined_metrics:
-            print(entry)
-
-        print(f"Metrics from InfluxDB for device {device['device_name']} ({device_ip}): {metrics}", file=sys.stderr)
+        for metric in power_data:
+            for me in traffic_data:
+                if metric['time'] == me['time']:
+                    pcr = round((metric['total_PIn'] * 1000)/ (me['datatraffic'] /1024),4)if me['datatraffic'] != 0 else 0
 
 
-        if metrics:
-            for metric in metrics:
-                metric["device_name"] = device["device_name"]
-                metric["apic_controller_ip"] = device_ip
+                    # Combine both dictionaries and add PCR
+                    combined_entry = {**metric, **me, 'pcr': pcr}
+
+                    # Add combined data to the list
+                    combined_metrics.append(combined_entry)
+        print(combined_metrics)
+
+
+
+
+
+        if combined_metrics:
+            for metric in combined_metrics:
+                metric["device_name"] = device.get('device_name')
+                metric["model_no"] = device.get('pn_code')
+                metric["ip_address"] = device_ip
+
 
             return {
                 "time": f"{start_date} - {end_date}",
-                "metrics": metrics
+                "metrics": combined_metrics
             }
         else:
 
