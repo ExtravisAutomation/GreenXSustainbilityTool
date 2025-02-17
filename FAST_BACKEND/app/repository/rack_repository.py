@@ -68,6 +68,8 @@ class RackRepository(BaseRepository):
                 rack_power_data = get_24hrack_power(apic_ips, rack.id)
                 rack_traffic_data = get_24h_rack_datatraffic(apic_ips, rack.id)
 
+
+
                 
                 if rack_power_data:
                     power_utilization_values = [data.get('power_utilization', 0) for data in rack_power_data]

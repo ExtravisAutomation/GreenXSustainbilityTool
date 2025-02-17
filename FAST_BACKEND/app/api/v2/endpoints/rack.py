@@ -22,7 +22,7 @@ router = APIRouter(prefix="/racks", tags=["RACKS"])
 @inject
 def get_racks(
     site_id: Optional[int] = None,
-    current_user: User = Depends(get_current_active_user),
+    # current_user: User = Depends(get_current_active_user),
     rack_service: RackService = Depends(Provide[Container.rack_service])
 ):
     racks = rack_service.get_racks(site_id)
