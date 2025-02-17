@@ -591,11 +591,22 @@ class DeviceInventoryRepository(BaseRepository):
             }
             return result
 
-    def get_vendors(self):
+    def get_vendors(self,site_id,rack_id):
         with self.session_factory() as session:
-            ventors = session.query(Vendor).all()
 
-            return ventors
+            query = session.query(Vendor).join(APICControllers, Vendor.id == APICControllers.vendor_id)
+
+            # Apply filters dynamically
+            if site_id is not None:
+                query = query.filter(APICControllers.site_id == site_id)
+            if rack_id is not None:
+                query = query.filter(APICControllers.rack_id == rack_id)
+
+            vendors = query.distinct().all()  # Fetch distinct vendors
+            return vendors
+
+
+
 
     def get_count(self):
         with self.session_factory() as session:

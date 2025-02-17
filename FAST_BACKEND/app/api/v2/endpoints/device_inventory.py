@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from typing import List, Optional
 from app.services.device_inventory_service import DeviceInventoryService
 from app.schema.device_inventory_schema import DeviceInventoryCreate, DeviceInventoryUpdate, DeviceInventoryInDB
 from app.core.dependencies import get_db
@@ -253,10 +253,12 @@ def device_type(
 @router.get("/get_vendors", response_model=CustomResponse)
 @inject
 def get_vendors(
+        site_id: Optional[int] = None,
+        rack_id: Optional[int]=None,
         current_user: User = Depends(get_current_active_user),
         device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
-    vendors = device_inventory_service.get_vendor()
+    vendors = device_inventory_service.get_vendor(site_id,rack_id)
 
     return CustomResponse(
         message="Fetched vendors data successfully",

@@ -1622,7 +1622,7 @@ def get_device_avg_energy_consumption_metrics(
         rack_id: Optional[int] = None,
         vendor_id: Optional[int] = None,
         duration: Optional[str] = Query(None, alias="duration"),
-        # current_user: User = Depends(get_current_active_user),
+        current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     duration = duration or "24 hours"

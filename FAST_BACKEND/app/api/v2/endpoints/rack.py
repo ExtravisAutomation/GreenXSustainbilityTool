@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from typing import List, Optional
 from app.schema.rack_schema import RackCreate, RackUpdate, RackDetails, CustomResponse_rack, GetRacksResponse
 from pydantic import BaseModel
 from app.services.rack_service import RackService
@@ -21,10 +21,11 @@ router = APIRouter(prefix="/racks", tags=["RACKS"])
 @router.get("/getallracks", response_model=CustomResponse_rack[List[RackDetails]])
 @inject
 def get_racks(
-    # current_user: User = Depends(get_current_active_user),
+    site_id: Optional[int] = None,
+    current_user: User = Depends(get_current_active_user),
     rack_service: RackService = Depends(Provide[Container.rack_service])
 ):
-    racks = rack_service.get_racks()
+    racks = rack_service.get_racks(site_id)
     return CustomResponse_rack(
         message="Fetched all racks successfully",
         data=racks,
