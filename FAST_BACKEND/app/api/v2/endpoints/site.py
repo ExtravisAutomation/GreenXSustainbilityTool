@@ -67,7 +67,7 @@ from app.schema.site_schema import EnergyConsumptionMetricsDetails2
 
 from app.schema.site_schema import CustomResponse_openai
 
-from app.schema.site_schema import EnergyConsumptionMetricsDetailsNew
+from app.schema.site_schema import EnergyConsumptionMetricsDetailsNew,modelResponse
 
 router = APIRouter(prefix="/sites", tags=["SITES"])
 logger = getLogger(__name__)
@@ -1617,17 +1617,14 @@ def clean_data(data):
 @router.post("/sites/avg_energy_consumption_with_model_count/")
 @inject
 def get_device_avg_energy_consumption_metrics(
-        limit:Optional[int]=None,
-        site_id: Optional[int] = None,
-        rack_id: Optional[int] = None,
-        vendor_id: Optional[int] = None,
-        duration: Optional[str] = Query(None, alias="duration"),
-        current_user: User = Depends(get_current_active_user),
+        model_data:modelResponse,
+        # current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    duration = duration or "24 hours"
 
-    avg_metrics = site_service.calculate_avg_energy_consumption_with_filters(limit,site_id, rack_id, vendor_id,
+    duration =  "24 hours"
+
+    avg_metrics = site_service.calculate_avg_energy_consumption_with_filters(model_data.limit,model_data.site_id, model_data.rack_id, model_data.vendor_id,
                                                                              duration)
 
     print("Average Metrics:", avg_metrics, file=sys.stderr)

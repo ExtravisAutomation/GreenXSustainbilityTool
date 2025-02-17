@@ -447,3 +447,10 @@ class EnergyConsumptionMetricsDetailsNew(BaseModel):
 
 class DeviceRequest(BaseModel):
     device_id: int
+
+class modelResponse(BaseModel):
+    limit: Optional[int] = 0
+    site_id: Optional[int] = 0
+    rack_id: Optional[int] = 0
+    vendor_id: Optional[int] = 0
+    # duration: Optional[str] = ''
