@@ -1265,17 +1265,21 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.apic_controller_id,
                     DeviceInventory.pn_code,
                     APICControllers.ip_address,
+                    APICControllers.vendor_id,
                     Site.site_name,
                     DeviceInventory.hardware_version,
                     DeviceInventory.manufacturer,
                     DeviceInventory.serial_number,
                     DeviceInventory.software_version,
                     DeviceInventory.status,
-                    Rack.rack_name  
+                    Rack.rack_name,
+
+
                 )
                 .join(APICControllers, DeviceInventory.device_id == APICControllers.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
-                .join(Rack, DeviceInventory.rack_id == Rack.id)  
+                .join(Rack, DeviceInventory.rack_id == Rack.id)
+
             )
 
             
@@ -1305,7 +1309,9 @@ class SiteRepository(BaseRepository):
                         "pn_code": device.pn_code,
                         "serial_number": device.serial_number,
                         "software_version": device.software_version,
-                        "status": device.status
+                        "status": device.status,
+                        "vendor_name": session.query(Vendor.vendor_name).filter(Vendor.id==device.vendor_id).first()[0]
+
                     } for device in devices
                 ]
             else:

@@ -2277,6 +2277,7 @@ class SiteService:
                     "total_data_traffic": 0,
                     "total_co2_emissions": 0,
                     "total_count": 0,
+                    "vendor_name": device["vendor_name"],
                     "site_name": device["site_name"],
                     "rack_name": device["rack_name"]
                 }
@@ -2321,6 +2322,7 @@ class SiteService:
                 "site_name": metrics["site_name"],
                 "rack_name": metrics["rack_name"],
                 "model_count": total_count,
+                "vendor_name": metrics["vendor_name"],
                 "avg_total_PIn": round(metrics["total_power_in"] / total_count, 2) if total_count else 0,
                 "avg_energy_efficiency": round(metrics["total_power_out"] / metrics["total_power_in"], 2) if metrics["total_power_in"] > 0 else 0,
                 "avg_power_efficiency": round(metrics["total_power_in"] / metrics["total_power_out"], 2) if metrics["total_power_out"] > 0 else 0,
