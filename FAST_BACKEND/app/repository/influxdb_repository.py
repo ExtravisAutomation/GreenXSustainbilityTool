@@ -1286,6 +1286,22 @@ class InfluxDBRepository:
             '''
             power_result = self.query_api1.query_data_frame(power_query)
 
+
+            print(power_result)
+            # If the result is empty, skip this device
+
+
+            # Calculate energy efficiency and power efficiency
+            power_result['energy_efficiency'] = (power_result['total_POut'] / power_result['total_PIn']).fillna(0)
+            power_result['power_efficiency'] = (power_result['total_PIn'] / power_result['total_POut']).fillna(0)
+
+            # Format timestamps
+            power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
+
+            print(f"Data for IP:", power_result, file=sys.stderr)
+
+            # Merge power data with total bytes rate last
+
             # Query for data traffic
             traffic_query = f'''
                 from(bucket: "{configs.INFLUXDB_BUCKET}")
@@ -1295,6 +1311,7 @@ class InfluxDBRepository:
                 |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
+
             traffic_result = self.query_api1.query_data_frame(traffic_query)
 
             # If both results are empty, skip this device
@@ -1302,16 +1319,30 @@ class InfluxDBRepository:
                 print(f"No data for IP: "
                       f"{ip}", file=sys.stderr)
                 continue
-
             # Format timestamps
             if not power_result.empty:
                 power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
             if not traffic_result.empty:
+
                 traffic_result['_time'] = pd.to_datetime(traffic_result['_time']).dt.strftime(time_format)
 
-            # Merge traffic and power data
-            combined_result = pd.merge(power_result, traffic_result, on='_time', how='outer').fillna(0)
-
+            # print(f"Data for IP:", power_result, file=sys.stderr)
+            # print(f'Data for dataa',traffic_result,file=sys.stderr)
+            #
+            # # Merge traffic and power data
+            # combined_result = pd.merge(power_result, traffic_result, on='_time', how='outer').fillna(0)
+            if power_result.empty and traffic_result.empty:
+                # If both are empty, create a new DataFrame with an empty _time column
+                combined_result = pd.DataFrame(columns=['_time'])
+            elif power_result.empty:
+                # If only power_result is empty, use traffic_result as the result
+                combined_result = traffic_result.copy()
+            elif traffic_result.empty:
+                # If only traffic_result is empty, use power_result as the result
+                combined_result = power_result.copy()
+            else:
+                # Merge only if both have data
+                combined_result = pd.merge(power_result, traffic_result, on='_time', how='outer').fillna(0)
             for _, row in combined_result.iterrows():
                 pin = row['total_PIn'] if 'total_PIn' in row else 0
                 pout = row['total_POut'] if 'total_POut' in row else 0
@@ -1322,7 +1353,7 @@ class InfluxDBRepository:
                 pin_kg = pin / 1000
                 co2 = pin_kg * 0.4716
                 co2_tons = co2 / 1000
-                total_bytes_rate_last_gb = self.convert_bytes(total_bytes_rate_last)
+                total_bytes_rate_last_gb = total_bytes_rate_last/(2 ** 30)
 
                 total_power_metrics.append({
                     "time": row['_time'],

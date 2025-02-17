@@ -5,6 +5,7 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 import os
 import time
+import numpy as np
 from fastapi import File, UploadFile
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any, Union
@@ -1606,7 +1607,13 @@ def get_device_energy_consumption_metrics(
         status_code=status.HTTP_200_OK
     )
 
-
+def clean_data(data):
+    for item in data:
+        for key, value in item.items():
+            if isinstance(value, float):
+                if np.isnan(value) or np.isinf(value):
+                    item[key] = 0  # Replace with 0 or another fallback
+    return data
 @router.post("/sites/avg_energy_consumption_with_model_count/")
 @inject
 def get_device_avg_energy_consumption_metrics(
@@ -1615,7 +1622,7 @@ def get_device_avg_energy_consumption_metrics(
         rack_id: Optional[int] = None,
         vendor_id: Optional[int] = None,
         duration: Optional[str] = Query(None, alias="duration"),
-        current_user: User = Depends(get_current_active_user),
+        # current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     duration = duration or "24 hours"
@@ -1624,7 +1631,7 @@ def get_device_avg_energy_consumption_metrics(
                                                                              duration)
 
     print("Average Metrics:", avg_metrics, file=sys.stderr)
-
+    avg_metrics=clean_data(avg_metrics)
     if not avg_metrics:
         raise HTTPException(status_code=404, detail="No metrics found for the given filters.")
 

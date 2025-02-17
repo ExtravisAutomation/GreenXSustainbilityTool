@@ -1,6 +1,7 @@
 import sys
 import time
 from collections import defaultdict
+import numpy as np
 from datetime import datetime, timedelta
 from random import random
 from typing import Dict, List, Any, Optional
@@ -2103,6 +2104,7 @@ class SiteService:
         
         for device in devices:
             device_ip = device.ip_address
+
             if device_ip:
                 metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date,
                                                                                        end_date, duration_str)
@@ -2113,7 +2115,8 @@ class SiteService:
                     for metric in metrics:
                         
                         metric["device_name"] = device.device_name  
-                        metric["apic_controller_ip"] = device_ip  
+                        metric["ip_address"] = device_ip
+                        metric["model_no"]=''
 
                         aggregated_metrics.append(metric)
         print({
@@ -2190,6 +2193,62 @@ class SiteService:
         print("RETURNNNN METRIX FROM INFLUX", energy_metrics, file=sys.stderr)
         return energy_metrics
 
+    # Final tuning to ensure moderate performance is correctly classified
+    def classify_performance(self,avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr,
+                                         avg_co2_emissions):
+        score = 0
+
+        # **Energy Efficiency Score (Higher is better)**
+        if avg_energy_efficiency >= 0.90:
+            score += 2  # Good
+        elif 0.80 <= avg_energy_efficiency < 0.90:
+            score += 1  # Moderate
+        else:
+            score += 0  # Low
+
+        # **Power Efficiency Score (Lower is better, closer to 1 is ideal)**
+        if avg_power_efficiency <= 1.10:
+            score += 2  # Good
+        elif 1.11 <= avg_power_efficiency <= 1.20:
+            score += 1  # Moderate
+        else:
+            score += 0  # Low
+
+        # **Data Traffic Score (Higher is better)**
+        if avg_data_traffic >= 2500:
+            score += 2  # Good
+        elif 1500 <= avg_data_traffic < 2500:
+            score += 1  # Moderate
+        else:
+            score += 0  # Low
+
+        # **Power Consumption Ratio (PCR) Score (Lower is better)**
+        if avg_pcr <= 1.5:
+            score += 2  # Good
+        elif 1.6 <= avg_pcr <= 2.5:
+            score += 1  # Moderate
+        else:
+            score += 0  # Low
+
+        # **CO₂ Emissions Score (Lower is better)**
+        if avg_co2_emissions <= 2.0:
+            score += 2  # Good
+        elif 2.01 <= avg_co2_emissions <= 3.0:
+            score += 1  # Now giving moderate cases some score
+        else:
+            score -= 1  # Minor penalty for CO₂ > 3.0 to prevent downgrading too much
+
+        # **Final Classification**
+        if score >= 8:
+            return score,"This model is highly efficient, demonstrating optimal power usage, low CO₂ emissions, and strong data performance."
+        elif 5 <= score < 8:
+            return score,"This model offers moderate efficiency, performing well in key areas but with some potential for optimization."
+        else:
+            return score,"This model has a lower efficiency and may require optimization to improve performance and resource utilization."
+
+    # Rerun test cases with final tuned logic
+
+
     def calculate_avg_energy_consumption_with_filters(self,limit, site_id: Optional[int], rack_id: Optional[int],
                                                      vendor_id: Optional[int],
                                                       duration_str: str) -> list:
@@ -2218,8 +2277,6 @@ class SiteService:
                     "total_data_traffic": 0,
                     "total_co2_emissions": 0,
                     "total_count": 0,
-                    "device_name": device["device_name"],
-                    "ip_address": device["ip_address"],
                     "site_name": device["site_name"],
                     "rack_name": device["rack_name"]
                 }
@@ -2238,14 +2295,29 @@ class SiteService:
                     model_metrics[model]["total_data_traffic"] += metric.get("data_traffic", 0)
                     model_metrics[model]["total_co2_emissions"] += metric["co2_kgs"]
 
+
+
+
         
         avg_metrics = []
         for model, metrics in model_metrics.items():
             total_count = metrics["total_count"]
+            avg_total_PIn = round(metrics["total_power_in"] / total_count, 2) if total_count else 0
+            avg_data_traffic = round(metrics["total_data_traffic"] / total_count, 2) if total_count else 0
+            avg_pcr = round((avg_total_PIn * 1000) / avg_data_traffic,
+                            4) if avg_data_traffic > 0 else 0  # Convert kW to W
+
+            score,performance_label = self.classify_performance(
+                avg_energy_efficiency=round(metrics["total_power_out"] / metrics["total_power_in"], 2) if metrics[
+                                                                                                              "total_power_in"] > 0 else 0,
+                avg_power_efficiency=round(metrics["total_power_in"] / metrics["total_power_out"], 2) if metrics[
+                                                                                                             "total_power_out"] > 0 else 0,
+                avg_data_traffic=avg_data_traffic,
+                avg_pcr=avg_pcr,
+                avg_co2_emissions=round(metrics["total_co2_emissions"] / total_count, 2) if total_count else 0
+            )
             avg_metrics.append({
                 "model_no": model,
-                "device_name": metrics["device_name"],
-                "ip_address": metrics["ip_address"],
                 "site_name": metrics["site_name"],
                 "rack_name": metrics["rack_name"],
                 "model_count": total_count,
@@ -2253,8 +2325,12 @@ class SiteService:
                 "avg_energy_efficiency": round(metrics["total_power_out"] / metrics["total_power_in"], 2) if metrics["total_power_in"] > 0 else 0,
                 "avg_power_efficiency": round(metrics["total_power_in"] / metrics["total_power_out"], 2) if metrics["total_power_out"] > 0 else 0,
                 "avg_total_POut": round(metrics["total_power_out"] / total_count, 2) if total_count else 0,
-                "avg_data_traffic": round(metrics["total_data_traffic"] / total_count, 2) if total_count else 0,
-                "avg_co2_emissions": round(metrics["total_co2_emissions"] / total_count, 2) if total_count else 0
+                "avg_data_traffic": avg_data_traffic,
+                "avg_co2_emissions": round(metrics["total_co2_emissions"] / total_count, 2) if total_count else 0,
+                "avg_pcr": avg_pcr,
+                "score":score,
+                "message": performance_label
+
             })
 
         return avg_metrics

@@ -1273,7 +1273,7 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.status,
                     Rack.rack_name  
                 )
-                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(APICControllers, DeviceInventory.device_id == APICControllers.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .join(Rack, DeviceInventory.rack_id == Rack.id)  
             )
