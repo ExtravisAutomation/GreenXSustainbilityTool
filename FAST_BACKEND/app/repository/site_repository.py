@@ -111,8 +111,40 @@ class SiteRepository(BaseRepository):
                         failed_deletes.append({'id': site_id, 'name': None})  
 
             return successful_deletes, failed_deletes
-            
 
+    def get_all_devices_data(self) -> List[Devices]:
+        with self.session_factory() as session:
+            subquery = session.query(DeviceInventory.device_id).filter(
+                DeviceInventory.role.in_(["leaf", "spine"])
+            ).subquery()
+
+            devices = session.query(
+                Devices,
+                PasswordGroup.password_group_name
+            ).outerjoin(PasswordGroup, Devices.password_group_id == PasswordGroup.id) \
+                .outerjoin(DeviceInventory, Devices.id == DeviceInventory.device_id) \
+                .filter(~Devices.id.in_(subquery)) \
+                .options(joinedload(Devices.site), joinedload(Devices.rack)) \
+                .order_by(Devices.created_at.desc()) \
+                .all()
+
+            result = []
+            for device, password_group_name in devices:
+                device_data = device.__dict__
+                device_data["password_group_name"] = password_group_name
+                device_data["site_name"] = device.site.site_name if device.site else None
+                device_data["rack_name"] = device.rack.rack_name if device.rack else None
+                device_data["rack_unit"] = device.rack_unit
+                device_data["OnBoardingStatus"] = device.OnBoardingStatus
+                device_data["messages"] = device.messages if device.messages else None
+                device_data["site_id"] = device.site_id
+                device_data["device_ip"] = device.ip_address
+                device_data["collection_status"] = device.collection_status
+                result.append(device_data)
+            print("result",result)
+            print("************************************")
+
+            return result
     
     
     
@@ -739,38 +771,7 @@ class SiteRepository(BaseRepository):
     
     
 
-    def get_all_devices2(self) -> List[APICControllers]:
-        with self.session_factory() as session:
-            
-            subquery = session.query(DeviceInventory.apic_controller_id).filter(
-                DeviceInventory.role.in_(["leaf", "spine"])
-            ).subquery()
 
-            
-            devices = session.query(
-                APICControllers,
-                PasswordGroup.password_group_name
-            ).outerjoin(PasswordGroup, APICControllers.password_group_id == PasswordGroup.id) \
-                .outerjoin(DeviceInventory, APICControllers.id == DeviceInventory.apic_controller_id) \
-                .filter(~APICControllers.id.in_(subquery)) \
-                .options(joinedload(APICControllers.site), joinedload(APICControllers.rack)) \
-                .order_by(APICControllers.created_at.desc()) \
-                .all()
-
-            result = []
-            for device, password_group_name in devices:
-                device_data = device.__dict__
-                device_data["password_group_name"] = password_group_name
-                device_data["site_name"] = device.site.site_name if device.site else None
-                device_data["rack_name"] = device.rack.rack_name if device.rack else None
-                device_data["rack_unit"] = device.rack_unit
-                device_data["OnBoardingStatus"] = device.OnBoardingStatus
-                device_data["messages"] = device.messages if device.messages else None
-                device_data["site_id"] = device.site_id
-                device_data["device_ip"] = device.ip_address
-                result.append(device_data)
-
-            return result
 
     def get_all_device_types1(self) -> List[str]:
         with self.session_factory() as session:
@@ -1387,6 +1388,18 @@ class SiteRepository(BaseRepository):
             else:
                 return None
 
-
+    def device_collectionstatus(self, device_id: int, status: bool) -> str:
+        try:
+            with self.session_factory() as session:
+                device = session.query(Devices).filter(Devices.id == device_id).first()
+                if device:
+                    device.collection_status = status
+                    session.commit()
+                    print("device_collectionstatus")
+                    return f"Device status updated successfully."
+                else:
+                    raise HTTPException(status_code=404, detail=f"No device found with ID {device_id}.")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 

@@ -308,6 +308,7 @@ class APICControllersResponse(BaseModel):
     OnBoardingStatus: Optional[bool]
     created_at: Optional[datetime]
     site_id: Optional[int]
+    collection_status: Optional[bool]
     messages: Optional[str]
 
     class Config:

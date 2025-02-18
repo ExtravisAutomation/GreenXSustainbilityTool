@@ -77,3 +77,14 @@ async def get_device_data(
 ):
     return await service.get_device_data(ip)
 
+
+
+# @router.post("/collection_status", response_model=DeviceDataResponse)
+# @inject
+# async def get_device_data(
+#         device_id: str,
+#         service: DeviceService = Depends(Provide[Container.device_service]),
+#         current_user: User = Depends(get_current_regular_user),
+# ):
+#     return await service.get_device_data(ip)
+

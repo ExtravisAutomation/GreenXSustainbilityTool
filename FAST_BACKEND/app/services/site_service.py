@@ -1399,8 +1399,8 @@ class SiteService:
         response_data.rack_unit = device.rack_unit  
         return response_data
 
-    def get_all_devices1(self) -> List[APICControllers]:
-        return self.site_repository.get_all_devices2()
+    def get_all_devices_data(self) -> List[APICControllers]:
+        return self.site_repository.get_all_devices_data()
 
     
     
@@ -2537,3 +2537,8 @@ class SiteService:
 
             print(f"No metrics available for device {device['device_name']} ({device_ip})", file=sys.stderr)
             return {"time": f"{start_date} - {end_date}", "metrics": []}
+
+    def device_collectionstatus(self, device_id: int,status:bool):
+        data = self.site_repository.device_collectionstatus(device_id,status)
+        print("okaka")
+        return data

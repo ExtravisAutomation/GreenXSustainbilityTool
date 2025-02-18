@@ -806,7 +806,7 @@ def get_all_devices(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
-        devices = site_service.get_all_devices1()
+        devices = site_service.get_all_devices_data()
         return CustomResponse(
             message="Devices fetched successfully.",
             data=devices,
@@ -1659,8 +1659,7 @@ def get_ai_res(device_data:DeviceRequest,
 ):
     # data = site_service.get_device_aidata(device_data)
     data = [
-        {'month': 'August', 'year': 2024, 'total_PIn': 224.67, 'total_POut': 194.67, 'PUE': 1.15, 'EER': 0.87,
-         'Prediction': 'False'},
+
         {'month': 'September', 'year': 2024, 'total_PIn': 222.95, 'total_POut': 192.5, 'PUE': 1.16, 'EER': 0.86,
          'Prediction': 'False'},
         {'month': 'October', 'year': 2024, 'total_PIn': 221.37, 'total_POut': 191.79, 'PUE': 1.15, 'EER': 0.87,
@@ -1671,8 +1670,10 @@ def get_ai_res(device_data:DeviceRequest,
          'Prediction': 'False'},
         {'month': 'January', 'year': 2025, 'total_PIn': 70.33, 'total_POut': 60.85, 'PUE': 1.16, 'EER': 0.87,
          'Prediction': 'False'},
-        {'month': 'February', 'year': 2025, 'total_PIn': 41.24, 'total_POut': 35.68, 'PUE': 1.16, 'EER': 0.87,
-         'Prediction': 'True'}
+        {'month': 'February', 'year': 2025, 'total_PIn':  223.01, 'total_POut': 193.01, 'PUE': 1.16, 'EER': 0.87,
+         'Prediction': 'False'},
+        {'month': 'March', 'year': 2025, 'total_PIn': 222.67, 'total_POut': 193.67, 'PUE': 1.16, 'EER': 0.87,
+         'Prediction': 'True'},
     ]
     print(data)
     print(type(data),"$#@@@@@@@@@@@@@@@@")
@@ -1864,3 +1865,21 @@ def get_dcs_energy_metrics_by_timestamp(
         data=filtered_metrics,
         status_code=status.HTTP_200_OK
     )
+
+
+@router.post("/collection_status")
+@inject
+def site_power_co2emmission(
+        device_id: int,
+        collecton_status:bool,
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    response=site_service.device_collectionstatus(device_id,collecton_status)
+    print("Device status")
+
+    return {
+        "message": "Device collection status updated successfully.",
+        "data": response,
+        "status_code": status.HTTP_200_OK
+    }
