@@ -89,12 +89,16 @@ class DeviceInventoryService:
     #     return enriched_devices
     from typing import List
 
-    def get_all_devices(self, page: int , page_size: int = 10) -> dict:
+    def get_all_devices(self, page) -> dict:
+
 
         devices = self.device_inventory_repository.get_all_devices(page)
+        print("all devices",devices)
+        print("type" ,type(devices))
 
 
         enriched_devices = []
+
 
         for device in devices['devices']:
             enriched_device = {
@@ -134,11 +138,12 @@ class DeviceInventoryService:
                 "carbon-emmison" : round(((device.get("power_input")/ 1000) * 0.4041) ,2),
                 "pcr":round(device.get("power_input") / device.get("datatraffic"),2) if device.get("datatraffic") else None
             }
+
             enriched_devices.append(enriched_device)
 
         return {
-            "page": page,
-            "page_size": page_size,
+            "page": devices['page'],
+            "page_size": devices['page_size'],
             "total_devices": devices['total_devices'],
             "total_pages": devices['total_pages'],
             "devices": enriched_devices
@@ -198,3 +203,61 @@ class DeviceInventoryService:
 
     def get_device_expiry(self,site_id):
         return self.device_inventory_repository.get_device_expiry(site_id)
+
+    def get_all_devices_test(self, filter_data) -> dict:
+
+        devices = self.device_inventory_repository.get_all_devices_test(filter_data)
+        print("all devices", devices)
+        print("type", type(devices))
+
+        enriched_devices = []
+
+        for device in devices['devices']:
+            enriched_device = {
+                "id": device.get("id"),
+                "criticality": device.get("criticality"),
+                "department": device.get("department"),
+                "device_name": device.get("device_name"),
+                "hardware_version": device.get("hardware_version"),
+                "manufacturer_date": device.get("manufacturer_date"),
+                "manufacturer": device.get("manufacturer"),
+                "modified_by": device.get("modified_by"),
+                "pn_code": device.get("pn_code"),
+                "site_id": device.get("site_id"),
+                "rack_id": device.get("rack_id"),
+                "section": device.get("section"),
+                "serial_number": device.get("serial_number"),
+                "software_version": device.get("software_version"),
+                "status": device.get("status"),
+                "apic_controller_id": device.get("apic_controller_id"),
+                "hw_eol_ad": device.get("hw_eol_ad"),
+                "hw_eos": device.get("hw_eos"),
+                "sw_EoSWM": device.get("sw_EoSWM"),
+                "hw_EoRFA": device.get("hw_EoRFA"),
+                "sw_EoVSS": device.get("sw_EoVSS"),
+                "hw_EoSCR": device.get("hw_EoSCR"),
+                "hw_ldos": device.get("hw_ldos"),
+                "site_name": device.get("site_name"),
+                "rack_name": device.get("rack_name"),
+                "device_ip": device.get("device_ip"),
+                "device_type": device.get("device_type"),
+                "power_utilization": device.get("power_utilization"),
+                "pue": device.get("pue"),
+                "power_input": device.get("power_input"),
+                "datatraffic": device.get("datatraffic"),
+                "bandwidth_utilization": device.get("bandwidth_utilization"),
+                "power_output": device.get("power_output"),
+                "carbon-emmison": round(((device.get("power_input") / 1000) * 0.4041), 2),
+                "pcr": round(device.get("power_input") / device.get("datatraffic"), 2) if device.get(
+                    "datatraffic") else None
+            }
+
+            enriched_devices.append(enriched_device)
+
+        return {
+            "page": devices['page'],
+            "page_size": devices['page_size'],
+            "total_devices": devices['total_devices'],
+            "total_pages": devices['total_pages'],
+            "devices": enriched_devices
+        }

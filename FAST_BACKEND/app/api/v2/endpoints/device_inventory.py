@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List, Optional
 from app.services.device_inventory_service import DeviceInventoryService
-from app.schema.device_inventory_schema import DeviceInventoryCreate, DeviceInventoryUpdate, DeviceInventoryInDB
+from app.schema.device_inventory_schema import DeviceInventoryCreate, DeviceInventoryUpdate, DeviceInventoryInDB,FilterSchema
 from app.core.dependencies import get_db
 
 from app.schema.device_inventory_schema import Custom_Response_Inventory,modelCreate
@@ -15,22 +15,34 @@ from app.schema.site_schema import CustomResponse
 router = APIRouter(prefix="/device_inventory", tags=["Device Inventory"])
 
 
-@router.get("/get_all_device_inventory", response_model=Custom_Response_Inventory[List[DeviceInventoryInDB]])
+
+@router.post("/get_all_device_inventory", response_model=Custom_Response_Inventory[List[DeviceInventoryInDB]])
 @inject
-def get_all_devices(
-    page:int=None,
+def get_all_devices(page:int=None,
     # current_user: User = Depends(get_current_active_user),
     device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
-
     devices = device_inventory_service.get_all_devices(page)
-    
+
     return Custom_Response_Inventory(
         message="Fetched all devices successfully",
         data=devices,
         status_code=200
     )
+@router.post("/get_all_device_inventory_with_filter", response_model=Custom_Response_Inventory[List[DeviceInventoryInDB]])
+@inject
+def get_all_devices(filter_data:FilterSchema,
 
+    # current_user: User = Depends(get_current_active_user),
+    device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    devices = device_inventory_service.get_all_devices_test(filter_data)
+
+    return Custom_Response_Inventory(
+        message="Fetched all devices successfully",
+        data=devices,
+        status_code=200
+    )
 
 @router.get("get_device_inventory_by_id/{device_id}", response_model=Custom_Response_Inventory[DeviceInventoryInDB])
 @inject

@@ -92,13 +92,18 @@ class modelCreate(BaseModel):
 
 
 #
-# class filterschema(BaseModel):
-#     ip_address: Optional[str]
-#     device_name: Optional[str]
-#     serial_no:Optional[int]
-#     site_id: Optional[int] #dropdown
-#     rack_id: Optional[int]#dropdown
-#     model_no:Optional[str] #dropdown
-#     dept:Optional[str]
-#     device_type=Optional[int]
-#     department=Optional[str]
+
+import datetime
+
+class FilterSchema(BaseModel):
+    page:Optional[int]
+    ip_address: Optional[str]
+    device_name: Optional[str]
+    serial_no: Optional[str]  # Serial numbers can be alphanumeric
+    site_id: Optional[int]  # Dropdown
+    rack_id: Optional[int]  # Dropdown
+    vendor_id: Optional[int]  # Dropdown
+    model_no: Optional[str]  # Dropdown
+    device_type: Optional[int]  # Corrected syntax
+    department: Optional[str]  # Corrected syntax
+    sntc_date: Optional[str]  # Corrected Date type
