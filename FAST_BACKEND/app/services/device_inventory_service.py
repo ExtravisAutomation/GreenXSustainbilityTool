@@ -269,7 +269,7 @@ class DeviceInventoryService:
             # Power Consumption Ratio (PCR) Calculation
             pcr = round(power_input *1000 / datatraffic, 4) if datatraffic else None
 
-            # Classify device performance
+            # Classify device performance and power consumption
             performance_score, performance_description = self.classify_performance(
                 power_utilization, pue, datatraffic, pcr or 0, carbon_emission
             )
@@ -318,6 +318,7 @@ class DeviceInventoryService:
 
         return {
             "page": devices['page'],
+
             "page_size": devices['page_size'],
             "total_devices": devices['total_devices'],
             "total_pages": devices['total_pages'],
