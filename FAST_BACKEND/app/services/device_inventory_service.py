@@ -204,48 +204,101 @@ class DeviceInventoryService:
     def get_device_expiry(self,site_id):
         return self.device_inventory_repository.get_device_expiry(site_id)
 
-    def classify_performance(self,avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr, avg_co2_emissions):
+    # def classify_performance(self,avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr, avg_co2_emissions):
+    #     score = 0
+    #
+    #     # **Energy Efficiency Score (Higher is better)**
+    #     if avg_energy_efficiency >= 0.90:
+    #         score += 2  # Good
+    #     elif 0.80 <= avg_energy_efficiency < 0.90:
+    #         score += 1  # Moderate
+    #
+    #     # **Power Efficiency Score (Lower is better, closer to 1 is ideal)**
+    #     if avg_power_efficiency <= 1.10:
+    #         score += 2  # Good
+    #     elif 1.11 <= avg_power_efficiency <= 1.20:
+    #         score += 1  # Moderate
+    #
+    #     # **Data Traffic Score (Higher is better)**
+    #     if avg_data_traffic >= 2500:
+    #         score += 2  # Good
+    #     elif 1500 <= avg_data_traffic < 2500:
+    #         score += 1  # Moderate
+    #
+    #     # **Power Consumption Ratio (PCR) Score (Lower is better)**
+    #     if avg_pcr <= 1.5:
+    #         score += 2  # Good
+    #     elif 1.6 <= avg_pcr <= 2.5:
+    #         score += 1  # Moderate
+    #
+    #     # **CO₂ Emissions Score (Lower is better)**
+    #     if avg_co2_emissions <= 2.0:
+    #         score += 2  # Good
+    #     elif 2.01 <= avg_co2_emissions <= 3.0:
+    #         score += 1  # Moderate
+    #     else:
+    #         score -= 1  # Minor penalty for CO₂ > 3.0 to prevent downgrading too much
+    #
+    #     # **Final Classification**
+    #     if score >= 8:
+    #         return score, "This device is highly efficient, demonstrating optimal power usage, low CO₂ emissions, and strong data performance."
+    #     elif 5 <= score < 8:
+    #         return score, "This device offers moderate efficiency, performing well in key areas but with some potential for optimization."
+    #     else:
+    #         return score, "This device has a lower efficiency and may require optimization to improve performance and resource utilization."
+    def classify_performance(self, avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr,
+                             avg_co2_emissions, thresholds=None):
+        if thresholds is None:
+            # Default thresholds for different metrics
+            thresholds = {
+                "energy_efficiency": [0.80, 0.90],  # Moderate, Good
+                "power_efficiency": [1.10, 1.20],  # Good, Moderate
+                "data_traffic": [1500, 2500],  # Moderate, Good
+                "pcr": [1.5, 2.5],  # Good, Moderate
+                "co2_emissions": [2.0, 3.0]  # Good, Moderate
+            }
+
         score = 0
 
-        # **Energy Efficiency Score (Higher is better)**
-        if avg_energy_efficiency >= 0.90:
-            score += 2  # Good
-        elif 0.80 <= avg_energy_efficiency < 0.90:
-            score += 1  # Moderate
+        # **Energy Efficiency Score**
+        if avg_energy_efficiency >= thresholds["energy_efficiency"][1]:
+            score += 2
+        elif thresholds["energy_efficiency"][0] <= avg_energy_efficiency < thresholds["energy_efficiency"][1]:
+            score += 1
 
-        # **Power Efficiency Score (Lower is better, closer to 1 is ideal)**
-        if avg_power_efficiency <= 1.10:
-            score += 2  # Good
-        elif 1.11 <= avg_power_efficiency <= 1.20:
-            score += 1  # Moderate
+        # **Power Efficiency Score**
+        if avg_power_efficiency <= thresholds["power_efficiency"][0]:
+            score += 2
+        elif thresholds["power_efficiency"][0] < avg_power_efficiency <= thresholds["power_efficiency"][1]:
+            score += 1
 
-        # **Data Traffic Score (Higher is better)**
-        if avg_data_traffic >= 2500:
-            score += 2  # Good
-        elif 1500 <= avg_data_traffic < 2500:
-            score += 1  # Moderate
+        # **Data Traffic Score**
+        if avg_data_traffic >= thresholds["data_traffic"][1]:
+            score += 2
+        elif thresholds["data_traffic"][0] <= avg_data_traffic < thresholds["data_traffic"][1]:
+            score += 1
 
-        # **Power Consumption Ratio (PCR) Score (Lower is better)**
-        if avg_pcr <= 1.5:
-            score += 2  # Good
-        elif 1.6 <= avg_pcr <= 2.5:
-            score += 1  # Moderate
+        # **Power Consumption Ratio (PCR) Score**
+        if avg_pcr <= thresholds["pcr"][0]:
+            score += 2
+        elif thresholds["pcr"][0] < avg_pcr <= thresholds["pcr"][1]:
+            score += 1
 
-        # **CO₂ Emissions Score (Lower is better)**
-        if avg_co2_emissions <= 2.0:
-            score += 2  # Good
-        elif 2.01 <= avg_co2_emissions <= 3.0:
-            score += 1  # Moderate
-        else:
-            score -= 1  # Minor penalty for CO₂ > 3.0 to prevent downgrading too much
+        # **CO₂ Emissions Score**
+        if avg_co2_emissions <= thresholds["co2_emissions"][0]:
+            score += 2
+        elif thresholds["co2_emissions"][0] < avg_co2_emissions <= thresholds["co2_emissions"][1]:
+            score += 1
+        elif avg_co2_emissions > thresholds["co2_emissions"][1]:
+            score -= 2
 
         # **Final Classification**
         if score >= 8:
-            return score, "This model is highly efficient, demonstrating optimal power usage, low CO₂ emissions, and strong data performance."
+            return score, "Highly efficient device with optimal power usage, low CO₂ emissions, and strong data performance."
         elif 5 <= score < 8:
-            return score, "This model offers moderate efficiency, performing well in key areas but with some potential for optimization."
+            return score, "Moderate efficiency device with some areas for improvement."
         else:
-            return score, "This model has a lower efficiency and may require optimization to improve performance and resource utilization."
+            return score, "Low efficiency device that may require significant optimization."
 
     def get_all_devices_test(self, filter_data) -> dict:
 
