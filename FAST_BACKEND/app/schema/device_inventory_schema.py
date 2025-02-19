@@ -107,3 +107,6 @@ class FilterSchema(BaseModel):
     device_type: Optional[int]  # Corrected syntax
     department: Optional[str]  # Corrected syntax
     sntc_date: Optional[str]  # Corrected Date type
+    hardware_version: Optional[str] # Corrected
+    software_version: Optional[str] # Corrected
+

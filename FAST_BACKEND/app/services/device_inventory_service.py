@@ -204,6 +204,49 @@ class DeviceInventoryService:
     def get_device_expiry(self,site_id):
         return self.device_inventory_repository.get_device_expiry(site_id)
 
+    def classify_performance(self,avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr, avg_co2_emissions):
+        score = 0
+
+        # **Energy Efficiency Score (Higher is better)**
+        if avg_energy_efficiency >= 0.90:
+            score += 2  # Good
+        elif 0.80 <= avg_energy_efficiency < 0.90:
+            score += 1  # Moderate
+
+        # **Power Efficiency Score (Lower is better, closer to 1 is ideal)**
+        if avg_power_efficiency <= 1.10:
+            score += 2  # Good
+        elif 1.11 <= avg_power_efficiency <= 1.20:
+            score += 1  # Moderate
+
+        # **Data Traffic Score (Higher is better)**
+        if avg_data_traffic >= 2500:
+            score += 2  # Good
+        elif 1500 <= avg_data_traffic < 2500:
+            score += 1  # Moderate
+
+        # **Power Consumption Ratio (PCR) Score (Lower is better)**
+        if avg_pcr <= 1.5:
+            score += 2  # Good
+        elif 1.6 <= avg_pcr <= 2.5:
+            score += 1  # Moderate
+
+        # **CO₂ Emissions Score (Lower is better)**
+        if avg_co2_emissions <= 2.0:
+            score += 2  # Good
+        elif 2.01 <= avg_co2_emissions <= 3.0:
+            score += 1  # Moderate
+        else:
+            score -= 1  # Minor penalty for CO₂ > 3.0 to prevent downgrading too much
+
+        # **Final Classification**
+        if score >= 8:
+            return score, "This model is highly efficient, demonstrating optimal power usage, low CO₂ emissions, and strong data performance."
+        elif 5 <= score < 8:
+            return score, "This model offers moderate efficiency, performing well in key areas but with some potential for optimization."
+        else:
+            return score, "This model has a lower efficiency and may require optimization to improve performance and resource utilization."
+
     def get_all_devices_test(self, filter_data) -> dict:
 
         devices = self.device_inventory_repository.get_all_devices_test(filter_data)
@@ -213,6 +256,23 @@ class DeviceInventoryService:
         enriched_devices = []
 
         for device in devices['devices']:
+            power_input = device.get("power_input") or 0
+            power_output = device.get("power_output") or 0
+            power_utilization = device.get("power_utilization") or 0
+            pue = device.get("pue") or 0
+            datatraffic = device.get("datatraffic") or 0
+            bandwidth_utilization = device.get("bandwidth_utilization") or 0
+
+            # Carbon Emissions Calculation
+            carbon_emission = round(((power_input / 1000) * 0.4041), 2)
+
+            # Power Consumption Ratio (PCR) Calculation
+            pcr = round(power_input *1000 / datatraffic, 4) if datatraffic else None
+
+            # Classify device performance
+            performance_score, performance_description = self.classify_performance(
+                power_utilization, pue, datatraffic, pcr or 0, carbon_emission
+            )
             enriched_device = {
                 "id": device.get("id"),
                 "criticality": device.get("criticality"),
@@ -241,15 +301,17 @@ class DeviceInventoryService:
                 "rack_name": device.get("rack_name"),
                 "device_ip": device.get("device_ip"),
                 "device_type": device.get("device_type"),
-                "power_utilization": device.get("power_utilization"),
-                "pue": device.get("pue"),
-                "power_input": device.get("power_input"),
-                "datatraffic": device.get("datatraffic"),
-                "bandwidth_utilization": device.get("bandwidth_utilization"),
-                "power_output": device.get("power_output"),
-                "carbon-emmison": round(((device.get("power_input") / 1000) * 0.4041), 2),
-                "pcr": round(device.get("power_input") / device.get("datatraffic"), 2) if device.get(
-                    "datatraffic") else None
+                "power_utilization": power_utilization,
+                "pue": pue,
+                "power_input": power_input,
+                "datatraffic": datatraffic,
+                "bandwidth_utilization": round(bandwidth_utilization,4),
+                "power_output":power_output,
+                "carbon-emmison": round(carbon_emission, 4),
+                "pcr": pcr ,
+                "score_num": round(performance_score),
+                "score_desc":performance_description
+
             }
 
             enriched_devices.append(enriched_device)

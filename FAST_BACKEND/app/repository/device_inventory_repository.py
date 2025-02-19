@@ -756,6 +756,8 @@ class DeviceInventoryRepository(BaseRepository):
         serial_no = filter_data.serial_no
         model_no = filter_data.model_no
         department = filter_data.department
+        hardware_version=filter_data.hardware_version
+        software_version=filter_data.software_version
 
         if sntc_date:
             try:
@@ -790,6 +792,14 @@ class DeviceInventoryRepository(BaseRepository):
                 query = query.filter(DeviceInventory.device.has(device_type=device_type))
             if vendor_id:
                 query = query.filter(DeviceInventory.device.has(vendor_id=vendor_id))
+            if serial_no:
+                query = query.filter(DeviceInventory.serial_number.ilike(f"%{serial_no}%"))
+            if model_no:
+                query = query.filter(DeviceInventory.pn_code.ilike(f"%{model_no}%"))
+            if hardware_version:
+                query.filter(DeviceInventory.hardware_version.ilike(f"%{hardware_version}%"))
+            if software_version:
+                query = query.filter(DeviceInventory.software_version.ilike(f"%{software_version}%"))
 
             print(f"Filtered query count: {query.count()}")  # Debugging after filtering
 
@@ -876,6 +886,7 @@ class DeviceInventoryRepository(BaseRepository):
                 else:
                     enriched_device["datatraffic"] = 0
                     enriched_device["bandwidth_utilization"] = 0
+
 
                 print(f"Final enriched device data: {enriched_device}")  # Debugging final data
                 enriched_devices.append(enriched_device)
