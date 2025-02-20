@@ -3,7 +3,7 @@ from typing import List, Optional
 from app.services.device_inventory_service import DeviceInventoryService
 from app.schema.device_inventory_schema import DeviceInventoryCreate, DeviceInventoryUpdate, DeviceInventoryInDB,FilterSchema
 from app.core.dependencies import get_db
-
+from fastapi.responses import FileResponse
 from app.schema.device_inventory_schema import Custom_Response_Inventory,modelCreate
 from app.core.dependencies import get_current_active_user
 from app.model.user import User
@@ -366,3 +366,16 @@ def get_count(
 
 
 
+
+@router.post("/generate_excel")
+@inject
+def generate_excel(filter_data:FilterSchema,
+    # current_user: User = Depends(get_current_active_user),
+    device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    devices = device_inventory_service.generate_excel(filter_data)
+    file_path = "device_report.xlsx"
+
+    # Save DataFrame to an Excel file
+    devices.to_excel(file_path, index=False, engine="openpyxl")
+    return FileResponse(file_path, filename="device_report.xlsx", media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
