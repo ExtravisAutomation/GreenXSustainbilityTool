@@ -740,78 +740,92 @@ class DeviceInventoryRepository(BaseRepository):
     from sqlalchemy import or_
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
-    def get_all_devices_test(self, filter_data) -> Dict:
-        print("Getting all devices")
-        page_size = 10  # Number of devices per page
-        enriched_devices = []
 
-        page = filter_data.page
-        site_id = filter_data.site_id
-        rack_id = filter_data.rack_id
-        device_name = filter_data.device_name
-        ip_address = filter_data.ip_address
-        vendor_id = filter_data.vendor_id
-        device_type = filter_data.device_type
-        sntc_date = filter_data.sntc_date
-        serial_no = filter_data.serial_no
-        model_no = filter_data.model_no
-        department = filter_data.department
-        hardware_version=filter_data.hardware_version
-        software_version=filter_data.software_version
+    def classify_performance(self, avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr,
+                             avg_co2_emissions, thresholds=None):
+        if thresholds is None:
+            # Default thresholds for different metrics
+            thresholds = {
+                "energy_efficiency": [0.80, 0.90],  # Moderate, Good
+                "power_efficiency": [1.10, 1.20],  # Good, Moderate
+                "data_traffic": [1500, 2500],  # Moderate, Good
+                "pcr": [1.5, 2.5],  # Good, Moderate
+                "co2_emissions": [2.0, 3.0]  # Good, Moderate
+            }
 
-        if sntc_date:
-            try:
-                sntc_date = datetime.strptime(sntc_date, "%Y-%m-%d").date()
-            except ValueError:
-                raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+        score = 0
+
+        # **Energy Efficiency Score**
+        if avg_energy_efficiency >= thresholds["energy_efficiency"][1]:
+            score += 2
+        elif thresholds["energy_efficiency"][0] <= avg_energy_efficiency < thresholds["energy_efficiency"][1]:
+            score += 1
+
+        # **Power Efficiency Score**
+        if avg_power_efficiency <= thresholds["power_efficiency"][0]:
+            score += 2
+        elif thresholds["power_efficiency"][0] < avg_power_efficiency <= thresholds["power_efficiency"][1]:
+            score += 1
+
+        # **Data Traffic Score**
+        if avg_data_traffic >= thresholds["data_traffic"][1]:
+            score += 2
+        elif thresholds["data_traffic"][0] <= avg_data_traffic < thresholds["data_traffic"][1]:
+            score += 1
+
+        # **Power Consumption Ratio (PCR) Score**
+        if avg_pcr <= thresholds["pcr"][0]:
+            score += 2
+        elif thresholds["pcr"][0] < avg_pcr <= thresholds["pcr"][1]:
+            score += 1
+
+        # **CO₂ Emissions Score**
+        if avg_co2_emissions <= thresholds["co2_emissions"][0]:
+            score += 2
+        elif thresholds["co2_emissions"][0] < avg_co2_emissions <= thresholds["co2_emissions"][1]:
+            score += 1
+        elif avg_co2_emissions > thresholds["co2_emissions"][1]:
+            score -= 2
+
+        # **Final Classification**
+        if score >= 8:
+            return score, "Highly efficient device with optimal power usage, low CO₂ emissions, and strong data performance."
+        elif 5 <= score < 8:
+            return score, "Moderate efficiency device with some areas for improvement."
+        else:
+            return score, "Low efficiency device that may require significant optimization."
+
+    def get_response_with_filter(self,page, page_size, query, score):
+        devices = query.order_by(DeviceInventory.id.desc()).all()
+        enriched_devices=self.get_devices_result(devices)
+        if score:
+            min_score = score[0]
+            max_score = score[1]
+
+            enriched_devices = [
+                device for device in enriched_devices
+                if min_score <= device["performance_score"] <= max_score
+            ]
+
+        total_devices = len(enriched_devices)
+        total_pages = (total_devices + page_size - 1) // page_size
+        page = max(1, min(page, total_pages))
+
+        paginated_devices = enriched_devices[(page - 1) * page_size: page * page_size]
+
+        return {
+            "page": page,
+            "page_size": page_size,
+            "total_devices": total_devices,
+            "total_pages": total_pages,
+            "devices": paginated_devices
+        }
+
+
+    def get_devices_result(self, devices):
 
         with self.session_factory() as session:
-            query = (
-                session.query(DeviceInventory)
-                .options(
-                    joinedload(DeviceInventory.rack),
-                    joinedload(DeviceInventory.site),
-                    joinedload(DeviceInventory.device),
-                    joinedload(DeviceInventory.apic_controller)
-                )
-                .outerjoin(DeviceSNTC, DeviceInventory.pn_code == DeviceSNTC.model_name)
-            )
-
-            print(f"Base query count: {query.count()}")  # Debugging before filtering
-
-            # Apply filters dynamically
-            if site_id:
-                query = query.filter(DeviceInventory.site_id == site_id)
-            if rack_id:
-                query = query.filter(DeviceInventory.rack_id == rack_id)
-            if device_name:
-                query = query.filter(DeviceInventory.device_name.ilike(f"%{device_name}%"))
-            if ip_address:
-                query = query.filter(DeviceInventory.device.has(ip_address=ip_address))
-            if device_type:
-                query = query.filter(DeviceInventory.device.has(device_type=device_type))
-            if vendor_id:
-                query = query.filter(DeviceInventory.device.has(vendor_id=vendor_id))
-            if serial_no:
-                query = query.filter(DeviceInventory.serial_number.ilike(f"%{serial_no}%"))
-            if model_no:
-                query = query.filter(DeviceInventory.pn_code.ilike(f"%{model_no}%"))
-            if hardware_version:
-                query.filter(DeviceInventory.hardware_version.ilike(f"%{hardware_version}%"))
-            if software_version:
-                query = query.filter(DeviceInventory.software_version.ilike(f"%{software_version}%"))
-
-            print(f"Filtered query count: {query.count()}")  # Debugging after filtering
-
-            total_devices = query.count()
-            total_pages = (total_devices + page_size - 1) // page_size
-            page = max(1, min(page, total_pages))
-
-            devices = query.order_by(DeviceInventory.id.desc()).limit(page_size).offset(
-                (page - 1) * page_size).all()
-
-            print(f"Devices fetched: {len(devices)}")  # Debugging
-
+            enriched_devices = []
             for device in devices:
                 sntc_data = (
                     session.query(DeviceSNTC)
@@ -887,23 +901,116 @@ class DeviceInventoryRepository(BaseRepository):
                     enriched_device["datatraffic"] = 0
                     enriched_device["bandwidth_utilization"] = 0
 
+                power_input = enriched_device.get("power_input") or 0
+                power_output = enriched_device.get("power_output") or 0
+                power_utilization = enriched_device.get("power_utilization") or 0
+                pue = enriched_device.get("pue") or 0
+                datatraffic = enriched_device.get("datatraffic") or 0
+                bandwidth_utilization = enriched_device.get("bandwidth_utilization") or 0
 
-                print(f"Final enriched device data: {enriched_device}")  # Debugging final data
+                # Carbon Emissions Calculation
+                carbon_emission = round(((power_input / 1000) * 0.4041), 2)
+
+                # Power Consumption Ratio (PCR) Calculation
+                pcr = round(power_input * 1000 / datatraffic, 4) if datatraffic else None
+
+                # Classify device performance and power consumption
+                performance_score, performance_description = self.classify_performance(
+                    power_utilization, pue, datatraffic, pcr or 0, carbon_emission
+                )
+                enriched_device["performance_score"] = performance_score
+                enriched_device["performance_description"] = performance_description
                 enriched_devices.append(enriched_device)
+        return enriched_devices
+    def get_all_devices_test(self, filter_data) -> Dict:
+        print("Getting all devices")
+        page_size = 10  # Number of devices per page
+
+
+        page = filter_data.page
+        site_id = filter_data.site_id
+        rack_id = filter_data.rack_id
+        device_name = filter_data.device_name
+        ip_addresss = filter_data.ip_address
+        vendor_id = filter_data.vendor_id
+        device_type = filter_data.device_type
+        sntc_date = filter_data.sntc_date
+        serial_no = filter_data.serial_no
+        model_no = filter_data.model_no
+        department = filter_data.department
+        hardware_version=filter_data.hardware_version
+        software_version=filter_data.software_version
+        score_card=filter_data.score
+
+        if sntc_date:
+            try:
+                sntc_date = datetime.strptime(sntc_date, "%Y-%m-%d").date()
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+
+        with self.session_factory() as session:
+            query = (
+                session.query(DeviceInventory)
+                .options(
+                    joinedload(DeviceInventory.rack),
+                    joinedload(DeviceInventory.site),
+                    joinedload(DeviceInventory.device),
+                    joinedload(DeviceInventory.apic_controller)
+                )
+                .outerjoin(DeviceSNTC, DeviceInventory.pn_code == DeviceSNTC.model_name)
+            )
+
+            print(f"Base query count: {query.count()}")  # Debugging before filtering
+
+            # Apply filters dynamically
+            if site_id:
+                query = query.filter(DeviceInventory.site_id == site_id)
+            if rack_id:
+                query = query.filter(DeviceInventory.rack_id == rack_id)
+            if device_name:
+                query = query.filter(DeviceInventory.device_name.ilike(f"%{device_name}%"))
+            if ip_addresss:
+                query = query.filter(DeviceInventory.device.has(APICControllers.ip_address.ilike(f"%{ip_addresss}%")))
+            if device_type:
+                query = query.filter(DeviceInventory.device.has(device_type=device_type))
+            if vendor_id:
+                query = query.filter(DeviceInventory.device.has(vendor_id=vendor_id))
+            if serial_no:
+                query = query.filter(DeviceInventory.serial_number.ilike(f"%{serial_no}%"))
+            if model_no:
+                query = query.filter(DeviceInventory.pn_code.ilike(f"%{model_no}%"))
+            if hardware_version:
+                query.filter(DeviceInventory.hardware_version.ilike(f"%{hardware_version}%"))
+            if software_version:
+                query = query.filter(DeviceInventory.software_version.ilike(f"%{software_version}%"))
+
+            print(f"Filtered query count: {query.count()}")  # Debugging after filtering
+            if score_card:
+                return self.get_response_with_filter(page, page_size,query,score_card)
+            else:
+                total_devices = query.count()
+                total_pages = (total_devices + page_size - 1) // page_size
+                page = max(1, min(page, total_pages))
+
+                devices = query.order_by(DeviceInventory.id.desc()).limit(page_size).offset(
+                    (page - 1) * page_size).all()
+
+                print(f"Devices fetched: {len(devices)}")  # Debugging
+                enriched_devices=self.get_devices_result(devices)
 
             # Debug final response
-            print({
-                "page": page,
-                "page_size": page_size,
-                "total_devices": total_devices,
-                "total_pages": total_pages,
-                "devices": enriched_devices,
-            })
+                print({
+                    "page": page,
+                    "page_size": page_size,
+                    "total_devices": total_devices,
+                    "total_pages": total_pages,
+                    "devices": enriched_devices,
+                })
 
-            return {
-                "page": page,
-                "page_size": page_size,
-                "total_devices": total_devices,
-                "total_pages": total_pages,
-                "devices": enriched_devices,
-            }
+                return {
+                    "page": page,
+                    "page_size": page_size,
+                    "total_devices": total_devices,
+                    "total_pages": total_pages,
+                    "devices": enriched_devices,
+                }

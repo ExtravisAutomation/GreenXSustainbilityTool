@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional, TypeVar, Generic
+from typing import Optional, TypeVar, Generic, List
 
 
 class DeviceInventoryBase(BaseModel):
@@ -109,4 +109,5 @@ class FilterSchema(BaseModel):
     sntc_date: Optional[str]  # Corrected Date type
     hardware_version: Optional[str] # Corrected
     software_version: Optional[str] # Corrected
+    score: List[int]=None
 

@@ -305,6 +305,7 @@ class DeviceInventoryService:
         devices = self.device_inventory_repository.get_all_devices_test(filter_data)
         print("all devices", devices)
         print("type", type(devices))
+        # score=filter_data.score
 
         enriched_devices = []
 
@@ -323,9 +324,9 @@ class DeviceInventoryService:
             pcr = round(power_input *1000 / datatraffic, 4) if datatraffic else None
 
             # Classify device performance and power consumption
-            performance_score, performance_description = self.classify_performance(
-                power_utilization, pue, datatraffic, pcr or 0, carbon_emission
-            )
+            # performance_score, performance_description = self.classify_performance(
+            #     power_utilization, pue, datatraffic, pcr or 0, carbon_emission
+            # )
             enriched_device = {
                 "id": device.get("id"),
                 "criticality": device.get("criticality"),
@@ -362,8 +363,8 @@ class DeviceInventoryService:
                 "power_output":power_output,
                 "carbon-emmison": round(carbon_emission, 4),
                 "pcr": pcr ,
-                "score_num": round(performance_score),
-                "score_desc":performance_description
+                "score_num": device.get("performance_score"),
+                "score_desc":device.get("performance_description"),
 
             }
 
