@@ -379,3 +379,35 @@ def generate_excel(filter_data:FilterSchema,
     # Save DataFrame to an Excel file
     devices.to_excel(file_path, index=False, engine="openpyxl")
     return FileResponse(file_path, filename="device_report.xlsx", media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+@router.get("/get_hardware_version",response_model=CustomResponse)
+@inject
+def get_hardwareversionsa(
+    # current_user: User = Depends(get_current_active_user),
+    device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    hardware_versions = device_inventory_service.get_hardware_versions()
+
+    return CustomResponse(
+        message="Fetched  hardware versions successfully",
+        data=hardware_versions,
+        status_code=200
+    )
+@router.get("/get_software_version",response_model=CustomResponse)
+@inject
+def get_software_versions(
+    # current_user: User = Depends(get_current_active_user),
+    device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    software_versions = device_inventory_service.get_software_versions()
+
+    return CustomResponse(
+        message="Fetched  software versions successfully",
+        data=software_versions,
+        status_code=200
+    )
+
+
+
+
+

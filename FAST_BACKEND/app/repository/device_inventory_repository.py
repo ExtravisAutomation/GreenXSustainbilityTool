@@ -3,7 +3,7 @@ from contextlib import AbstractContextManager
 from typing import Callable, List
 from sqlalchemy.orm import Session, joinedload, selectinload
 import pandas as pd
-from sqlalchemy import or_
+from sqlalchemy import or_, distinct
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from fastapi import HTTPException
@@ -577,8 +577,10 @@ class DeviceInventoryRepository(BaseRepository):
             )
             total_count=0
             data = []
+            id=0
             for record in device_type_count:
                 data.append({
+                    "id":id+1,
                     "device_type": record[0],  # APICControllers.device_type
                     "count": record[1],  # Device count
                 })
@@ -1101,4 +1103,19 @@ class DeviceInventoryRepository(BaseRepository):
                 print(f"Devices fetched: {len(devices)}")  # Debugging
                 enriched_devices=self.get_devices_result(devices)
                 return   pd.DataFrame(enriched_devices)
+
+
+    def get_hardware_versions(self):
+        with self.session_factory() as session:
+            distinct_hw_versions = session.query(distinct(DeviceInventory.hardware_version)).all()
+
+            # Convert result to a list of values
+            hardware_versions = [hw[0] for hw in distinct_hw_versions]
+            return hardware_versions
+    def get_software_versions(self):
+        with self.session_factory() as session:
+            distinct_sw_versions = session.query(distinct(DeviceInventory.software_version)).all()
+            # Convert result to a list of values
+            software_versions = [sw[0] for sw in distinct_sw_versions]
+            return software_versions
 

@@ -383,3 +383,7 @@ class DeviceInventoryService:
 
     def generate_excel(self,filter_data):
         return self.device_inventory_repository.generate_excel(filter_data)
+    def get_hardware_versions(self):
+        return self.device_inventory_repository.get_hardware_versions()
+    def get_software_versions(self):
+        return self.device_inventory_repository.get_software_versions()
