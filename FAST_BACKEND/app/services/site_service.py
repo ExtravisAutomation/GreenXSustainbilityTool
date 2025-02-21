@@ -1769,12 +1769,12 @@ class SiteService:
 
             total_pin_value_KW = total_pin_value / 1000
             data_TB = datatraffic / (1024**4)
-            pcr = total_pin_value_KW/data_TB
+            pcr = total_pin_value_KW/data_TB if data_TB else 0
             print({"device_id": device.id,
                 "total_pin_value_KW":round(total_pin_value_KW,2),
                 "data_TB":round(data_TB,2),
                 "device_name": device.device_name,
-                "pcr": round(pcr,2)})
+                "pcr": round(pcr,4)})
 
             print()
             devices_datatraffic.append({
