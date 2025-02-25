@@ -802,7 +802,6 @@ def create_device(
 @router.get("/sites/get_all_devices", response_model=CustomResponse[List[APICControllersResponse]])
 @inject
 def get_all_devices(
-        page:int,
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
