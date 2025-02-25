@@ -112,42 +112,63 @@ class SiteRepository(BaseRepository):
 
             return successful_deletes, failed_deletes
 
-    def get_all_devices_data(self) -> List[Devices]:
-        with self.session_factory() as session:
-            subquery = session.query(DeviceInventory.device_id).filter(
-                DeviceInventory.role.in_(["leaf", "spine"])
-            ).subquery()
 
-            devices = session.query(
-                Devices,
-                PasswordGroup.password_group_name
-            ).outerjoin(PasswordGroup, Devices.password_group_id == PasswordGroup.id) \
-                .outerjoin(DeviceInventory, Devices.id == DeviceInventory.device_id) \
-                .filter(~Devices.id.in_(subquery)) \
-                .options(joinedload(Devices.site), joinedload(Devices.rack)) \
-                .order_by(Devices.created_at.desc()) \
-                .all()
 
-            result = []
-            for device, password_group_name in devices:
-                device_data = device.__dict__
-                device_data["password_group_name"] = password_group_name
-                device_data["site_name"] = device.site.site_name if device.site else None
-                device_data["rack_name"] = device.rack.rack_name if device.rack else None
-                device_data["rack_unit"] = device.rack_unit
-                device_data["OnBoardingStatus"] = device.OnBoardingStatus
-                device_data["messages"] = device.messages if device.messages else None
-                device_data["site_id"] = device.site_id
-                device_data["device_ip"] = device.ip_address
-                device_data["collection_status"] = device.collection_status
-                result.append(device_data)
-            print("result",result)
-            print("************************************")
+    def get_all_devices_data(self, page: int = 1, page_size: int = 10) -> Dict[str, any]:
+        """
+        Fetches all devices data with pagination.
 
-            return result
-    
-    
-    
+        :param page: The page number (default is 1)
+        :param page_size: Number of records per page (default is 10)
+        :return: A dictionary containing devices data and pagination metadata
+        """
+        try:
+            with self.session_factory() as session:
+                subquery = session.query(DeviceInventory.device_id).filter(
+                    DeviceInventory.role.in_(["leaf", "spine"])
+                ).subquery()
+
+                query = session.query(
+                    Devices,
+                    PasswordGroup.password_group_name
+                ).outerjoin(PasswordGroup, Devices.password_group_id == PasswordGroup.id) \
+                    .outerjoin(DeviceInventory, Devices.id == DeviceInventory.device_id) \
+                    .filter(~Devices.id.in_(subquery)) \
+                    .options(joinedload(Devices.site), joinedload(Devices.rack)) \
+                    .order_by(Devices.created_at.desc())
+
+                # Get total count before applying pagination
+                total_records = query.count()
+
+                # Apply pagination
+                devices = query.limit(page_size).offset((page - 1) * page_size).all()
+
+                result = []
+                for device, password_group_name in devices:
+                    device_data = device.__dict__
+                    device_data["password_group_name"] = password_group_name
+                    device_data["site_name"] = device.site.site_name if device.site else None
+                    device_data["rack_name"] = device.rack.rack_name if device.rack else None
+                    device_data["rack_unit"] = device.rack_unit
+                    device_data["OnBoardingStatus"] = device.OnBoardingStatus
+                    device_data["messages"] = device.messages if device.messages else None
+                    device_data["site_id"] = device.site_id
+                    device_data["device_ip"] = device.ip_address
+                    device_data["collection_status"] = device.collection_status
+                    result.append(device_data)
+
+                return {
+                    "devices": result,
+                    "pagination": {
+                        "page": page,
+                        "page_size": page_size,
+                        "total_records": total_records,
+                        "total_pages": (total_records + page_size - 1) // page_size  # Ceil division
+                    }
+                }
+        except SQLAlchemyError as e:
+            print(f"Database error: {str(e)}")
+            return {"error": "Database error occurred."}
 
     def get_devices_by_site_id(self, site_id: int) -> List[APICControllers]:
         with self.session_factory() as session:

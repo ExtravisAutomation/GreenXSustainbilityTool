@@ -467,8 +467,16 @@ class InfluxDBRepository:
                             "power_efficiency": round(power_efficiency, 2)
                         })
 
-        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
-        return df
+        # df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
+        # return df
+
+        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time')
+
+        # Apply iloc before converting to list of dictionaries
+        df = df.iloc[1:].reset_index(drop=True)
+
+        return df.to_dict(orient='records')
+
 
     # async def query_influxdb_for_devices(self, device_ips: List[str], start_time: str, end_time: str, aggregate_window: str, time_format: str) -> List[dict]:
     #     if not device_ips:
@@ -2280,10 +2288,11 @@ class InfluxDBRepository:
 
     def get_power_required(self, device_ips: List[str], site_id: int) -> List[dict]:
         power_required_data = []
-        start_range = "-2h"
+        start_range = "-1h"
         for ip in device_ips:
             # Query for Power Input and Output
             power_in_query = self.build_query(ip, "total_PIn", start_range)
+
             power_out_query = self.build_query(ip, "total_POut", start_range)
             total_power_query = self.build_query(ip, "total_Power", start_range)
 
@@ -2301,6 +2310,7 @@ class InfluxDBRepository:
                 "apic_controller_ip": ip,
                 "PowerInput": PowerIn,
                 "TotalPower": TotalPower,
+
                 "PowerPercentage": round(powerper, 2)
             })
 
@@ -2789,8 +2799,15 @@ class InfluxDBRepository:
                             "co2_kgs": round(co2, 2)
                         })
 
-        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
-        return df
+        # df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
+        #
+        # return df.iloc[1:].reset_index(drop=True)
+        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time')
+        print(df,"****************")
+        # Apply iloc before converting to list of dictionaries
+        df = df.iloc[1:].reset_index(drop=True)
+
+        return df.to_dict(orient='records')
 
     def get_average_energy_consumption_metrics(self, device_ips: List[str], start_date: datetime, end_date: datetime,
                                                duration_str: str) -> dict:
