@@ -312,7 +312,7 @@ class InfluxDBRepository:
                 |> range(start: -15h)
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: 1h, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             result = self.query_api1.query_data_frame(query)
@@ -372,7 +372,7 @@ class InfluxDBRepository:
     #             |> range(start: {start_time}, stop: {end_time})
     #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
     #             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
     #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
     #         '''
     #         result = self.query_api1.query_data_frame(query)
@@ -435,7 +435,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             result = self.query_api1.query_data_frame(query)
@@ -488,7 +488,7 @@ class InfluxDBRepository:
     #         |> range(start: {start_time}, stop: {end_time})
     #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and ({ips_filter}))
     #         |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-    #         |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+    #         |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
     #         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
     #     '''
     #
@@ -575,7 +575,7 @@ class InfluxDBRepository:
     #             |> range(start: {start_time}, stop: {end_time})
     #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
     #             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
     #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
     #         '''
     #         result = self.query_api1.query_data_frame(query)
@@ -682,7 +682,7 @@ class InfluxDBRepository:
             |> range(start: {start_time}, stop: {end_time})
             |> filter(fn: (r) => r["ApicController_IP"] == "{device_ip}")
             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
-            |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+            |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
         print(f"Executing query for IP: {device_ip}: {query}", file=sys.stderr)
@@ -1164,7 +1164,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             print(f"Executing query for IP: {ip}", file=sys.stderr)
@@ -1209,7 +1209,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             print(f"Executing traffic query for IP: {ip}", file=sys.stderr)
@@ -1222,7 +1222,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             print(f"Executing power query for IP: {ip}", file=sys.stderr)
@@ -1289,7 +1289,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             power_result = self.query_api1.query_data_frame(power_query)
@@ -1316,7 +1316,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
 
@@ -1392,7 +1392,7 @@ class InfluxDBRepository:
                |> range(start: {start_time}, stop: {end_time})
                |> filter(fn: (r) => r["ApicController_IP"] == "{device_ip}")
                |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
-               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
            '''
         traffic_result = self.query_api1.query_data_frame(traffic_query)
@@ -1405,7 +1405,7 @@ class InfluxDBRepository:
                |> range(start: {start_time}, stop: {end_time})
                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{device_ip}")
                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
            '''
         power_result = self.query_api1.query_data_frame(power_query)
@@ -1454,7 +1454,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             print(f"Executing query for IP: {ip}", file=sys.stderr)
@@ -2644,7 +2644,7 @@ class InfluxDBRepository:
             |> range(start: {start_time}, stop: {end_time})
             |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
             |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
-            |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+            |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
 
@@ -2761,7 +2761,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             result = self.query_api1.query_data_frame(query)
@@ -2830,7 +2830,7 @@ class InfluxDBRepository:
                |> range(start: {start_time}, stop: {end_time})
                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{device_ips[0]}")
                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
                |> mean()
            '''
@@ -2879,7 +2879,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             print(f"Query: {query}", file=sys.stderr)
@@ -3066,7 +3066,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
 
@@ -3142,7 +3142,7 @@ class InfluxDBRepository:
     #             |> range(start: {start_time}, stop: {end_time})
     #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
     #             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
     #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
     #         '''
     #
@@ -3206,7 +3206,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
 
@@ -3333,7 +3333,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
 
@@ -3397,7 +3397,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "bandwidth" or r["_field"] == "total_bytesRateLast")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
 
@@ -3724,7 +3724,7 @@ class InfluxDBRepository:
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: 1mo, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: 1mo, fn: mean, createEmpty: false)
                 |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
                 |> yield(name: "monthly_aggregated_with_ip")
           '''

@@ -104,7 +104,7 @@ class FilterSchema(BaseModel):
     rack_id: Optional[int]  # Dropdown
     vendor_id: Optional[int]  # Dropdown
     model_no: Optional[str]  # Dropdown
-    device_type: Optional[int]  # Corrected syntax
+    device_type: Optional[str]  # Corrected syntax
     department: Optional[str]  # Corrected syntax
     sntc_date: Optional[str]  # Corrected Date type
     hardware_version: Optional[str] # Corrected
