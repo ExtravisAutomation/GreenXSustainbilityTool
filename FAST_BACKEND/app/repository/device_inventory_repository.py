@@ -741,61 +741,100 @@ class DeviceInventoryRepository(BaseRepository):
     from sqlalchemy.orm import joinedload
     from sqlalchemy import or_
     from concurrent.futures import ThreadPoolExecutor, as_completed
-
-
     def classify_performance(self, avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr,
-                             avg_co2_emissions, thresholds=None):
-        if thresholds is None:
-            # Default thresholds for different metrics
-            thresholds = {
-                "energy_efficiency": [0.80, 0.90],  # Moderate, Good
-                "power_efficiency": [1.10, 1.20],  # Good, Moderate
-                "data_traffic": [1500, 2500],  # Moderate, Good
-                "pcr": [1.5, 2.5],  # Good, Moderate
-                "co2_emissions": [2.0, 3.0]  # Good, Moderate
-            }
+                             avg_co2_emissions):
+        # Collect all values in a dictionary
+        metrics = {
+            "energy_efficiency": avg_energy_efficiency,
+            "power_efficiency": avg_power_efficiency,
+            "data_traffic": avg_data_traffic,
+            "pcr": avg_pcr,
+            "co2_emissions": avg_co2_emissions
+        }
 
-        score = 0
+        # Find min and max for each metric dynamically
+        min_values = {k: min(v, 1e-6) for k, v in metrics.items()}  # Avoid division by zero
+        max_values = {k: max(v, 1) for k, v in metrics.items()}
 
-        # **Energy Efficiency Score**
-        if avg_energy_efficiency >= thresholds["energy_efficiency"][1]:
-            score += 2
-        elif thresholds["energy_efficiency"][0] <= avg_energy_efficiency < thresholds["energy_efficiency"][1]:
-            score += 1
+        # Normalize each metric (scales values between 0 and 1)
+        normalized_metrics = {
+            k: (v - min_values[k]) / (max_values[k] - min_values[k])
+            for k, v in metrics.items()
+        }
 
-        # **Power Efficiency Score**
-        if avg_power_efficiency <= thresholds["power_efficiency"][0]:
-            score += 2
-        elif thresholds["power_efficiency"][0] < avg_power_efficiency <= thresholds["power_efficiency"][1]:
-            score += 1
+        # Assign weight factors to each metric (you can tweak these)
+        weights = {
+            "energy_efficiency": 0.25,
+            "power_efficiency": 0.20,
+            "data_traffic": 0.20,
+            "pcr": 0.15,
+            "co2_emissions": -0.20  # Negative weight because lower CO2 is better
+        }
 
-        # **Data Traffic Score**
-        if avg_data_traffic >= thresholds["data_traffic"][1]:
-            score += 2
-        elif thresholds["data_traffic"][0] <= avg_data_traffic < thresholds["data_traffic"][1]:
-            score += 1
-
-        # **Power Consumption Ratio (PCR) Score**
-        if avg_pcr <= thresholds["pcr"][0]:
-            score += 2
-        elif thresholds["pcr"][0] < avg_pcr <= thresholds["pcr"][1]:
-            score += 1
-
-        # **CO₂ Emissions Score**
-        if avg_co2_emissions <= thresholds["co2_emissions"][0]:
-            score += 2
-        elif thresholds["co2_emissions"][0] < avg_co2_emissions <= thresholds["co2_emissions"][1]:
-            score += 1
-        elif avg_co2_emissions > thresholds["co2_emissions"][1]:
-            score -= 2
+        # Calculate weighted score
+        score = sum(normalized_metrics[k] * weights[k] for k in metrics)
 
         # **Final Classification**
-        if score >= 8:
+        if score >= 0.7:
             return score, "Highly efficient device with optimal power usage, low CO₂ emissions, and strong data performance."
-        elif 5 <= score < 8:
+        elif 0.4 <= score < 0.7:
             return score, "Moderate efficiency device with some areas for improvement."
         else:
             return score, "Low efficiency device that may require significant optimization."
+
+    # def classify_performance(self, avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr,
+    #                          avg_co2_emissions, thresholds=None):
+    #     if thresholds is None:
+    #         # Default thresholds for different metrics
+    #         thresholds = {
+    #             "energy_efficiency": [0.80, 0.90],  # Moderate, Good
+    #             "power_efficiency": [1.10, 1.20],  # Good, Moderate
+    #             "data_traffic": [1500, 2500],  # Moderate, Good
+    #             "pcr": [1.5, 2.5],  # Good, Moderate
+    #             "co2_emissions": [2.0, 3.0]  # Good, Moderate
+    #         }
+    #
+    #     score = 0
+    #
+    #     # **Energy Efficiency Score**
+    #     if avg_energy_efficiency >= thresholds["energy_efficiency"][1]:
+    #         score += 2
+    #     elif thresholds["energy_efficiency"][0] <= avg_energy_efficiency < thresholds["energy_efficiency"][1]:
+    #         score += 1
+    #
+    #     # **Power Efficiency Score**
+    #     if avg_power_efficiency <= thresholds["power_efficiency"][0]:
+    #         score += 2
+    #     elif thresholds["power_efficiency"][0] < avg_power_efficiency <= thresholds["power_efficiency"][1]:
+    #         score += 1
+    #
+    #     # **Data Traffic Score**
+    #     if avg_data_traffic >= thresholds["data_traffic"][1]:
+    #         score += 2
+    #     elif thresholds["data_traffic"][0] <= avg_data_traffic < thresholds["data_traffic"][1]:
+    #         score += 1
+    #
+    #     # **Power Consumption Ratio (PCR) Score**
+    #     if avg_pcr <= thresholds["pcr"][0]:
+    #         score += 2
+    #     elif thresholds["pcr"][0] < avg_pcr <= thresholds["pcr"][1]:
+    #         score += 1
+    #
+    #     # **CO₂ Emissions Score**
+    #     if avg_co2_emissions <= thresholds["co2_emissions"][0]:
+    #         score += 2
+    #     elif thresholds["co2_emissions"][0] < avg_co2_emissions <= thresholds["co2_emissions"][1]:
+    #         score += 1
+    #     elif avg_co2_emissions > thresholds["co2_emissions"][1]:
+    #         score -= 2
+    #
+    #     # **Final Classification**
+    #     if score >= 8:
+    #         return score, "Highly efficient device with optimal power usage, low CO₂ emissions, and strong data performance."
+    #     elif 5 <= score < 8:
+    #         return score, "Moderate efficiency device with some areas for improvement."
+    #     else:
+    #         return score, "Low efficiency device that may require significant optimization."
 
     def get_response_with_filter(self,page, page_size, query, score):
         devices = query.order_by(DeviceInventory.id.desc()).all()
