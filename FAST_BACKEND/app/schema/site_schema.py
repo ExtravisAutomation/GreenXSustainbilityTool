@@ -309,6 +309,33 @@ class APICControllersResponse(BaseModel):
     created_at: Optional[datetime]
     site_id: Optional[int]
     collection_status: Optional[bool]
+
+    vendor_name: Optional[str]
+    messages: Optional[str]
+
+    class Config:
+        orm_mode = True
+
+
+
+class DevicesResponse(BaseModel):
+    id: int
+    ip_address: str
+    device_type: Optional[str]
+    device_name: Optional[str]
+    site_name: Optional[str]
+    rack_name: Optional[str]
+    rack_unit: Optional[int]
+    password_group_id: Optional[int]
+    password_group_name: Optional[str]
+    vendor_name: Optional[str]
+    device_type:Optional[str]
+    vendor_id: Optional[int]
+    device_type_id: Optional[int]
+    OnBoardingStatus: Optional[bool]
+    created_at: Optional[datetime]
+    site_id: Optional[int]
+    collection_status: Optional[bool]
     messages: Optional[str]
 
     class Config:
@@ -353,11 +380,12 @@ class DeviceEnergyDetailResponse123(BaseModel):
 
 class DeviceCreateRequest(BaseModel):
     ip_address: str
-    device_name: str
+    device_name: Optional[str] = None
     site_id: int
     rack_id: int
+    vendor_id: int
     password_group_id: int
-    device_type: Optional[str] = None
+    device_type_id: Optional[int] = None
 
 
 class OnboardingRequest(BaseModel):

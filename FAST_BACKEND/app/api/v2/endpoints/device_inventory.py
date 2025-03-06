@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List, Optional
 from app.services.device_inventory_service import DeviceInventoryService
-from app.schema.device_inventory_schema import DeviceInventoryCreate, DeviceInventoryUpdate, DeviceInventoryInDB,FilterSchema
+from app.schema.device_inventory_schema import (DeviceInventoryCreate, DeviceInventoryUpdate,
+                                                DeviceInventoryInDB,FilterSchema,VendorSchema,DeviceTypeSchema)
 from app.core.dependencies import get_db
 from fastapi.responses import FileResponse
 from app.schema.device_inventory_schema import Custom_Response_Inventory,modelCreate
@@ -409,5 +410,25 @@ def get_software_versions(
 
 
 
+@router.post("/create_vendor/")
+@inject
+def create_vendor(vendor: VendorSchema, device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    vendor =device_inventory_service.add_vendor(vendor)
+    return CustomResponse(
+        message="vendor created successfully",
+        data=vendor,
+        status_code=200
+    )
 
 
+@router.post("/create_device_type/")
+@inject
+def create_device_type(device: DeviceTypeSchema, device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    device_type =device_inventory_service.add_device_type(device)
+    return CustomResponse(
+        message="Device Type created successfully",
+        data=device_type,
+        status_code=200
+    )

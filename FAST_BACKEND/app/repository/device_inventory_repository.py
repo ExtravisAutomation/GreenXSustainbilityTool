@@ -14,7 +14,7 @@ from app.model.DevicesSntc import DevicesSntc as DeviceSNTC
 from app.repository.InfluxQuery import get_24hDevice_dataTraffic, get_24hDevice_power, get_device_power
 from app.model.device_inventory import ChassisFan, ChassisModule, ChassisPowerSupply, DeviceInventory, ChassisDevice
 from app.model.apic_controller import APICController
-from app.model.APIC_controllers import APICControllers,Vendor
+from app.model.APIC_controllers import APICControllers,Vendor,DeviceType
 
 from app.repository.base_repository import BaseRepository
 from sqlalchemy import func, desc,and_
@@ -548,52 +548,65 @@ class DeviceInventoryRepository(BaseRepository):
 
         return data
 
+    from sqlalchemy.orm import joinedload
+    from sqlalchemy.sql import func, desc, and_
 
     def get_device_type(self, model_data):
         with self.session_factory() as session:
-            site_id = model_data.site_id
-            rack_id = model_data.rack_id
-            vendor_id = model_data.vendor_id
-            query = session.query(
-                APICControllers.device_type,  # Group by device_type
-                func.count(DeviceInventory.id).label("device_count"),
-            )
+            try:
+                site_id = model_data.site_id
+                rack_id = model_data.rack_id
+                vendor_id = model_data.vendor_id
 
-            query = query.join(APICControllers, APICControllers.id == DeviceInventory.apic_controller_id)
+                # Query to count devices based on device_type_id
+                query = session.query(
+                    DeviceType.id.label("device_type_id"),  # Device Type ID
+                    DeviceType.device_type,  # Device Type Name
+                    func.count(DeviceInventory.id).label("device_count")
+                )
 
-            conditions = []
-            if site_id:
-                conditions.append(DeviceInventory.site_id == site_id)
-            if rack_id:
-                conditions.append(DeviceInventory.rack_id == rack_id)
-            if vendor_id:
-                conditions.append(APICControllers.vendor_id == vendor_id)
-            if conditions:
-                query = query.filter(and_(*conditions))
-            device_type_count = (
-                query.group_by(APICControllers.device_type)
-                .order_by(desc("device_count"))  # Order by count of devices per type
-                .all()
-            )
-            total_count=0
-            data = []
-            id=0
-            for record in device_type_count:
-                data.append({
-                    "id":id+1,
-                    "device_type": record[0],  # APICControllers.device_type
-                    "count": record[1],  # Device count
-                })
-                total_count += record[1]
+                query = query.join(APICControllers, APICControllers.device_type_id == DeviceType.id) \
+                    .join(DeviceInventory, APICControllers.id == DeviceInventory.device_id)
 
-            print(f"Total Records: {len(device_type_count)}")
-            print("Processed Data:", data)
+                conditions = []
+                if site_id:
+                    conditions.append(DeviceInventory.site_id == site_id)
+                if rack_id:
+                    conditions.append(DeviceInventory.rack_id == rack_id)
+                if vendor_id:
+                    conditions.append(DeviceType.vendor_id == vendor_id)
 
-            result = {
-                "device_type_count": data,
-                "count": total_count
-            }
-            return result
+                if conditions:
+                    query = query.filter(and_(*conditions))
+
+                device_type_count = (
+                    query.group_by(DeviceType.id, DeviceType.device_type)
+                    .order_by(desc("device_count"))  # Order by device count
+                    .all()
+                )
+
+                total_count = 0
+                data = []
+                for idx, record in enumerate(device_type_count, start=1):
+                    data.append({
+                        "id": idx,
+                        "device_type_id": record[0],  # Device Type ID
+                        "device_type": record[1],  # Device Type Name
+                        "count": record[2],  # Device Count
+                    })
+                    total_count += record[2]
+
+                print(f"Total Records: {len(device_type_count)}")
+                print("Processed Data:", data)
+
+                result = {
+                    "device_type_count": data,
+                    "count": total_count
+                }
+                return result
+
+            except Exception as e:
+                raise ValueError(f"Error fetching device type data: {str(e)}")
 
     def get_vendors(self,site_id,rack_id):
         with self.session_factory() as session:
@@ -1157,4 +1170,21 @@ class DeviceInventoryRepository(BaseRepository):
             # Convert result to a list of values
             software_versions = [sw[0] for sw in distinct_sw_versions]
             return software_versions
+    def add_vendor(self, vendor):
+        with self.session_factory() as session:
+            new_vendor = Vendor(vendor_name=vendor.vendor_name)
+            session.add(new_vendor)
+            session.commit()
+            session.refresh(new_vendor)
+            return new_vendor
 
+    def add_device_type(self, device_type):
+        with self.session_factory() as session:
+            vendor = session.query(Vendor).filter(Vendor.id == device_type.vendor_id).first()
+            if not vendor:
+                raise HTTPException(status_code=404, detail="Vendor not found")
+            new_device_type = DeviceType(device_type=device_type.device_type, vendor_id=device_type.vendor_id)
+            session.add(new_device_type)
+            session.commit()
+            session.refresh(new_device_type)
+            return new_device_type

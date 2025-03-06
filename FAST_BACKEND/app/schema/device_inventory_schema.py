@@ -111,3 +111,16 @@ class FilterSchema(BaseModel):
     software_version: Optional[str] # Corrected
     score: List[int]=None
 
+
+class VendorSchema(BaseModel):
+    vendor_name: str
+
+    class Config:
+        orm_mode = True
+
+class DeviceTypeSchema(BaseModel):
+    device_type: str
+    vendor_id: int
+
+    class Config:
+        orm_mode = True

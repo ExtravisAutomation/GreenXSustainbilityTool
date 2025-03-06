@@ -387,3 +387,7 @@ class DeviceInventoryService:
         return self.device_inventory_repository.get_hardware_versions()
     def get_software_versions(self):
         return self.device_inventory_repository.get_software_versions()
+    def add_vendor(self,vendor):
+        return self.device_inventory_repository.add_vendor(vendor)
+    def add_device_type(self,device_type):
+        return self.device_inventory_repository.add_device_type(device_type)

@@ -853,15 +853,15 @@ def delete_devices(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/sites/get_all_device_types", response_model=CustomResponse[List[str]])
+@router.get("/sites/get_all_device_types", response_model=CustomResponse)
 @inject
 def get_device_types_by_vendor(
-        vendor: str,
+        vendor_id: int,
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
-        device_types = site_service.get_device_types_by_vendor(vendor)
+        device_types = site_service.get_device_types_by_vendor(vendor_id)
         return CustomResponse(
             message="Device types fetched successfully.",
             data=device_types,

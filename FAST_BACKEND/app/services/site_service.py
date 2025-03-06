@@ -12,7 +12,7 @@ from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.engine import Row
 from sqlalchemy.orm import Session
 from app.repository.site_repository import SiteRepository  
-from app.schema.site_schema import SiteCreate, SiteUpdate, GetSitesResponse, SiteDetails
+from app.schema.site_schema import SiteCreate, SiteUpdate, GetSitesResponse, SiteDetails,DevicesResponse
 import traceback
 from app.repository.influxdb_repository import InfluxDBRepository
 from app.repository.ai_repository import AIRepository
@@ -1837,12 +1837,16 @@ class SiteService:
         password_group_name = device.password_group.password_group_name if device.password_group else None
         site_name = device.site.site_name if device.site else None
         rack_name = device.rack.rack_name if device.rack else None
+        vendor_name = device.vendor.vendor_name if device.vendor else None
+        device_type = device.device_type_rel.device_type if device.device_type_rel else None  # Use the relationship
 
-        response_data = APICControllersResponse.from_orm(device)
+        response_data = DevicesResponse.from_orm(device)
         response_data.password_group_name = password_group_name
         response_data.site_name = site_name
         response_data.rack_name = rack_name
         response_data.rack_unit = device.rack_unit
+        response_data.vendor_name = vendor_name
+        response_data.device_type = device_type
 
         return response_data
 
@@ -1870,13 +1874,11 @@ class SiteService:
         energy_metrics = self.influxdb_repository.get_energy_metrics_for_last_24_hours(device_ips, start_date, end_date)
         return energy_metrics
 
-    def get_device_types_by_vendor(self, vendor: str) -> List[str]:
+    def get_device_types_by_vendor(self, vendor) -> List[str]:
         
-        if vendor.lower() == "cisco":
-            data=self.site_repository.get_vendor_data()
-            return data
-        else:
-            return []
+
+        return self.site_repository.get_vendor_data(vendor)
+
 
     def predict_next_month_pout(self, last_3_months_pout: float) -> float:
         
