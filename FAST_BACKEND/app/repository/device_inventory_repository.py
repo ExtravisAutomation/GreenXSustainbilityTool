@@ -611,7 +611,7 @@ class DeviceInventoryRepository(BaseRepository):
     def get_vendors(self,site_id,rack_id):
         with self.session_factory() as session:
 
-            query = session.query(Vendor).join(APICControllers, Vendor.id == APICControllers.vendor_id)
+            query = session.query(Vendor).outerjoin(APICControllers, Vendor.id == APICControllers.vendor_id)
 
             # Apply filters dynamically
             if site_id is not None:
