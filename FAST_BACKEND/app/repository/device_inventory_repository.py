@@ -2,6 +2,7 @@ import sys
 from contextlib import AbstractContextManager
 from typing import Callable, List
 from sqlalchemy.orm import Session, joinedload, selectinload
+from sqlalchemy.orm import aliased
 import pandas as pd
 from sqlalchemy import or_, distinct
 
@@ -557,7 +558,8 @@ class DeviceInventoryRepository(BaseRepository):
                 site_id = model_data.site_id
                 rack_id = model_data.rack_id
                 vendor_id = model_data.vendor_id
-
+                apic_alias = aliased(APICControllers)
+                device_inv_alias = aliased(DeviceInventory)
                 # Query to count devices based on device_type_id
                 query = session.query(
                     DeviceType.id.label("device_type_id"),  # Device Type ID
@@ -567,7 +569,8 @@ class DeviceInventoryRepository(BaseRepository):
 
                 query = query.join(APICControllers, APICControllers.device_type_id == DeviceType.id) \
                     .join(DeviceInventory, APICControllers.id == DeviceInventory.device_id)
-
+                query = query.outerjoin(apic_alias, apic_alias.device_type_id == DeviceType.id) \
+                    .outerjoin(device_inv_alias, apic_alias.id == device_inv_alias.device_id)
                 conditions = []
                 if site_id:
                     conditions.append(DeviceInventory.site_id == site_id)
