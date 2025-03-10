@@ -552,6 +552,66 @@ class DeviceInventoryRepository(BaseRepository):
     from sqlalchemy.orm import joinedload
     from sqlalchemy.sql import func, desc, and_
 
+    # def get_device_type(self, model_data):
+    #     with self.session_factory() as session:
+    #         try:
+    #             site_id = model_data.site_id
+    #             rack_id = model_data.rack_id
+    #             vendor_id = model_data.vendor_id
+    #             apic_alias = aliased(APICControllers)
+    #             device_inv_alias = aliased(DeviceInventory)
+    #             # Query to count devices based on device_type_id
+    #             query = session.query(
+    #                 DeviceType.id.label("device_type_id"),  # Device Type ID
+    #                 DeviceType.device_type,  # Device Type Name
+    #                 func.count(DeviceInventory.id).label("device_count")
+    #             )
+    #
+    #             query = query.outerjoin(apic_alias, apic_alias.device_type_id == DeviceType.id) \
+    #                 .outerjoin(device_inv_alias, apic_alias.id == device_inv_alias.device_id)
+    #             print(len(query.all()))
+    #             exit()
+    #
+    #             conditions = []
+    #             if site_id:
+    #                 conditions.append(DeviceInventory.site_id == site_id)
+    #             if rack_id:
+    #                 conditions.append(DeviceInventory.rack_id == rack_id)
+    #             if vendor_id:
+    #                 conditions.append(DeviceType.vendor_id == vendor_id)
+    #             if conditions:
+    #                 query = query.filter(and_(*conditions))
+    #
+    #             device_type_count = (
+    #                 query.group_by(DeviceType.id, DeviceType.device_type)
+    #                 .order_by(desc("device_count"))  # Order by device count
+    #                 .all()
+    #             )
+    #             print(len( device_type_count))
+    #             exit()
+    #
+    #             total_count = 0
+    #             data = []
+    #             for idx, record in enumerate(device_type_count, start=1):
+    #                 data.append({
+    #                     "id": idx,
+    #                     "device_type_id": record[0],  # Device Type ID
+    #                     "device_type": record[1],  # Device Type Name
+    #                     "count": record[2],  # Device Count
+    #                 })
+    #                 total_count += record[2]
+    #
+    #             print(f"Total Records: {len(device_type_count)}")
+    #             print("Processed Data:", data)
+    #
+    #             result = {
+    #                 "device_type_count": data,
+    #                 "count": total_count
+    #             }
+    #             return result
+    #
+    #         except Exception as e:
+    #             raise ValueError(f"Error fetching device type data: {str(e)}")
     def get_device_type(self, model_data):
         with self.session_factory() as session:
             try:
@@ -560,53 +620,44 @@ class DeviceInventoryRepository(BaseRepository):
                 vendor_id = model_data.vendor_id
                 apic_alias = aliased(APICControllers)
                 device_inv_alias = aliased(DeviceInventory)
+
                 # Query to count devices based on device_type_id
                 query = session.query(
-                    DeviceType.id.label("device_type_id"),  # Device Type ID
-                    DeviceType.device_type,  # Device Type Name
-                    func.count(DeviceInventory.id).label("device_count")
+                    DeviceType.id.label("device_type_id"),
+                    DeviceType.device_type,
+                    func.count(func.distinct(device_inv_alias.id)).label("device_count")  # Ensure distinct count
                 )
 
-                query = query.join(APICControllers, APICControllers.device_type_id == DeviceType.id) \
-                    .join(DeviceInventory, APICControllers.id == DeviceInventory.device_id)
-                query = query.outerjoin(apic_alias, apic_alias.device_type_id == DeviceType.id) \
-                    .outerjoin(device_inv_alias, apic_alias.id == device_inv_alias.device_id)
-                conditions = []
-                if site_id:
-                    conditions.append(DeviceInventory.site_id == site_id)
-                if rack_id:
-                    conditions.append(DeviceInventory.rack_id == rack_id)
-                if vendor_id:
-                    conditions.append(DeviceType.vendor_id == vendor_id)
+                query = query.join(apic_alias, apic_alias.device_type_id == DeviceType.id, isouter=True) \
+                    .join(device_inv_alias, apic_alias.id == device_inv_alias.device_id, isouter=True)
 
-                if conditions:
+                # Apply filters before grouping
+                if site_id or rack_id or vendor_id:
+                    conditions = []
+                    if site_id:
+                        conditions.append(device_inv_alias.site_id == site_id)
+                    if rack_id:
+                        conditions.append(device_inv_alias.rack_id == rack_id)
+                    if vendor_id:
+                        conditions.append(DeviceType.vendor_id == vendor_id)
                     query = query.filter(and_(*conditions))
 
-                device_type_count = (
-                    query.group_by(DeviceType.id, DeviceType.device_type)
-                    .order_by(desc("device_count"))  # Order by device count
-                    .all()
-                )
+                query = query.group_by(DeviceType.id, DeviceType.device_type)
 
-                total_count = 0
-                data = []
-                for idx, record in enumerate(device_type_count, start=1):
-                    data.append({
-                        "id": idx,
-                        "device_type_id": record[0],  # Device Type ID
-                        "device_type": record[1],  # Device Type Name
-                        "count": record[2],  # Device Count
-                    })
-                    total_count += record[2]
+                device_type_count = query.order_by(desc("device_count")).all()
 
-                print(f"Total Records: {len(device_type_count)}")
-                print("Processed Data:", data)
-
+                total_count = sum(record[2] for record in device_type_count)  # Sum actual counts
+                data = [
+                    {"id": idx, "device_type_id": record[0], "device_type": record[1], "count": record[2]}
+                    for idx, record in enumerate(device_type_count, start=1)
+                ]
                 result = {
-                    "device_type_count": data,
-                    "count": total_count
-                }
+                                "device_type_count": data,
+                                "count": total_count
+                            }
                 return result
+
+
 
             except Exception as e:
                 raise ValueError(f"Error fetching device type data: {str(e)}")
