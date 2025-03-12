@@ -1996,6 +1996,7 @@ class SiteService:
                 # Check validity of predictions
                 if all(value is not None and not pd.isna(value) for value in predictions.values()):
                     for key, value in predictions.items():
+
                         predicted_row[key] = value
                     predicted_row["Prediction"] = "True"
                 else:
