@@ -3901,7 +3901,6 @@ class InfluxDBRepository:
             # Initialize model with logistic growth to prevent negatives
             model = Prophet(growth="logistic")
             model.fit(df)
-
             # Create future dataframe
             future = model.make_future_dataframe(periods=1, freq='M')
             future["cap"] = df["cap"].max()  # Ensure cap is applied to the future prediction
