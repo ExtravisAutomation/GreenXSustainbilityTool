@@ -82,6 +82,7 @@ class RackRepository(BaseRepository):
                     average_pue = total_pue / len(pue_values)
                     rack.pue = round(average_pue, 2)
 
+
                     power_input_values = [data.get('power_input', 0) for data in rack_power_data]
                     total_power_input = sum(power_input_values)
                     rack.power_input = round(total_power_input / 1000, 2)
