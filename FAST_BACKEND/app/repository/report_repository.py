@@ -10,11 +10,16 @@ from fastapi import HTTPException, status
 from app.model.report import Reports
 from app.schema.report_schema import ReportCreate
 from app.repository.base_repository import BaseRepository
-
+from dotenv import load_dotenv
+import requests
+load_dotenv()
+import os
+base_url=os.getenv("BASE_URL")
 
 class ReportRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
         self.session_factory = session_factory
+
         super().__init__(session_factory, Reports)
         
         
@@ -36,3 +41,5 @@ class ReportRepository(BaseRepository):
         except Exception as e:
             session.rollback()
             raise HTTPException(status_code=500, detail=str(e))
+
+

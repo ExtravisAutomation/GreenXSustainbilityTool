@@ -31,9 +31,15 @@ class RackRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
         super().__init__(session_factory, Rack)
 
-    def get_all_racks(self) -> List[RackDetails]:
+    def get_all_racks(self,site_id) -> List[RackDetails]:
         with self.session_factory() as session:
-            racks = session.query(Rack).all()
+            if site_id:
+                racks = session.query(Rack).filter(Rack.site_id==site_id).all()
+
+            else:
+                racks = session.query(Rack).all()
+
+
 
             for rack in racks:
                 
@@ -61,6 +67,8 @@ class RackRepository(BaseRepository):
                 
                 rack_power_data = get_24hrack_power(apic_ips, rack.id)
                 rack_traffic_data = get_24h_rack_datatraffic(apic_ips, rack.id)
+
+
 
                 
                 if rack_power_data:

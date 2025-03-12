@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional, TypeVar, Generic
+from typing import Optional, TypeVar, Generic, List
 
 
 class DeviceInventoryBase(BaseModel):
@@ -89,3 +89,38 @@ class modelCreate(BaseModel):
     site_id : Optional[int]
     rack_id : Optional[int]
     vendor_id : Optional[int]
+
+
+#
+
+import datetime
+
+class FilterSchema(BaseModel):
+    page:Optional[int]
+    ip_address: Optional[str]
+    device_name: Optional[str]
+    serial_no: Optional[str]  # Serial numbers can be alphanumeric
+    site_id: Optional[int]  # Dropdown
+    rack_id: Optional[int]  # Dropdown
+    vendor_id: Optional[int]  # Dropdown
+    model_no: Optional[str]  # Dropdown
+    device_type: Optional[str]  # Corrected syntax
+    department: Optional[str]  # Corrected syntax
+    sntc_date: Optional[str]  # Corrected Date type
+    hardware_version: Optional[str] # Corrected
+    software_version: Optional[str] # Corrected
+    score: List[int]=None
+
+
+class VendorSchema(BaseModel):
+    vendor_name: str
+
+    class Config:
+        orm_mode = True
+
+class DeviceTypeSchema(BaseModel):
+    device_type: str
+    vendor_id: int
+
+    class Config:
+        orm_mode = True

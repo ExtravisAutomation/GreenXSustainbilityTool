@@ -1,5 +1,11 @@
 import sys
+from concurrent.futures import ThreadPoolExecutor
+
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import JSONResponse
+import os
 import time
+import numpy as np
 from fastapi import File, UploadFile
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any, Union
@@ -61,7 +67,7 @@ from app.schema.site_schema import EnergyConsumptionMetricsDetails2
 
 from app.schema.site_schema import CustomResponse_openai
 
-from app.schema.site_schema import EnergyConsumptionMetricsDetailsNew
+from app.schema.site_schema import EnergyConsumptionMetricsDetailsNew,modelResponse
 
 router = APIRouter(prefix="/sites", tags=["SITES"])
 logger = getLogger(__name__)
@@ -655,6 +661,7 @@ def get_total_power_consumption(
     )
 
 
+
 @router.get("/sites/carbon_emission_details/{site_id}", response_model=CustomResponse[dict])
 @inject
 def get_carbon_emission_metrics(
@@ -755,7 +762,7 @@ def delete_password_groups(
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    delet = site_service.delete_password_groups1(password_group_ids)
+    delete = site_service.delete_password_groups1(password_group_ids)
     return CustomResponse(
         message="Password groups deleted successfully.",
         data=None,
@@ -799,7 +806,7 @@ def get_all_devices(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
-        devices = site_service.get_all_devices1()
+        devices = site_service.get_all_devices_data()
         return CustomResponse(
             message="Devices fetched successfully.",
             data=devices,
@@ -846,15 +853,15 @@ def delete_devices(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/sites/get_all_device_types", response_model=CustomResponse[List[str]])
+@router.get("/sites/get_all_device_types", response_model=CustomResponse)
 @inject
 def get_device_types_by_vendor(
-        vendor: str,
+        vendor_id: int,
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
-        device_types = site_service.get_device_types_by_vendor(vendor)
+        device_types = site_service.get_device_types_by_vendor(vendor_id)
         return CustomResponse(
             message="Device types fetched successfully.",
             data=device_types,
@@ -1037,7 +1044,7 @@ def get_all_devices_carbon_emission(
         data=devices_carbon_emission,
         status_code=200
     )
-
+import math
 @router.get("/sites/all_devices_pcr/{site_id}", response_model=CustomResponse[List[dict]])
 @inject
 def get_all_devices_pcr(
@@ -1048,11 +1055,20 @@ def get_all_devices_pcr(
 ):
     duration = duration or "24 hours"
     devices_carbon_emission = site_service.get_all_devices_pcr(site_id, duration)
+
+    print(devices_carbon_emission)
+    for device in devices_carbon_emission:
+        for key, value in device.items():
+            if isinstance(value, float) and (math.isinf(value) or math.isnan(value)):
+                device[key] = 0  # Replace with None or a default value like 0
+
     return CustomResponse(
         message="Carbon emission metrics for all devices retrieved successfully.",
         data=devices_carbon_emission,
         status_code=200
     )
+
+
 
 
 
@@ -1488,6 +1504,7 @@ def get_device_energy_metrics_by_timestamp(
 
     print(f"Metrics retrieved: {metrics}", file=sys.stderr)
 
+
     if not metrics or not metrics.get("metrics"):
         print(f"No metrics found for site_id: {site_id}, device_id: {device_id}, duration: {duration}", file=sys.stderr)
         raise HTTPException(status_code=404, detail="No metrics found for the given site/device and duration.")
@@ -1590,25 +1607,28 @@ def get_device_energy_consumption_metrics(
         status_code=status.HTTP_200_OK
     )
 
-
+def clean_data(data):
+    for item in data:
+        for key, value in item.items():
+            if isinstance(value, float):
+                if np.isnan(value) or np.isinf(value):
+                    item[key] = 0  # Replace with 0 or another fallback
+    return data
 @router.post("/sites/avg_energy_consumption_with_model_count/")
 @inject
 def get_device_avg_energy_consumption_metrics(
-        limit:Optional[int]=None,
-        site_id: Optional[int] = None,
-        rack_id: Optional[int] = None,
-        vendor_id: Optional[int] = None,
-        duration: Optional[str] = Query(None, alias="duration"),
-        current_user: User = Depends(get_current_active_user),
+        model_data:modelResponse,
+        # current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    duration = duration or "24 hours"
 
-    avg_metrics = site_service.calculate_avg_energy_consumption_with_filters(limit,site_id, rack_id, vendor_id,
+    duration =  "24 hours"
+
+    avg_metrics = site_service.calculate_avg_energy_consumption_with_filters(model_data.limit,model_data.site_id, model_data.rack_id, model_data.vendor_id,
                                                                              duration)
 
     print("Average Metrics:", avg_metrics, file=sys.stderr)
-
+    avg_metrics=clean_data(avg_metrics)
     if not avg_metrics:
         raise HTTPException(status_code=404, detail="No metrics found for the given filters.")
 
@@ -1616,17 +1636,14 @@ def get_device_avg_energy_consumption_metrics(
 
 
 
-
-
-
-
 @router.get("/get_inventory_count", response_model=CustomResponse)
 @inject
 def get_inventory_counts(
+        site_id: Optional[int] = None,
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    data = site_service.get_inventory_count()
+    data = site_service.get_inventory_count(site_id)
     return CustomResponse(
         message="Fetched all inventory count successfully",
         data=data,
@@ -1637,30 +1654,214 @@ def get_inventory_counts(
 @router.post("/get_next_month", response_model=CustomResponse)
 @inject
 def get_ai_res(device_data:DeviceRequest,
-        # current_user: User = Depends(get_current_active_user),
+        current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     data = site_service.get_device_aidata(device_data)
+    # data = [
+    #
+    #     {'month': 'September', 'year': 2024, 'total_PIn': 222.95, 'total_POut': 192.5, 'PUE': 1.16, 'EER': 0.86,
+    #      'Prediction': 'False'},
+    #     {'month': 'October', 'year': 2024, 'total_PIn': 221.37, 'total_POut': 191.79, 'PUE': 1.15, 'EER': 0.87,
+    #      'Prediction': 'False'},
+    #     {'month': 'November', 'year': 2024, 'total_PIn': 205.29, 'total_POut': 177.65, 'PUE': 1.16, 'EER': 0.87,
+    #      'Prediction': 'False'},
+    #     {'month': 'December', 'year': 2024, 'total_PIn': 223.01, 'total_POut': 193.01, 'PUE': 1.16, 'EER': 0.87,
+    #      'Prediction': 'False'},
+    #     {'month': 'January', 'year': 2025, 'total_PIn': 70.33, 'total_POut': 60.85, 'PUE': 1.16, 'EER': 0.87,
+    #      'Prediction': 'False'},
+    #     {'month': 'February', 'year': 2025, 'total_PIn':  223.01, 'total_POut': 193.01, 'PUE': 1.16, 'EER': 0.87,
+    #      'Prediction': 'False'},
+    #     {'month': 'March', 'year': 2025, 'total_PIn': 222.67, 'total_POut': 193.67, 'PUE': 1.16, 'EER': 0.87,
+    #      'Prediction': 'True'},
+    # ]
+    print(data)
+    print(type(data),"$#@@@@@@@@@@@@@@@@")
     return CustomResponse(
         message="Fetched all inventory count successfully",
         data=data,
         status_code=status.HTTP_200_OK
     )
 
+@router.post("/generate_reports", response_model=CustomResponse[dict])
+@inject
+def get_reports(
+        site_id: int,
+        duration: Optional[str] = Query(None, alias="duration"),
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+    def calculate_emission():
+        pin_value, consumption_percentages, totalpin_kws = site_service.calculate_total_power_consumption(site_id, duration)
+        return {"total_PIn": pin_value, "consumption_percentages": consumption_percentages, "totalpin_kws": totalpin_kws}
+    def get_device_emission():
+        return site_service.get_all_devices_carbon_emission(site_id, duration)
+
+    # Use ThreadPoolExecutor to run tasks in parallel
+    with ThreadPoolExecutor() as executor:
+        future_emission = executor.submit(calculate_emission)
+        future_device_emission = executor.submit(get_device_emission)
+
+        # Get results from threads
+        co2_emmission = future_emission.result()
+        devices_carbon_emission = future_device_emission.result()
+
+    return CustomResponse(
+        message="Energy and power consumption metrics retrieved successfully.",
+        data={
+            "co2_emmission": co2_emmission,
+            "devices_carbon_emission": devices_carbon_emission,
+        },
+        status_code=200,
+    )
+
+
+# Directory to save uploaded PDF files
+UPLOAD_DIRECTORY = "./uploaded_files/"
+os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)  # Ensure the directory exists
 
 
 
+@router.post("/upload_pdf", response_model=CustomResponse[dict])
+@inject
+async def upload_pdf(file: UploadFile = File(...)):
+    # Check if the uploaded file is a PDF
+    if file.content_type != "application/pdf":
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed.")
 
-# @router.post("/get_bandwidth wise", response_model=CustomResponse)
-# @inject
-# def get_ai_res(device_data:DeviceRequest,
-#         # current_user: User = Depends(get_current_active_user),
-#         site_service: SiteService = Depends(Provide[Container.site_service])
-# ):
-#     data = site_service.get_device_aidata(device_data)
-#     return CustomResponse(
-#         message="Fetched all inventory count successfully",
-#         data=data,
-#         status_code=status.HTTP_200_OK
-#     )
-#
+    # Generate a unique file name
+    file_path = os.path.join(UPLOAD_DIRECTORY, file.filename)
+    # Save the file
+    try:
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save the file: {str(e)}")
+
+    return JSONResponse(
+        content={
+            "message": "PDF file uploaded successfully.",
+            "file_path": file_path,
+        },
+        status_code=201,
+    )
+
+
+
+@router.get("/sites/carbon_onclick/{site_id}",
+            response_model=CustomResponse[List[EnergyConsumptionMetricsDetails2]])
+@inject
+def get_device_cabonemmsion(
+        site_id: int,
+        device_id: Optional[int] = Query(None, alias="device_id"),
+        duration: Optional[str] = Query(None, alias="duration"),
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+
+    print(f"Request received for site_id: {site_id}, device_id: {device_id}, duration: {duration}", file=sys.stderr)
+
+    if device_id:
+        metrics = site_service.calculate_energy_metrics_by_device_id(site_id, device_id, duration)
+    else:
+        metrics = site_service.calculate_average_energy_metrics_by_site_id(site_id, duration)
+
+    print(f"Metrics retrieved: {metrics}", file=sys.stderr)
+
+    if not metrics or not metrics.get("metrics"):
+        print(f"No metrics found for site_id: {site_id}, device_id: {device_id}", file=sys.stderr)
+        raise HTTPException(status_code=404, detail="No metrics found for the given site/device and duration.")
+
+    return CustomResponse(
+        message="Device energy metrics retrieved successfully.",
+        data=metrics.get("metrics"),
+        status_code=status.HTTP_200_OK
+    )
+
+from fastapi.responses import FileResponse
+from pathlib import Path
+
+@router.post("/view-pdf/")
+def view_pdf(
+        filename: Optional[str] = None,
+        # current_user: User = Depends(get_current_active_user),
+):
+    if not filename:
+        raise HTTPException(status_code=400, detail="Filename parameter is required.")
+
+    # Secure the filename to avoid directory traversal attacks
+    safe_filename = os.path.basename(filename)
+    pdf_path = Path(f"reports/{safe_filename}")
+    print("sdakfkdjskdgjk")
+
+    if pdf_path.exists():
+        return FileResponse(
+            path=pdf_path,
+            media_type='application/pdf',
+            filename=safe_filename
+        )
+    else:
+        raise HTTPException(status_code=404, detail="File not found.")
+
+
+@router.get("/device_level_analytics/{site_id}",
+            response_model=CustomResponse[List[EnergyConsumptionMetricsDetails2]])
+@inject
+def get_dcs_energy_metrics_by_timestamp(
+        site_id: int,
+        timestamp: Optional[str] = Query(None, alias="timestamp"),
+        device_id: Optional[int] = Query(None, alias="device_id"),
+        duration: Optional[str] = Query(None, alias="duration"),
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+
+    print(f"Request received for site_id: {site_id}, device_id: {device_id}, duration: {duration}, timestamp: {timestamp}", file=sys.stderr)
+
+    if device_id:
+        print("Request received")
+        metrics = site_service.calculate_dcs_metrics_by_device_id(site_id, device_id, duration)
+    else:
+        metrics = site_service.calculate_average_energy_metrics_by_site_id(site_id, duration)
+
+    print(f"Metrics retrieved: {metrics}", file=sys.stderr)
+
+    if not metrics or not metrics.get("metrics"):
+        print(f"No metrics found for site_id: {site_id}, device_id: {device_id}, duration: {duration}", file=sys.stderr)
+        raise HTTPException(status_code=404, detail="No metrics found for the given site/device and duration.")
+
+    # Filter the metrics by timestamp if provided
+    if timestamp:
+        filtered_metrics = [metric for metric in metrics.get("metrics", []) if metric["time"] == timestamp]
+        if not filtered_metrics:
+            print(f"No metrics found for the given timestamp: {timestamp}", file=sys.stderr)
+            raise HTTPException(status_code=404, detail=f"No metrics found for the timestamp: {timestamp}")
+    else:
+        filtered_metrics = metrics.get("metrics")
+
+    return CustomResponse(
+        message="Device energy metrics retrieved successfully.",
+        data=filtered_metrics,
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.post("/collection_status")
+@inject
+def site_power_co2emmission(
+        device_id: int,
+        collecton_status:bool,
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    response=site_service.device_collectionstatus(device_id,collecton_status)
+    print("Device status")
+
+    return {
+        "message": "Device collection status updated successfully.",
+        "data": response,
+        "status_code": status.HTTP_200_OK
+    }

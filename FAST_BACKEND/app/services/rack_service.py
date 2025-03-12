@@ -11,8 +11,8 @@ class RackService:
     def __init__(self, rack_repository: RackRepository):
         self.rack_repository = rack_repository
 
-    def get_racks(self) -> List[RackDetails]:
-        racks = self.rack_repository.get_all_racks()
+    def get_racks(self,site_id) -> List[RackDetails]:
+        racks = self.rack_repository.get_all_racks(site_id)
         
         
         return racks

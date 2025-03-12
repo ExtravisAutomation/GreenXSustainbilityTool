@@ -312,7 +312,7 @@ class InfluxDBRepository:
                 |> range(start: -15h)
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: 1h, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             result = self.query_api1.query_data_frame(query)
@@ -372,7 +372,7 @@ class InfluxDBRepository:
     #             |> range(start: {start_time}, stop: {end_time})
     #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
     #             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
     #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
     #         '''
     #         result = self.query_api1.query_data_frame(query)
@@ -435,7 +435,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             result = self.query_api1.query_data_frame(query)
@@ -467,8 +467,16 @@ class InfluxDBRepository:
                             "power_efficiency": round(power_efficiency, 2)
                         })
 
-        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
-        return df
+        # df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
+        # return df
+
+        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time')
+
+        # Apply iloc before converting to list of dictionaries
+        df = df.iloc[1:].reset_index(drop=True)
+
+        return df.to_dict(orient='records')
+
 
     # async def query_influxdb_for_devices(self, device_ips: List[str], start_time: str, end_time: str, aggregate_window: str, time_format: str) -> List[dict]:
     #     if not device_ips:
@@ -480,7 +488,7 @@ class InfluxDBRepository:
     #         |> range(start: {start_time}, stop: {end_time})
     #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and ({ips_filter}))
     #         |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-    #         |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+    #         |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
     #         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
     #     '''
     #
@@ -567,7 +575,7 @@ class InfluxDBRepository:
     #             |> range(start: {start_time}, stop: {end_time})
     #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
     #             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
     #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
     #         '''
     #         result = self.query_api1.query_data_frame(query)
@@ -674,7 +682,7 @@ class InfluxDBRepository:
             |> range(start: {start_time}, stop: {end_time})
             |> filter(fn: (r) => r["ApicController_IP"] == "{device_ip}")
             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
-            |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+            |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
         print(f"Executing query for IP: {device_ip}: {query}", file=sys.stderr)
@@ -962,14 +970,13 @@ class InfluxDBRepository:
             if isinstance(result, pd.DataFrame) and not result.empty:
                 bandwidth = result.loc[result['_field'] == 'bandwidth', '_value'].mean() / 1000  # Convert Kbps to Mbps
                 traffic_speed = result.loc[result['_field'] == 'total_bytesRateLast', '_value'].mean() * 8 / 1e6  # Convert bytes/sec to Mbps
-                # bandwidth_utilization = min((traffic_speed / bandwidth) * 100, 100) if bandwidth else 0
+                    # bandwidth_utilization = min((traffic_speed / bandwidth) * 100, 100) if bandwidth else 0
                 bandwidth_utilization = (traffic_speed / bandwidth) * 100 if bandwidth else 0
             else:
                 bandwidth = traffic_speed = bandwidth_utilization = 0
         except Exception as e:
             print(f"Error fetching bandwidth and traffic: {e}")
             bandwidth = traffic_speed = bandwidth_utilization = None
-
         return bandwidth, traffic_speed, bandwidth_utilization
 
     # def get_device_data(self, ip, start_time, end_time, aggregate_window):
@@ -1041,12 +1048,15 @@ class InfluxDBRepository:
             # Fetch data
 
             total_power = self.fetch_device_power_consumption(ip, start_time, end_time, aggregate_window)
+            print("ip, start_time, end_time,aggregate_window",ip, start_time, end_time,aggregate_window)
             bandwidth, traffic_speed, bandwidth_utilization = self.fetch_bandwidth_and_traffic(ip, start_time, end_time,
                                                                                                aggregate_window)
-
-
+            print(total_power,"dsajfdkjdkjd")
+            print(traffic_speed,"sd;f;sdl;fl;gls")
             pcr = total_power / traffic_speed if traffic_speed else None
             co2em=(total_power/1000) *0.4041
+            print("co2emissions ", co2em)
+            print(pcr,"PCR")
 
 
             # Convert and format the data with units
@@ -1073,7 +1083,7 @@ class InfluxDBRepository:
                 'total_bandwidth': converted_data['bandwidth'],
                 'traffic_speed': converted_data['traffic_speed'],
                 'bandwidth_utilization': converted_data['bandwidth_utilization'],
-                'pcr': round(pcr, 4),
+                'pcr': round(pcr, 4) if pcr else 0,
                 'co2emmissions': converted_data['co2emissions'],
                 'ip_address': ip
             })
@@ -1154,7 +1164,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             print(f"Executing query for IP: {ip}", file=sys.stderr)
@@ -1199,7 +1209,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             print(f"Executing traffic query for IP: {ip}", file=sys.stderr)
@@ -1212,7 +1222,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             print(f"Executing power query for IP: {ip}", file=sys.stderr)
@@ -1253,7 +1263,7 @@ class InfluxDBRepository:
 
         return throughput_metrics
 
-    def get_energy_consumption_metrics_with_filter123(self, device_ips: List[str], start_date: datetime,
+    def get_energy_consumption_metrics_with_filter1234(self, device_ips: List[str], start_date: datetime,
                                                       end_date: datetime, duration_str: str) -> List[dict]:
         total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'
@@ -1279,10 +1289,26 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             power_result = self.query_api1.query_data_frame(power_query)
+
+
+            print(power_result)
+            # If the result is empty, skip this device
+
+
+            # Calculate energy efficiency and power efficiency
+            power_result['energy_efficiency'] = (power_result['total_POut'] / power_result['total_PIn']).fillna(0)
+            power_result['power_efficiency'] = (power_result['total_PIn'] / power_result['total_POut']).fillna(0)
+
+            # Format timestamps
+            power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
+
+            print(f"Data for IP:", power_result, file=sys.stderr)
+
+            # Merge power data with total bytes rate last
 
             # Query for data traffic
             traffic_query = f'''
@@ -1290,9 +1316,10 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
+
             traffic_result = self.query_api1.query_data_frame(traffic_query)
 
             # If both results are empty, skip this device
@@ -1300,16 +1327,30 @@ class InfluxDBRepository:
                 print(f"No data for IP: "
                       f"{ip}", file=sys.stderr)
                 continue
-
             # Format timestamps
             if not power_result.empty:
                 power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
             if not traffic_result.empty:
+
                 traffic_result['_time'] = pd.to_datetime(traffic_result['_time']).dt.strftime(time_format)
 
-            # Merge traffic and power data
-            combined_result = pd.merge(power_result, traffic_result, on='_time', how='outer').fillna(0)
-
+            # print(f"Data for IP:", power_result, file=sys.stderr)
+            # print(f'Data for dataa',traffic_result,file=sys.stderr)
+            #
+            # # Merge traffic and power data
+            # combined_result = pd.merge(power_result, traffic_result, on='_time', how='outer').fillna(0)
+            if power_result.empty and traffic_result.empty:
+                # If both are empty, create a new DataFrame with an empty _time column
+                combined_result = pd.DataFrame(columns=['_time'])
+            elif power_result.empty:
+                # If only power_result is empty, use traffic_result as the result
+                combined_result = traffic_result.copy()
+            elif traffic_result.empty:
+                # If only traffic_result is empty, use power_result as the result
+                combined_result = power_result.copy()
+            else:
+                # Merge only if both have data
+                combined_result = pd.merge(power_result, traffic_result, on='_time', how='outer').fillna(0)
             for _, row in combined_result.iterrows():
                 pin = row['total_PIn'] if 'total_PIn' in row else 0
                 pout = row['total_POut'] if 'total_POut' in row else 0
@@ -1320,7 +1361,7 @@ class InfluxDBRepository:
                 pin_kg = pin / 1000
                 co2 = pin_kg * 0.4716
                 co2_tons = co2 / 1000
-                total_bytes_rate_last_gb = self.convert_bytes(total_bytes_rate_last)
+                total_bytes_rate_last_gb = total_bytes_rate_last/(2 ** 30)
 
                 total_power_metrics.append({
                     "time": row['_time'],
@@ -1351,7 +1392,7 @@ class InfluxDBRepository:
                |> range(start: {start_time}, stop: {end_time})
                |> filter(fn: (r) => r["ApicController_IP"] == "{device_ip}")
                |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
-               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
            '''
         traffic_result = self.query_api1.query_data_frame(traffic_query)
@@ -1364,7 +1405,7 @@ class InfluxDBRepository:
                |> range(start: {start_time}, stop: {end_time})
                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{device_ip}")
                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
            '''
         power_result = self.query_api1.query_data_frame(power_query)
@@ -1413,7 +1454,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             print(f"Executing query for IP: {ip}", file=sys.stderr)
@@ -2097,10 +2138,13 @@ class InfluxDBRepository:
                     "site_id": site_id,
                     "power_utilization": round(power_utilization, 2) if power_utilization is not None else 0,
                     "power_input": round(total_supplied, 2) if total_supplied != 0 else None,
+                    "power_output": round(total_drawn, 2) if total_drawn != 0 else None,
                     "pue": round(pue, 2) if pue is not None else 0
                 })
+
             except Exception as e:
                 print(f"Error querying InfluxDB for {apic_ip}: {e}")
+        print(site_data)
 
         return site_data
 
@@ -2244,10 +2288,11 @@ class InfluxDBRepository:
 
     def get_power_required(self, device_ips: List[str], site_id: int) -> List[dict]:
         power_required_data = []
-        start_range = "-2h"
+        start_range = "-1h"
         for ip in device_ips:
             # Query for Power Input and Output
             power_in_query = self.build_query(ip, "total_PIn", start_range)
+
             power_out_query = self.build_query(ip, "total_POut", start_range)
             total_power_query = self.build_query(ip, "total_Power", start_range)
 
@@ -2265,6 +2310,7 @@ class InfluxDBRepository:
                 "apic_controller_ip": ip,
                 "PowerInput": PowerIn,
                 "TotalPower": TotalPower,
+
                 "PowerPercentage": round(powerper, 2)
             })
 
@@ -2598,7 +2644,7 @@ class InfluxDBRepository:
             |> range(start: {start_time}, stop: {end_time})
             |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
             |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
-            |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+            |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
 
@@ -2622,7 +2668,6 @@ class InfluxDBRepository:
                     'status': 'error',
                     'message': 'No data available for the specified query.'
                 }
-
         except Exception as e:
         # logging.error(f"Error executing query for IP {ip}: {str(e)}")
             return {
@@ -2716,7 +2761,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             result = self.query_api1.query_data_frame(query)
@@ -2754,8 +2799,15 @@ class InfluxDBRepository:
                             "co2_kgs": round(co2, 2)
                         })
 
-        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
-        return df
+        # df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
+        #
+        # return df.iloc[1:].reset_index(drop=True)
+        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time')
+        print(df,"****************")
+        # Apply iloc before converting to list of dictionaries
+        df = df.iloc[1:].reset_index(drop=True)
+
+        return df.to_dict(orient='records')
 
     def get_average_energy_consumption_metrics(self, device_ips: List[str], start_date: datetime, end_date: datetime,
                                                duration_str: str) -> dict:
@@ -2778,7 +2830,7 @@ class InfluxDBRepository:
                |> range(start: {start_time}, stop: {end_time})
                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{device_ips[0]}")
                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
                |> mean()
            '''
@@ -2827,7 +2879,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             print(f"Query: {query}", file=sys.stderr)
@@ -3014,7 +3066,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
 
@@ -3090,7 +3142,7 @@ class InfluxDBRepository:
     #             |> range(start: {start_time}, stop: {end_time})
     #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
     #             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+    #             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
     #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
     #         '''
     #
@@ -3154,7 +3206,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
 
@@ -3281,7 +3333,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: true)
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
 
@@ -3315,16 +3367,81 @@ class InfluxDBRepository:
 
                         total_power_metrics.append({
                             "time": row['index'],
-                            "energy_consumption": round(energy_consumption, 2),
-                            "total_POut": round(pout/1000, 2),
-                            "total_PIn": round(pin/1000, 2),
-                            "power_efficiency": round(power_efficiency, 2),
-                            "eer": round(eer, 2),
-                            "pue": round(pue, 2)
+                            "energy_consumption": round(energy_consumption, 4),
+                            "total_POut": round(pout/1000, 4),
+                            "total_PIn": round(pin/1000, 4),
+                            "power_efficiency": round(power_efficiency, 4),
+                            "co2e": round((pin/1000)*0.4716,4),
+                            "eer": round(eer, 4),
+                            "pue": round(pue, 4)
                         })
 
         print(f"Final power metrics: {total_power_metrics}", file=sys.stderr)
+
         return total_power_metrics
+
+    def get_energy_metrics_with_datatraffic(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+                                            duration_str: str) -> List[dict]:
+        total_datatraffic_metric = []
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+
+        print(f"Querying InfluxDB from {start_time} to {end_time} for device_ips: {device_ips}", file=sys.stderr)
+
+        aggregate_window = self.get_aggregate_window(duration_str)
+        time_format = self.get_time_format(duration_str)
+
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "bandwidth" or r["_field"] == "total_bytesRateLast")
+                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+
+
+            print(f"InfluxDB Query for IP {ip}: {query}", file=sys.stderr)
+            result = self.query_api1.query_data_frame(query)
+
+            print(f"Result for IP {ip}: {result}", file=sys.stderr)
+
+            if not result.empty:
+                result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+                numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+                if '_time' in result.columns and numeric_cols:
+                    grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
+                    grouped['_time'] = pd.to_datetime(grouped['_time'])
+                    grouped.set_index('_time', inplace=True)
+
+                    all_times = pd.date_range(start=start_date, end=end_date, freq=aggregate_window.upper()).strftime(
+                        time_format)
+                    grouped = grouped.reindex(all_times).fillna(0).reset_index()
+
+                    for _, row in grouped.iterrows():
+                        bandwidth_value = row['bandwidth']
+                        total_bytesRateLast_value = row['total_bytesRateLast']
+
+                        bandwidth =( bandwidth_value / 1000 ) if bandwidth_value >0 else 0 # Convert Kbps to Mbps
+                        traffic_speed = total_bytesRateLast_value * 8 / 1e6  if total_bytesRateLast_value >0 else 0 # Convert bytes/sec to Mbps
+
+                        # bandwidth_utilization = min((traffic_speed / bandwidth) * 100, 100) if bandwidth else 0
+                        bandwidth_utilization = (traffic_speed / bandwidth) * 100 if bandwidth else 0
+
+
+
+
+                        total_datatraffic_metric.append({
+                            "time": row['index'],
+                            "bandwidth": round(bandwidth, 2),
+                            "datatraffic": round(traffic_speed, 2),
+                            "bandwidth_utilization": round(bandwidth_utilization, 2),
+
+                        })
+
+        print(f"Final power metrics: {total_datatraffic_metric}", file=sys.stderr)
+        return total_datatraffic_metric
 
     def get_aggregate_window(self, duration_str: str) -> str:
         """
@@ -3600,96 +3717,141 @@ class InfluxDBRepository:
 
         return response
 
+    # def influx_resp(self, ip_address):
+    #     query = f'''
+    #           from(bucket: "Dcs_db")
+    #             |> range(start: -6mo)
+    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
+    #             |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
+    #             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+    #             |> aggregateWindow(every: 1mo, fn: mean, createEmpty: false)
+    #             |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #             |> yield(name: "monthly_aggregated_with_ip")
+    #       '''
+    #
+    #     try:
+    #         # Execute the query
+    #         results = self.query_api1.query_data_frame(query)
+    #
+    #         # Combine data if results is a list of DataFrames
+    #         if isinstance(results, list):
+    #             combined_data = pd.concat(results, ignore_index=True)
+    #             print("sdgljagdjs",combined_data)
+    #         else:
+    #             combined_data = results
+    #
+    #         # Handle empty DataFrame
+    #         if combined_data.empty:
+    #             print("No data returned after query execution.")
+    #             return pd.DataFrame(columns=["time", "total_PIn", "total_POut", "PUE", "EER"])
+    #
+    #         # Rename "_time" to "time" and remove timezone
+    #         combined_data.rename(columns={"_time": "time"}, inplace=True)
+    #         combined_data["time"] = pd.to_datetime(combined_data["time"]).dt.tz_localize(None)
+    #
+    #         # Generate a complete monthly date range
+    #         all_months = pd.date_range(
+    #             start=combined_data["time"].min(),
+    #             end=combined_data["time"].max(),
+    #             freq="MS"
+    #         )
+    #
+    #
+    #         combined_data = combined_data.set_index("time").reindex(all_months).reset_index()
+    #         combined_data.rename(columns={"index": "time"}, inplace=True)
+    #
+    #         print("***************")
+    #         print('combined_data',combined_data)
+    #
+    #
+    #         # Fill missing values
+    #         combined_data.fillna({"total_PIn": 0, "total_POut": 0}, inplace=True)
+    #         print("zxcmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm")
+    #         print(combined_data)
+    #
+    #
+    #         # Calculate ratios
+    #         combined_data = self.calculate_ratios(combined_data)
+    #
+    #
+    #         # Predict next month's values
+    #         predictions = {}
+    #         for column in ["total_PIn", "total_POut", "PUE", "EER"]:
+    #             if column in combined_data.columns and not combined_data[column].isnull().all():
+    #                 predictions[column] = self.predict_next_month(combined_data, column)
+    #
+    #         # Add predicted values as the next month's data
+    #         predicted_row = {"time": all_months[-1] + pd.DateOffset(months=1)}
+    #         for key, value in predictions.items():
+    #             predicted_row[key] = value
+    #         combined_data = pd.concat([combined_data, pd.DataFrame([predicted_row])], ignore_index=True)
+    #
+    #         # Replace invalid values
+    #         combined_data.replace([float("inf"), -float("inf"), float("nan")], 0, inplace=True)
+    #
+    #         return combined_data
+    #     except Exception as e:
+    #         raise RuntimeError(f"Error querying InfluxDB: {e}")
     def influx_resp(self, ip_address):
-        # query = f'''
-        #       from(bucket: "Dcs_db")
-        #         |> range(start: -6mo)
-        #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
-        #         |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
-        #         |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-        #         |> aggregateWindow(every: 1mo, fn: mean, createEmpty: true)
-        #         |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-        #         |> yield(name: "monthly_aggregated_with_ip")
-        #   '''
-
-        query =f'''
-from(bucket: "Dcs_db")
-  |> range(start: -1mo)
-  |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
-  |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}"
-  |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-  |> aggregateWindow(every: 1mo, fn: mean, createEmpty: true, offset: -1d)
-  |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-  |> yield(name: "monthly_aggregated_with_ip")
-
-
-
-'''
+        query = f'''
+            from(bucket: "Dcs_db")
+            |> range(start: -9mo)
+            |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
+            |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
+            |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+            |> aggregateWindow(every: 1mo, fn: mean, createEmpty: false)
+            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> yield(name: "monthly_aggregated_with_ip")
+        '''
 
         try:
-            # Execute the query
+            # Execute query
             results = self.query_api1.query_data_frame(query)
 
-            # Combine data if results is a list of DataFrames
+            # Handle multiple DataFrames (InfluxDB might return multiple parts)
             if isinstance(results, list):
                 combined_data = pd.concat(results, ignore_index=True)
-                print("sdgljagdjs",combined_data)
             else:
                 combined_data = results
 
-            # Handle empty DataFrame
+            # Handle empty result
             if combined_data.empty:
-                print("No data returned after query execution.")
+                print("❌ No data retrieved from InfluxDB.")
                 return pd.DataFrame(columns=["time", "total_PIn", "total_POut", "PUE", "EER"])
 
-            # Rename "_time" to "time" and remove timezone
+            # Rename and format time column
             combined_data.rename(columns={"_time": "time"}, inplace=True)
             combined_data["time"] = pd.to_datetime(combined_data["time"]).dt.tz_localize(None)
 
-            # Generate a complete monthly date range
-            all_months = pd.date_range(
-                start=combined_data["time"].min(),
-                end=combined_data["time"].max(),
-                freq="MS"
-            )
+            # Generate full monthly range for last 9 months
+            start_date = pd.Timestamp.now().normalize() - pd.DateOffset(months=9)
+            end_date = pd.Timestamp.today().normalize()
+            all_months = pd.date_range(start=start_date, end=end_date, freq="MS")
 
-
+            # Reindex data to fill missing months
             combined_data = combined_data.set_index("time").reindex(all_months).reset_index()
             combined_data.rename(columns={"index": "time"}, inplace=True)
 
-            print("***************")
-            print('combined_data',combined_data)
-
-
-            # Fill missing values
+            # Fill missing values properly
             combined_data.fillna({"total_PIn": 0, "total_POut": 0}, inplace=True)
-            print("zxcmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm")
-            print(combined_data)
-            exit()
 
-            # Calculate ratios
+            # Ensure no negative values (replace with 0)
+            combined_data["total_PIn"] = combined_data["total_PIn"].clip(lower=0)
+            combined_data["total_POut"] = combined_data["total_POut"].clip(lower=0)
+
+            # Calculate PUE and EER ratios
             combined_data = self.calculate_ratios(combined_data)
 
-
-            # Predict next month's values
-            predictions = {}
-            for column in ["total_PIn", "total_POut", "PUE", "EER"]:
-                if column in combined_data.columns and not combined_data[column].isnull().all():
-                    predictions[column] = self.predict_next_month(combined_data, column)
-
-            # Add predicted values as the next month's data
-            predicted_row = {"time": all_months[-1] + pd.DateOffset(months=1)}
-            for key, value in predictions.items():
-                predicted_row[key] = value
-            combined_data = pd.concat([combined_data, pd.DataFrame([predicted_row])], ignore_index=True)
-
-            # Replace invalid values
+            # Replace invalid values (NaN, Inf)
             combined_data.replace([float("inf"), -float("inf"), float("nan")], 0, inplace=True)
+            combined_data.fillna(0, inplace=True)
 
+            print("✅ Successfully retrieved & processed InfluxDB data.")
             return combined_data
-        except Exception as e:
-            raise RuntimeError(f"Error querying InfluxDB: {e}")
 
+        except Exception as e:
+            print(f"⚠️ Error querying InfluxDB: {e}")
+            return pd.DataFrame(columns=["time", "total_PIn", "total_POut", "PUE", "EER"])  # Return empty DataFrame
 
     def calculate_ratios(self, dataframes):
         print("Calculating ratios", dataframes)
@@ -3703,23 +3865,53 @@ from(bucket: "Dcs_db")
         return dataframes
 
 
+    # def predict_next_month(self, data, column_name):
+    #     try:
+    #         df = data.rename(columns={"time": "ds", column_name: "y"}).dropna(subset=["ds", "y"])
+    #         df["ds"] = df["ds"].dt.tz_localize(None)  # Remove timezone from ds column
+    #
+    #         if len(df) < 2:
+    #             print(f"Not enough data to predict for {column_name}.")
+    #             return float("nan")
+    #
+    #         model = Prophet()
+    #         model.fit(df)
+    #         future = model.make_future_dataframe(periods=1, freq='M')
+    #         forecast = model.predict(future)
+    #
+    #         predicted_value = forecast.iloc[-1]["yhat"]
+    #         print(f"Prediction for {column_name}: {predicted_value:.2f}")
+    #         return predicted_value
+    #     except Exception as e:
+    #         print(f"Error predicting next month for {column_name}: {e}")
+    #         return float("nan")
     def predict_next_month(self, data, column_name):
         try:
             df = data.rename(columns={"time": "ds", column_name: "y"}).dropna(subset=["ds", "y"])
             df["ds"] = df["ds"].dt.tz_localize(None)  # Remove timezone from ds column
 
+            # If there are not enough data points, return NaN
             if len(df) < 2:
                 print(f"Not enough data to predict for {column_name}.")
                 return float("nan")
 
-            model = Prophet()
-            model.fit(df)
-            future = model.make_future_dataframe(periods=1, freq='M')
-            forecast = model.predict(future)
+            # Prophet needs a 'cap' for logistic growth
+            df["cap"] = df["y"].max() * 1.5  # Set a reasonable cap (50% more than max observed)
 
-            predicted_value = forecast.iloc[-1]["yhat"]
+            # Initialize model with logistic growth to prevent negatives
+            model = Prophet(growth="logistic")
+            model.fit(df)
+            # Create future dataframe
+            future = model.make_future_dataframe(periods=1, freq='M')
+            future["cap"] = df["cap"].max()  # Ensure cap is applied to the future prediction
+
+            # Predict
+            forecast = model.predict(future)
+            predicted_value = max(0, forecast.iloc[-1]["yhat"])  # Ensure no negative values
+
             print(f"Prediction for {column_name}: {predicted_value:.2f}")
             return predicted_value
+
         except Exception as e:
             print(f"Error predicting next month for {column_name}: {e}")
             return float("nan")

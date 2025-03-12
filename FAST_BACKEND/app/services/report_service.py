@@ -91,11 +91,13 @@ class ReportService:
                 "path": '',
                 "site_id": report.site_id,
                 "entered_on": datetime.now(),
-                "Status": True,
-                "Message": "Success"
+                "Status": False,
+                "Message": "In progress"
             }
             reports.append(new_report)
             print(f"Report added: {new_report}")  
             data= self.report_repository.create_report(new_report)
             
         return {"message": "Reports added successfully", "data": reports}
+
+

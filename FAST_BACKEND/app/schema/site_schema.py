@@ -34,6 +34,7 @@ class SiteDetails_get(SiteBase):
     id: int
     power_utilization: Optional[float] = None
     power_input: Optional[float] = None
+    power_output: Optional[float] = None
     pue: Optional[float] = None
     datatraffic: Optional[float] = None
     num_racks: Optional[int] = None
@@ -307,6 +308,34 @@ class APICControllersResponse(BaseModel):
     OnBoardingStatus: Optional[bool]
     created_at: Optional[datetime]
     site_id: Optional[int]
+    collection_status: Optional[bool]
+
+    vendor_name: Optional[str]
+    messages: Optional[str]
+
+    class Config:
+        orm_mode = True
+
+
+
+class DevicesResponse(BaseModel):
+    id: int
+    ip_address: str
+    device_type: Optional[str]
+    device_name: Optional[str]
+    site_name: Optional[str]
+    rack_name: Optional[str]
+    rack_unit: Optional[int]
+    password_group_id: Optional[int]
+    password_group_name: Optional[str]
+    vendor_name: Optional[str]
+    device_type:Optional[str]
+    vendor_id: Optional[int]
+    device_type_id: Optional[int]
+    OnBoardingStatus: Optional[bool]
+    created_at: Optional[datetime]
+    site_id: Optional[int]
+    collection_status: Optional[bool]
     messages: Optional[str]
 
     class Config:
@@ -351,11 +380,12 @@ class DeviceEnergyDetailResponse123(BaseModel):
 
 class DeviceCreateRequest(BaseModel):
     ip_address: str
-    device_name: str
+    device_name: Optional[str] = None
     site_id: int
     rack_id: int
+    vendor_id: int
     password_group_id: int
-    device_type: Optional[str] = None
+    device_type_id: Optional[int] = None
 
 
 class OnboardingRequest(BaseModel):
@@ -393,10 +423,28 @@ class EnergyConsumptionMetricsDetails2(BaseModel):
     power_efficiency: Optional[float] = None  # Power Efficiency percentage
     eer: Optional[float] = None  # Energy Efficiency Ratio
     pue: Optional[float] = None  # Power Usage Effectiveness
+    co2e: Optional[float] = None #
+    datatraffic:Optional[float] =None
+    bandwidth:Optional[float] = None # Bandwidth
+    pcr:Optional[float] = None #
+    bandwidth_utilization:Optional[float]=None
     device_name: Optional[str] = None  # Device name
+    ip_address: Optional[str] = None  # APIC controller IP
+    model_no:Optional[str] = None #
+
+
+
+class co2emmisionDetails(BaseModel):
+    time: Optional[str] = None  # Start and end time of the metrics calculation
+    energy_consumption: Optional[float] = None  # Energy consumption in kW
+    total_POut: Optional[float] = None  # Total Power Output in kW
+    total_PIn: Optional[float] = None  # Total Power Input in kW
+    power_efficiency: Optional[float] = None  # Power Efficiency percentage
+    eer: Optional[float] = None  # Energy Efficiency Ratio
+    pue: Optional[float] = None  # Power Usage Effectiveness
+    device_name: Optional[str] = None  # Device name
+    co2: Optional[float] = None #
     apic_controller_ip: Optional[str] = None  # APIC controller IP
-
-
 
 
 class OpenAIResponse(BaseModel):
@@ -428,3 +476,10 @@ class EnergyConsumptionMetricsDetailsNew(BaseModel):
 
 class DeviceRequest(BaseModel):
     device_id: int
+
+class modelResponse(BaseModel):
+    limit: Optional[int] = 0
+    site_id: Optional[int] = 0
+    rack_id: Optional[int] = 0
+    vendor_id: Optional[int] = 0
+    # duration: Optional[str] = ''

@@ -33,7 +33,6 @@ class DeviceProcessor:
                     logging.info(f"Fetching devices for IDs: {device_ids}")
                     devices = session.query(Device).filter(Device.id.in_(device_ids)).all()
                     logging.info(f"{len(devices)} devices found")
-
                     if devices:
                         print(len(devices))
                         self.run_device_processing(devices)

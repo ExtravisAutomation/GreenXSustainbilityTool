@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from typing import List, Optional
 from app.services.device_inventory_service import DeviceInventoryService
-from app.schema.device_inventory_schema import DeviceInventoryCreate, DeviceInventoryUpdate, DeviceInventoryInDB
+from app.schema.device_inventory_schema import (DeviceInventoryCreate, DeviceInventoryUpdate,
+                                                DeviceInventoryInDB,FilterSchema,VendorSchema,DeviceTypeSchema)
 from app.core.dependencies import get_db
-
+from fastapi.responses import FileResponse
 from app.schema.device_inventory_schema import Custom_Response_Inventory,modelCreate
 from app.core.dependencies import get_current_active_user
 from app.model.user import User
@@ -15,21 +16,34 @@ from app.schema.site_schema import CustomResponse
 router = APIRouter(prefix="/device_inventory", tags=["Device Inventory"])
 
 
-@router.get("/get_all_device_inventory", response_model=Custom_Response_Inventory[List[DeviceInventoryInDB]])
+
+@router.post("/get_all_device_inventory", response_model=Custom_Response_Inventory[List[DeviceInventoryInDB]])
 @inject
-def get_all_devices(
-    current_user: User = Depends(get_current_active_user),
+def get_all_devices(page:int=None,
+    # current_user: User = Depends(get_current_active_user),
     device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
+    devices = device_inventory_service.get_all_devices(page)
 
-    devices = device_inventory_service.get_all_devices()
-    
     return Custom_Response_Inventory(
         message="Fetched all devices successfully",
         data=devices,
         status_code=200
     )
+@router.post("/get_all_device_inventory_with_filter", response_model=Custom_Response_Inventory[List[DeviceInventoryInDB]])
+@inject
+def get_all_devices(filter_data:FilterSchema,
 
+    # current_user: User = Depends(get_current_active_user),
+    device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    devices = device_inventory_service.get_all_devices_test(filter_data)
+
+    return Custom_Response_Inventory(
+        message="Fetched all devices successfully",
+        data=devices,
+        status_code=200
+    )
 
 @router.get("get_device_inventory_by_id/{device_id}", response_model=Custom_Response_Inventory[DeviceInventoryInDB])
 @inject
@@ -252,10 +266,12 @@ def device_type(
 @router.get("/get_vendors", response_model=CustomResponse)
 @inject
 def get_vendors(
+        site_id: Optional[int] = None,
+        rack_id: Optional[int]=None,
         current_user: User = Depends(get_current_active_user),
         device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
-    vendors = device_inventory_service.get_vendor()
+    vendors = device_inventory_service.get_vendor(site_id,rack_id)
 
     return CustomResponse(
         message="Fetched vendors data successfully",
@@ -321,7 +337,17 @@ def get_count(
         data=models,
         status_code=200
     )
-
+@router.post("/get_sntc_expiry", response_model=CustomResponse)
+@inject
+def get_expiry(site_id: int,
+    device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+               ):
+    data = device_inventory_service.get_device_expiry(site_id)
+    return CustomResponse(
+        message="Fetched  data successfully",
+        data=data,
+        status_code=200
+    )
 
 
 @router.get("/get_vendor_count", response_model=CustomResponse)
@@ -340,3 +366,69 @@ def get_count(
     )
 
 
+
+
+@router.post("/generate_excel")
+@inject
+def generate_excel(filter_data:FilterSchema,
+    # current_user: User = Depends(get_current_active_user),
+    device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    devices = device_inventory_service.generate_excel(filter_data)
+    file_path = "device_report.xlsx"
+
+    # Save DataFrame to an Excel file
+    devices.to_excel(file_path, index=False, engine="openpyxl")
+    return FileResponse(file_path, filename="device_report.xlsx", media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+@router.get("/get_hardware_version",response_model=CustomResponse)
+@inject
+def get_hardwareversionsa(
+    # current_user: User = Depends(get_current_active_user),
+    device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    hardware_versions = device_inventory_service.get_hardware_versions()
+
+    return CustomResponse(
+        message="Fetched  hardware versions successfully",
+        data=hardware_versions,
+        status_code=200
+    )
+@router.get("/get_software_version",response_model=CustomResponse)
+@inject
+def get_software_versions(
+    # current_user: User = Depends(get_current_active_user),
+    device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    software_versions = device_inventory_service.get_software_versions()
+
+    return CustomResponse(
+        message="Fetched  software versions successfully",
+        data=software_versions,
+        status_code=200
+    )
+
+
+
+@router.post("/create_vendor/")
+@inject
+def create_vendor(vendor: VendorSchema, device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    vendor =device_inventory_service.add_vendor(vendor)
+    return CustomResponse(
+        message="vendor created successfully",
+        data=vendor,
+        status_code=200
+    )
+
+
+@router.post("/create_device_type/")
+@inject
+def create_device_type(device: DeviceTypeSchema, device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    device_type =device_inventory_service.add_device_type(device)
+    return CustomResponse(
+        message="Device Type created successfully",
+        data=device_type,
+        status_code=200
+    )

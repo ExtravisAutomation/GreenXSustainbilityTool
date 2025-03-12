@@ -2,17 +2,24 @@ import sys
 from contextlib import AbstractContextManager
 from typing import Callable, List
 from sqlalchemy.orm import Session, joinedload, selectinload
+from sqlalchemy.orm import aliased
+import pandas as pd
+from sqlalchemy import or_, distinct
+
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from fastapi import HTTPException
+from app.model.DevicesSntc import DevicesSntc
 from app.model.rack import Rack
 from app.model.site import Site
 from app.model.DevicesSntc import DevicesSntc as DeviceSNTC
 from app.repository.InfluxQuery import get_24hDevice_dataTraffic, get_24hDevice_power, get_device_power
 from app.model.device_inventory import ChassisFan, ChassisModule, ChassisPowerSupply, DeviceInventory, ChassisDevice
 from app.model.apic_controller import APICController
-from app.model.APIC_controllers import APICControllers,Vendor
+from app.model.APIC_controllers import APICControllers,Vendor,DeviceType
+
 from app.repository.base_repository import BaseRepository
 from sqlalchemy import func, desc,and_
-
+from datetime import datetime, timedelta
 class DeviceInventoryRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]], influxdb_repository):
         super().__init__(session_factory, DeviceInventory)
@@ -34,10 +41,111 @@ class DeviceInventoryRepository(BaseRepository):
                 print(f"No APICControllers device found with IP: {apic_controller_ip}")
         return None
 
-    def get_all_devices(self) -> List[dict]:
+    # def get_all_devices(self) -> List[dict]:
+    #     enriched_devices = []
+    #
+    #     with self.session_factory() as session:
+    #         devices = (
+    #             session.query(DeviceInventory)
+    #             .options(
+    #                 joinedload(DeviceInventory.rack),
+    #                 joinedload(DeviceInventory.site),
+    #                 joinedload(DeviceInventory.apic_controller),
+    #             )
+    #             .order_by(DeviceInventory.id.desc())
+    #             .all()
+    #         )
+    #
+    #         for device in devices:
+    #             sntc_data = (
+    #                 session.query(DeviceSNTC)
+    #                 .filter(DeviceSNTC.model_name == device.pn_code)
+    #                 .first()
+    #             )
+    #
+    #             apic_controller_ip = device.apic_controller.ip_address if device.apic_controller else None
+    #             device_type = self.get_device_type_by_ip(session, apic_controller_ip)
+    #
+    #
+    #             # Ahmed changes 31/10/2024 ---------------------
+    #
+    #             ip_result = (
+    #                 session.query(APICControllers.ip_address)
+    #                 .filter(APICControllers.id == device.apic_controller_id)
+    #                 .order_by(APICControllers.updated_at.desc())  # Fetch by latest update timestamp
+    #                 .first()
+    #             )
+    #
+    #             # ip = apic_controller_ip if apic_controller_ip else None
+    #             ip = ip_result[0] if ip_result else None
+    #             power = get_24hDevice_power(ip) if ip else None
+    #
+    #             datatraffic = get_24hDevice_dataTraffic(ip) if ip else None
+    #             print(datatraffic)
+    #
+    #
+    #             # Prepare attributes for DeviceSNTC if exists, else set to None
+    #             sntc_info = {
+    #                 "hw_eol_ad": sntc_data.hw_eol_ad if sntc_data else None,
+    #                 "hw_eos": sntc_data.hw_eos if sntc_data else None,
+    #                 "sw_EoSWM": sntc_data.sw_EoSWM if sntc_data else None,
+    #                 "hw_EoRFA": sntc_data.hw_EoRFA if sntc_data else None,
+    #                 "sw_EoVSS": sntc_data.sw_EoVSS if sntc_data else None,
+    #                 "hw_EoSCR": sntc_data.hw_EoSCR if sntc_data else None,
+    #                 "hw_ldos": sntc_data.hw_ldos if sntc_data else None,
+    #             }
+    #
+    #             # Collect device information with relationships, SNTC data, and device_type
+    #             enriched_device = {
+    #                 **device.__dict__,
+    #                 **sntc_info,
+    #                 "rack_name": device.rack.rack_name if device.rack else None,
+    #                 "site_name": device.site.site_name if device.site else None,
+    #                 "device_ip": apic_controller_ip,
+    #                 "device_type": device_type,  # Include device_type from APICControllers if found
+    #                 # Ahmed changes
+    #                 "power_utilization": power[0]['power_utilization'] if power else 0,
+    #                 "pue": power[0]['pue'] if power else 0,
+    #                 "power_input": power[0]['total_supplied'] if power else 0,
+    #                 "power_output": power[0]['total_drawn'] if power else 0,
+    #             }
+    #
+    #             # Ahmed changes
+    #             if datatraffic:
+    #                 datatraffic_value = datatraffic[0]['traffic_through'] if datatraffic else 0
+    #                 bandwidth_value = datatraffic[0]['bandwidth'] if datatraffic else 0
+    #
+    #                 datatraffic = datatraffic_value / (1024 ** 3) if datatraffic_value else 0
+    #                 bandwidth=bandwidth_value/1000 if bandwidth_value else 0
+    #                 bandwidth_utilization = (datatraffic / bandwidth) * 100 if bandwidth else 0
+    #                 enriched_device["datatraffic"] = round(datatraffic, 2)
+    #                 enriched_device["bandwidth_utilization"] = round(bandwidth_utilization, 2)
+    #
+    #             enriched_devices.append(enriched_device)
+    #
+    #             print(f"Enriched device added: {enriched_device['device_name']} with IP: {apic_controller_ip}")
+    #
+    #     return enriched_devices
+    from typing import List, Dict
+    from sqlalchemy.orm import joinedload
+
+    def get_all_devices(self, page: int, page_size: int = 10) -> Dict:
+
         enriched_devices = []
 
         with self.session_factory() as session:
+            # Get total device count for pagination
+            total_devices = session.query(DeviceInventory).count()
+            print("Total devices",total_devices)
+            total_pages = (total_devices + page_size - 1) // page_size
+
+            # Ensure page is within bounds
+            if page < 1:
+                page = 1
+            elif page > total_pages:
+                page = total_pages
+
+            # Apply limit and offset for pagination
             devices = (
                 session.query(DeviceInventory)
                 .options(
@@ -46,6 +154,8 @@ class DeviceInventoryRepository(BaseRepository):
                     joinedload(DeviceInventory.apic_controller),
                 )
                 .order_by(DeviceInventory.id.desc())
+                .limit(page_size)
+                .offset((page - 1) * page_size)
                 .all()
             )
 
@@ -58,22 +168,33 @@ class DeviceInventoryRepository(BaseRepository):
 
                 apic_controller_ip = device.apic_controller.ip_address if device.apic_controller else None
                 device_type = self.get_device_type_by_ip(session, apic_controller_ip)
-                
-                
-                # Ahmed changes 31/10/2024 ---------------------
 
+                # Ahmed changes 31/10/2024 ---------------------
                 ip_result = (
                     session.query(APICControllers.ip_address)
                     .filter(APICControllers.id == device.apic_controller_id)
-                    .order_by(APICControllers.updated_at.desc())  # Fetch by latest update timestamp
+                    .order_by(APICControllers.updated_at.desc())
                     .first()
                 )
 
-                # ip = apic_controller_ip if apic_controller_ip else None
                 ip = ip_result[0] if ip_result else None
-                power = get_24hDevice_power(ip) if ip else None
-                datatraffic = get_24hDevice_dataTraffic(ip) if ip else None
-                
+                # power = get_24hDevice_power(ip) if ip else None
+                # datatraffic = get_24hDevice_dataTraffic(ip) if ip else None
+
+                # Use threading for concurrent fetching of power and data traffic
+                power = None
+                datatraffic = None
+
+                if ip:
+                    with ThreadPoolExecutor(max_workers=2) as executor:
+                        future_power = executor.submit(get_24hDevice_power, ip)
+                        future_datatraffic = executor.submit(get_24hDevice_dataTraffic, ip)
+
+                        for future in as_completed([future_power, future_datatraffic]):
+                            if future == future_power:
+                                power = future.result()
+                            elif future == future_datatraffic:
+                                datatraffic = future.result()
 
                 # Prepare attributes for DeviceSNTC if exists, else set to None
                 sntc_info = {
@@ -93,23 +214,41 @@ class DeviceInventoryRepository(BaseRepository):
                     "rack_name": device.rack.rack_name if device.rack else None,
                     "site_name": device.site.site_name if device.site else None,
                     "device_ip": apic_controller_ip,
-                    "device_type": device_type,  # Include device_type from APICControllers if found
-                    # Ahmed changes
-                    "power_utilization": power[0]['power_utilization'] if power else None,
-                    "pue": power[0]['pue'] if power else None,
-                    "power_input": power[0]['total_supplied'] if power else None,   
+                    "device_type": device_type,
+                    "power_utilization": power[0]['power_utilization'] if power else 0,
+                    "pue": power[0]['pue'] if power else 0,
+                    "power_input": power[0]['total_supplied'] if power else 0,
+                    "power_output": power[0]['total_drawn'] if power else 0,
                 }
-                
-                # Ahmed changes
+
+                # Ahmed changes for datatraffic and bandwidth utilization
                 if datatraffic:
-                    datatraffic_value = datatraffic[0]['traffic_through'] if datatraffic else None
-                    datatraffic = datatraffic_value / (1024 ** 3) if datatraffic_value else 0
-                    enriched_device["datatraffic"] = round(datatraffic, 2)
+                    datatraffic_value = datatraffic[0]['traffic_through'] if datatraffic else 0
+                    bandwidth_value = datatraffic[0]['bandwidth'] if datatraffic else 0
+
+                    datatraffic_gb = datatraffic_value / (1024 ** 3) if datatraffic_value else 0
+                    bandwidth_mbps = bandwidth_value / 1000 if bandwidth_value else 0
+                    bandwidth_utilization = (datatraffic_gb / bandwidth_mbps) * 100 if bandwidth_mbps else 0
+
+                    enriched_device["datatraffic"] = round(datatraffic_gb, 2)
+                    enriched_device["bandwidth_utilization"] = round(bandwidth_utilization, 2)
 
                 enriched_devices.append(enriched_device)
-                print(f"Enriched device added: {enriched_device['device_name']} with IP: {apic_controller_ip}")
-
-        return enriched_devices
+            data={
+                "page": page,
+                "page_size": page_size,
+                "total_devices": total_devices,
+                "total_pages": total_pages,
+                "devices": enriched_devices
+            }
+            print("ds",data)
+            return {
+                "page": page,
+                "page_size": page_size,
+                "total_devices": total_devices,
+                "total_pages": total_pages,
+                "devices": enriched_devices
+            }
 
     def get_device_by_id(self, device_id: int) -> DeviceInventory:
         with self.session_factory() as session:
@@ -212,12 +351,15 @@ class DeviceInventoryRepository(BaseRepository):
             ).all()
 
             enriched_modules = []
+            id=0
 
             for chassis_module in chassis_modules:
                 module = chassis_module.module  
-                chassis = chassis_module.chassis 
+                chassis = chassis_module.chassis
+                id +=1
 
                 module_details = {
+                    "id": id,  # Added id to uniquely identify each module in the response list
                     "module_id": module.id if module else None,
                     "module_name": module.module_name if module else "Unknown",
                     "hardware_version": module.hardware_version if module else None,
@@ -407,56 +549,135 @@ class DeviceInventoryRepository(BaseRepository):
 
         return data
 
+    from sqlalchemy.orm import joinedload
+    from sqlalchemy.sql import func, desc, and_
 
+    # def get_device_type(self, model_data):
+    #     with self.session_factory() as session:
+    #         try:
+    #             site_id = model_data.site_id
+    #             rack_id = model_data.rack_id
+    #             vendor_id = model_data.vendor_id
+    #             apic_alias = aliased(APICControllers)
+    #             device_inv_alias = aliased(DeviceInventory)
+    #             # Query to count devices based on device_type_id
+    #             query = session.query(
+    #                 DeviceType.id.label("device_type_id"),  # Device Type ID
+    #                 DeviceType.device_type,  # Device Type Name
+    #                 func.count(DeviceInventory.id).label("device_count")
+    #             )
+    #
+    #             query = query.outerjoin(apic_alias, apic_alias.device_type_id == DeviceType.id) \
+    #                 .outerjoin(device_inv_alias, apic_alias.id == device_inv_alias.device_id)
+    #             print(len(query.all()))
+    #             exit()
+    #
+    #             conditions = []
+    #             if site_id:
+    #                 conditions.append(DeviceInventory.site_id == site_id)
+    #             if rack_id:
+    #                 conditions.append(DeviceInventory.rack_id == rack_id)
+    #             if vendor_id:
+    #                 conditions.append(DeviceType.vendor_id == vendor_id)
+    #             if conditions:
+    #                 query = query.filter(and_(*conditions))
+    #
+    #             device_type_count = (
+    #                 query.group_by(DeviceType.id, DeviceType.device_type)
+    #                 .order_by(desc("device_count"))  # Order by device count
+    #                 .all()
+    #             )
+    #             print(len( device_type_count))
+    #             exit()
+    #
+    #             total_count = 0
+    #             data = []
+    #             for idx, record in enumerate(device_type_count, start=1):
+    #                 data.append({
+    #                     "id": idx,
+    #                     "device_type_id": record[0],  # Device Type ID
+    #                     "device_type": record[1],  # Device Type Name
+    #                     "count": record[2],  # Device Count
+    #                 })
+    #                 total_count += record[2]
+    #
+    #             print(f"Total Records: {len(device_type_count)}")
+    #             print("Processed Data:", data)
+    #
+    #             result = {
+    #                 "device_type_count": data,
+    #                 "count": total_count
+    #             }
+    #             return result
+    #
+    #         except Exception as e:
+    #             raise ValueError(f"Error fetching device type data: {str(e)}")
     def get_device_type(self, model_data):
         with self.session_factory() as session:
-            site_id = model_data.site_id
-            rack_id = model_data.rack_id
-            vendor_id = model_data.vendor_id
-            query = session.query(
-                APICControllers.device_type,  # Group by device_type
-                func.count(DeviceInventory.id).label("device_count"),
-            )
+            try:
+                site_id = model_data.site_id
+                rack_id = model_data.rack_id
+                vendor_id = model_data.vendor_id
+                apic_alias = aliased(APICControllers)
+                device_inv_alias = aliased(DeviceInventory)
 
-            query = query.join(APICControllers, APICControllers.id == DeviceInventory.apic_controller_id)
+                # Query to count devices based on device_type_id
+                query = session.query(
+                    DeviceType.id.label("device_type_id"),
+                    DeviceType.device_type,
+                    func.count(func.distinct(device_inv_alias.id)).label("device_count")  # Ensure distinct count
+                )
 
-            conditions = []
-            if site_id:
-                conditions.append(DeviceInventory.site_id == site_id)
-            if rack_id:
-                conditions.append(DeviceInventory.rack_id == rack_id)
-            if vendor_id:
-                conditions.append(APICControllers.vendor_id == vendor_id)
-            if conditions:
-                query = query.filter(and_(*conditions))
-            device_type_count = (
-                query.group_by(APICControllers.device_type)
-                .order_by(desc("device_count"))  # Order by count of devices per type
-                .all()
-            )
-            total_count=0
-            data = []
-            for record in device_type_count:
-                data.append({
-                    "device_type": record[0],  # APICControllers.device_type
-                    "count": record[1],  # Device count
-                })
-                total_count += record[1]
+                query = query.join(apic_alias, apic_alias.device_type_id == DeviceType.id, isouter=True) \
+                    .join(device_inv_alias, apic_alias.id == device_inv_alias.device_id, isouter=True)
 
-            print(f"Total Records: {len(device_type_count)}")
-            print("Processed Data:", data)
+                # Apply filters before grouping
+                if site_id or rack_id or vendor_id:
+                    conditions = []
+                    if site_id:
+                        conditions.append(device_inv_alias.site_id == site_id)
+                    if rack_id:
+                        conditions.append(device_inv_alias.rack_id == rack_id)
+                    if vendor_id:
+                        conditions.append(DeviceType.vendor_id == vendor_id)
+                    query = query.filter(and_(*conditions))
 
-            result = {
-                "device_type_count": data,
-                "count": total_count
-            }
-            return result
+                query = query.group_by(DeviceType.id, DeviceType.device_type)
 
-    def get_vendors(self):
+                device_type_count = query.order_by(desc("device_count")).all()
+
+                total_count = sum(record[2] for record in device_type_count)  # Sum actual counts
+                data = [
+                    {"id": idx, "device_type_id": record[0], "device_type": record[1], "count": record[2]}
+                    for idx, record in enumerate(device_type_count, start=1)
+                ]
+                result = {
+                                "device_type_count": data,
+                                "count": total_count
+                            }
+                return result
+
+
+
+            except Exception as e:
+                raise ValueError(f"Error fetching device type data: {str(e)}")
+
+    def get_vendors(self,site_id,rack_id):
         with self.session_factory() as session:
-            ventors = session.query(Vendor).all()
 
-            return ventors
+            query = session.query(Vendor).outerjoin(APICControllers, Vendor.id == APICControllers.vendor_id)
+
+            # Apply filters dynamically
+            if site_id is not None:
+                query = query.filter(APICControllers.site_id == site_id)
+            if rack_id is not None:
+                query = query.filter(APICControllers.rack_id == rack_id)
+
+            vendors = query.distinct().all()  # Fetch distinct vendors
+            return vendors
+
+
+
 
     def get_count(self):
         with self.session_factory() as session:
@@ -544,3 +765,480 @@ class DeviceInventoryRepository(BaseRepository):
 
             return vendor_data
 
+    def get_device_expiry(self, site_id):
+        with self.session_factory() as session:
+            current_date = datetime.now().date()  # Convert to date to match DB format
+            one_month_ahead = (current_date + timedelta(days=30))  # Date 30 days from now
+            print(current_date)
+            print(one_month_ahead)
+            join_query = session.query(DeviceInventory.device_name, DevicesSntc). \
+                join(DevicesSntc, DeviceInventory.pn_code == DevicesSntc.model_name). \
+                filter(DeviceInventory.site_id == site_id)
+
+            result = []
+
+            for device_name, device_sntc in join_query.all():
+                print("device_name",device_name)
+                print(device_sntc.hw_eos)
+                # Check for End of Sale within the next 30 days
+                if device_sntc.hw_eos and current_date <= device_sntc.hw_eos <= one_month_ahead:
+                    days_left = (device_sntc.hw_eos - current_date).days
+                    eos_date = device_sntc.hw_eos.strftime('%Y-%m-%d')
+                    result.append(f"{device_name} end of sale is in {days_left} days (on {eos_date})")
+
+                # Check for End of Support within the next 30 days
+                if device_sntc.hw_ldos and current_date <= device_sntc.hw_ldos <= one_month_ahead:
+                    days_left = (device_sntc.hw_ldos - current_date).days
+                    eosup_date = device_sntc.hw_ldos.strftime('%Y-%m-%d')
+                    result.append(f"{device_name} end of support is in {days_left} days (on {eosup_date})")
+
+                # Check for End of Life within the next 30 days
+                if device_sntc.hw_eol_ad and current_date <= device_sntc.hw_eol_ad <= one_month_ahead:
+                    days_left = (device_sntc.hw_eol_ad - current_date).days
+                    eol_date = device_sntc.hw_eol_ad.strftime('%Y-%m-%d')
+                    result.append(f"{device_name} end of life is in {days_left} days (on {eol_date})")
+
+            if not result:
+                return ["No devices nearing EOL, EOS, or EoSUP in the next 30 days."]
+
+            return result
+
+    from fastapi import HTTPException
+    from datetime import datetime
+    from sqlalchemy.orm import joinedload
+    from sqlalchemy import or_
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    def classify_performance(self, avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr,
+                             avg_co2_emissions):
+        # Collect all values in a dictionary
+        metrics = {
+            "energy_efficiency": avg_energy_efficiency,
+            "power_efficiency": avg_power_efficiency,
+            "data_traffic": avg_data_traffic,
+            "pcr": avg_pcr,
+            "co2_emissions": avg_co2_emissions
+        }
+
+        # Find min and max for each metric dynamically
+        min_values = {k: min(v, 1e-6) for k, v in metrics.items()}  # Avoid division by zero
+        max_values = {k: max(v, 1) for k, v in metrics.items()}
+
+        # Normalize each metric (scales values between 0 and 1)
+        normalized_metrics = {
+            k: (v - min_values[k]) / (max_values[k] - min_values[k])
+            for k, v in metrics.items()
+        }
+
+        # Assign weight factors to each metric (you can tweak these)
+        weights = {
+            "energy_efficiency": 0.25,
+            "power_efficiency": 0.20,
+            "data_traffic": 0.20,
+            "pcr": 0.15,
+            "co2_emissions": -0.20  # Negative weight because lower CO2 is better
+        }
+
+        # Calculate weighted score
+        score = sum(normalized_metrics[k] * weights[k] for k in metrics)
+
+        # **Final Classification**
+        if score >= 0.7:
+            return score, "Highly efficient device with optimal power usage, low CO₂ emissions, and strong data performance."
+        elif 0.4 <= score < 0.7:
+            return score, "Moderate efficiency device with some areas for improvement."
+        else:
+            return score, "Low efficiency device that may require significant optimization."
+
+    # def classify_performance(self, avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr,
+    #                          avg_co2_emissions, thresholds=None):
+    #     if thresholds is None:
+    #         # Default thresholds for different metrics
+    #         thresholds = {
+    #             "energy_efficiency": [0.80, 0.90],  # Moderate, Good
+    #             "power_efficiency": [1.10, 1.20],  # Good, Moderate
+    #             "data_traffic": [1500, 2500],  # Moderate, Good
+    #             "pcr": [1.5, 2.5],  # Good, Moderate
+    #             "co2_emissions": [2.0, 3.0]  # Good, Moderate
+    #         }
+    #
+    #     score = 0
+    #
+    #     # **Energy Efficiency Score**
+    #     if avg_energy_efficiency >= thresholds["energy_efficiency"][1]:
+    #         score += 2
+    #     elif thresholds["energy_efficiency"][0] <= avg_energy_efficiency < thresholds["energy_efficiency"][1]:
+    #         score += 1
+    #
+    #     # **Power Efficiency Score**
+    #     if avg_power_efficiency <= thresholds["power_efficiency"][0]:
+    #         score += 2
+    #     elif thresholds["power_efficiency"][0] < avg_power_efficiency <= thresholds["power_efficiency"][1]:
+    #         score += 1
+    #
+    #     # **Data Traffic Score**
+    #     if avg_data_traffic >= thresholds["data_traffic"][1]:
+    #         score += 2
+    #     elif thresholds["data_traffic"][0] <= avg_data_traffic < thresholds["data_traffic"][1]:
+    #         score += 1
+    #
+    #     # **Power Consumption Ratio (PCR) Score**
+    #     if avg_pcr <= thresholds["pcr"][0]:
+    #         score += 2
+    #     elif thresholds["pcr"][0] < avg_pcr <= thresholds["pcr"][1]:
+    #         score += 1
+    #
+    #     # **CO₂ Emissions Score**
+    #     if avg_co2_emissions <= thresholds["co2_emissions"][0]:
+    #         score += 2
+    #     elif thresholds["co2_emissions"][0] < avg_co2_emissions <= thresholds["co2_emissions"][1]:
+    #         score += 1
+    #     elif avg_co2_emissions > thresholds["co2_emissions"][1]:
+    #         score -= 2
+    #
+    #     # **Final Classification**
+    #     if score >= 8:
+    #         return score, "Highly efficient device with optimal power usage, low CO₂ emissions, and strong data performance."
+    #     elif 5 <= score < 8:
+    #         return score, "Moderate efficiency device with some areas for improvement."
+    #     else:
+    #         return score, "Low efficiency device that may require significant optimization."
+
+    def get_response_with_filter(self,page, page_size, query, score):
+        devices = query.order_by(DeviceInventory.id.desc()).all()
+        enriched_devices=self.get_devices_result(devices)
+        if score:
+            if len(score) == 2:  # Case: [min, max] (e.g., [0,5] or [5,8])
+                min_score, max_score = score[0], score[1]
+            elif len(score) == 1:  # Case: [x] meaning >=x (e.g., [8] means score >= 8)
+                min_score = score[0]
+                max_score = 10  # No upper limit
+            else:
+                min_score, max_score = 0, 10  # Default full range
+
+            enriched_devices = [
+                device for device in enriched_devices
+                if min_score <= device["performance_score"] <= max_score
+            ]
+
+        return enriched_devices
+
+
+    def get_devices_result(self, devices):
+
+        with self.session_factory() as session:
+            enriched_devices = []
+            for device in devices:
+                sntc_data = (
+                    session.query(DeviceSNTC)
+                    .filter(DeviceSNTC.model_name == device.pn_code)
+                    .first()
+                )
+
+                apic_controller_ip = device.device.ip_address if device.device else None
+                device_type = self.get_device_type_by_ip(session, apic_controller_ip)
+
+                # Get latest APIC controller IP
+                ip_result = (
+                    session.query(APICControllers.ip_address)
+                    .filter(APICControllers.id == device.apic_controller_id)
+                    .order_by(APICControllers.updated_at.desc())
+                    .first()
+                )
+                ip = ip_result[0] if ip_result else None
+
+                power, datatraffic = None, None
+
+                # Fetch power and data traffic concurrently if IP is available
+                if ip:
+                    with ThreadPoolExecutor(max_workers=2) as executor:
+                        future_power = executor.submit(get_24hDevice_power, ip)
+                        future_datatraffic = executor.submit(get_24hDevice_dataTraffic, ip)
+
+                        for future in as_completed([future_power, future_datatraffic]):
+                            if future == future_power:
+                                power = future.result()
+                                print(f"Power data for {ip}: {power}")
+                            elif future == future_datatraffic:
+                                datatraffic = future.result()
+                                print(f"Data traffic for {ip}: {datatraffic}")
+
+                # Prepare attributes for DeviceSNTC if exists, else set to None
+                sntc_info = {
+                    "hw_eol_ad": sntc_data.hw_eol_ad if sntc_data else None,
+                    "hw_eos": sntc_data.hw_eos if sntc_data else None,
+                    "sw_EoSWM": sntc_data.sw_EoSWM if sntc_data else None,
+                    "hw_EoRFA": sntc_data.hw_EoRFA if sntc_data else None,
+                    "sw_EoVSS": sntc_data.sw_EoVSS if sntc_data else None,
+                    "hw_EoSCR": sntc_data.hw_EoSCR if sntc_data else None,
+                    "hw_ldos": sntc_data.hw_ldos if sntc_data else None,
+                }
+
+                # Prepare enriched device data
+                enriched_device = {
+                    **device.__dict__,
+                    **sntc_info,
+                    "rack_name": device.rack.rack_name if device.rack else None,
+                    "site_name": device.site.site_name if device.site else None,
+                    "device_ip": apic_controller_ip,
+                    "device_type": device_type,
+                    "power_utilization": power[0]['power_utilization'] if power else 0,
+                    "pue": power[0]['pue'] if power else 0,
+                    "power_input": power[0]['total_supplied'] if power else 0,
+                    "power_output": power[0]['total_drawn'] if power else 0,
+                }
+
+                # Add bandwidth utilization if datatraffic exists
+                if datatraffic:
+                    datatraffic_value = datatraffic[0]['traffic_through'] if datatraffic else 0
+                    bandwidth_value = datatraffic[0]['bandwidth'] if datatraffic else 0
+
+                    datatraffic_gb = datatraffic_value / (1024 ** 3) if datatraffic_value else 0
+                    bandwidth_mbps = bandwidth_value / 1000 if bandwidth_value else 0
+                    bandwidth_utilization = (datatraffic_gb / bandwidth_mbps) * 100 if bandwidth_mbps else 0
+
+                    enriched_device["datatraffic"] = round(datatraffic_gb, 2)
+                    enriched_device["bandwidth_utilization"] = round(bandwidth_utilization, 2)
+                else:
+                    enriched_device["datatraffic"] = 0
+                    enriched_device["bandwidth_utilization"] = 0
+
+                power_input = enriched_device.get("power_input") or 0
+                power_output = enriched_device.get("power_output") or 0
+                power_utilization = enriched_device.get("power_utilization") or 0
+                pue = enriched_device.get("pue") or 0
+                datatraffic = enriched_device.get("datatraffic") or 0
+                bandwidth_utilization = enriched_device.get("bandwidth_utilization") or 0
+
+                # Carbon Emissions Calculation
+                carbon_emission = round(((power_input / 1000) * 0.4041), 2)
+
+                # Power Consumption Ratio (PCR) Calculation
+                pcr = round(power_input * 1000 / datatraffic, 4) if datatraffic else None
+
+                # Classify device performance and power consumption
+                performance_score, performance_description = self.classify_performance(
+                    power_utilization, pue, datatraffic, pcr or 0, carbon_emission
+                )
+                enriched_device["performance_score"] = performance_score
+                enriched_device["performance_description"] = performance_description
+                enriched_devices.append(enriched_device)
+        return enriched_devices
+    def get_all_devices_test(self, filter_data) -> Dict:
+        print("Getting all devices")
+        page_size = 10  # Number of devices per page
+
+
+        page = filter_data.page
+        site_id = filter_data.site_id
+        rack_id = filter_data.rack_id
+        device_name = filter_data.device_name
+        ip_addresss = filter_data.ip_address
+        vendor_id = filter_data.vendor_id
+        device_type = filter_data.device_type
+        sntc_date = filter_data.sntc_date
+        serial_no = filter_data.serial_no
+        model_no = filter_data.model_no
+        department = filter_data.department
+        hardware_version=filter_data.hardware_version
+        software_version=filter_data.software_version
+        score_card=filter_data.score
+
+        if sntc_date:
+            try:
+                sntc_date = datetime.strptime(sntc_date, "%Y-%m-%d").date()
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+
+        with self.session_factory() as session:
+            query = (
+                session.query(DeviceInventory)
+                .options(
+                    joinedload(DeviceInventory.rack),
+                    joinedload(DeviceInventory.site),
+                    joinedload(DeviceInventory.device),
+                    joinedload(DeviceInventory.apic_controller)
+                )
+                .outerjoin(DeviceSNTC, DeviceInventory.pn_code == DeviceSNTC.model_name)
+            )
+
+            print(f"Base query count: {query.count()}")  # Debugging before filtering
+
+            # Apply filters dynamically
+            if site_id:
+                query = query.filter(DeviceInventory.site_id == site_id)
+            if rack_id:
+                query = query.filter(DeviceInventory.rack_id == rack_id)
+            if device_name:
+                query = query.filter(DeviceInventory.device_name.ilike(f"%{device_name}%"))
+            if ip_addresss:
+                query = query.filter(DeviceInventory.device.has(APICControllers.ip_address.ilike(f"%{ip_addresss}%")))
+            if device_type:
+                query = query.filter(DeviceInventory.device.has(device_type=device_type))
+            if vendor_id:
+                query = query.filter(DeviceInventory.device.has(vendor_id=vendor_id))
+            if serial_no:
+                query = query.filter(DeviceInventory.serial_number.ilike(f"%{serial_no}%"))
+            if model_no:
+                query = query.filter(DeviceInventory.pn_code.ilike(f"%{model_no}%"))
+            if hardware_version:
+                query.filter(DeviceInventory.hardware_version.ilike(f"%{hardware_version}%"))
+            if software_version:
+                query = query.filter(DeviceInventory.software_version.ilike(f"%{software_version}%"))
+
+            print(f"Filtered query count: {query.count()}")  # Debugging after filtering
+            if score_card:
+
+                enriched_devices=self.get_response_with_filter(page, page_size,query,score_card)
+
+                total_devices = len(enriched_devices)
+                total_pages = (total_devices + page_size - 1) // page_size
+                page = max(1, min(page, total_pages))
+
+                paginated_devices = enriched_devices[(page - 1) * page_size: page * page_size]
+
+                return {
+                    "page": page,
+                    "page_size": page_size,
+                    "total_devices": total_devices,
+                    "total_pages": total_pages,
+                    "devices": paginated_devices
+                }
+            else:
+                total_devices = query.count()
+                total_pages = (total_devices + page_size - 1) // page_size
+                page = max(1, min(page, total_pages))
+
+                devices = query.order_by(DeviceInventory.id.desc()).limit(page_size).offset(
+                    (page - 1) * page_size).all()
+
+                print(f"Devices fetched: {len(devices)}")  # Debugging
+                enriched_devices=self.get_devices_result(devices)
+
+            # Debug final response
+                print({
+                    "page": page,
+                    "page_size": page_size,
+                    "total_devices": total_devices,
+                    "total_pages": total_pages,
+                    "devices": enriched_devices,
+                })
+
+                return {
+                    "page": page,
+                    "page_size": page_size,
+                    "total_devices": total_devices,
+                    "total_pages": total_pages,
+                    "devices": enriched_devices,
+                }
+    def generate_excel(self, filter_data) -> Dict:
+        print("Getting all devices")
+        page_size = 10  # Number of devices per page
+
+        file_path = "device_report.xlsx"
+        page = filter_data.page
+        site_id = filter_data.site_id
+        rack_id = filter_data.rack_id
+        device_name = filter_data.device_name
+        ip_addresss = filter_data.ip_address
+        vendor_id = filter_data.vendor_id
+        device_type = filter_data.device_type
+        sntc_date = filter_data.sntc_date
+        serial_no = filter_data.serial_no
+        model_no = filter_data.model_no
+        department = filter_data.department
+        hardware_version=filter_data.hardware_version
+        software_version=filter_data.software_version
+        score_card=filter_data.score
+
+        if sntc_date:
+            try:
+                sntc_date = datetime.strptime(sntc_date, "%Y-%m-%d").date()
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+
+        with self.session_factory() as session:
+            query = (
+                session.query(DeviceInventory)
+                .options(
+                    joinedload(DeviceInventory.rack),
+                    joinedload(DeviceInventory.site),
+                    joinedload(DeviceInventory.device),
+                    joinedload(DeviceInventory.apic_controller)
+                )
+                .outerjoin(DeviceSNTC, DeviceInventory.pn_code == DeviceSNTC.model_name)
+            )
+
+            print(f"Base query count: {query.count()}")  # Debugging before filtering
+
+            # Apply filters dynamically
+            if site_id:
+                query = query.filter(DeviceInventory.site_id == site_id)
+            if rack_id:
+                query = query.filter(DeviceInventory.rack_id == rack_id)
+            if device_name:
+                query = query.filter(DeviceInventory.device_name.ilike(f"%{device_name}%"))
+            if ip_addresss:
+                query = query.filter(DeviceInventory.device.has(APICControllers.ip_address.ilike(f"%{ip_addresss}%")))
+            if device_type:
+                query = query.filter(DeviceInventory.device.has(device_type=device_type))
+            if vendor_id:
+                query = query.filter(DeviceInventory.device.has(vendor_id=vendor_id))
+            if serial_no:
+                query = query.filter(DeviceInventory.serial_number.ilike(f"%{serial_no}%"))
+            if model_no:
+                query = query.filter(DeviceInventory.pn_code.ilike(f"%{model_no}%"))
+            if hardware_version:
+                query.filter(DeviceInventory.hardware_version.ilike(f"%{hardware_version}%"))
+            if software_version:
+                query = query.filter(DeviceInventory.software_version.ilike(f"%{software_version}%"))
+
+            print(f"Filtered query count: {query.count()}")  # Debugging after filtering
+            if score_card:
+
+                enriched_devices=self.get_response_with_filter(page, page_size,query,score_card)
+                df = pd.DataFrame(enriched_devices)
+                # Define file path
+
+
+                # Return the file for download
+                return df
+            else:
+                devices =  query.order_by(DeviceInventory.id.desc()).all()
+
+
+                print(f"Devices fetched: {len(devices)}")  # Debugging
+                enriched_devices=self.get_devices_result(devices)
+                return   pd.DataFrame(enriched_devices)
+
+
+    def get_hardware_versions(self):
+        with self.session_factory() as session:
+            distinct_hw_versions = session.query(distinct(DeviceInventory.hardware_version)).all()
+
+            # Convert result to a list of values
+            hardware_versions = [hw[0] for hw in distinct_hw_versions]
+            return hardware_versions
+    def get_software_versions(self):
+        with self.session_factory() as session:
+            distinct_sw_versions = session.query(distinct(DeviceInventory.software_version)).all()
+            # Convert result to a list of values
+            software_versions = [sw[0] for sw in distinct_sw_versions]
+            return software_versions
+    def add_vendor(self, vendor):
+        with self.session_factory() as session:
+            new_vendor = Vendor(vendor_name=vendor.vendor_name)
+            session.add(new_vendor)
+            session.commit()
+            session.refresh(new_vendor)
+            return new_vendor
+
+    def add_device_type(self, device_type):
+        with self.session_factory() as session:
+            vendor = session.query(Vendor).filter(Vendor.id == device_type.vendor_id).first()
+            if not vendor:
+                raise HTTPException(status_code=404, detail="Vendor not found")
+            new_device_type = DeviceType(device_type=device_type.device_type, vendor_id=device_type.vendor_id)
+            session.add(new_device_type)
+            session.commit()
+            session.refresh(new_device_type)
+            return new_device_type

@@ -7,10 +7,10 @@ from app.schema.site_schema import CustomResponse
 from app.schema.report_schema import ReportCreate
 from app.services.report_service import ReportService
 from app.core.container import Container
+from app.core.dependencies import get_db, get_current_active_user
 from dependency_injector.wiring import Provide, inject
 from logging import getLogger
-
-
+from app.model.user import User
 
 router = APIRouter(prefix="/reports", tags=["REPORT"])
 logger = getLogger(__name__)
@@ -35,7 +35,7 @@ def get_all_reports(
 def add_report(
     report_data: ReportCreate,
 
-    # current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
     report_service: ReportService = Depends(Provide[Container.report_service])
 ):
     return report_service.add_report(report_data)
@@ -50,5 +50,6 @@ def add_report(
     report_service: ReportService = Depends(Provide[Container.report_service])
 ):
     return report_service.add_report(report_data)
+
 
 
