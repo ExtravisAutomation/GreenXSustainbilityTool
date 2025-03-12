@@ -1970,8 +1970,9 @@ class SiteService:
 
     def get_device_aidata(self, device_data):
             print("device_data")
-            data = self.site_repository.get_ai_data_sss(device_data)
+            data = self.site_repository.get_devices_data(device_data)
             print(data, "device_data")
+
 
             # Fetch data from InfluxDB
             dataframes = self.influxdb_repository.influx_resp(data.ip_address)

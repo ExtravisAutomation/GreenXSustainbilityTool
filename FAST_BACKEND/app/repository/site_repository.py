@@ -1047,7 +1047,7 @@ class SiteRepository(BaseRepository):
                 "total_racks": len(racks)
             }
 
-    def get_ai_data_sss(self,device_data):
+    def get_devices_data(self,device_data):
         print("devociedata at ai end",device_data.device_id)
 
         with self.session_factory() as session:
