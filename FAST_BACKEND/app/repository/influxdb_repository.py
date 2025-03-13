@@ -2467,7 +2467,7 @@ class InfluxDBRepository:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
         aggregate_window = "1h" if duration_str == "24 hours" else "1d"
-        zone = "AE"
+        zone = "IN"
 
         query = f'''
             from(bucket: "Dcs_db")
@@ -2527,7 +2527,7 @@ class InfluxDBRepository:
             aggregate_window = "1m"
             aggregation_function = "sum()"
 
-        zone = "AE"
+        zone = "IN"
 
         # InfluxDB query to fetch the carbon intensity
         query = f'''
@@ -2677,7 +2677,7 @@ class InfluxDBRepository:
 
     def get_carbon_intensity1(self, start_time: str, end_time: str) -> float:
         carbon_intensity = 0
-        zone = "AE"
+        zone = "IN"
         start_range = "-30d"
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")
@@ -2718,7 +2718,7 @@ class InfluxDBRepository:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
         aggregate_window = "1h" if duration_str == "24 hours" else "1d"
-        zone = "AE"
+        zone = "IN"
 
         query = f'''
             from(bucket: "{configs.INFLUXDB_BUCKET}")

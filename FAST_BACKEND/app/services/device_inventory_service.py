@@ -246,6 +246,7 @@ class DeviceInventoryService:
     #         return score, "This device offers moderate efficiency, performing well in key areas but with some potential for optimization."
     #     else:
     #         return score, "This device has a lower efficiency and may require optimization to improve performance and resource utilization."
+
     def classify_performance(self, avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr,
                              avg_co2_emissions, thresholds=None):
         if thresholds is None:
