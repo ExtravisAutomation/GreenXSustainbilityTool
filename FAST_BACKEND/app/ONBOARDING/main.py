@@ -59,6 +59,7 @@ class DeviceProcessor:
                 if not device.device_type:
                     logging.info(f"Device type for {device.ip_address} not found, fetching...")
                     device_type = get_devices(device, session, password_group)
+
                     logging.info(f"Fetched device type for {device.ip_address}: {device_type}")
                     device.device_type = device_type
                     session.commit()  # Commit only when device type is updated

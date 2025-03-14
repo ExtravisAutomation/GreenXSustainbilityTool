@@ -840,6 +840,7 @@ class DeviceInventoryRepository(BaseRepository):
 
         # Calculate weighted score
         score = sum(normalized_metrics[k] * weights[k] for k in metrics)
+        score=round(score,2)
 
         # **Final Classification**
         if score >= 0.7:
