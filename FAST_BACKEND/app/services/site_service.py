@@ -1241,22 +1241,6 @@ class SiteService:
         return total_pin_value_KW, consumption_percentages, totalpin_kws
 
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
     def calculate_carbon_emission(self, site_id: int, duration_str: str) -> (float, float, str, str):
         start_date, end_date = self.calculate_start_end_dates(duration_str)
