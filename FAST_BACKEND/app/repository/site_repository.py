@@ -1046,6 +1046,11 @@ class SiteRepository(BaseRepository):
                 "total_vendors": total_vendors,
                 "total_racks": len(racks)
             }
+    def check_site(self, site_id):
+        with self.session_factory() as session:
+            devices = session.query(APICControllers).filter(APICControllers.site_id == site_id).all()
+            return True
+
 
     def get_devices_data(self,device_data):
         print("devociedata at ai end",device_data.device_id)
@@ -1054,7 +1059,7 @@ class SiteRepository(BaseRepository):
             # print(device_data.device_id)
             try:
                 existing_device = session.query(APICControllers).filter(
-                    APICControllers.id == device_data.device_id).first()
+                    APICControllers.id == device_data.device_id).filter(APICControllers.site_id == device_data.site_id).first()
                 print("Found existing",existing_device)
                 return existing_device
                 if not existing_device:

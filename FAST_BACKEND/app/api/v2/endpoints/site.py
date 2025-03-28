@@ -1658,7 +1658,9 @@ def get_ai_res(device_data:DeviceRequest,
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     # data = site_service.get_device_aidata(device_data)
-    data = [
+    data = site_service.check_site(device_data.site_id)
+    if data:
+     data = [
 
 
         {'month': 'October', 'year': 2024, 'total_PIn': 221.37, 'total_POut': 191.79, 'PUE': 1.15, 'EER': 0.87,'co2':2.3,
@@ -1686,35 +1688,39 @@ def get_ai_res(device_data:DeviceRequest,
 @router.post("/get_next_year_co2", response_model=CustomResponse)
 @inject
 def get_ai_res_year_co2(
+               site_id: int,
                # current_user: User = Depends(get_current_active_user),
                site_service: SiteService = Depends(Provide[Container.site_service])
                ):
-    # data = site_service.get_device_aidata(device_data)
-    data = [
-        {'year': 2023, 'total_PIn': 221.37, 'total_POut': 191.79, 'co2':2.3,
-         'Prediction': 'False'},
-        { 'year': 2024, 'total_PIn': 221.37, 'total_POut': 191.79, 'co2':2.3,
-         'Prediction': 'False'},
-        {'year': 2025, 'total_PIn': 205.29, 'total_POut': 177.65, 'co2':2.3,
-         'Prediction': 'False'},
-        {'year': 2026, 'total_PIn': 223.01, 'total_POut': 193.01, 'co2':2.3,
-         'Prediction': 'True'},]
-    print(data)
-    print(type(data))
-    return CustomResponse(
-        message="Fetched all inventory count successfully",
-        data=data,
-        status_code=status.HTTP_200_OK
-    )
+    data = site_service.check_site(site_id)
+    if data:
+        data = [
+            {'year': 2023, 'total_PIn': 221.37, 'total_POut': 191.79, 'co2':2.3,
+             'Prediction': 'False'},
+            { 'year': 2024, 'total_PIn': 221.37, 'total_POut': 191.79, 'co2':2.3,
+             'Prediction': 'False'},
+            {'year': 2025, 'total_PIn': 205.29, 'total_POut': 177.65, 'co2':2.3,
+             'Prediction': 'False'},
+            {'year': 2026, 'total_PIn': 223.01, 'total_POut': 193.01, 'co2':2.3,
+             'Prediction': 'True'},]
+        print(data)
+        print(type(data))
+        return CustomResponse(
+            message="Fetched all data  successfully",
+            data=data,
+            status_code=status.HTTP_200_OK
+        )
 
 @router.post("/get_next_year", response_model=CustomResponse)
 @inject
 def get_ai_res_year(
+               site_id: int,
                # current_user: User = Depends(get_current_active_user),
                site_service: SiteService = Depends(Provide[Container.site_service])
                ):
-    # data = site_service.get_device_aidata(device_data)
-    data = [
+    data = site_service.check_site(site_id)
+    if data:
+         data = [
         {'year': 2023, 'total_PIn': 221.37, 'total_POut': 191.79, 'PUE': 1.15, 'EER': 0.87, 'datatraffic':2.3,
          'Prediction': 'False'},
         { 'year': 2024, 'total_PIn': 221.37, 'total_POut': 191.79, 'PUE': 1.15, 'EER': 0.87,'datatraffic':2.3,

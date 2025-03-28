@@ -1951,7 +1951,9 @@ class SiteService:
         final_response = self.influxdb_repository.prepare_response_ai(combined_data)
         print(final_response)
         return final_response
-
+    def check_site(self,site_id):
+        data = self.site_repository.check_site(site_id)
+        return data
     def get_device_aidata(self, device_data):
             print("device_data")
             data = self.site_repository.get_devices_data(device_data)

@@ -476,6 +476,7 @@ class EnergyConsumptionMetricsDetailsNew(BaseModel):
 
 class DeviceRequest(BaseModel):
     device_id: int
+    site_id:int
 
 class modelResponse(BaseModel):
     limit: Optional[int] = 0
