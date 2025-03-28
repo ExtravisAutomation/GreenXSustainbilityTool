@@ -2596,7 +2596,6 @@ class InfluxDBRepository:
                 average_pout = result['total_POut'].mean()
                 print("average_pin", average_pin)
                 print("average_pout", average_pout)
-
                 if metric.lower() == "pue":
                     value = (average_pin / average_pout) if average_pout != 0 else 0
                     metric_name = "power usage effectiveness"
@@ -2626,7 +2625,6 @@ class InfluxDBRepository:
                 return {
                     'data': value
                 }
-
         return {"status": "error", "message": "No data found for the specified query."}
 
     def get_datatraffic(self, ip: str, start_date: datetime, end_date: datetime, duration_str: str) -> dict:
@@ -2634,7 +2632,6 @@ class InfluxDBRepository:
         Retrieve and process data traffic metrics for the specified IP address and time range.
         """
         print("here we are")
-
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
         aggregate_window, time_format = self.determine_aggregate_window(duration_str)
@@ -2647,13 +2644,9 @@ class InfluxDBRepository:
             |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
-
-
         try:
             result = self.query_api1.query_data_frame(query)
             print(result,"result")
-
-
             if not result.empty and 'total_bytesRateLast' in result.columns:
                 total_bytesRateLast = result['total_bytesRateLast'].sum()
                 print(total_bytesRateLast,"dskdfd")
@@ -2674,7 +2667,6 @@ class InfluxDBRepository:
                 'status': 'error',
                 'message': f"An error occurred while retrieving data traffic: {str(e)}"
             }
-
     def get_carbon_intensity1(self, start_time: str, end_time: str) -> float:
         carbon_intensity = 0
         zone = "AE"
