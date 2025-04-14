@@ -1246,15 +1246,16 @@ class SiteService:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
-
         total_pin_value = self.influxdb_repository.get_total_pin_value(device_ips, start_date, end_date, duration_str)
-        carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
 
+        # carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
+        carbon_intensity=0.4041
         total_pin_value_KW = total_pin_value / 1000
-        carbon_emission = float(total_pin_value_KW) * float(carbon_intensity)
-        print("Emisssionsssssss", carbon_emission, file=sys.stderr)
-        carbon_emission_KG = round(carbon_emission / 1000, 2)
-        print("KGGGGGGGGGGGG", carbon_emission_KG, file=sys.stderr)
+        carbon_emission_KG = round(float(total_pin_value_KW) * float(carbon_intensity),4)
+
+        print("Emisssionsssssss", carbon_emission_KG, file=sys.stderr)
+        # carbon_emission_KG = round(carbon_emission / 1000, 2)
+        # print("KGGGGGGGGGGGG", carbon_emission_KG, file=sys.stderr)
 
         
         carbon_car = self.calculate_carbon_car(carbon_emission_KG)
@@ -1270,31 +1271,62 @@ class SiteService:
              return "ton",carbon_emission
     def calculate_carbon_car(self, carbon_emission_KG):
 
-        car_trips = carbon_emission_KG * 1.39  
+        # car_trips = carbon_emission_KG * 1.39
+        #
+        #
+        #
+        # base_distance = 1000
+        # distance_per_trip = base_distance + (carbon_emission_KG * 10)
+        km_driven = carbon_emission_KG / 0.12
 
+        # Calculate equivalent trips of a given distance (e.g., 10km trips)
+        trips_10km = km_driven / 10
 
-        base_distance = 1000  
-        distance_per_trip = base_distance + (carbon_emission_KG * 10)
         unit,carbon_emission=self.get_unit(carbon_emission_KG)
 
-        return f"{carbon_emission}{unit} is Equivalent of {int(car_trips)} car trips of {int(distance_per_trip)} km each in a gas-powered passenger vehicle"
+        return f"{carbon_emission} {unit} is Equivalent of {int(trips_10km)} car trips of 10km each in a gas-powered passenger vehicle"
 
     def calculate_carbon_solution(self, carbon_emission_KG):
-        trees_needed = carbon_emission_KG / 0.021 / 12  
+        trees_needed = carbon_emission_KG / 21
         return {
-            "plant_trees": f"Planting about {int(trees_needed)} trees can help offset carbon emissions. Trees absorb CO2 from the atmosphere, making this a natural way to balance out emissions.",
+            "plant_trees": f"Planting about {int(trees_needed)} mature trees can help offset carbon emissions over time. Trees absorb CO2 from the atmosphere, making this a natural way to balance out emissions.",
             "consolidation": "Regularly assess server usage, decommission outdated or underutilized servers, and consolidate workloads to optimize resource usage.",
             "high_efficiency": "Use power supplies with high-efficiency ratings (e.g., 80 PLUS Platinum or Titanium).",
             "regular_maintenance": "Conduct regular maintenance of IT equipment and cooling systems to ensure optimal performance."
         }
 
-    def calculate_carbon_flight(self, carbon_emission_KG):
-        flight_hours = carbon_emission_KG * 0.11 * 5.5
-        hours = int(flight_hours)
-        minutes = int((flight_hours - hours) * 60)
-        unit, carbon_emission = self.get_unit(carbon_emission_KG)
-        return f"{carbon_emission}{unit} is equivalent to {hours} hours and {minutes} minutes of flight time."
+        # def calculate_carbon_flight(self, carbon_emission_KG):
+        #     flight_hours = carbon_emission_KG * 0.11 * 5.5
+        #     hours = int(flight_hours)
+        #     minutes = int((flight_hours - hours) * 60)
+        #     unit, carbon_emission = self.get_unit(carbon_emission_KG)
+        #     return f"{carbon_emission}{unit} is equivalent to {hours} hours and {minutes} minutes of flight time."
 
+    def calculate_carbon_flight(self, carbon_emission_KG):
+        """
+        Calculate equivalent flight time based on CO2 emissions.
+        Assumes:
+        - Short-haul flight: ~90 kg CO2 per hour (avg. passenger)
+        - Source: DEFRA 2022 emission factors
+        """
+        # Calculate flight hours (emissions / emission rate)
+        flight_hours = carbon_emission_KG / 90
+
+        # Convert to hours and minutes
+        hours = int(flight_hours)
+        minutes = round((flight_hours - hours) * 60)
+
+        # Handle singular/plural and edge cases
+        hour_str = f"{hours} hour{'s' if hours != 1 else ''}" if hours > 0 else ""
+        minute_str = f"{minutes} minute{'s' if minutes != 1 else ''}" if minutes > 0 else ""
+        time_str = " and ".join(filter(None, [hour_str, minute_str])) or "less than 1 minute"
+
+        unit, carbon_emission = self.get_unit(carbon_emission_KG)
+
+        return (
+            f"{carbon_emission} {unit} is equivalent to {time_str} of short-haul flight time "
+            f"(assuming 90 kg CO2 per hour per passenger)."
+        )
     def get_emission_details(self, site_id: int) -> dict:
         
         latitude, longitude, site_name, num_devices, site_Region = self.site_repository.get_site_location(site_id)

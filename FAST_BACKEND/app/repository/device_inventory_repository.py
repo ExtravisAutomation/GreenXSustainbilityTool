@@ -976,7 +976,7 @@ class DeviceInventoryRepository(BaseRepository):
 
                 # Prepare enriched device data
                 enriched_device = {
-                    **device.__dict__,
+                    # **device.__dict__,
                     **sntc_info,
                     "rack_name": device.rack.rack_name if device.rack else None,
                     "site_name": device.site.site_name if device.site else None,
@@ -1198,6 +1198,7 @@ class DeviceInventoryRepository(BaseRepository):
 
                 enriched_devices=self.get_response_with_filter(page, page_size,query,score_card)
                 df = pd.DataFrame(enriched_devices)
+
                 # Define file path
 
 

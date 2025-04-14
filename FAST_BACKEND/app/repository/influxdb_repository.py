@@ -1300,9 +1300,31 @@ class InfluxDBRepository:
 
 
             # Calculate energy efficiency and power efficiency
-            power_result['energy_efficiency'] = (power_result['total_POut'] / power_result['total_PIn']).fillna(0)
-            power_result['power_efficiency'] = (power_result['total_PIn'] / power_result['total_POut']).fillna(0)
 
+            # power_result['energy_efficiency'] = (power_result['total_POut'] / power_result['total_PIn']).fillna(0)
+            # power_result['power_efficiency'] = (power_result['total_PIn'] / power_result['total_POut']).fillna(0)
+            # First check if columns exist
+            if 'total_POut' in power_result.columns and 'total_PIn' in power_result.columns:
+                # Calculate energy efficiency
+                power_result['energy_efficiency'] = np.where(
+                    (power_result['total_POut'].notna() &
+                     power_result['total_PIn'].notna() &
+                     (power_result['total_PIn'] != 0)),
+                    power_result['total_POut'] / power_result['total_PIn'],
+                    0
+                )
+
+                # Calculate power efficiency
+                power_result['power_efficiency'] = np.where(
+                    (power_result['total_POut'].notna() &
+                     power_result['total_PIn'].notna() &
+                     (power_result['total_POut'] != 0)),
+                    power_result['total_PIn'] / power_result['total_POut'],
+                    0
+                )
+            else:
+                power_result['energy_efficiency'] = 0
+                power_result['power_efficiency'] = 0
             # Format timestamps
             power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
 

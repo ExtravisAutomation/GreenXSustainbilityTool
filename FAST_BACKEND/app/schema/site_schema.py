@@ -484,3 +484,5 @@ class modelResponse(BaseModel):
     rack_id: Optional[int] = 0
     vendor_id: Optional[int] = 0
     # duration: Optional[str] = ''
+
+
