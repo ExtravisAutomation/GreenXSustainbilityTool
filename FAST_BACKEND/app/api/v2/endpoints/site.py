@@ -1663,20 +1663,23 @@ def get_ai_res(device_data:DeviceRequest,
      data = [
 
 
-        {'month': 'October', 'year': 2024, 'total_PIn': 221.37, 'total_POut': 191.79, 'PUE': 1.15, 'EER': 0.87,'co2':2.3,
+        {'month': 'October', 'year': 2024, 'total_PIn': 221.37, 'total_POut': 191.79, 'PUE': 1.15, 'EER': 0.87,'co2':8.8,
          'Prediction': 'False'},
-        {'month': 'November', 'year': 2024, 'total_PIn': 205.29, 'total_POut': 177.65, 'PUE': 1.16, 'EER': 0.87,'co2':2.3,
+        {'month': 'November', 'year': 2024, 'total_PIn': 205.29, 'total_POut': 177.65, 'PUE': 1.16, 'EER': 0.87,'co2':8.2,
          'Prediction': 'False'},
-        {'month': 'December', 'year': 2024, 'total_PIn': 223.01, 'total_POut': 193.01, 'PUE': 1.16, 'EER': 0.87,'co2':2.3,
+        {'month': 'December', 'year': 2024, 'total_PIn': 223.01, 'total_POut': 193.01, 'PUE': 1.16, 'EER': 0.87,'co2':8.9,
          'Prediction': 'False'},
-        {'month': 'January', 'year': 2025, 'total_PIn': 70.33, 'total_POut': 60.85, 'PUE': 1.16, 'EER': 0.87,'co2':2.3,
+        {'month': 'January', 'year': 2025, 'total_PIn': 70.33, 'total_POut': 60.85, 'PUE': 1.16, 'EER': 0.87,'co2':2.8,
          'Prediction': 'False'},
-        {'month': 'February', 'year': 2025, 'total_PIn':  223.01, 'total_POut': 193.01, 'PUE': 1.16, 'EER': 0.87,'co2':2.3,
+        {'month': 'February', 'year': 2025, 'total_PIn':  223.01, 'total_POut': 193.01, 'PUE': 1.16, 'EER': 0.87,'co2':8.9,
          'Prediction': 'False'},
-        {'month': 'March', 'year': 2024, 'total_PIn': 222.95, 'total_POut': 192.5, 'PUE': 1.16, 'EER': 0.86,'co2':2.3,
+        {'month': 'March', 'year': 2024, 'total_PIn': 222.95, 'total_POut': 192.5, 'PUE': 1.16, 'EER': 0.86,'co2':8.8,
          'Prediction': 'False'},
-        {'month': 'April', 'year': 2025, 'total_PIn': 222.67, 'total_POut': 193.67, 'PUE': 1.16, 'EER': 0.87,'co2':2.3,
-         'Prediction': 'True'},
+        {'month': 'April', 'year': 2025, 'total_PIn': 222.67, 'total_POut': 193.67, 'PUE': 1.16, 'EER': 0.87,'co2':8.9,
+         'Prediction': 'False'},
+         {'month': 'May', 'year': 2025, 'total_PIn': 189.37, 'total_POut': 190.79, 'PUE': 1.15, 'EER': 0.87,
+          'co2': 7.5,
+          'Prediction': 'True'},
     ]
     print(data)
     print(type(data),"$#@@@@@@@@@@@@@@@@")
@@ -1695,13 +1698,13 @@ def get_ai_res_year_co2(
     data = site_service.check_site(site_id)
     if data:
         data = [
-            {'year': 2023, 'total_PIn': 221.37, 'total_POut': 191.79, 'co2':2.3,
+            {'year': 2023, 'total_PIn': 221.37, 'total_POut': 191.79, 'co2':8.8,
              'Prediction': 'False'},
-            { 'year': 2024, 'total_PIn': 221.37, 'total_POut': 191.79, 'co2':2.3,
+            { 'year': 2024, 'total_PIn': 229.87, 'total_POut': 191.79, 'co2':9.1,
              'Prediction': 'False'},
-            {'year': 2025, 'total_PIn': 205.29, 'total_POut': 177.65, 'co2':2.3,
+            {'year': 2025, 'total_PIn': 205.29, 'total_POut': 177.65, 'co2':8.2,
              'Prediction': 'False'},
-            {'year': 2026, 'total_PIn': 223.01, 'total_POut': 193.01, 'co2':2.3,
+            {'year': 2026, 'total_PIn': 223.01, 'total_POut': 193.01, 'co2':8.9,
              'Prediction': 'True'},]
         print(data)
         print(type(data))
