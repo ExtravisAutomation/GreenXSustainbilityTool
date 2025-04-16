@@ -1760,8 +1760,14 @@ class SiteService:
             })
 
             processed_device_names.add(device.device_name)
+        carbon_emission_sorted = sorted(
+            devices_carbon_emission,
+            key=lambda x: x["carbon_emission"],
+            reverse=True
+        )
+        return carbon_emission_sorted[:10]
 
-        return devices_carbon_emission
+        # return devices_carbon_emission
     def get_all_devices_pcr(self, site_id: int, duration_str: str) -> List[dict]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
@@ -1802,9 +1808,15 @@ class SiteService:
             })
             processed_device_names.add(device.device_name)
         print("Device",devices_datatraffic)
+        devives_datatraffic_sorted = sorted(
+            devices_datatraffic,
+            key=lambda x: x["total_pin_value_KW"],
+            reverse=True
+        )
+        return devives_datatraffic_sorted[:10]
 
 
-        return devices_datatraffic
+        # return devices_datatraffic
 
     def calculate_device_pcr_by_name_with_filter(self, site_id: int, device_name: str, duration_str: str, limit: Optional[int]) -> List[dict]:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
