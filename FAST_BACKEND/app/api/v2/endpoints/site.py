@@ -984,6 +984,21 @@ def get_energy_consumption_metrics(
         status_code=status.HTTP_200_OK
     )
 
+@router.get("/total_value")
+@inject
+def get_energy_consumption_metricssss(
+        site_id: int,
+        # device_id: Optional[int] = Query(None, alias="device_id"),
+        duration: Optional[str] = Query(None, alias="duration"),
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+
+    metrics = site_service.calculate_average_energy_consumption_by_site_idd(site_id, duration)
+    return {
+        "data":metrics
+    }
 
 @router.get("/site/device_energy_details/{site_id}", response_model=DeviceEnergyDetailResponse123)
 @inject

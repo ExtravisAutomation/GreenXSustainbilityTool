@@ -1099,7 +1099,7 @@ class DeviceInventoryRepository(BaseRepository):
                 total_pages = (total_devices + page_size - 1) // page_size
                 page = max(1, min(page, total_pages))
 
-                devices = query.order_by(DeviceInventory.id.desc()).limit(page_size).offset(
+                devices = query.order_by(DeviceInventory.id).limit(page_size).offset(
                     (page - 1) * page_size).all()
 
                 print(f"Devices fetched: {len(devices)}")  # Debugging

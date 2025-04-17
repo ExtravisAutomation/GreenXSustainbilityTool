@@ -1578,6 +1578,16 @@ class SiteService:
     #         "power_efficiency": round(total_power_efficiency / count, 2) if count > 0 else None
     #     }
 
+    def calculate_average_energy_consumption_by_site_idd(self, site_id: int, duration_str: str) -> dict:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        if not device_ips:
+            return {"time": f"{start_date} - {end_date}"}
+
+        metrics = self.influxdb_repository.get_total_power_metrics_all_ips_24h(device_ips, start_date, end_date, duration_str)
+        return  metrics
 
     def calculate_average_energy_consumption_by_site_id(self, site_id: int, duration_str: str) -> dict:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
