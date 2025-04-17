@@ -1326,8 +1326,12 @@ class InfluxDBRepository:
                 power_result['energy_efficiency'] = 0
                 power_result['power_efficiency'] = 0
             # Format timestamps
-            power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
-
+            # power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
+            if not power_result.empty and '_time' in power_result.columns:
+                power_result['_time'] = pd.to_datetime(power_result['_time']).dt.strftime(time_format)
+            else:
+                print(f"[Warning] No '_time' column in power_result for IP: {ip}", file=sys.stderr)
+                continue  # Skip this IP if data is invalid
             print(f"Data for IP:", power_result, file=sys.stderr)
 
             # Merge power data with total bytes rate last
