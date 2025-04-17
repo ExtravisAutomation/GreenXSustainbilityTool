@@ -1089,7 +1089,7 @@ class InfluxDBRepository:
             })
 
         # Sort and get the top 5 devices
-        top_devices = sorted(top_devices, key=lambda x: x['total_power'], reverse=True)[:5]
+        top_devices = sorted(top_devices, key=lambda x: x['traffic_speed'], reverse=True)[:5]
         return top_devices
 
     def calculate_cost_of_power(self, power_in_watts):
