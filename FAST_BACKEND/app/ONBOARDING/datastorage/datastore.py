@@ -106,6 +106,7 @@ class DataStorage:
                     device_name=node_info['name'],  # Fixed typo
                     status=node_info['status'],
                     apic_controller_id=device_id,
+                    device_id=device_id,
                     role=node_info['role']
                 )
                 session.add(new_device)

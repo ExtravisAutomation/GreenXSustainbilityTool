@@ -515,7 +515,7 @@ def get_24hDevice_power(apic_ip: str) -> List[dict]:
         power_utilization = None
         pue = None
         if total_supplied > 0:
-            power_utilization = (total_drawn / total_supplied)
+            power_utilization = (total_drawn / total_supplied) *100
         if total_drawn > 0:
             pue = (total_supplied / total_drawn)
 
