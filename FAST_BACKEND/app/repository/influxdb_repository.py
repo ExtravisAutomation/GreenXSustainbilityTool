@@ -2934,57 +2934,93 @@ class InfluxDBRepository:
             aggregate_window = "1m"
             time_format = '%Y-%m'
         powerin,powerout=0,0
+        total_pout, total_pin=0,0
+
         for ip in device_ips:
             print(f"Querying metrics for IP: {ip}", file=sys.stderr)
             query = f'''
-                from(bucket: "{configs.INFLUXDB_BUCKET}")
-                |> range(start: {start_time}, stop: {end_time})
-                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-            '''
-            print(f"Query: {query}", file=sys.stderr)
+                           from(bucket: "{configs.INFLUXDB_BUCKET}")
+                           |> range(start: {start_time}, stop: {end_time})
+                           |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                           |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                           |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+                           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                       '''
+
             result = self.query_api1.query_data_frame(query)
 
-            print(f"Result for IP {ip}: {result}", file=sys.stderr)
-
             if not result.empty:
-                result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
-                numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
-                if '_time' in result.columns and numeric_cols:
-                    grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
-                    grouped['_time'] = pd.to_datetime(grouped['_time'])
-                    grouped.set_index('_time', inplace=True)
+                pin_sum = result['total_PIn'].sum() if 'total_PIn' in result else 0.0
+                pout_sum = result['total_POut'].sum() if 'total_POut' in result else 0.0
 
-                    all_times = pd.date_range(start=start_date, end=end_date, freq=aggregate_window.upper()).strftime(
-                        time_format)
-                    grouped = grouped.reindex(all_times).fillna(0).reset_index()
-                    total_pin=0
-                    total_pout=0
-                    for _, row in grouped.iterrows():
-                        pin = row['total_PIn']
-                        pout = row['total_POut']
-
-                        energy_consumption = (pout / pin) * 100 if pin > 0 else 0
-                        power_efficiency = (pin / pout) if pout > 0 else 0
-                        total_pin +=pin
-                        total_pout+=pout
-
-                        total_power_metrics.append({
-                            "time": row['index'],
+                total_pin += pin_sum
+                total_pout += pout_sum
+        print(total_pout, total_pin)
+        energy_consumption = (total_pout / total_pin)  if total_pin > 0 else 0
+        power_efficiency = (total_pin / total_pout) if total_pout > 0 else 0
+        total_power_metrics.append({
                             "energy_consumption": round(energy_consumption, 2),
-                            "total_POut": round(pout/1000, 2),
-                            "total_PIn": round(pin/1000, 2),
+                            "total_POut": round(total_pout/1000, 2),
+                            "total_PIn": round(total_pin/1000, 2),
                             "power_efficiency": round(power_efficiency, 2)
                         })
-                    print(total_pin,total_pout)
+        print(total_pin,total_pout)
 
 
-        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
+        df = pd.DataFrame(total_power_metrics).to_dict(orient='records')
         print(df)
         print(f"Final metrics: {df}", file=sys.stderr)
         return df
+
+        #     query = f'''
+        #         from(bucket: "{configs.INFLUXDB_BUCKET}")
+        #         |> range(start: {start_time}, stop: {end_time})
+        #         |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+        #         |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+        #         |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+        #         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        #     '''
+        #     print(f"Query: {query}", file=sys.stderr)
+        #     result = self.query_api1.query_data_frame(query)
+        #
+        #     print(f"Result for IP {ip}: {result}", file=sys.stderr)
+        #
+        #     if not result.empty:
+        #         result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+        #         numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+        #         if '_time' in result.columns and numeric_cols:
+        #             grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
+        #             grouped['_time'] = pd.to_datetime(grouped['_time'])
+        #             grouped.set_index('_time', inplace=True)
+        #
+        #             all_times = pd.date_range(start=start_date, end=end_date, freq=aggregate_window.upper()).strftime(
+        #                 time_format)
+        #             grouped = grouped.reindex(all_times).fillna(0).reset_index()
+        #             total_pin=0
+        #             total_pout=0
+        #             for _, row in grouped.iterrows():
+        #                 pin = row['total_PIn']
+        #                 pout = row['total_POut']
+        #
+        #                 energy_consumption = (pout / pin) * 100 if pin > 0 else 0
+        #                 power_efficiency = (pin / pout) if pout > 0 else 0
+        #                 total_pin +=pin
+        #                 total_pout+=pout
+        #
+        #                 total_power_metrics.append({
+        #                     "time": row['index'],
+        #                     "energy_consumption": round(energy_consumption, 2),
+        #                     "total_POut": round(pout/1000, 2),
+        #                     "total_PIn": round(pin/1000, 2),
+        #                     "power_efficiency": round(power_efficiency, 2)
+        #                 })
+        #             print(total_pin,total_pout)
+        #
+        #
+        # df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
+        # print(df)
+        # print(f"Final metrics: {df}", file=sys.stderr)
+        # return df
 
     def get_energy_details_for_device_at_time(self, device_ip: str, exact_time: datetime, granularity: str) -> dict:
         if exact_time.tzinfo is None:

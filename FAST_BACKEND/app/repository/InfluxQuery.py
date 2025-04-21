@@ -469,7 +469,7 @@ def get_24h_rack_datatraffic(apic_ips, rack_id) -> List[dict]:
                     total_byterate += byterate
             print(total_byterate, "total_bytesRateLast")
 
-            
+
             
 
 
@@ -487,14 +487,14 @@ def get_24h_rack_datatraffic(apic_ips, rack_id) -> List[dict]:
 def get_24hDevice_power(apic_ip: str) -> List[dict]:
     total_drawn, total_supplied = 0, 0
     start_range = "-24h"
-    query = query = f'''from(bucket: "Dcs_db")
+    query = f'''from(bucket: "Dcs_db")
               |> range(start: {start_range})
               |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
               |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
               |> sum()
               |> yield(name: "total_sum")'''
 
-    result = query_api.query(query)
+    # result = query_api.query(query)
     data = []
     try:
         result = query_api.query(query)
@@ -514,6 +514,7 @@ def get_24hDevice_power(apic_ip: str) -> List[dict]:
 
         power_utilization = None
         pue = None
+        print(total_drawn,total_supplied)
         if total_supplied > 0:
             power_utilization = (total_drawn / total_supplied) *100
         if total_drawn > 0:

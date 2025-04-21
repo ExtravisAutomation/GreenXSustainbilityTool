@@ -465,12 +465,25 @@ class DeviceInventoryRepository(BaseRepository):
 
     def get_spcific_devices(self, device_ip: str):
         with self.session_factory() as session:
-            query = session.query(DeviceInventory).filter(APICController.ip_address == device_ip)
+
+            controller = session.query(APICControllers.id, APICControllers.device_name).filter(
+                APICControllers.ip_address == device_ip
+            ).first()
+
+            if not controller:
+                print(f"APICController not found for IP: {device_ip}")
+                return None
+
+            device_id, device_name = controller
+
+            query = session.query(DeviceInventory).filter(DeviceInventory.device_id == device_id)
             device = query.first()
             print("Here we are")
+            print(device)
 
             power = get_24hDevice_power(device_ip)
             datatraffic = get_24hDevice_dataTraffic(device_ip)
+            print(power, datatraffic)
 
             rack = session.query(Rack.rack_name).filter(Rack.id == device.rack_id).first()
             site = session.query(Site.site_name).filter(Site.id == device.site_id).first()
@@ -479,7 +492,9 @@ class DeviceInventoryRepository(BaseRepository):
             device.power_input = round(total_power_input / 1000, 2)
             device.rack_name = rack.rack_name if rack else None
             device.site_name = site.site_name if site else None
-            device.device_ip = device_ip if device_ip else None
+            # Set device name and IP
+            device.device_name = device_name
+            device.device_ip = device_ip
             datatraffic_value = datatraffic[0]['traffic_through'] if datatraffic else None
             sntc_result = session.query(DeviceSNTC).filter(DeviceSNTC.model_name == device.pn_code).first()
             if sntc_result:
