@@ -375,6 +375,21 @@ def generate_excel(filter_data:FilterSchema,
     device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
     devices = device_inventory_service.generate_excel(filter_data)
+    print(devices)
+    columns_to_drop = [
+        '_sa_instance_state', 'created_at', 'device_id', 'item_desc', 'role', 'contract_number',
+        'hardware_version',
+        'parent', 'site_id', 'apic_controller_id', 'created_by', 'hw_eol_date',
+        'manufacturer_date', 'status', 'sw_eol_date', 'updated_at', 'patch_version',
+        'rfs_date', 'sw_eos_date', 'cisco_domain', 'device_ru', 'id', 'criticality', 'hw_eos_date',
+        'section', 'tag_id', 'contract_expiry', 'domain', 'modified_by',
+        'source', 'department', 'item_code', 'rack_id', 'stack',
+        'apic_controller', 'rack', 'site', 'device'
+    ]
+    devices = devices.drop(columns=columns_to_drop)
+    devices.rename(columns={"device_ip": "ip_address"}, inplace=True)
+    devices.rename(columns={"power_utilization": "Energy Efficiency"}, inplace=True)
+
     file_path = "device_report.xlsx"
 
     # Save DataFrame to an Excel file

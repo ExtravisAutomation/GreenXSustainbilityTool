@@ -1010,6 +1010,8 @@ class DeviceInventoryRepository(BaseRepository):
                 performance_score, performance_description = self.classify_performance(
                     power_utilization, pue, datatraffic, pcr or 0, carbon_emission
                 )
+                enriched_device['carbon_emission']=carbon_emission
+                enriched_device['pcr']=pcr
                 enriched_device["performance_score"] = performance_score
                 enriched_device["performance_description"] = performance_description
                 enriched_devices.append(enriched_device)
@@ -1050,7 +1052,9 @@ class DeviceInventoryRepository(BaseRepository):
                     joinedload(DeviceInventory.apic_controller)
                 )
                 .outerjoin(DeviceSNTC, DeviceInventory.pn_code == DeviceSNTC.model_name)
+
             )
+            query=query.filter(DeviceInventory.device.has((APICControllers.OnBoardingStatus==True) and (APICControllers.collection_status==True)))
 
             print(f"Base query count: {query.count()}")  # Debugging before filtering
 
@@ -1099,7 +1103,7 @@ class DeviceInventoryRepository(BaseRepository):
                 total_pages = (total_devices + page_size - 1) // page_size
                 page = max(1, min(page, total_pages))
 
-                devices = query.order_by(DeviceInventory.id).limit(page_size).offset(
+                devices = query.order_by(DeviceInventory.id.desc()).limit(page_size).offset(
                     (page - 1) * page_size).all()
 
                 print(f"Devices fetched: {len(devices)}")  # Debugging
@@ -1159,6 +1163,8 @@ class DeviceInventoryRepository(BaseRepository):
                 )
                 .outerjoin(DeviceSNTC, DeviceInventory.pn_code == DeviceSNTC.model_name)
             )
+            query = query.filter(DeviceInventory.device.has(
+                (APICControllers.OnBoardingStatus == True) and (APICControllers.collection_status == True)))
 
             print(f"Base query count: {query.count()}")  # Debugging before filtering
 
@@ -1189,17 +1195,22 @@ class DeviceInventoryRepository(BaseRepository):
 
                 enriched_devices = self.get_response_with_filter(page, page_size, query, score_card)
                 df = pd.DataFrame(enriched_devices)
+                print(df.columns)
 
                 # Define file path
 
                 # Return the file for download
+
                 return df
             else:
                 devices = query.order_by(DeviceInventory.id.desc()).all()
 
                 print(f"Devices fetched: {len(devices)}")  # Debugging
                 enriched_devices = self.get_devices_result(devices)
-                return pd.DataFrame(enriched_devices)
+                df=pd.DataFrame(enriched_devices)
+
+                print(df.columns)
+                return df
 
     def get_hardware_versions(self):
         with self.session_factory() as session:
