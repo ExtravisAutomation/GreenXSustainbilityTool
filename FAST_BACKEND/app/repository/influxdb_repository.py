@@ -1052,7 +1052,7 @@ class InfluxDBRepository:
     def get_top_5_devices(self,device_inventory, device_ips: List[str], start_date: datetime, end_date: datetime, duration_str: str) -> \
     List[dict]:
         top_devices = []
-        duration_str='7 Days'
+
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 

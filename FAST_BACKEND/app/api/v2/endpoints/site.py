@@ -412,7 +412,7 @@ def get_traffic_throughput_metrics(
 def get_top_5_power_devices(
         site_id: int,
         duration: Optional[str] = Query(None, alias="duration"),
-        current_user: User = Depends(get_current_active_user),
+        # current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])):
     duration = duration or "24 hours"
     return site_service.get_top_5_power_devices_with_filter(site_id, duration)
