@@ -543,7 +543,7 @@ class SiteRepository(BaseRepository):
         with self.session_factory() as session:
             device_names = (
                 session.query(APICControllers.id, APICControllers.device_name)
-                .filter(APICControllers.site_id == site_id)
+                .filter((APICControllers.site_id == site_id) &(APICControllers.OnBoardingStatus==True) & (APICControllers.collection_status==True))
                 .distinct()
                 .all()
             )
