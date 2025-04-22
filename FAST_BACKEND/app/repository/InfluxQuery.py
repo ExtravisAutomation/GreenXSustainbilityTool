@@ -423,8 +423,7 @@ def get_24hrack_power(apic_ips, rack_id) -> List[dict]:
             if total_supplied > 0:
                 power_utilization = (total_drawn / total_supplied)
             if total_drawn > 0:
-                pue = ((total_supplied / total_drawn) - 1)
-
+                pue = ((total_supplied / total_drawn))
             rack_data.append({
                 "rack_id": rack_id,
                 "power_utilization": round(power_utilization, 2) if power_utilization is not None else 0,
@@ -487,47 +486,56 @@ def get_24h_rack_datatraffic(apic_ips, rack_id) -> List[dict]:
 def get_24hDevice_power(apic_ip: str) -> List[dict]:
     total_drawn, total_supplied = 0, 0
     start_range = "-24h"
-    query = f'''from(bucket: "Dcs_db")
-              |> range(start: {start_range})
-              |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
-              |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
-              |> sum()
-              |> yield(name: "total_sum")'''
+
+    query = f'''
+                              from(bucket: "Dcs_db")
+                               |> range(start: {start_range})
+                               |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{apic_ip}")
+                               |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                               |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+                               |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                           '''
+
+
 
     # result = query_api.query(query)
-    data = []
+
     try:
-        result = query_api.query(query)
-
-        drawnAvg,suppliedAvg = None, None
-
-        for table in result:
-            for record in table.records:
-                if record.get_field() == "total_POut":
-                    drawnAvg = record.get_value()
-                elif record.get_field() == "total_PIn":
-                    suppliedAvg = record.get_value()
-
-                if drawnAvg is not None and suppliedAvg is not None:
-                    total_drawn += drawnAvg
-                    total_supplied += suppliedAvg
+        result = query_api.query_data_frame(query)
+        data = []
+        pin_sum,pout_sum=0,0
+        if not result.empty:
+            pin_sum = result['total_PIn'].sum() if 'total_PIn' in result else 0.0
+            pout_sum = result['total_POut'].sum() if 'total_POut' in result else 0.0
+    #     result = query_api.query(query)
+    #
+    #     drawnAvg,suppliedAvg = None, None
+    #
+    #     for table in result:
+    #         for record in table.records:
+    #             if record.get_field() == "total_POut":
+    #                 drawnAvg = record.get_value()
+    #             elif record.get_field() == "total_PIn":
+    #                 suppliedAvg = record.get_value()
+    #
+    #             if drawnAvg is not None and suppliedAvg is not None:
+    #                 total_drawn += drawnAvg
+    #                 total_supplied += suppliedAvg
 
         power_utilization = None
         pue = None
-        print(total_drawn,total_supplied)
-        if total_supplied > 0:
-            power_utilization = (total_drawn / total_supplied) *100
-        if total_drawn > 0:
-            pue = (total_supplied / total_drawn)
-
+        print(pout_sum,pin_sum)
+        if pin_sum > 0:
+            power_utilization = (pout_sum / pin_sum) *100
+        if pout_sum > 0:
+            pue = (pin_sum / pout_sum)
 
         data.append({
             "apic_controller_ip": apic_ip,
             "power_utilization": round(power_utilization, 2) if power_utilization is not None else 0,
-            "total_supplied":total_supplied,
-            "total_drawn":total_drawn,
+            "total_supplied":pin_sum,
+            "total_drawn":pout_sum,
             "pue": round(pue, 4) if pue is not None else 0,
-
            })
 
     except Exception as e:
@@ -725,11 +733,6 @@ def get_24hsite_datatraffc(apic_ips, site_id) -> List[dict]:
                     total_byterate += byterate
             print(total_byterate, "total_bytesRateLast")
 
-            
-            
-
-
-
             site_data.append({
                 "site_id": site_id,
                 "traffic_through": total_byterate  })
@@ -738,49 +741,110 @@ def get_24hsite_datatraffc(apic_ips, site_id) -> List[dict]:
             
 
     return site_data
+
 def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
-    print(apic_ip)
-    total_traffic= 0
-    total_bandwidth=0
-    start_range = "-24h"
-    query = f'''from(bucket: "Dcs_db")
-              |> range(start: {start_range})
-              |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic")
-              |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
-              |> sum()
-              |> yield(name: "total_sum")'''
-    data = []
-    try:
-        result = query_api.query(query)
-        Totalbytes ,bandwidth= None,None
+        print(f"Fetching traffic data for {apic_ip}")
+        total_traffic = 0.0
+        total_bandwidth = 0.0
+        start_range = "-24h"
 
-        for table in result:
-            for record in table.records:
-                # field=record.get_field()
-                if record.get_field() == "total_bytesRateLast":
-                    Totalbytes = record.get_value()
-                else:
-                    Totalbytes =0
-                if record.get_field() == "bandwidth":
-                    bandwidth = record.get_value()
-                else:
-                    bandwidth =0
-                if Totalbytes is not None:
-                    total_traffic += Totalbytes
-                if bandwidth is not None:
-                    total_bandwidth+=bandwidth
+        query = f'''
+            from(bucket: "Dcs_db")
+            |> range(start: {start_range})
+            |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["ApicController_IP"] == "{apic_ip}")
+            |> filter(fn: (r) => r["_field"] == "total_bytesRateLast" or r["_field"] == "bandwidth")
+            |> aggregateWindow(every: 1h, fn: sum, createEmpty: false)
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        '''
 
-        data.append({
+        data = []
+
+        try:
+            result = query_api.query_data_frame(query)
+
+            if not result.empty:
+                # Ensure columns exist before summing
+                if "total_bytesRateLast" in result.columns:
+                    total_traffic = float(result["total_bytesRateLast"].sum())
+
+                if "bandwidth" in result.columns:
+                    total_bandwidth = float(result["bandwidth"].sum())
+
+        except Exception as e:
+            print(f"Error while querying InfluxDB: {e}")
+            return [{
+                "apic_controller_ip": apic_ip,
+                "traffic_through": 0.0,
+                "bandwidth": 0.0
+            }]
+
+        # Return cleaned and converted result
+        return [{
             "apic_controller_ip": apic_ip,
-            "traffic_through":  total_traffic,
-            "bandwidth":total_bandwidth
-           })
+            "traffic_through": total_traffic,
+            "bandwidth": total_bandwidth
+        }]
+# def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
+#     print(apic_ip)
+#     total_traffic= 0
+#     total_bandwidth=0
+#     start_range = "-24h"
+#     query = f'''from(bucket: "Dcs_db")
+#               |> range(start: {start_range})
+#               |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic")
+#               |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
+#               |> sum()
+#               |> yield(name: "total_sum")'''
+#     data = []
+#     query = f'''
+#                 from(bucket: "Dcs_db")
+#               |> range(start: {start_range})
+#                    |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["ApicController_IP"] == "{apic_ip}")
+#                    |> filter(fn: (r) => r["_field"] == "total_bytesRateLast"or r["_field"] == "bandwidth")
+#                    |> aggregateWindow(every: 1h, fn: sum, createEmpty: false)
+#                '''
+#     try:
+#         result = query_api.query_data_frame(query)
+#         data = []
+#         pin_sum,pout_sum=0,0
+#         if not result.empty:
+#             total_traffic = result['total_bytesRateLast'].sum() if 'total_bytesRateLast' in result else 0.0
+#             total_bandwidth = result['bandwidth'].sum() if 'bandwidth' in result else 0.0
+#     # result = query_api.query_data_frame(query)
+#     # if not result.empty:
+#     #     datatraffic += result['_value'].sum()
+#     # try:
+#     #     result = query_api.query(query)
+#     #     Totalbytes ,bandwidth= None,None
+#     #
+#     #     for table in result:
+#     #         for record in table.records:
+#     #             # field=record.get_field()
+#     #             if record.get_field() == "total_bytesRateLast":
+#     #                 Totalbytes = record.get_value()
+#     #             else:
+#     #                 Totalbytes =0
+#     #             if record.get_field() == "bandwidth":
+#     #                 bandwidth = record.get_value()
+#     #             else:
+#     #                 bandwidth =0
+#     #             if Totalbytes is not None:
+#     #                 total_traffic += Totalbytes
+#     #             if bandwidth is not None:
+#     #                 total_bandwidth+=bandwidth
+#         print("herewwsd;allllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
+#         data.append({
+#             "apic_controller_ip": apic_ip,
+#             "traffic_through":  total_traffic,
+#             "bandwidth":total_bandwidth
+#            })
+#
+#     except Exception as e:
+#         print(f"Error querying InfluxDB for {apic_ip}: {e}")
+#
+#     print(data)
 
-    except Exception as e:
-        print(f"Error querying InfluxDB for {apic_ip}: {e}")
-        
-    print(data)
-    return data
+    # return data
 def get_all_vm(hostname) -> List[dict]:
 
     query = f'''

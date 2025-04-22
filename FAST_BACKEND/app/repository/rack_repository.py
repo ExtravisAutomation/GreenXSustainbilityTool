@@ -38,9 +38,6 @@ class RackRepository(BaseRepository):
 
             else:
                 racks = session.query(Rack).all()
-
-
-
             for rack in racks:
                 
                 building = (
@@ -56,11 +53,9 @@ class RackRepository(BaseRepository):
                     rack.id == DeviceInventory.rack_id, APICController.id == DeviceInventory.apic_controller_id
                 ).distinct().all()
 
-                
                 site_result = session.query(Site.site_name).filter(Site.id == rack.site_id).first()
                 rack.site_name = site_result[0] if site_result else None
 
-                
                 num_devices = session.query(func.count(Devices.id)).filter(Devices.rack_id == rack.id).scalar()
                 rack.num_devices = num_devices
 
@@ -68,9 +63,6 @@ class RackRepository(BaseRepository):
                 rack_power_data = get_24hrack_power(apic_ips, rack.id)
                 rack_traffic_data = get_24h_rack_datatraffic(apic_ips, rack.id)
 
-
-
-                
                 if rack_power_data:
                     power_utilization_values = [data.get('power_utilization', 0) for data in rack_power_data]
                     total_power_utilization = sum(power_utilization_values)

@@ -435,7 +435,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             result = self.query_api1.query_data_frame(query)
@@ -933,26 +933,39 @@ class InfluxDBRepository:
         # return top_devices_power
 
     def fetch_device_power_consumption(self, ip, start_time, end_time, aggregate_window):
+        # query = f'''
+        #     from(bucket: "{self.bucket}")
+        #       |> range(start: {start_time}, stop: {end_time})
+        #       |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+        #       |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
+        #       |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+        # '''
+        pin_sum=0
         query = f'''
-            from(bucket: "{self.bucket}")
-              |> range(start: {start_time}, stop: {end_time})
-              |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
-              |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
-              |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
-        '''
+               from(bucket: "{configs.INFLUXDB_BUCKET}")
+               |> range(start: {start_time}, stop: {end_time})
+               |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+               |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+               |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+               |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+           '''
 
-        try:
-            result = self.query_api1.query_data_frame(query)
-            print(result)
-            if isinstance(result, pd.DataFrame) and not result.empty:
-                total_power = result['_value'].sum()
-            else:
-                total_power = 0
-        except Exception as e:
-            print(f"Error fetching power consumption: {e}")
-            total_power = None
+        result = self.query_api1.query_data_frame(query)
 
-        return total_power
+        if not result.empty:
+            pin_sum = result['total_PIn'].sum() if 'total_PIn' in result else 0.0
+        # try:
+        #     result = self.query_api1.query_data_frame(query)
+        #     print(result)
+        #     if isinstance(result, pd.DataFrame) and not result.empty:
+        #         total_power = result['_value'].sum()
+        #     else:
+        #         total_power = 0
+        # except Exception as e:
+        #     print(f"Error fetching power consumption: {e}")
+        #     total_power = None
+
+        return pin_sum
 
     def fetch_bandwidth_and_traffic(self, ip, start_time, end_time, aggregate_window):
         query = f'''
@@ -968,16 +981,16 @@ class InfluxDBRepository:
             result = self.query_api1.query_data_frame(query)
             print(result)
             if isinstance(result, pd.DataFrame) and not result.empty:
-                bandwidth = result.loc[result['_field'] == 'bandwidth', '_value'].mean() / 1000  # Convert Kbps to Mbps
-                traffic_speed = result.loc[result['_field'] == 'total_bytesRateLast', '_value'].mean() * 8 / 1e6  # Convert bytes/sec to Mbps
+                bandwidth_mps = result.loc[result['_field'] == 'bandwidth', '_value'].mean() / 1000  # Convert Kbps to Mbps
+                traffic_speed_mps = result.loc[result['_field'] == 'total_bytesRateLast', '_value'].mean() * 8 / 1e6  # Convert bytes/sec to Mbps
                     # bandwidth_utilization = min((traffic_speed / bandwidth) * 100, 100) if bandwidth else 0
-                bandwidth_utilization = (traffic_speed / bandwidth) * 100 if bandwidth else 0
+                bandwidth_utilization = (traffic_speed_mps / bandwidth_mps) * 100 if bandwidth_mps else 0
             else:
-                bandwidth = traffic_speed = bandwidth_utilization = 0
+                bandwidth_mps = traffic_speed_mps = bandwidth_utilization = 0
         except Exception as e:
             print(f"Error fetching bandwidth and traffic: {e}")
-            bandwidth = traffic_speed = bandwidth_utilization = None
-        return bandwidth, traffic_speed, bandwidth_utilization
+            bandwidth_mps = traffic_speed_mps = bandwidth_utilization = None
+        return bandwidth_mps, traffic_speed_mps, bandwidth_utilization
 
     # def get_device_data(self, ip, start_time, end_time, aggregate_window):
     #     total_power = self.fetch_device_power_consumption(ip, start_time, end_time, aggregate_window)
@@ -1050,18 +1063,20 @@ class InfluxDBRepository:
 
             total_power = self.fetch_device_power_consumption(ip, start_time, end_time, aggregate_window)
             print("ip, start_time, end_time,aggregate_window",ip, start_time, end_time,aggregate_window)
-            bandwidth, traffic_speed, bandwidth_utilization = self.fetch_bandwidth_and_traffic(ip, start_time, end_time,
+            bandwidth_mps, traffic_speed_mps, bandwidth_utilization = self.fetch_bandwidth_and_traffic(ip, start_time, end_time,
                                                                                                aggregate_window)
+            bandwidth_gps=bandwidth_mps/1000
+            traffic_gbps = traffic_speed_mps / 1000  # Convert Mbps to Gbps
+            pcr = round(total_power / traffic_gbps, 2) if traffic_gbps else None  # PCR in W/Gbps
             print(total_power,"dsajfdkjdkjd")
-            print(traffic_speed,"sd;f;sdl;fl;gls")
-            pcr = total_power / traffic_speed if traffic_speed else None
+            print(traffic_gbps,"sd;f;sdl;fl;gls")
             co2em=(total_power/1000) *0.4041
             print("co2emissions ", co2em)
             print(pcr,"PCR")
 
 
             # Convert and format the data with units
-            converted_data = self.convert_and_add_unit(total_power, bandwidth, traffic_speed, bandwidth_utilization,
+            converted_data = self.convert_and_add_unit(total_power, bandwidth_mps, traffic_speed_mps, bandwidth_utilization,
                                                        co2em)
 
             # Example logic to populate id and device_name (replace with actual data source if available)
@@ -1072,7 +1087,7 @@ class InfluxDBRepository:
             print("pcr ", pcr)
             print("co2emissions ", co2em)
             print(total_power,"")
-            print(" bandwidth, traffic_speed, bandwidth_utilization ", bandwidth, traffic_speed, bandwidth_utilization )
+            # print(" bandwidth, traffic_speed, bandwidth_utilization ", bandwidth, traffic_speed, bandwidth_utilization )
             if device_info:
                 device_id = device_info['id']
                 device_name = device_info['device_name']
@@ -1445,11 +1460,27 @@ class InfluxDBRepository:
         combined_result = pd.merge(traffic_result, power_result, on='_time', how='outer').fillna(0)
 
         for _, row in combined_result.iterrows():
-            total_bytes_rate_last_gb = self.convert_bytes(row['total_bytesRateLast']) if row[
-                                                                                             'total_bytesRateLast'] > 0 else 0
-            pin = row['total_PIn'] if row['total_PIn'] > 0 else 1  # Avoid division by zero
+            # total_bytes_rate_last_gb = self.convert_bytes(row['total_bytesRateLast']) if row['total_bytesRateLast'] > 0 else 0
+            total_bytes_rate_last_gb = (row['total_bytesRateLast'] * 8) / 1e9 if row['total_bytesRateLast'] > 0 else 0
+
+            pin = row['total_PIn'] if row['total_PIn'] > 0 else 0 # Avoid division by zero
             pout = row['total_POut'] if row['total_POut'] > 0 else 0
             energy_consumption = pout / pin  # Calculate energy consumption
+
+
+
+            # Input power in Watts
+            pin = row['total_PIn'] if row['total_PIn'] > 0 else 0
+
+            # Watts per Gbps — how much power is used per gigabit per second
+            pcr = round(pin / total_bytes_rate_last_gb, 2) if total_bytes_rate_last_gb else 0
+
+            throughput_metrics.append({
+                "time": row['_time'],
+                "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2),
+                "energy_consumption": energy_consumption , # W/Gbps
+                "pcr":round(pcr,4)
+            })
 
             throughput_metrics.append({
                 "time": row['_time'],
@@ -2391,16 +2422,30 @@ class InfluxDBRepository:
 
         total_pin = 0
         for ip in device_ips:
+            # query = f'''
+            #     from(bucket: "{configs.INFLUXDB_BUCKET}")
+            #     |> range(start: {start_time}, stop: {end_time})
+            #     |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+            #     |> filter(fn: (r) => r["_field"] == "total_PIn")
+            #     |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+            #     | > pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+            # '''
             query = f'''
-                from(bucket: "{configs.INFLUXDB_BUCKET}")
-                |> range(start: {start_time}, stop: {end_time})
-                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                |> filter(fn: (r) => r["_field"] == "total_PIn")
-                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
-            '''
+           from(bucket: "{configs.INFLUXDB_BUCKET}")
+           |> range(start: {start_time}, stop: {end_time})
+           |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+           |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+           |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+       '''
+
             result = self.query_api1.query_data_frame(query)
+
             if not result.empty:
-                total_pin += result['_value'].sum()
+                total_pin +=result['total_PIn'].sum() if 'total_PIn' in result else 0.0
+            # result = self.query_api1.query_data_frame(query)
+            # if not result.empty:
+            #     total_pin += result['_value'].sum()
 
         return total_pin
 
@@ -3114,17 +3159,30 @@ class InfluxDBRepository:
 
         total_pin = 0
 
+        # query = f'''
+        #     from(bucket: "{configs.INFLUXDB_BUCKET}")
+        #     |> range(start: {start_time}, stop: {end_time})
+        #     |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{device_ip}")
+        #     |> filter(fn: (r) => r["_field"] == "total_PIn")
+        #     |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+        # '''
         query = f'''
-            from(bucket: "{configs.INFLUXDB_BUCKET}")
-            |> range(start: {start_time}, stop: {end_time})
-            |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{device_ip}")
-            |> filter(fn: (r) => r["_field"] == "total_PIn")
-            |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
-        '''
+               from(bucket: "{configs.INFLUXDB_BUCKET}")
+               |> range(start: {start_time}, stop: {end_time})
+               |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{device_ip}")
+               |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+               |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+               |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+           '''
 
         result = self.query_api1.query_data_frame(query)
+
         if not result.empty:
-            total_pin += result['_value'].sum()
+            total_pin += result['total_PIn'].sum() if 'total_PIn' in result else 0.0
+
+        # result = self.query_api1.query_data_frame(query)
+        # if not result.empty:
+        #     total_pin += result['_value'].sum()
 
         return total_pin
 
@@ -3334,7 +3392,7 @@ class InfluxDBRepository:
                         pout = round(pout, 2)
 
                         energy_consumption = round(pout / pin, 2) if pin > 0 else 0
-                        power_efficiency = round(((pin / pout - 1) * 100), 2) if pout > 0 else 0
+                        power_efficiency = round((pin / pout), 2) if pout > 0 else 0
 
                         total_power_metrics.append({
                             "time": row['_time'],  # Hour of the day

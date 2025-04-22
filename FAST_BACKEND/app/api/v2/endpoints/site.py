@@ -1069,17 +1069,28 @@ def get_all_devices_pcr(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     duration = duration or "24 hours"
-    devices_carbon_emission = site_service.get_all_devices_pcr(site_id, duration)
+    devices_pcr = site_service.get_all_devices_pcr(site_id, duration)
 
-    print(devices_carbon_emission)
-    for device in devices_carbon_emission:
+    print(devices_pcr,
+          "dsfdnsjdgnjkhkhkkhkhk")
+    for device in devices_pcr:
+        # for key, value in device.items():
+        #     if isinstance(value, float) and (math.isinf(value) or math.isnan(value)):
+        #         device[key] = 0  # Replace with None or a default value like 0
         for key, value in device.items():
+            # Handle NaN or Inf values
             if isinstance(value, float) and (math.isinf(value) or math.isnan(value)):
-                device[key] = 0  # Replace with None or a default value like 0
+                device[key] = 0
+            # Convert numpy types to native Python types
+            elif isinstance(value, (np.integer, np.int64, np.int32)):
+                device[key] = int(value)
+            elif isinstance(value, (np.floating, np.float64, np.float32)):
+                device[key] = float(value)
+        # return device
 
     return CustomResponse(
-        message="Carbon emission metrics for all devices retrieved successfully.",
-        data=devices_carbon_emission,
+        message="PCR metrics for all devices retrieved successfully.",
+        data=devices_pcr,
         status_code=200
     )
 

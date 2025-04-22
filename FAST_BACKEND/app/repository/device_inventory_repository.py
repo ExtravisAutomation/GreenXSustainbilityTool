@@ -848,7 +848,7 @@ class DeviceInventoryRepository(BaseRepository):
         # **Final Classification**
         if score >= 0.7:
             return score, "Highly efficient device with optimal power usage, low CO₂ emissions, and strong data performance."
-        elif 0.4 <= score < 0.7:
+        elif 0.45 <= score < 0.7:
             return score, "Moderate efficiency device with some areas for improvement."
         else:
             return score, "Low efficiency device that may require significant optimization."
@@ -955,6 +955,7 @@ class DeviceInventoryRepository(BaseRepository):
                 if ip:
                     with ThreadPoolExecutor(max_workers=2) as executor:
                         future_power = executor.submit(get_24hDevice_power, ip)
+                        print(future_power)
                         future_datatraffic = executor.submit(get_24hDevice_dataTraffic, ip)
 
                         for future in as_completed([future_power, future_datatraffic]):
@@ -992,7 +993,6 @@ class DeviceInventoryRepository(BaseRepository):
                 }
                 print(enriched_device)
 
-
                 # Add bandwidth utilization if datatraffic exists
                 if datatraffic:
                     datatraffic_value = datatraffic[0]['traffic_through'] if datatraffic else 0
@@ -1000,11 +1000,14 @@ class DeviceInventoryRepository(BaseRepository):
 
                     datatraffic_gb = datatraffic_value / (1024 ** 3) if datatraffic_value else 0
                     bandwidth_mbps = bandwidth_value / 1000 if bandwidth_value else 0
-                    bandwidth_utilization = (datatraffic_gb / bandwidth_mbps) * 100 if bandwidth_mbps else 0
+                    bandwidth_gbps = bandwidth_value / 1_000_000 if bandwidth_value else 0
 
+                    bandwidth_utilization = (datatraffic_gb / bandwidth_gbps) * 100 if bandwidth_mbps else 0
+                    enriched_device["bandwidth_gbps"] = round(bandwidth_gbps, 2)
                     enriched_device["datatraffic"] = round(datatraffic_gb, 2)
                     enriched_device["bandwidth_utilization"] = round(bandwidth_utilization, 2)
                 else:
+                    enriched_device["bandwidth_gbps"] = 0
                     enriched_device["datatraffic"] = 0
                     enriched_device["bandwidth_utilization"] = 0
 
@@ -1013,13 +1016,14 @@ class DeviceInventoryRepository(BaseRepository):
                 power_utilization = enriched_device.get("power_utilization") or 0
                 pue = enriched_device.get("pue") or 0
                 datatraffic = enriched_device.get("datatraffic") or 0
+                # datatraffic_gb = datatraffic / (1024 ** 3) if datatraffic_value else 0
                 bandwidth_utilization = enriched_device.get("bandwidth_utilization") or 0
 
                 # Carbon Emissions Calculation
                 carbon_emission = round(((power_input / 1000) * 0.4041), 2)
 
                 # Power Consumption Ratio (PCR) Calculation
-                pcr = round(power_input * 1000 / datatraffic, 4) if datatraffic else None
+                pcr = round(power_input/ datatraffic, 4) if datatraffic else 0
 
                 # Classify device performance and power consumption
                 performance_score, performance_description = self.classify_performance(
@@ -1030,6 +1034,7 @@ class DeviceInventoryRepository(BaseRepository):
                 enriched_device["performance_score"] = performance_score
                 enriched_device["performance_description"] = performance_description
                 enriched_devices.append(enriched_device)
+
         return enriched_devices
 
     def get_all_devices_test(self, filter_data) -> Dict:
@@ -1222,9 +1227,12 @@ class DeviceInventoryRepository(BaseRepository):
 
                 print(f"Devices fetched: {len(devices)}")  # Debugging
                 enriched_devices = self.get_devices_result(devices)
+                print(enriched_devices)
+
                 df=pd.DataFrame(enriched_devices)
 
-                print(df.columns)
+                print(df['pcr'])
+
                 return df
 
     def get_hardware_versions(self):

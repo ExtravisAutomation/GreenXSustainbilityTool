@@ -225,7 +225,7 @@ def get_spcific_devices(
     device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
     devices = device_inventory_service.get_spcific_devices(device_ip)
-    
+
     return CustomResponse(
         message="Fetched device data successfully",
         data=devices,
@@ -375,7 +375,7 @@ def generate_excel(filter_data:FilterSchema,
     device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
     devices = device_inventory_service.generate_excel(filter_data)
-    print(devices)
+    print(devices['pcr'])
     columns_to_drop = [
         '_sa_instance_state', 'created_at', 'device_id', 'item_desc', 'role', 'contract_number',
         'hardware_version',
@@ -386,9 +386,39 @@ def generate_excel(filter_data:FilterSchema,
         'source', 'department', 'item_code', 'rack_id', 'stack',
         'apic_controller', 'rack', 'site', 'device'
     ]
-    devices = devices.drop(columns=columns_to_drop)
-    devices.rename(columns={"device_ip": "ip_address"}, inplace=True)
-    devices.rename(columns={"power_utilization": "Energy Efficiency"}, inplace=True)
+    devices = devices.drop(columns=columns_to_drop, errors='ignore')  # errors='ignore' skips missing columns safely
+    print(devices.columns,"After drop")
+    devices.rename(columns={
+        "device_name": "Device Name",
+        "manufacturer": "Manufacturer",
+        "serial_number": "Serial Number",
+        "software_version": "Software Version",
+        "pn_code": "Product Number (PN)",
+        "hw_eol_ad": "HW End-of-Life (EoL)",
+        "hw_eos": "HW End-of-Support (EoS)",
+        "sw_EoSWM": "SW Maintenance EoL",
+        "hw_EoRFA": "HW Last Date of RFA",
+        "sw_EoVSS": "SW Vulnerability Support EoS",
+        "hw_EoSCR": "HW Security Support EoS",
+        "hw_ldos": "HW Last Day of Support",
+        "rack_name": "Rack",
+        "site_name": "Site",
+        "ip_address": "IP Address",
+        "device_type": "Device Type",
+        "Energy Efficiency": "Energy Efficiency (%)",
+        "pue": "Power Usage Effectiveness (PUE)",
+        "power_input": "Power Input (W)",
+        "power_output": "Power Output (W)",
+        "datatraffic": "Data Traffic (GB)",
+        "bandwidth_utilization": "Bandwidth Utilization (%)",
+        "carbon_emission": "Carbon Emission (kgCO₂)",
+        "pcr": "Power Consumption Ratio (W/Gbps)",
+        "performance_score": "Performance Score",
+        "performance_description": "Performance Description"
+    }, inplace=True)
+
+    print(devices['Power Consumption Ratio (W/Gbps)'])
+
 
     file_path = "device_report.xlsx"
 

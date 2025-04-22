@@ -413,7 +413,10 @@ class SiteRepository(BaseRepository):
     def get_eol_eos_counts(self, site_id: int) -> dict:
         with self.session_factory() as session:
             num_devices = session.query(func.count(APICControllers.id)).filter(
-                APICControllers.site_id == site_id).scalar()
+                (APICControllers.site_id == site_id) &
+                (APICControllers.OnBoardingStatus == True)
+            ).scalar()
+
             current_date = datetime.now()
 
             join_query = session.query(DeviceInventory). \
@@ -1025,12 +1028,18 @@ class SiteRepository(BaseRepository):
     def get_device_inventory(self, site_id):
         with self.session_factory() as session:
             # Fetch all devices for the given site ID
-            devices = session.query(APICControllers).filter(APICControllers.site_id == site_id).all()
+            devices = session.query(APICControllers).filter(
+                (APICControllers.site_id == site_id) &
+                (APICControllers.OnBoardingStatus == True)
+            ).all()
 
             # Count distinct vendors for the given site ID
             total_vendors = (
                 session.query(func.count(APICControllers.vendor_id.distinct()))
-                .filter(APICControllers.site_id == site_id)
+                .filter(
+                    (APICControllers.site_id == site_id) &
+                    (APICControllers.OnBoardingStatus == True)
+                )
                 .scalar()
             )
 

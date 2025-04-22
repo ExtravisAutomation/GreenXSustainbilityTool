@@ -13,8 +13,7 @@ class RackService:
 
     def get_racks(self,site_id) -> List[RackDetails]:
         racks = self.rack_repository.get_all_racks(site_id)
-        
-        
+
         return racks
         
         

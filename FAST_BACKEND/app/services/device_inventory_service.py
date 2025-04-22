@@ -305,6 +305,7 @@ class DeviceInventoryService:
 
         devices = self.device_inventory_repository.get_all_devices_test(filter_data)
         print("all devices", devices)
+
         print("type", type(devices))
         # score=filter_data.score
 
@@ -317,12 +318,16 @@ class DeviceInventoryService:
             pue = device.get("pue") or 0
             datatraffic = device.get("datatraffic") or 0
             bandwidth_utilization = device.get("bandwidth_utilization") or 0
+            bandwidth = device.get("bandwidth_gbps") or 0
 
+
+            pcr = device.get("pcr") or 0
+            carbon_emission=device.get("carbon_emission") or 0
             # Carbon Emissions Calculation
-            carbon_emission = round(((power_input / 1000) * 0.4041), 2)
+            # carbon_emission = round(((power_input / 1000) * 0.4041), 2)
 
             # Power Consumption Ratio (PCR) Calculation
-            pcr = round(power_input *1000 / datatraffic, 4) if datatraffic else None
+            # pcr = round(power_input *1000 / datatraffic, 4) if datatraffic else None
 
             # Classify device performance and power consumption
             # performance_score, performance_description = self.classify_performance(
@@ -360,6 +365,7 @@ class DeviceInventoryService:
                 "pue": pue,
                 "power_input": power_input,
                 "datatraffic": datatraffic,
+                "bandwidth":bandwidth,
                 "bandwidth_utilization": round(bandwidth_utilization,4),
                 "power_output":power_output,
                 "carbon-emmison": round(carbon_emission, 4),

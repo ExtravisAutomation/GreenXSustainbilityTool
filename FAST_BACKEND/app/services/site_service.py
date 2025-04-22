@@ -1248,6 +1248,8 @@ class SiteService:
         device_ips = [device.ip_address for device in devices if device.ip_address]
         total_pin_value = self.influxdb_repository.get_total_pin_value(device_ips, start_date, end_date, duration_str)
 
+
+
         # carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
         carbon_intensity=0.4041
         total_pin_value_KW = total_pin_value / 1000
@@ -1378,19 +1380,6 @@ class SiteService:
     def delete_password_groups1(self, password_group_ids: List[int]):
         return self.site_repository.delete_password_groups12(password_group_ids)
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
     def create_device1(self, device_data: APICControllersCreate) -> APICControllersResponse:
         device = self.site_repository.create_device2(device_data)
 
@@ -1405,9 +1394,7 @@ class SiteService:
                 site_name = device.site.site_name  
         if device.rack_id:
             if device.rack:
-                rack_name = device.rack.rack_name  
-
-        
+                rack_name = device.rack.rack_name
         response_data = APICControllersResponse.from_orm(device)
         response_data.password_group_name = password_group_name
         response_data.site_name = site_name
@@ -1434,9 +1421,7 @@ class SiteService:
                 site_name = device.site.site_name  
         if device.rack_id:
             if device.rack:
-                rack_name = device.rack.rack_name  
-
-        
+                rack_name = device.rack.rack_name
         response_data = APICControllersResponse.from_orm(device)
         response_data.password_group_name = password_group_name
         response_data.site_name = site_name
@@ -1512,17 +1497,7 @@ class SiteService:
             "total_PIn": round(total_PIn / count, 2),
             "power_efficiency": round(total_power_efficiency / count, 2)
         }
-
     # def calculate_average_energy_consumption_by_site_id(self, site_id: int, duration_str: str) -> dict:
-        
-        
-        
-        
-        
-        
-        
-        
-        
 
     #     start_date, end_date = self.calculate_start_end_dates(duration_str)
     #     devices = self.site_repository.get_devices_by_site_id(site_id)
@@ -1598,7 +1573,7 @@ class SiteService:
             return {"time": f"{start_date} - {end_date}"}
 
         metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter17(device_ips, start_date, end_date, duration_str)
-
+        print(metrics)
         if not metrics:
             return {"time": f"{start_date} - {end_date}"}
 
@@ -1728,13 +1703,13 @@ class SiteService:
 
         total_pin_value = self.influxdb_repository.get_device_total_pin_value(
             device["ip_address"], start_date, end_date, duration_str)
-        carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
-
+        # carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
+        carbon_intensity=0.4041
         total_pin_value_KW = total_pin_value / 1000
-        carbon_emission = float(total_pin_value_KW) * float(carbon_intensity)
-        carbon_emission_KG = round(carbon_emission / 100000, 2)
+        carbon_emission_KG = float(total_pin_value_KW) * float(carbon_intensity)
 
-        return device, carbon_emission_KG
+
+        return device, round(carbon_emission_KG,2)
 
 
 
@@ -1757,16 +1732,18 @@ class SiteService:
 
             total_pin_value = self.influxdb_repository.get_device_total_pin_value(
                 device.ip_address, start_date, end_date, duration_str)
-            carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
+            # carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
 
             total_pin_value_KW = total_pin_value / 1000
-            carbon_emission = float(total_pin_value_KW) * float(carbon_intensity)
-            carbon_emission_KG = round(carbon_emission / 1000, 2)
+            carbon_emission_KG = float(total_pin_value_KW) * float(0.4041)
+            # carbon_emission_KG = round(carbon_emission / 1000, 2)
 
             devices_carbon_emission.append({
                 "device_id": device.id,
                 "device_name": device.device_name,
-                "carbon_emission": carbon_emission_KG
+                "total_pin_value_KW":total_pin_value_KW,
+
+                "carbon_emission": round(carbon_emission_KG,2)
             })
 
             processed_device_names.add(device.device_name)
@@ -1775,7 +1752,7 @@ class SiteService:
             key=lambda x: x["carbon_emission"],
             reverse=True
         )
-        return carbon_emission_sorted[:10]
+        return carbon_emission_sorted
 
         # return devices_carbon_emission
     def get_all_devices_pcr(self, site_id: int, duration_str: str) -> List[dict]:
@@ -1799,20 +1776,20 @@ class SiteService:
                 device.ip_address, start_date, end_date, duration_str)
             datatraffic = self.influxdb_repository.get_device_datatraffic(device.ip_address, start_date, end_date, duration_str)
 
-            total_pin_value_KW = total_pin_value / 1000
-            data_TB = datatraffic / (1024**4)
-            pcr = total_pin_value_KW/data_TB if data_TB else 0
+            total_pin_value_W = total_pin_value
+            data_GB = datatraffic / (1024**3)
+            pcr = total_pin_value_W/data_GB if data_GB else 0
             print({"device_id": device.id,
-                "total_pin_value_KW":round(total_pin_value_KW,2),
-                "data_TB":round(data_TB,2),
+                "total_pin_value_W":round(total_pin_value_W,2),
+                "data_GB":round(data_GB,2),
                 "device_name": device.device_name,
                 "pcr": round(pcr,4)})
 
             print()
             devices_datatraffic.append({
                 "device_id": device.id,
-                "total_pin_value_KW":round(total_pin_value_KW,2),
-                "data_TB":round(data_TB,2),
+                "total_pin_value_W":round(total_pin_value_W,2),
+                "data_GB":round(data_GB,2),
                 "device_name": device.device_name,
                 "pcr": round(pcr,2)
             })
@@ -1820,10 +1797,10 @@ class SiteService:
         print("Device",devices_datatraffic)
         devives_datatraffic_sorted = sorted(
             devices_datatraffic,
-            key=lambda x: x["total_pin_value_KW"],
+            key=lambda x: x["total_pin_value_W"],
             reverse=True
         )
-        return devives_datatraffic_sorted[:10]
+        return devives_datatraffic_sorted
 
 
         # return devices_datatraffic
