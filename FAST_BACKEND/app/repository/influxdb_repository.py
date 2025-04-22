@@ -1478,7 +1478,7 @@ class InfluxDBRepository:
             throughput_metrics.append({
                 "time": row['_time'],
                 "total_bytes_rate_last_gb": round(total_bytes_rate_last_gb, 2),
-                "energy_consumption": energy_consumption , # W/Gbps
+                "energy_consumption": round(energy_consumption,2) , # W/Gbps
                 "pcr":round(pcr,4)
             })
 
