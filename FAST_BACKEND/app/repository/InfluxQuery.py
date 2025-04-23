@@ -485,7 +485,7 @@ def get_24h_rack_datatraffic(apic_ips, rack_id) -> List[dict]:
 
 def get_24hDevice_power(apic_ip: str) -> List[dict]:
     total_drawn, total_supplied = 0, 0
-    start_range = "-24h"
+    start_range = "-1h"
 
     query = f'''
                               from(bucket: "Dcs_db")
@@ -746,7 +746,7 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
         print(f"Fetching traffic data for {apic_ip}")
         total_traffic = 0.0
         total_bandwidth = 0.0
-        start_range = "-24h"
+        start_range = "-1h"
 
         query = f'''
             from(bucket: "Dcs_db")
@@ -761,12 +761,10 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
 
         try:
             result = query_api.query_data_frame(query)
-
             if not result.empty:
                 # Ensure columns exist before summing
                 if "total_bytesRateLast" in result.columns:
                     total_traffic = float(result["total_bytesRateLast"].sum())
-
                 if "bandwidth" in result.columns:
                     total_bandwidth = float(result["bandwidth"].sum())
 
@@ -777,7 +775,6 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
                 "traffic_through": 0.0,
                 "bandwidth": 0.0
             }]
-
         # Return cleaned and converted result
         return [{
             "apic_controller_ip": apic_ip,
