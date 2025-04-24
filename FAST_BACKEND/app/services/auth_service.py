@@ -49,12 +49,24 @@ class AuthService(BaseService):
 
         print("Password verified successfully", file=sys.stderr)
         delattr(user, "password")
+        role_name,module=self.user_repository.get_data_modules(user.id, user.role_id)
+        print(role_name)
+        print(module)
 
+
+
+
+        #
         payload = Payload(
             id=user.id,
             email=user.email,
+            user_token=user.user_token,
             name=user.name,
+            is_active=user.is_active,
             is_superuser=user.is_superuser,
+            user_role=role_name,
+            accessible_modules=module
+
         )
         print(f"Payload prepared for user {user.id}: {payload}", file=sys.stderr)
 
@@ -65,48 +77,28 @@ class AuthService(BaseService):
         sign_in_result = {
             "access_token": access_token,
             "expiration": expiration_datetime,
-            "user_info": user,
+            "user_info": payload.dict(),
         }
         print(f"Sign-in result prepared: {sign_in_result}", file=sys.stderr)
 
         return sign_in_result
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
-
-    
-
-    
-
-
-    
 
 
     def sign_up(self, user_info: SignUp):
         user_token = get_rand_hash()
         user_data = user_info.dict(exclude_none=True)
-        role = user_data.pop('role', 'user')
-        is_superuser = True if role != 'user' else False
+        # role = user_data.pop('role', 'user')
+
+        role=user_data.pop('role', 'user')
+        is_superuser = True if user_info.role_id != 1 else False
 
         user = User(
             **user_data,
             is_active=True,
             is_superuser=is_superuser,  
             user_token=user_token,
-            role=role
+            role=role,
         )
         print("USERRRRRR", user)
         user.password = get_password_hash(user_info.password)
@@ -116,10 +108,6 @@ class AuthService(BaseService):
         delattr(created_user, "password")
 
         return created_user
-
-
-
-
 
 
     def blacklist_token(self, email: str, token: str):

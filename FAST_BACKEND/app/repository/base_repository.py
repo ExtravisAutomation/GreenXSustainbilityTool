@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.core.config import configs
 from app.core.exceptions import DuplicatedError, NotFoundError
 from app.util.query_builder import dict_to_sqlalchemy_filter_options
-
+from app.model.user import User,Role,DashboardModule,UserModulesAccess
 
 class BaseRepository:
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]], model) -> None:
@@ -96,3 +96,15 @@ class BaseRepository:
                 raise NotFoundError(detail=f"not found id : {id}")
             session.delete(query)
             session.commit()
+
+
+    def get_data_modules(self, user_id: int, role_id:int):
+        with self.session_factory() as session:
+            role_name=session.query(Role.role_name).filter(Role.id== role_id).scalar()
+            modules=session.query(DashboardModule.modules_name).\
+        join(UserModulesAccess, DashboardModule.id == UserModulesAccess.module_id).\
+        filter(UserModulesAccess.user_id == user_id).\
+        all()
+            modules = [module.modules_name for module in modules]
+
+            return role_name, modules
