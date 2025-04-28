@@ -2956,7 +2956,6 @@ class InfluxDBRepository:
             "energy_consumption":energy_consumption,
             "power_efficiency":power_efficiency,
             "start_time": start_time,
-
             "end_time": end_time
         }
 

@@ -1028,9 +1028,12 @@ class SiteRepository(BaseRepository):
     def get_device_inventory(self, site_id):
         with self.session_factory() as session:
             # Fetch all devices for the given site ID
-            devices = session.query(APICControllers).filter(
+            onboarded_devices = session.query(APICControllers).filter(
                 (APICControllers.site_id == site_id) &
                 (APICControllers.OnBoardingStatus == True)
+            ).all()
+            devices = session.query(APICControllers).filter(
+                (APICControllers.site_id == site_id)
             ).all()
 
             # Count distinct vendors for the given site ID
@@ -1048,9 +1051,9 @@ class SiteRepository(BaseRepository):
             racks = session.query(Rack).filter(Rack.site_id == site_id).all()
 
             # Calculate onboarded devices
-            onboarded_devices = sum(1 for device in devices if device.OnBoardingStatus)
+            # onboarded_devices = sum(1 for device in devices if device.OnBoardingStatus)
             return {
-                "onboarded_devices": onboarded_devices,
+                "onboarded_devices": len(onboarded_devices),
                 "total_devices": len(devices),
                 "total_vendors": total_vendors,
                 "total_racks": len(racks)
