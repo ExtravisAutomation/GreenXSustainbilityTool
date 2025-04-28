@@ -1876,7 +1876,7 @@ def view_pdf(
 
     # Secure the filename to avoid directory traversal attacks
     safe_filename = os.path.basename(filename)
-    pdf_path = Path(f"reports/{safe_filename}")
+    pdf_path = Path(f"/home/dev/DCS-Project/backend-dcs/backend-1/DCS/FAST_BACKEND/{safe_filename}")
     print("path",pdf_path)
 
     if pdf_path.exists():
