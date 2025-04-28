@@ -1877,6 +1877,7 @@ def view_pdf(
     # Secure the filename to avoid directory traversal attacks
     safe_filename = os.path.basename(filename)
     pdf_path = Path(f"ega_reports/{safe_filename}")
+
     print("path",pdf_path)
 
     if pdf_path.exists():
