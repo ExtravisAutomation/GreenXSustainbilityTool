@@ -411,7 +411,6 @@ class InfluxDBRepository:
     #
     #     df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
     #     return df
-
     def get_energy_consumption_metrics_with_filter(self, device_ips: List[str], start_date: datetime,
                                                    end_date: datetime, duration_str: str) -> List[dict]:
         total_power_metrics = []
@@ -419,15 +418,17 @@ class InfluxDBRepository:
         end_time = end_date.isoformat() + 'Z'
 
         # Define the aggregate window and time format based on the duration string
-        if duration_str in ["24 hours"]:
+        if duration_str == "24 hours":
             aggregate_window = "1h"
             time_format = '%Y-%m-%d %H:00'
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
             aggregate_window = "1d"
             time_format = '%Y-%m-%d'
-        else:  # For "last 6 months", "last year", "current year",
-            aggregate_window = "1m"
+        else:  # For "last 6 months", "last year", "current year"
+            aggregate_window = "1mo"
             time_format = '%Y-%m'
+
+        all_dataframes = []
 
         for ip in device_ips:
             query = f'''
@@ -441,41 +442,102 @@ class InfluxDBRepository:
             result = self.query_api1.query_data_frame(query)
 
             if not result.empty:
-                result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
-                numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
-                if '_time' in result.columns and numeric_cols:
-                    grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
-                    grouped['_time'] = pd.to_datetime(grouped['_time'])
-                    grouped.set_index('_time', inplace=True)
+                result['_time'] = pd.to_datetime(result['_time'])
+                all_dataframes.append(result)
 
-                    all_times = pd.date_range(start=start_date, end=end_date, freq=aggregate_window.upper()).strftime(
-                        time_format)
-                    grouped = grouped.reindex(all_times).fillna(0).reset_index()
+        if not all_dataframes:
+            return []
 
-                    for _, row in grouped.iterrows():
-                        pin = row['total_PIn']
-                        pout = row['total_POut']
+        # Combine all device data
+        combined = pd.concat(all_dataframes)
 
-                        energy_consumption = pout / pin if pin > 0 else 0
-                        power_efficiency = (pin / pout ) if pout > 0 else 0
+        # Group by time and sum across all devices
+        grouped = combined.groupby('_time')[['total_PIn', 'total_POut']].sum().reset_index()
 
-                        total_power_metrics.append({
-                            "time": row['index'],
-                            "energy_efficiency": round(energy_consumption, 2),
-                            "total_POut": round(pout, 2),
-                            "total_PIn": round(pin, 2),
-                            "power_efficiency": round(power_efficiency, 2)
-                        })
+        # Now format time
+        grouped['_time'] = grouped['_time'].dt.strftime(time_format)
 
-        # df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
-        # return df
+        for _, row in grouped.iterrows():
+            pin = row['total_PIn']
+            pout = row['total_POut']
 
-        df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time')
+            energy_consumption = pout / pin if pin > 0 else 0
+            power_efficiency = pin / pout if pout > 0 else 0
 
-        # Apply iloc before converting to list of dictionaries
-        df = df.iloc[1:].reset_index(drop=True)
+            total_power_metrics.append({
+                "time": row['_time'],
+                "energy_efficiency": round(energy_consumption, 2),
+                "total_POut": round(pout, 2),
+                "total_PIn": round(pin, 2),
+                "power_efficiency": round(power_efficiency, 2)
+            })
 
-        return df.to_dict(orient='records')
+        return total_power_metrics
+
+    # def get_energy_consumption_metrics_with_filter(self, device_ips: List[str], start_date: datetime,
+    #                                                end_date: datetime, duration_str: str) -> List[dict]:
+    #     total_power_metrics = []
+    #     start_time = start_date.isoformat() + 'Z'
+    #     end_time = end_date.isoformat() + 'Z'
+    #
+    #     # Define the aggregate window and time format based on the duration string
+    #     if duration_str in ["24 hours"]:
+    #         aggregate_window = "1h"
+    #         time_format = '%Y-%m-%d %H:00'
+    #     elif duration_str in ["7 Days", "Current Month", "Last Month"]:
+    #         aggregate_window = "1d"
+    #         time_format = '%Y-%m-%d'
+    #     else:  # For "last 6 months", "last year", "current year",
+    #         aggregate_window = "1m"
+    #         time_format = '%Y-%m'
+    #
+    #     for ip in device_ips:
+    #         query = f'''
+    #             from(bucket: "{configs.INFLUXDB_BUCKET}")
+    #             |> range(start: {start_time}, stop: {end_time})
+    #             |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+    #             |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+    #             |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+    #             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    #         '''
+    #         result = self.query_api1.query_data_frame(query)
+    #
+    #         if not result.empty:
+    #             result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+    #             numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+    #             if '_time' in result.columns and numeric_cols:
+    #                 grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
+    #                 grouped['_time'] = pd.to_datetime(grouped['_time'])
+    #                 grouped.set_index('_time', inplace=True)
+    #
+    #                 all_times = pd.date_range(start=start_date, end=end_date, freq=aggregate_window.upper()).strftime(
+    #                     time_format)
+    #                 grouped = grouped.reindex(all_times).fillna(0).reset_index()
+    #
+    #                 for _, row in grouped.iterrows():
+    #                     pin = row['total_PIn']
+    #                     pout = row['total_POut']
+    #
+    #                     energy_consumption = pout / pin if pin > 0 else 0
+    #                     power_efficiency = (pin / pout ) if pout > 0 else 0
+    #
+    #                     total_power_metrics.append({
+    #                         "time": row['index'],
+    #                         "energy_efficiency": round(energy_consumption, 2),
+    #                         "total_POut": round(pout, 2),
+    #                         "total_PIn": round(pin, 2),
+    #                         "power_efficiency": round(power_efficiency, 2)
+    #                     })
+    #
+    #     # df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
+    #     # return df
+    #
+    #     df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time')
+    #
+    #     # Apply iloc before converting to list of dictionaries
+    #     df = df.iloc[1:].reset_index(drop=True)
+    #
+    #     return df.to_dict(orient='records')
 
 
     # async def query_influxdb_for_devices(self, device_ips: List[str], start_time: str, end_time: str, aggregate_window: str, time_format: str) -> List[dict]:
