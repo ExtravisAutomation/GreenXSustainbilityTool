@@ -1002,7 +1002,8 @@ class InfluxDBRepository:
         #       |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["_field"] == "total_PIn")
         #       |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
         # '''
-        pin_sum=0
+        pout_sum,pin_sum=0,0
+
         query = f'''
                from(bucket: "{configs.INFLUXDB_BUCKET}")
                |> range(start: {start_time}, stop: {end_time})
@@ -1069,51 +1070,87 @@ class InfluxDBRepository:
     #         bandwidth_utilization=bandwidth_utilization,
     #         pcr=pcr
     #     )
-    def convert_and_add_unit(self, total_power, bandwidth, traffic_speed, bandwidth_utilization, co2em,pcr):
-        # Convert and round total power to kW if greater than 1000W (1 kW)
-        if total_power > 1000:  # Convert to kW if power is greater than 1000W
-            total_power = round(total_power / 1000, 2)  # Convert from W to kW
-            power_unit = 'KW'
-        else:
-            total_power = round(total_power, 2)
-            power_unit = 'W'
+    # def convert_and_add_unit(self, total_powerin,totalpowerout, bandwidth, traffic_speed, bandwidth_utilization, co2em,pcr):
+    #     # Convert and round total power to kW if greater than 1000W (1 kW)
+    #     if total_powerin  > 1000 :  # Convert to kW if power is greater than 1000W
+    #         total_power = round(total_powerin / 1000, 2)  # Convert from W to kW
+    #         power_unit = 'KW'
+    #     else:
+    #         total_power = round(total_powerin, 2)
+    #         power_unit = 'W'
+    #
+    #     if totalpowerout > 1000:  # Convert to kW if power is greater than 1000W
+    #         total_power_out = round(totalpowerout / 1000, 2)  # Convert from W to kW
+    #         power_unit_out = 'KW'
+    #
+    #     else:
+    #         total_power_out = round(totalpowerout, 2)
+    #         power_unit_out = 'W'
+    #
+    #     # Convert and round bandwidth
+    #     if bandwidth > 1000:  # Convert to GPS if bandwidth is greater than 1000 Mbps (1 Gbps)
+    #         bandwidth = round(bandwidth / 1000, 2)  # Convert from Mbps to GPS
+    #         bandwidth_unit = 'Gbps'
+    #     else:
+    #         bandwidth = round(bandwidth, 2)
+    #         bandwidth_unit = 'Mbps'
+    #
+    #     # Convert and round traffic speed
+    #     if traffic_speed > 1000:  # Convert to GPS if traffic speed is greater than 1000 Mbps (1 Gbps)
+    #         traffic_speed = round(traffic_speed / 1000, 2)  # Convert from Mbps to GPS
+    #         traffic_speed_unit = 'Gbps'
+    #     else:
+    #         traffic_speed = round(traffic_speed, 2)
+    #         traffic_speed_unit = 'Mbps'
+    #
+    #     # Convert and round bandwidth utilization
+    #     bandwidth_utilization = round(bandwidth_utilization, 2)
+    #
+    #
+    #     # Convert and round CO2 emissions: if greater than 1000 grams (1 kg), convert to tons
+    #     if co2em >= 1000:  # Convert to tons if CO2 emissions are greater than or equal to 1000 grams
+    #         co2em = round(co2em / 1000, 3)  # Convert from grams to tons
+    #         co2em_unit = 'tons'
+    #     else:
+    #         co2em = round(co2em, 2)  # Round to 2 decimal places if less than 1 kg
+    #         co2em_unit = 'kgs'
+    #
+    #
+    #     return {
+    #         'total_power': f"{total_power} {power_unit}",
+    #         'total_power_out': f"{total_power_out} {power_unit_out}",
+    #         'bandwidth': f"{bandwidth} {bandwidth_unit}",
+    #         'traffic_speed': f"{traffic_speed} {traffic_speed_unit}",
+    #         'bandwidth_utilization': f"{bandwidth_utilization} ",
+    #         'co2emissions': f"{co2em} {co2em_unit}",
+    #         'pcr':f"{pcr} W/Gbps"
+    #     }
+    def convert_and_add_unit(self, total_powerin, totalpowerout, bandwidth, traffic_speed, bandwidth_utilization, co2em,
+                             pcr):
+        def convert_power(value):
+            return (round(value / 1000, 2), 'KW') if value > 1000 else (round(value, 2), 'W')
 
-        # Convert and round bandwidth
-        if bandwidth > 1000:  # Convert to GPS if bandwidth is greater than 1000 Mbps (1 Gbps)
-            bandwidth = round(bandwidth / 1000, 2)  # Convert from Mbps to GPS
-            bandwidth_unit = 'Gbps'
-        else:
-            bandwidth = round(bandwidth, 2)
-            bandwidth_unit = 'Mbps'
+        def convert_bandwidth(value):
+            return (round(value / 1000, 2), 'Gbps') if value > 1000 else (round(value, 2), 'Mbps')
 
-        # Convert and round traffic speed
-        if traffic_speed > 1000:  # Convert to GPS if traffic speed is greater than 1000 Mbps (1 Gbps)
-            traffic_speed = round(traffic_speed / 1000, 2)  # Convert from Mbps to GPS
-            traffic_speed_unit = 'Gbps'
-        else:
-            traffic_speed = round(traffic_speed, 2)
-            traffic_speed_unit = 'Mbps'
+        def convert_co2(value):
+            return (round(value / 1000, 3), 'tons') if value >= 1000 else (round(value, 2), 'kgs')
 
-        # Convert and round bandwidth utilization
+        total_power, power_unit = convert_power(total_powerin)
+        total_power_out, power_unit_out = convert_power(totalpowerout)
+        bandwidth_value, bandwidth_unit = convert_bandwidth(bandwidth)
+        traffic_speed_value, traffic_speed_unit = convert_bandwidth(traffic_speed)
         bandwidth_utilization = round(bandwidth_utilization, 2)
-
-
-        # Convert and round CO2 emissions: if greater than 1000 grams (1 kg), convert to tons
-        if co2em >= 1000:  # Convert to tons if CO2 emissions are greater than or equal to 1000 grams
-            co2em = round(co2em / 1000, 3)  # Convert from grams to tons
-            co2em_unit = 'tons'
-        else:
-            co2em = round(co2em, 2)  # Round to 2 decimal places if less than 1 kg
-            co2em_unit = 'kgs'
-
+        co2em_value, co2em_unit = convert_co2(co2em)
 
         return {
             'total_power': f"{total_power} {power_unit}",
-            'bandwidth': f"{bandwidth} {bandwidth_unit}",
-            'traffic_speed': f"{traffic_speed} {traffic_speed_unit}",
-            'bandwidth_utilization': f"{bandwidth_utilization} ",
-            'co2emissions': f"{co2em} {co2em_unit}",
-            'pcr':f"{pcr} W/Gbps"
+            'total_power_out': f"{total_power_out} {power_unit_out}",
+            'bandwidth': f"{bandwidth_value} {bandwidth_unit}",
+            'traffic_speed': f"{traffic_speed_value} {traffic_speed_unit}",
+            'bandwidth_utilization': f"{bandwidth_utilization}",
+            'co2emissions': f"{co2em_value} {co2em_unit}",
+            'pcr': f"{pcr} W/Gbps"
         }
 
     def get_top_5_devices(self,device_inventory, device_ips: List[str], start_date: datetime, end_date: datetime, duration_str: str) -> \
@@ -1134,7 +1171,7 @@ class InfluxDBRepository:
                                                                                                aggregate_window)
             # bandwidth_gps=bandwidth_mps/1000
             traffic_gbps = traffic_speed_mbps / 1000  if traffic_speed_mbps else 0# Convert Mbps to Gbps
-            pcr = total_powerin / traffic_gbps if traffic_gbps else 0  # PCR in W/Gbps
+            pcr = round((total_powerin / traffic_gbps),2) if traffic_gbps else 0  # PCR in W/Gbps
 
             co2em=(total_powerin/1000) *0.4041
             print("co2emissions ", co2em)
@@ -1142,7 +1179,7 @@ class InfluxDBRepository:
 
 
             # Convert and format the data with units
-            converted_data = self.convert_and_add_unit(total_powerin, bandwidth_mbps, traffic_speed_mbps, bandwidth_utilization,
+            converted_data = self.convert_and_add_unit(total_powerin, total_powerout,bandwidth_mbps, traffic_speed_mbps, bandwidth_utilization,
                                                        co2em,pcr)
 
             # Example logic to populate id and device_name (replace with actual data source if available)
@@ -1162,6 +1199,7 @@ class InfluxDBRepository:
                 'id': device_id,
                 'device_name': device_name,
                 'total_power': converted_data['total_power'],
+                'total_powerout': converted_data['total_power_out'],
                 'total_bandwidth': converted_data['bandwidth'],
                 'traffic_speed': converted_data['traffic_speed'],
                 'bandwidth_utilization': converted_data['bandwidth_utilization'],

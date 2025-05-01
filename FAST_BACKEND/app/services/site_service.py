@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from app.repository.site_repository import SiteRepository  
 from app.schema.site_schema import SiteCreate, SiteUpdate, GetSitesResponse, SiteDetails,DevicesResponse
 import traceback
+import traceback
 from app.repository.influxdb_repository import InfluxDBRepository
 from app.repository.ai_repository import AIRepository
 from app.schema.site_schema import SiteDetails1

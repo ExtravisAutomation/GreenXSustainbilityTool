@@ -184,6 +184,7 @@ class DevicePowerConsumption1(BaseModel):
     id: Optional[int] = None
     device_name: Optional[str] = None
     total_power: Optional[str] = None
+    total_powerout:Optional[str]=None
     total_bandwidth: Optional[str] = None
     traffic_speed: Optional[str] =None
     bandwidth_utilization: Optional[str] = None
