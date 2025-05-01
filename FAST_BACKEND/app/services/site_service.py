@@ -2229,13 +2229,13 @@ class SiteService:
         else:
             score += 0  # Low
 
-        # **Power Efficiency Score (Lower is better, closer to 1 is ideal)**
-        if avg_power_efficiency <= 1.10:
-            score += 2  # Good
-        elif 1.11 <= avg_power_efficiency <= 1.20:
-            score += 1  # Moderate
-        else:
-            score += 0  # Low
+        # # **Power Efficiency Score (Lower is better, closer to 1 is ideal)**
+        # if avg_power_efficiency <= 1.10:
+        #     score += 2  # Good
+        # elif 1.11 <= avg_power_efficiency <= 1.20:
+        #     score += 1  # Moderate
+        # else:
+        #     score += 0  # Low
 
         # **Data Traffic Score (Higher is better)**
         if avg_data_traffic >= 2500:
