@@ -2223,11 +2223,11 @@ class SiteService:
 
         # **Energy Efficiency Score (Higher is better)**
         if avg_energy_efficiency >= 0.90:
-            score += 2  # Good
+            score += 4  # Good
         elif 0.80 <= avg_energy_efficiency < 0.90:
-            score += 1  # Moderate
+            score += 2  # Moderate
         else:
-            score += 0  # Low
+            score += 1  # Low
 
         # # **Power Efficiency Score (Lower is better, closer to 1 is ideal)**
         # if avg_power_efficiency <= 1.10:
