@@ -2325,37 +2325,41 @@ class SiteService:
         avg_metrics = []
         for model, metrics in model_metrics.items():
             total_count = metrics["total_count"]
-            avg_total_PIn = round(metrics["total_power_in"] / total_count, 2) if total_count else 0
-            avg_data_traffic = round(metrics["total_data_traffic"] / total_count, 2) if total_count else 0
-            avg_pcr = round((avg_total_PIn * 1000) / avg_data_traffic,
-                            4) if avg_data_traffic > 0 else 0  # Convert kW to W
+            if total_count != 0:
 
-            score,performance_label = self.classify_performance(
-                avg_energy_efficiency=round(metrics["total_power_out"] / metrics["total_power_in"], 2) if metrics[
-                                                                                                              "total_power_in"] > 0 else 0,
-                avg_power_efficiency=round(metrics["total_power_in"] / metrics["total_power_out"], 2) if metrics[
-                                                                                                             "total_power_out"] > 0 else 0,
-                avg_data_traffic=avg_data_traffic,
-                avg_pcr=avg_pcr,
-                avg_co2_emissions=round(metrics["total_co2_emissions"] / total_count, 2) if total_count else 0
-            )
-            avg_metrics.append({
-                "model_no": model,
-                "site_name": metrics["site_name"],
-                "rack_name": metrics["rack_name"],
-                "model_count": total_count,
-                "vendor_name": metrics["vendor_name"],
-                "avg_total_PIn": round(metrics["total_power_in"] / total_count, 2) if total_count else 0,
-                "avg_energy_efficiency": round(metrics["total_power_out"] / metrics["total_power_in"], 2) if metrics["total_power_in"] > 0 else 0,
-                "avg_power_efficiency": round(metrics["total_power_in"] / metrics["total_power_out"], 2) if metrics["total_power_out"] > 0 else 0,
-                "avg_total_POut": round(metrics["total_power_out"] / total_count, 2) if total_count else 0,
-                "avg_data_traffic": avg_data_traffic,
-                "avg_co2_emissions": round(metrics["total_co2_emissions"] / total_count, 2) if total_count else 0,
-                "avg_pcr": avg_pcr,
-                "score":score,
-                "message": performance_label
+                avg_total_PIn = round(metrics["total_power_in"] / total_count, 2) if total_count else 0
+                avg_data_traffic = round(metrics["total_data_traffic"] / total_count, 2) if total_count else 0
+                avg_pcr = round((avg_total_PIn * 1000) / avg_data_traffic,
+                                4) if avg_data_traffic > 0 else 0  # Convert kW to W
 
-            })
+                score,performance_label = self.classify_performance(
+                    avg_energy_efficiency=round(metrics["total_power_out"] / metrics["total_power_in"], 2) if metrics[
+                                                                                                                  "total_power_in"] > 0 else 0,
+                    avg_power_efficiency=round(metrics["total_power_in"] / metrics["total_power_out"], 2) if metrics[
+                                                                                                                 "total_power_out"] > 0 else 0,
+                    avg_data_traffic=avg_data_traffic,
+                    avg_pcr=avg_pcr,
+                    avg_co2_emissions=round(metrics["total_co2_emissions"] / total_count, 2) if total_count else 0
+                )
+                avg_metrics.append({
+                    "model_no": model,
+                    "site_name": metrics["site_name"],
+                    "rack_name": metrics["rack_name"],
+                    "model_count": total_count,
+                    "vendor_name": metrics["vendor_name"],
+                    "avg_total_PIn": round(metrics["total_power_in"] / total_count, 2) if total_count else 0,
+                    "avg_energy_efficiency": round(metrics["total_power_out"] / metrics["total_power_in"], 2) if metrics["total_power_in"] > 0 else 0,
+                    "avg_power_efficiency": round(metrics["total_power_in"] / metrics["total_power_out"], 2) if metrics["total_power_out"] > 0 else 0,
+                    "avg_total_POut": round(metrics["total_power_out"] / total_count, 2) if total_count else 0,
+                    "avg_data_traffic": avg_data_traffic,
+                    "avg_co2_emissions": round(metrics["total_co2_emissions"] / total_count, 2) if total_count else 0,
+                    "avg_pcr": avg_pcr,
+                    "score":score,
+                    "message": performance_label
+
+                })
+            else:
+                continue
 
         return avg_metrics
 

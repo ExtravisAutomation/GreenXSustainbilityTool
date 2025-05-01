@@ -1016,6 +1016,8 @@ class InfluxDBRepository:
 
         if not result.empty:
             pin_sum = result['total_PIn'].sum() if 'total_PIn' in result else 0.0
+            pout_sum=result['total_POut'].sum() if 'total_POut' in result else 0.0
+
         # try:
         #     result = self.query_api1.query_data_frame(query)
         #     print(result)
@@ -1027,7 +1029,7 @@ class InfluxDBRepository:
         #     print(f"Error fetching power consumption: {e}")
         #     total_power = None
 
-        return pin_sum
+        return pin_sum,pout_sum
 
     def fetch_bandwidth_and_traffic(self, ip, start_time, end_time, aggregate_window):
         query = f'''
@@ -1126,23 +1128,22 @@ class InfluxDBRepository:
         for ip in device_ips:
             # Fetch data
 
-            total_power = self.fetch_device_power_consumption(ip, start_time, end_time, aggregate_window)
+            total_powerin ,total_powerout = self.fetch_device_power_consumption(ip, start_time, end_time, aggregate_window)
             print("ip, start_time, end_time,aggregate_window",ip, start_time, end_time,aggregate_window)
-            bandwidth_mps, traffic_speed_mps, bandwidth_utilization = self.fetch_bandwidth_and_traffic(ip, start_time, end_time,
+            bandwidth_mbps, traffic_speed_mbps, bandwidth_utilization = self.fetch_bandwidth_and_traffic(ip, start_time, end_time,
                                                                                                aggregate_window)
             # bandwidth_gps=bandwidth_mps/1000
-            traffic_gbps = traffic_speed_mps / 1000  if traffic_speed_mps else 0# Convert Mbps to Gbps
-            pcr = round(total_power / traffic_gbps, 2) if traffic_gbps else 0  # PCR in W/Gbps
-            print(total_power,"dsajfdkjdkjd")
-            print(traffic_gbps,"sd;f;sdl;fl;gls")
-            co2em=(total_power/1000) *0.4041
+            traffic_gbps = traffic_speed_mbps / 1000  if traffic_speed_mbps else 0# Convert Mbps to Gbps
+            pcr = total_powerin / traffic_gbps if traffic_gbps else 0  # PCR in W/Gbps
+
+            co2em=(total_powerin/1000) *0.4041
             print("co2emissions ", co2em)
             print(pcr,"PCR")
 
 
             # Convert and format the data with units
-            converted_data = self.convert_and_add_unit(total_power, bandwidth_mps, traffic_speed_mps, bandwidth_utilization,
-                                                       co2em,round(pcr,4))
+            converted_data = self.convert_and_add_unit(total_powerin, bandwidth_mbps, traffic_speed_mbps, bandwidth_utilization,
+                                                       co2em,pcr)
 
             # Example logic to populate id and device_name (replace with actual data source if available)
             # device_name = f"Device_{ip}"  # Replace with real device name logic
@@ -1151,7 +1152,7 @@ class InfluxDBRepository:
             print(device_info)
             print("pcr ", pcr)
             print("co2emissions ", co2em)
-            print(total_power,"")
+            print(total_powerin,"")
             # print(" bandwidth, traffic_speed, bandwidth_utilization ", bandwidth, traffic_speed, bandwidth_utilization )
             if device_info:
                 device_id = device_info['id']
@@ -1466,7 +1467,7 @@ class InfluxDBRepository:
                 energy_consumption = pout / pin if pin > 0 else 0
                 power_efficiency = pin / pout if pout > 0 else 0
                 pin_kg = pin / 1000
-                co2 = pin_kg * 0.4716
+                co2 = pin_kg * 0.4041
                 co2_tons = co2 / 1000
                 total_bytes_rate_last_gb = total_bytes_rate_last/(2 ** 30)
 
