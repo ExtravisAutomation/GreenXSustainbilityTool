@@ -1375,9 +1375,9 @@ class SiteRepository(BaseRepository):
                 .join(APICControllers, DeviceInventory.device_id == APICControllers.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .join(Rack, DeviceInventory.rack_id == Rack.id)
-
+                .filter(APICControllers.OnBoardingStatus==True)
+                .filter(APICControllers.collection_status==True)
             )
-
             
             if site_id:
                 query = query.filter(DeviceInventory.site_id == site_id)

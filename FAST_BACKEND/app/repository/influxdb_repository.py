@@ -1409,7 +1409,7 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             power_result = self.query_api1.query_data_frame(power_query)
@@ -1515,7 +1515,7 @@ class InfluxDBRepository:
                     "total_POut": round(pout / 1000, 2),  # Convert to kW
                     "total_PIn": round(pin / 1000, 2),  # Convert to kW
                     "power_efficiency": round(power_efficiency, 2),
-                    "co2_tons": co2_tons,
+                    "co2_tons": round(co2_tons,3),
                     "co2_kgs": round(co2, 2),
                     "data_traffic": round(total_bytes_rate_last_gb, 2)
                 })
