@@ -38,6 +38,38 @@ class InfluxDBRepository:
         except Exception as e:
             print(f"Error writing data to InfluxDB: {e}", file=sys.stderr)
 
+    def get_energy_efficiency(self, device_ips: List[str], site_id: int) -> List[dict]:
+        energy_efficiency_data = []
+        start_range = "-2h"
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "Dcs_db")
+                |> range(start: {start_range})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> sort(columns: ["_time"], desc: true)
+                |> last()
+                |> yield(name: "last_result")
+                '''
+            result = self.query_api1.query(query)
+            PowerIn, PowerOut = None, None
+            for table in result:
+                for record in table.records:
+                    if record.get_field() == "total_PIn":
+                        PowerIn = record.get_value()
+                    elif record.get_field() == "total_POut":
+                        PowerOut = record.get_value()
+
+                    if PowerIn and PowerOut and PowerIn > 0:
+                        power_efficiency = (PowerOut / PowerIn) * 100
+                        energy_efficiency_data.append({
+                            "site_id": site_id,
+                            "apic_controller_ip": ip,
+                            "PowerInput": PowerIn,
+                            "PowerOutput": PowerOut,
+                            "energy_efficiency": round(power_efficiency, 2)
+                        })
+        return energy_efficiency_data
+
     async def get_last_records(self, ip: str, limit: int = 10) -> list:
         query = f'from(bucket: "{self.bucket}") |> range(start: -1h) |> filter(fn: (r) => r["device"] == "{ip}") |> limit(n:{limit})'
         query_api: QueryApi = self.client.query_api()
@@ -411,7 +443,80 @@ class InfluxDBRepository:
     #
     #     df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')
     #     return df
+
+    from datetime import datetime, timedelta
+    from typing import List
+    import pandas as pd
+
     def get_energy_consumption_metrics_with_filter(self, device_ips: List[str], start_date: datetime,
+                                                   end_date: datetime, duration_str: str) -> List[dict]:
+        total_power_metrics = []
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+
+        # Determine aggregate window and formatting
+        if duration_str == "24 hours":
+            aggregate_window = "1h"
+            time_format = '%Y-%m-%d %H:00'
+        elif duration_str in ["7 Days", "Current Month", "Last Month"]:
+            aggregate_window = "1d"
+            time_format = '%Y-%m-%d'
+        else:  # "Last 6 Months", "Last Year", "Current Year", "First/Second/Third Quarter"
+            aggregate_window = "1mo"
+            time_format = '%Y-%m'
+
+        all_dataframes = []
+
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+            # print(query)
+
+            result = self.query_api1.query_data_frame(query)
+
+            if not result.empty:
+                result['_time'] = pd.to_datetime(result['_time'])
+                all_dataframes.append(result)
+
+        if not all_dataframes:
+            return []
+        print("try to save csv")
+        # Combine all device data
+        combined = pd.concat(all_dataframes)
+        # try:
+        #     combined.to_csv('combined_data11.csv', index=False)
+        # except Exception as e:
+        #     print(e)
+
+
+        # Format time and group accordingly
+        combined['_formatted_time'] = combined['_time'].dt.strftime(time_format)
+        grouped = combined.groupby('_formatted_time')[['total_PIn', 'total_POut']].sum().reset_index()
+
+        for _, row in grouped.iterrows():
+            pin = row['total_PIn']
+            pout = row['total_POut']
+
+            energy_efficiency = pout / pin if pin > 0 else 0
+            power_efficiency = pin / pout if pout > 0 else 0
+
+            total_power_metrics.append({
+                "time": row['_formatted_time'],
+                "energy_efficiency": round(energy_efficiency, 2),
+                "total_POut": round(pout, 2),
+                "total_PIn": round(pin, 2),
+                "power_efficiency": round(power_efficiency, 2)
+            })
+
+        return total_power_metrics
+
+    def get_energy_consumption_metrics_with_filter_tes(self, device_ips: List[str], start_date: datetime,
                                                    end_date: datetime, duration_str: str) -> List[dict]:
         total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'
@@ -436,9 +541,11 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: true)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
+            print(query)
+
             result = self.query_api1.query_data_frame(query)
 
             if not result.empty:
@@ -449,7 +556,12 @@ class InfluxDBRepository:
             return []
 
         # Combine all device data
+
         combined = pd.concat(all_dataframes)
+        try:
+            combined.to_csv('FAST_BACKEND/combined_data.csv', index=False)
+        except Exception as e:
+            print(e)
 
         # Group by time and sum across all devices
         grouped = combined.groupby('_time')[['total_PIn', 'total_POut']].sum().reset_index()
@@ -2417,36 +2529,6 @@ class InfluxDBRepository:
 
         return final_data
 
-    def get_power_efficiency(self, device_ips: List[str], site_id: int) -> List[dict]:
-        power_efficiency_data = []
-        start_range = "-2h"
-        for ip in device_ips:
-            query = f'''
-                from(bucket: "Dcs_db")
-                |> range(start: {start_range})
-                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                |> sort(columns: ["_time"], desc: true)
-                |> last()
-                |> yield(name: "last_result")
-                '''
-            result = self.query_api1.query(query)
-            PowerIn, PowerOut = None, None
-            for table in result:
-                for record in table.records:
-                    if record.get_field() == "total_PIn":
-                        PowerIn = record.get_value()
-                    elif record.get_field() == "total_POut":
-                        PowerOut = record.get_value()
-
-                    if PowerIn and PowerOut and PowerIn > 0:
-                        power_efficiency = (PowerOut / PowerIn) * 100
-                        power_efficiency_data.append({
-                            "site_id": site_id,
-                            "apic_controller_ip": ip,
-                            "PowerInput": PowerIn,
-                            "power_efficiency": round(power_efficiency, 2)
-                        })
-        return power_efficiency_data
 
     def get_power_required(self, device_ips: List[str], site_id: int) -> List[dict]:
         power_required_data = []

@@ -319,16 +319,21 @@ class SiteService:
 
     def calculate_start_end_dates(self, duration_str: str) -> (datetime, datetime):
         today = datetime.today()
+        year=today.year
 
-        
         if duration_str == "First Quarter":
-            duration_str = "Last 3 Months"
+            start_date = datetime(year, 1, 1)
+            end_date = datetime(year, 3, 31)
         elif duration_str == "Second Quarter":
-            duration_str = "Last 6 Months"
+            start_date = datetime(year, 4, 1)
+            end_date = datetime(year, 6, 30)
         elif duration_str == "Third Quarter":
-            duration_str = "Last 9 Months"
-
-        if duration_str == "Last 9 Months":
+            start_date = datetime(year, 7, 1)
+            end_date = datetime(year, 9, 30)
+        elif duration_str == "Fourth Quarter":
+            start_date = datetime(year, 10, 1)
+            end_date = datetime(year, 12, 31)
+        elif duration_str == "Last 9 Months":
             start_date = (today - timedelta(days=270)).replace(day=1)
             end_date = today
         elif duration_str == "Last 6 Months":
@@ -357,7 +362,7 @@ class SiteService:
             end_date = today
         else:
             raise ValueError("Unsupported duration format")
-
+        print(start_date,end_date)
         return start_date, end_date
 
     def compare_device_data_by_names_and_duration(self, site_id: int, device_name1: str, device_name2: str,
@@ -419,15 +424,15 @@ class SiteService:
 
     def calculate_energy_consumption_by_id_with_filter(self, site_id: int, duration_str: str) -> List[
         dict]:
-        if duration_str == "First Quarter":
-            time.sleep(1)
-            return DUMMY_DATA_FIRST_QUARTER
-        elif duration_str == "Second Quarter":
-            time.sleep(1)
-            return DUMMY_DATA_SECOND_QUARTER
-        elif duration_str == "Third Quarter":
-            time.sleep(1)
-            return DUMMY_DATA_THIRD_QUARTER
+        # if duration_str == "First Quarter":
+        #     time.sleep(1)
+        #     return DUMMY_DATA_FIRST_QUARTER
+        # elif duration_str == "Second Quarter":
+        #     time.sleep(1)
+        #     return DUMMY_DATA_SECOND_QUARTER
+        # elif duration_str == "Third Quarter":
+        #     time.sleep(1)
+        #     return DUMMY_DATA_THIRD_QUARTER
 
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
@@ -1181,17 +1186,23 @@ class SiteService:
 
         return self.influxdb_repository.get_power_utilization_metrics(device_ips, site_id)
 
-    def calculate_power_efficiency_by_id(self, site_id: int) -> List[dict]:
+    def calculate_energy_efficiency_by_id(self, site_id: int) -> List[dict]:
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
+        ip_to_name = {device.ip_address: device.device_name for device in devices if device.ip_address}
 
         if not device_ips:
             return []
 
-        power_efficiency = self.influxdb_repository.get_power_efficiency(device_ips, site_id)
+        power_efficiency = self.influxdb_repository.get_energy_efficiency(device_ips, site_id)
+
         
-        sorted_efficiency = sorted(power_efficiency, key=lambda x: x['power_efficiency'], reverse=True)[:4]
+        sorted_efficiency = sorted(power_efficiency, key=lambda x: x['energy_efficiency'], reverse=True)[:4]
+        for entry in sorted_efficiency:
+            entry['device_name'] = ip_to_name.get(entry['apic_controller_ip'], "Unknown")
+
         return sorted_efficiency
+
 
     def calculate_power_requirement_by_id(self, site_id: int) -> List[dict]:
         devices = self.site_repository.get_devices_by_site_id(site_id)

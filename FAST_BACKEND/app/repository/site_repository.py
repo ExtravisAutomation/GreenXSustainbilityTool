@@ -216,6 +216,8 @@ class SiteRepository(BaseRepository):
             devices = (
                 session.query(APICControllers)
                 .filter(APICControllers.site_id == site_id)
+                .filter(APICControllers.OnBoardingStatus==True)
+                .filter(APICControllers.collection_status==True)
                 .all()
             )
             return devices

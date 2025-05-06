@@ -353,7 +353,6 @@ def get_energy_consumption_metrics(
     response_data = []
     message = "Energy consumption metrics retrieved successfully."
     issue_detected1 = False
-
     for metric in metrics:
         energy_consumption = metric['energy_efficiency']
         power_efficiency = metric['power_efficiency']
@@ -386,7 +385,6 @@ def get_energy_consumption_metrics(
         data=metrics,
         status_code=status.HTTP_200_OK
     )
-
 
 @router.get("/site/traffic_throughput_metrics_WITH_FILTER/{site_id}",
             response_model=CustomResponse1[List[TrafficThroughputMetricsDetails]])
@@ -604,15 +602,15 @@ def site_power_utilization(site_id: int,
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/site/sitePowerEfficiency/{site_id}")
+@router.post("/site/siteEnergyEfficiency/{site_id}")
 @inject
-def site_power_efficiency(
+def site_energy_efficiency(
         site_id: int,
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
-        efficiency_data = site_service.calculate_power_efficiency_by_id(site_id)
+        efficiency_data = site_service.calculate_energy_efficiency_by_id(site_id)
         return efficiency_data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
