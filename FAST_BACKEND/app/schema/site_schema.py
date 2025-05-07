@@ -32,11 +32,13 @@ class SiteCreate(SiteBase):
 
 class SiteDetails_get(SiteBase):
     id: int
-    power_utilization: Optional[float] = None
+    energy_efficiency: Optional[float] = None
     power_input: Optional[float] = None
     power_output: Optional[float] = None
     pue: Optional[float] = None
     datatraffic: Optional[float] = None
+    pcr:Optional[float]=None
+    co2emmision:Optional[str]=None
     num_racks: Optional[int] = None
     num_devices: Optional[int] = None
 

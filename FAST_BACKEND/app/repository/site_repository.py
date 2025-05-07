@@ -315,9 +315,11 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.status
                 )
                 .join(APICControllers,
-                      DeviceInventory.apic_controller_id == APICControllers.id)  
+                      DeviceInventory.device_id == APICControllers.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id)
+                .filter(APICControllers.collection_status==True)
+                .filter(APICControllers.OnBoardingStatus==True)
                 .all()
             )
 
@@ -699,8 +701,8 @@ class SiteRepository(BaseRepository):
     def get_rack_and_device_counts(self, site_id: int) -> dict:
         with self.session_factory() as session:
             num_racks = session.query(func.count(Rack.id)).filter(Rack.site_id == site_id).scalar()
-            num_devices = session.query(func.count(APICControllers.id)).filter(
-                APICControllers.site_id == site_id).scalar()
+            num_devices = session.query(func.count(APICControllers.id)).filter(APICControllers.site_id == site_id).filter(APICControllers.OnBoardingStatus==True
+                                                           ).filter(APICControllers.collection_status==True).scalar()
             return {
                 "num_racks": num_racks or 0,
                 "num_devices": num_devices or 0

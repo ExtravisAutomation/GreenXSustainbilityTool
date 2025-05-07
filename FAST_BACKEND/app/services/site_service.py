@@ -11,7 +11,7 @@ import pandas as pd
 from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.engine import Row
 from sqlalchemy.orm import Session
-from app.repository.site_repository import SiteRepository  
+from app.repository.site_repository import SiteRepository
 from app.schema.site_schema import SiteCreate, SiteUpdate, GetSitesResponse, SiteDetails,DevicesResponse
 import traceback
 import traceback
@@ -58,6 +58,7 @@ from app.schema.site_schema import CSPCDevicesWithSntcResponse
 import time
 import logging
 
+# from FAST_BACKEND.app.schema.site_schema import co2emmisionDetails
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -1123,7 +1124,7 @@ class SiteService:
             logger.debug(
                 f"Time taken to fetch device inventory for site {site.id}: {device_inventory_end_time - device_inventory_start_time:.2f} seconds")
 
-            apic_ips = [device['ip_address'] for device in device_inventory if device['ip_address']]
+            ips = [device['ip_address'] for device in device_inventory if device['ip_address']]
 
             
             counts_start_time = time.time()
@@ -1137,14 +1138,14 @@ class SiteService:
 
             
             power_data_start_time = time.time()
-            site.power_data = self.influxdb_repository.get_24hsite_power(apic_ips, site.id)
+            site.power_data = self.influxdb_repository.get_24hsite_power(ips, site.id)
             power_data_end_time = time.time()
             logger.debug(
                 f"Time taken to fetch power data for site {site.id}: {power_data_end_time - power_data_start_time:.2f} seconds")
 
             
             traffic_data_start_time = time.time()
-            site.traffic_data = self.influxdb_repository.get_24hsite_datatraffic(apic_ips, site.id)
+            site.traffic_data = self.influxdb_repository.get_24hsite_datatraffic(ips, site.id)
             print(site.traffic_data)
             # site.traffic_data=0
             traffic_data_end_time = time.time()
@@ -1154,16 +1155,16 @@ class SiteService:
             
             power_agg_start_time = time.time()
             if site.power_data:
-                power_utilization_values = [data['power_utilization'] for data in site.power_data if
-                                            data['power_utilization'] is not None]
+                eer_values = [data['energy_efficiency'] for data in site.power_data if
+                                            data['energy_efficiency'] is not None]
                 power_input_values = [data['power_input'] for data in site.power_data if
                                       data['power_input'] is not None]
                 power_output_values = [data['power_output'] for data in site.power_data if
                                       data['power_output'] is not None]
                 pue_values = [data['pue'] for data in site.power_data if data['pue'] is not None]
-                total_power_util = sum(power_utilization_values) if power_utilization_values else 0
-                average_power_util = total_power_util / len(power_utilization_values) if power_utilization_values else 0
-                site.power_utilization = round(average_power_util, 2)
+                total_power_util = sum(eer_values) if eer_values else 0
+                average_power_util = total_power_util / len(eer_values) if eer_values else 0
+                site.energy_efficiency = round(average_power_util, 2)
 
                 total_pue = sum(pue_values) if pue_values else 0
                 average_pue = total_pue / len(pue_values) if pue_values else 0
@@ -1174,6 +1175,14 @@ class SiteService:
 
                 total_power_output = sum(power_output_values) if power_output_values else 0
                 site.power_output = round(total_power_output / 1000, 2)
+
+                co2emmision_kg= round((site.power_input  *0.0401),2)
+                unit,co2emmision=self.get_unit(co2emmision_kg)
+                site.co2emmision=f"{co2emmision} {unit}"
+                print(type(site.co2emmision))
+
+                print(site.co2emmision)
+
 
             power_agg_end_time = time.time()
             logger.debug(
@@ -1201,6 +1210,7 @@ class SiteService:
         
         end_time = time.time()
         logger.debug(f"Total time for get_extended_sites: {end_time - start_time:.2f} seconds")
+        site.pcr = round(total_power_input /site.datatraffic, 4)
 
         return [SiteDetails_get(**site.__dict__) for site in sites]
 

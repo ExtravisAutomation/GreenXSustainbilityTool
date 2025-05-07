@@ -2366,75 +2366,76 @@ class InfluxDBRepository:
 
         return site_data
 
-    def get_24hsite_power(self, apic_ips: List[str], site_id: int) -> List[dict]:
-        if not apic_ips:
+    def get_24hsite_power(self, ips: List[str], site_id: int) -> List[dict]:
+        if not ips:
             return []
 
         start_range = "-24h"
         site_data = []
-        for apic_ip in apic_ips:
+        for ip_address in ips:
             query = f'''
                 from(bucket: "Dcs_db")
                 |> range(start: {start_range})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
-                |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
                 |> sum()
                 |> yield(name: "total_sum") 
             '''
             try:
                 result = self.query_api1.query(query)
-                print(f"Debug: Results for {apic_ip} - {result}")
+                print(f"Debug: Results for {ip_address} - {result}")
 
-                power_utilization = None
+                eer = None
                 pue = None
-                total_supplied = 0
-                total_drawn = 0
-                drawnAvg, suppliedAvg = None, None
+                total_power_in = 0
+                total_power_out= 0
+                power_out, power_in = None, None
 
                 for table in result:
                     for record in table.records:
                         print(
                             f"Debug: Record - {record.get_field()}={record.get_value()}")  # More detailed debug output
                         if record.get_field() == "total_POut":
-                            drawnAvg = record.get_value()
+                            power_out = record.get_value()
                         elif record.get_field() == "total_PIn":
-                            suppliedAvg = record.get_value()
+                            power_in = record.get_value()
+                        if power_out is not None and power_in is not None:
+                            total_power_out += power_out
+                            total_power_in += power_in
 
-                        if drawnAvg is not None and suppliedAvg is not None:
-                            total_drawn += drawnAvg
-                            total_supplied += suppliedAvg
-
-                if total_supplied > 0:
-                    power_utilization = (total_drawn / total_supplied) * 100
-                if total_drawn > 0:
-                    pue = ((total_supplied / total_drawn) - 1) * 100
+                if total_power_in > 0:
+                    eer = (total_power_out / total_power_in) * 100
+                if total_power_out > 0:
+                    pue = ((total_power_in / total_power_out) - 1) * 100
 
                 site_data.append({
                     "site_id": site_id,
-                    "power_utilization": round(power_utilization, 2) if power_utilization is not None else 0,
-                    "power_input": round(total_supplied, 2) if total_supplied != 0 else None,
-                    "power_output": round(total_drawn, 2) if total_drawn != 0 else None,
-                    "pue": round(pue, 2) if pue is not None else 0
+                    "energy_efficiency": round(eer, 2) if eer is not None else 0,
+                    "power_input": round(total_power_in, 2) if total_power_in != 0 else None,
+                    "power_output": round(total_power_out, 2) if total_power_out != 0 else None,
+                    "pue": round(pue, 2) if pue is not None else 0,
+
+
                 })
 
             except Exception as e:
-                print(f"Error querying InfluxDB for {apic_ip}: {e}")
+                print(f"Error querying InfluxDB for {ip_address}: {e}")
         print(site_data)
 
         return site_data
 
-    def get_24hsite_datatraffic(self, apic_ips: List[str], site_id: int) -> List[dict]:
-        if not apic_ips:
+    def get_24hsite_datatraffic(self, ips: List[str], site_id: int) -> List[dict]:
+        if not ips:
             return []
 
         start_range = "-24h"
         site_data = []
-        for apic_ip in apic_ips:
+        for ip_address in ips:
             query = f'''
                 from(bucket: "Dcs_db")
                 |> range(start: {start_range})
                 |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic")
-                |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
                 |> sum()
                 |> yield(name: "total_sum")
             '''
@@ -2455,7 +2456,7 @@ class InfluxDBRepository:
                     "traffic_through": total_byterate
                 })
             except Exception as e:
-                print(f"Error querying InfluxDB for {apic_ip}: {e}")
+                print(f"Error querying InfluxDB for {ip_address}: {e}")
 
         return site_data
 
