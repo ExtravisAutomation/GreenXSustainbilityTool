@@ -2539,15 +2539,23 @@ class InfluxDBRepository:
             power_in_query = self.build_query(ip, "total_PIn", start_range)
 
             power_out_query = self.build_query(ip, "total_POut", start_range)
-            total_power_query = self.build_query(ip, "total_Power", start_range)
+            total_power_query = self.build_query(ip, "total_PIn", start_range)
 
-            PowerIn = self.query_last_value(power_in_query)
-            PowerOut = self.query_last_value(power_out_query)
-            TotalPower = self.query_last_value(total_power_query)
+            # PowerIn = self.query_last_value(power_in_query)
+            # PowerOut = self.query_last_value(power_out_query)
+            # TotalPower = self.query_last_value(total_power_query)
+            #
+            # if TotalPower is not None and TotalPower != 0:
+            #     powerper = (PowerIn / TotalPower) * 100
+            # else:
+            #     powerper = 0
+            PowerIn = self.query_last_value(power_in_query) or 0
+            PowerOut = self.query_last_value(power_out_query) or 0
+            TotalPower = self.query_last_value(total_power_query) or 0
 
-            if TotalPower is not None and TotalPower != 0:
-                powerper = (PowerIn / TotalPower) * 100
-            else:
+            try:
+                powerper = round((PowerIn / TotalPower) * 100, 2) if TotalPower else 0
+            except (TypeError, ZeroDivisionError):
                 powerper = 0
 
             power_required_data.append({
@@ -2555,7 +2563,7 @@ class InfluxDBRepository:
                 "ip_address": ip,
                 "power_input": PowerIn,
                 "power_output":PowerOut,
-                "total_power": TotalPower,
+                "total_power": TotalPower if TotalPower else 0,
                 "power_in_per": round(powerper, 2)
             })
 

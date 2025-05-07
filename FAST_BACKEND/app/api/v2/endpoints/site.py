@@ -591,7 +591,7 @@ def parse_time12(time_str: str):
     raise HTTPException(status_code=400, detail="Timestamp format not recognized")
 
 
-@router.get("/site/getallsites", response_model=CustomResponse1[GetSitesResponse])
+@router.get("/getallsites", response_model=CustomResponse1[GetSitesResponse])
 @inject
 def get_sites(
         current_user: User = Depends(get_current_active_user),
