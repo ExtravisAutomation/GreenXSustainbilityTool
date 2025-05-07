@@ -615,6 +615,7 @@ def get_sites(
         status_code=status.HTTP_200_OK
     )
 
+@router.post("/site_hourly_eer/{site_id}")
 @inject
 def site_energy_efficiency(site_id: int,
                            current_user: User = Depends(get_current_active_user),
