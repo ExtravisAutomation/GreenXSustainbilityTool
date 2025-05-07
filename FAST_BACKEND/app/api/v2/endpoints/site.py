@@ -125,7 +125,7 @@ def delete_sites(
     # site_service.delete_sites(request.site_ids)
     return site_service.delete_sites(request)
 
-@router.post("/site/siteEnergyEfficiency/{site_id}")
+@router.post("/siteEnergyEfficiency/{site_id}")
 @inject
 def site_energy_efficiency(
         site_id: int,
@@ -630,7 +630,7 @@ def site_energy_efficiency(site_id: int,
 
 
 
-@router.post("/site/sitePowerRequired/{site_id}")
+@router.post("/sitePowerRequired/{site_id}")
 @inject
 def site_power_required(
         site_id: int,

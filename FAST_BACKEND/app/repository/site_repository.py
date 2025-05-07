@@ -222,13 +222,13 @@ class SiteRepository(BaseRepository):
             )
             return devices
         
-    def get_apic_controller_names(self, sorted_power_required: list):
+    def get_device_names(self, sorted_power_required: list):
         with self.session_factory() as session:
             for data in sorted_power_required:
-                result=session.query(Devices.device_name).filter(Devices.ip_address== data['apic_controller_ip']).first()
+                result=session.query(Devices.device_name).filter(Devices.ip_address== data['ip_address']).first()
                 
                 
-                data['apic_controller_name'] = result[0] if result else None
+                data['device_name'] = result[0] if result else None
                 
             return sorted_power_required
                

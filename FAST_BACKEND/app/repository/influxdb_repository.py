@@ -2552,7 +2552,7 @@ class InfluxDBRepository:
 
             power_required_data.append({
                 "site_id": site_id,
-                "apic_controller_ip": ip,
+                "ip_address": ip,
                 "PowerInput": PowerIn,
                 "TotalPower": TotalPower,
 

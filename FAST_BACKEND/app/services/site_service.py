@@ -1232,7 +1232,7 @@ class SiteService:
         
 
         
-        response = self.site_repository.get_apic_controller_names(sorted_power_required[:4])
+        response = self.site_repository.get_device_names(sorted_power_required[:4])
 
         
         return response
