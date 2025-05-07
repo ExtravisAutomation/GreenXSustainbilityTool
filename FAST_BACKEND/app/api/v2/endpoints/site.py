@@ -630,7 +630,7 @@ def site_energy_efficiency(site_id: int,
 
 
 
-@router.post("/sitePowerRequired/{site_id}")
+@router.post("/siteRequiredPower/{site_id}")
 @inject
 def site_power_required(
         site_id: int,
