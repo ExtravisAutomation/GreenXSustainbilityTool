@@ -594,7 +594,7 @@ def parse_time12(time_str: str):
 @router.get("/site/getallsites", response_model=CustomResponse1[GetSitesResponse])
 @inject
 def get_sites(
-        # current_user: User = Depends(get_current_active_user),
+        current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     api_start_time = time.time()
@@ -634,7 +634,7 @@ def site_energy_efficiency(site_id: int,
 @inject
 def site_power_required(
         site_id: int,
-        # current_user: User = Depends(get_current_active_user),
+        current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:

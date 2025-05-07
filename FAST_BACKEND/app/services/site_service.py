@@ -1227,7 +1227,7 @@ class SiteService:
         power_required_data = self.influxdb_repository.get_power_required(device_ips, site_id)
         
         sorted_power_required = sorted(power_required_data,
-                                       key=lambda x: x['TotalPower'] if x['TotalPower'] is not None else float('-inf'),
+                                       key=lambda x: x['total_power'] if x['total_power'] is not None else float('-inf'),
                                        reverse=True)
         
 

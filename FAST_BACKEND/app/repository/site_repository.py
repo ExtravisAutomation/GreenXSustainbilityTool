@@ -231,17 +231,6 @@ class SiteRepository(BaseRepository):
                 data['device_name'] = result[0] if result else None
                 
             return sorted_power_required
-               
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
     def get_apic_controller_ips_by_site_id(self, site_id: int) -> List[str]:
         with self.session_factory() as session:
