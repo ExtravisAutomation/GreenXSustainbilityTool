@@ -952,38 +952,11 @@ def get_energy_consumption_metrics(
 ):
     duration = duration or "24 hours"
 
-    if duration == "First Quarter":
-        #time.sleep(5)
-        metrics = {
-            "time": "2024-01-01 00:00:00 - 2024-03-31 23:59:59",
-            "energy_consumption": 88.56,
-            "total_POut": 177.12,
-            "total_PIn": 200.56,
-            "power_efficiency": 0
-        }
-    elif duration == "Second Quarter":
-        #time.sleep(8)
-        metrics = {
-            "time": "2024-04-01 00:00:00 - 2024-06-30 23:59:59",
-            "energy_consumption": 90.12,
-            "total_POut": 180.24,
-            "total_PIn": 210.48,
-            "power_efficiency": 0.52
-        }
-    elif duration == "Third Quarter":
-        #time.sleep(6)
-        metrics = {
-            "time": "2024-07-01 00:00:00 - 2024-09-30 23:59:59",
-            "energy_consumption": 85.78,
-            "total_POut": 171.56,
-            "total_PIn": 195.84,
-            "power_efficiency": 0.5
-        }
+
+    if device_id:
+        metrics = site_service.calculate_energy_consumption_by_device_id(site_id, device_id, duration)
     else:
-        if device_id:
-            metrics = site_service.calculate_energy_consumption_by_device_id(site_id, device_id, duration)
-        else:
-            metrics = site_service.calculate_average_energy_consumption_by_site_id(site_id, duration)
+        metrics = site_service.calculate_average_energy_consumption_by_site_id(site_id, duration)
 
     print(f"Metrics: {metrics}", file=sys.stderr)
 

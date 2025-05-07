@@ -1282,15 +1282,14 @@ class SiteService:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
-        total_pin_value = self.influxdb_repository.get_total_pin_value(device_ips, start_date, end_date, duration_str)
+        metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter17(device_ips, start_date,
+                                                                                        end_date, duration_str)
+        total_pin_value_KW = sum(metric.get('total_PIn', 0) for metric in metrics)
 
-
-
-        # carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
         carbon_intensity=0.4041
-        total_pin_value_KW = total_pin_value / 1000
+        print()
         carbon_emission_KG = round(float(total_pin_value_KW) * float(carbon_intensity),4)
-
+        print("Total pin_kw", total_pin_value_KW)
         print("Emisssionsssssss", carbon_emission_KG, file=sys.stderr)
         # carbon_emission_KG = round(carbon_emission / 1000, 2)
         # print("KGGGGGGGGGGGG", carbon_emission_KG, file=sys.stderr)
@@ -1300,7 +1299,7 @@ class SiteService:
         carbon_flight = self.calculate_carbon_flight(carbon_emission_KG)
         carbon_solution = self.calculate_carbon_solution(carbon_emission_KG)
 
-        return float(total_pin_value_KW), carbon_emission_KG, carbon_car, carbon_flight, carbon_solution
+        return round(float(total_pin_value_KW),2), carbon_emission_KG, carbon_car, carbon_flight, carbon_solution
     def get_unit(self,carbon_emission_KG):
          if carbon_emission_KG < 1000:
              return "kg",round(carbon_emission_KG,4)
@@ -1618,6 +1617,7 @@ class SiteService:
         total_PIn = sum(metric.get('total_PIn', 0) for metric in metrics)
         total_power_efficiency = sum(metric.get('power_efficiency', 0) for metric in metrics)
         count = len(metrics)
+        print(total_PIn)
 
         return {
             "time": f"{start_date} - {end_date}",

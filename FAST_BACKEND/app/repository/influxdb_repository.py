@@ -2618,14 +2618,7 @@ class InfluxDBRepository:
 
         total_pin = 0
         for ip in device_ips:
-            # query = f'''
-            #     from(bucket: "{configs.INFLUXDB_BUCKET}")
-            #     |> range(start: {start_time}, stop: {end_time})
-            #     |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-            #     |> filter(fn: (r) => r["_field"] == "total_PIn")
-            #     |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
-            #     | > pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-            # '''
+
             query = f'''
            from(bucket: "{configs.INFLUXDB_BUCKET}")
            |> range(start: {start_time}, stop: {end_time})
@@ -2639,10 +2632,8 @@ class InfluxDBRepository:
 
             if not result.empty:
                 total_pin +=result['total_PIn'].sum() if 'total_PIn' in result else 0.0
-            # result = self.query_api1.query_data_frame(query)
-            # if not result.empty:
-            #     total_pin += result['_value'].sum()
 
+        print("response")
         return total_pin
 
     # def get_consumption_percentages(self, device_ips: List[str], start_date: datetime, end_date: datetime,
