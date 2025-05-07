@@ -2553,10 +2553,10 @@ class InfluxDBRepository:
             power_required_data.append({
                 "site_id": site_id,
                 "ip_address": ip,
-                "PowerInput": PowerIn,
-                "TotalPower": TotalPower,
-
-                "PowerPercentage": round(powerper, 2)
+                "power_input": PowerIn,
+                "power_output":PowerOut,
+                "total_power": TotalPower,
+                "power_in_per": round(powerper, 2)
             })
 
         return power_required_data
