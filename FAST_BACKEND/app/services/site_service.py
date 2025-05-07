@@ -237,7 +237,37 @@ class SiteService:
         except HTTPException as e:
             return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
 
-        
+    def calculate_energy_efficiency_by_id(self, site_id: int) -> List[dict]:
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+        ip_to_name = {device.ip_address: device.device_name for device in devices if device.ip_address}
+
+        if not device_ips:
+            return []
+        power_efficiency = self.influxdb_repository.get_energy_efficiency(device_ips, site_id)
+
+        sorted_efficiency = sorted(power_efficiency, key=lambda x: x['energy_efficiency'], reverse=True)[:4]
+        for entry in sorted_efficiency:
+            entry['device_name'] = ip_to_name.get(entry['ip_address'], "Unknown")
+
+        return sorted_efficiency
+
+    def site_power_co2emmission(self, site_id: int):
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+        ip_to_name = {device.ip_address: device.device_name for device in devices if device.ip_address}
+
+        if not device_ips:
+            return []
+        power_efficiency = self.influxdb_repository.get_energy_efficiency(device_ips, site_id)
+        sorted_efficiency = sorted(power_efficiency, key=lambda x: x['PowerInput'], reverse=True)[:4]
+        for entry in sorted_efficiency:
+            entry['site_id'] = site_id
+            entry['device_name'] = ip_to_name.get(entry['ip_address'], "Unknown")
+            entry['co2_emission'] = round(((entry['PowerInput']/1000) * 0.4041), 2)
+
+        return sorted_efficiency
+        # return site_power
 
     def get_site_power_consumption(self, site_name: str) -> Dict[str, float]:
         devices = self.site_repository.get_devices_by_site_name(site_name)
@@ -1177,31 +1207,14 @@ class SiteService:
     def calculate_average(self, values):
         return round(sum(values) / len(values), 2) if values else 0
 
-    def calculate_power_utilization_by_id(self, site_id: int) -> List[dict]:
+    def calculate_eer_by_id(self, site_id: int) -> List[dict]:
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
 
         if not device_ips:
             return []
 
-        return self.influxdb_repository.get_power_utilization_metrics(device_ips, site_id)
-
-    def calculate_energy_efficiency_by_id(self, site_id: int) -> List[dict]:
-        devices = self.site_repository.get_devices_by_site_id(site_id)
-        device_ips = [device.ip_address for device in devices if device.ip_address]
-        ip_to_name = {device.ip_address: device.device_name for device in devices if device.ip_address}
-
-        if not device_ips:
-            return []
-
-        power_efficiency = self.influxdb_repository.get_energy_efficiency(device_ips, site_id)
-
-        
-        sorted_efficiency = sorted(power_efficiency, key=lambda x: x['energy_efficiency'], reverse=True)[:4]
-        for entry in sorted_efficiency:
-            entry['device_name'] = ip_to_name.get(entry['apic_controller_ip'], "Unknown")
-
-        return sorted_efficiency
+        return self.influxdb_repository.get_eer_metrics(device_ips, site_id)
 
 
     def calculate_power_requirement_by_id(self, site_id: int) -> List[dict]:
@@ -1940,10 +1953,7 @@ class SiteService:
                                                                              "Monthly")
         return round(total_pout_value / 1000, 2)  
 
-    def site_power_co2emmission(self, site_id: int):
-        site_power = self.site_repository.site_power_co2emmission(site_id)
 
-        return site_power
 
     def get_site_names(self):
         return self.site_repository.get_site_names()

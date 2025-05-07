@@ -125,6 +125,31 @@ def delete_sites(
     # site_service.delete_sites(request.site_ids)
     return site_service.delete_sites(request)
 
+@router.post("/site/siteEnergyEfficiency/{site_id}")
+@inject
+def site_energy_efficiency(
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        efficiency_data = site_service.calculate_energy_efficiency_by_id(site_id)
+        return efficiency_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/site_Co2emmission", response_model=List)
+@inject
+def site_power_co2emmission(
+        site_id: int,
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    return site_service.site_power_co2emmission(site_id)
+
+
+
 
 
 @router.get("/sites/power_summary_metrics/{site_id}", response_model=CustomResponse[SitePowerConsumptionResponse])
@@ -590,30 +615,19 @@ def get_sites(
         status_code=status.HTTP_200_OK
     )
 
-@router.post("/site/sitePowerUtilization/{site_id}")
+@router.post("/site/siteEnergyEfficiency/{site_id}")
 @inject
-def site_power_utilization(site_id: int,
+def site_energy_efficiency(site_id: int,
                            current_user: User = Depends(get_current_active_user),
                            site_service: SiteService = Depends(Provide[Container.site_service])):
     try:
-        power_metrix = site_service.calculate_power_utilization_by_id(site_id)
+        power_metrix = site_service.calculate_eer_by_id(site_id)
         return power_metrix
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/site/siteEnergyEfficiency/{site_id}")
-@inject
-def site_energy_efficiency(
-        site_id: int,
-        current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    try:
-        efficiency_data = site_service.calculate_energy_efficiency_by_id(site_id)
-        return efficiency_data
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 @router.post("/site/sitePowerRequired/{site_id}")
@@ -1406,14 +1420,7 @@ def get_power_comparison_and_prediction(
     )
 
 
-@router.post("/Co2emmission", response_model=List)
-@inject
-def site_power_co2emmission(
-        site_id: int,
-        # current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    return site_service.site_power_co2emmission(site_id)
+
 
 
 @router.get("/get_site_names", response_model=CustomResponse)
@@ -1430,14 +1437,14 @@ def get_site_names(
     )
 
 
-@router.post("/Co2emmission", response_model=List)
-@inject
-def site_power_co2emmission(
-        site_id: int,
-        current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    return site_service.site_power_co2emmission(site_id)
+# @router.post("/Co2emmission", response_model=List)
+# @inject
+# def site_power_co2emmission(
+#         site_id: int,
+#         current_user: User = Depends(get_current_active_user),
+#         site_service: SiteService = Depends(Provide[Container.site_service])
+# ):
+#     return site_service.site_power_co2emmission(site_id)
 
 
 @router.get("/get_site_names", response_model=CustomResponse)
