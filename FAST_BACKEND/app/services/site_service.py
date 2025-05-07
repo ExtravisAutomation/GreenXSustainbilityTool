@@ -1180,6 +1180,7 @@ class SiteService:
                 unit,co2emmision=self.get_unit(co2emmision_kg)
                 site.co2emmision=f"{co2emmision} {unit}"
                 print(type(site.co2emmision))
+                site.site_cost=round(site.power_input * 0.32,2)
 
                 print(site.co2emmision)
 
@@ -1210,7 +1211,7 @@ class SiteService:
         
         end_time = time.time()
         logger.debug(f"Total time for get_extended_sites: {end_time - start_time:.2f} seconds")
-        site.pcr = round(total_power_input /site.datatraffic, 4)
+        site.pcr = round(total_power_input /site.datatraffic, 4) if site.datatraffic else 0
 
         return [SiteDetails_get(**site.__dict__) for site in sites]
 

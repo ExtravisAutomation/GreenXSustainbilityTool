@@ -38,6 +38,7 @@ class SiteDetails_get(SiteBase):
     pue: Optional[float] = None
     datatraffic: Optional[float] = None
     pcr:Optional[float]=None
+    site_cost:Optional[float]=None
     co2emmision:Optional[str]=None
     num_racks: Optional[int] = None
     num_devices: Optional[int] = None

@@ -594,7 +594,7 @@ def parse_time12(time_str: str):
 @router.get("/getallsites", response_model=CustomResponse1[GetSitesResponse])
 @inject
 def get_sites(
-        current_user: User = Depends(get_current_active_user),
+        # current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     api_start_time = time.time()
