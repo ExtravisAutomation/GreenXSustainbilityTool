@@ -615,7 +615,6 @@ def get_sites(
         status_code=status.HTTP_200_OK
     )
 
-@router.post("/site/siteEnergyEfficiency/{site_id}")
 @inject
 def site_energy_efficiency(site_id: int,
                            current_user: User = Depends(get_current_active_user),
@@ -644,7 +643,7 @@ def site_power_required(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/site/Co2emission/{site_id}")
+@router.post("/site_Co2emmission/{site_id}")
 @inject
 def site_co2_emission(site_id: int,
                       current_user: User = Depends(get_current_active_user),
