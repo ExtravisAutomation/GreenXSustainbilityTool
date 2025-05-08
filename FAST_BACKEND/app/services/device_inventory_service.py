@@ -201,8 +201,8 @@ class DeviceInventoryService:
     def get_vendor_count(self):
         return self.device_inventory_repository.get_vendor_device_count()
 
-    def get_device_expiry(self,site_id):
-        return self.device_inventory_repository.get_device_expiry(site_id)
+    def get_notifications(self,site):
+        return self.device_inventory_repository.get_notifications(site)
 
     # def classify_performance(self,avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr, avg_co2_emissions):
     #     score = 0

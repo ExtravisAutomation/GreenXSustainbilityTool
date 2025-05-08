@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List, Optional
 from app.services.device_inventory_service import DeviceInventoryService
 from app.schema.device_inventory_schema import (DeviceInventoryCreate, DeviceInventoryUpdate,
-                                                DeviceInventoryInDB,FilterSchema,VendorSchema,DeviceTypeSchema)
+                                                DeviceInventoryInDB,FilterSchema,VendorSchema,DeviceTypeSchema,site_filter)
 from app.core.dependencies import get_db
 from fastapi.responses import FileResponse
 from app.schema.device_inventory_schema import Custom_Response_Inventory,modelCreate
@@ -337,12 +337,13 @@ def get_count(
         data=models,
         status_code=200
     )
-@router.post("/get_sntc_expiry", response_model=CustomResponse)
+@router.post("/get_notifications", response_model=CustomResponse)
 @inject
-def get_expiry(site_id: int,
+def get_expiry(site: site_filter,
     device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
                ):
-    data = device_inventory_service.get_device_expiry(site_id)
+    data = device_inventory_service.get_notifications(site)
+
     return CustomResponse(
         message="Fetched  data successfully",
         data=data,

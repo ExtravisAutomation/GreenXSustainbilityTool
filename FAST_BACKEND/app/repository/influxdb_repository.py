@@ -480,7 +480,6 @@ class InfluxDBRepository:
             # print(query)
 
             result = self.query_api1.query_data_frame(query)
-
             if not result.empty:
                 result['_time'] = pd.to_datetime(result['_time'])
                 all_dataframes.append(result)

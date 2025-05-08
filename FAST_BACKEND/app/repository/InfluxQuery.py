@@ -384,56 +384,56 @@ def get_rack_power(apic_ips, rack_id) -> List[dict]:
             
 
     return rack_data
-def get_24hrack_power(apic_ips, rack_id) -> List[dict]:
-    apic_ip_list = [ip[0] for ip in apic_ips if ip[0]]
-    print(apic_ip_list)
-    if not apic_ip_list:
+def get_24hrack_power(ips, rack_id) -> List[dict]:
+    ip_list = [ip[0] for ip in ips if ip[0]]
+    print(ip_list)
+    if not ip_list:
         return []
 
     start_range = "-24h"
     rack_data = []
-    total_drawn, total_supplied = 0, 0
+    total_power_output, total_power_input = 0, 0
 
-    for apic_ip in apic_ip_list:
-        print(apic_ip)
+    for ip_address in ip_list:
+        print(ip_address)
         query = f'''from(bucket: "Dcs_db")
               |> range(start: {start_range})
               |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
-              |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
+              |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
               |> sum()
               |> yield(name: "total_sum")'''
         try:
             result = query_api.query(query)
 
-            drawnAvg,suppliedAvg = None, None
+            power_output,power_input = None, None
 
             for table in result:
                 for record in table.records:
                     if record.get_field() == "total_POut":
-                        drawnAvg = record.get_value()
+                        power_output = record.get_value()
                     elif record.get_field() == "total_PIn":
-                        suppliedAvg = record.get_value()
+                        power_input = record.get_value()
 
-                    if drawnAvg is not None and suppliedAvg is not None:
-                        total_drawn += drawnAvg
-                        total_supplied += suppliedAvg
+                    if power_output is not None and power_input is not None:
+                        total_power_output += power_output
+                        total_power_input += power_input
 
-            power_utilization = None
+            energy_effieciency = None
             pue = None
-            if total_supplied > 0:
-                power_utilization = (total_drawn / total_supplied)
-            if total_drawn > 0:
-                pue = ((total_supplied / total_drawn))
+            if total_power_input > 0:
+                energy_effieciency = (total_power_output / total_power_input)
+            if total_power_output > 0:
+                pue = ((total_power_input / total_power_output))
             rack_data.append({
                 "rack_id": rack_id,
-                "power_utilization": round(power_utilization, 2) if power_utilization is not None else 0,
-                "power_input":total_supplied,
+                "energy_effieciency": round(energy_effieciency, 2) if energy_effieciency is not None else 0,
+                "power_input":total_power_input,
                 "pue":round(pue,2) if pue is not None else 0,
 
             })
 
         except Exception as e:
-            print(f"Error querying InfluxDB for {apic_ip}: {e}")
+            print(f"Error querying InfluxDB for {ip_address}: {e}")
             
 
     return rack_data
@@ -467,12 +467,6 @@ def get_24h_rack_datatraffic(apic_ips, rack_id) -> List[dict]:
                         byterate=0
                     total_byterate += byterate
             print(total_byterate, "total_bytesRateLast")
-
-
-            
-
-
-
             Traffic_rack_data.append({
                 "rack_id": rack_id,
                 "traffic_through": total_byterate  })

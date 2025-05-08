@@ -90,6 +90,8 @@ class modelCreate(BaseModel):
     rack_id : Optional[int]
     vendor_id : Optional[int]
 
+class site_filter(BaseModel):
+    site_id : Optional[int]
 
 #
 
