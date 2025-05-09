@@ -257,7 +257,7 @@ class RackRepository(BaseRepository):
                 response.append({
                     'Rack_id': rack_id,
                     'hour': data['hour'],
-                    'power_utilization': data['average_power_utilization']
+                    'energy_efficieny': data['average_power_utilization']
                 })
             return response
 
