@@ -1276,8 +1276,6 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.software_version,
                     DeviceInventory.status,
                     Rack.rack_name,
-
-
                 )
                 .join(APICControllers, DeviceInventory.device_id == APICControllers.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
@@ -1293,9 +1291,7 @@ class SiteRepository(BaseRepository):
             if vendor_id:
                 query = query.join(Vendor, APICControllers.vendor_id == Vendor.id)
             if limit:
-                
                 query = query.limit(limit)
-
             devices = query.all()
 
             if devices:
@@ -1314,7 +1310,6 @@ class SiteRepository(BaseRepository):
                         "software_version": device.software_version,
                         "status": device.status,
                         "vendor_name": session.query(Vendor.vendor_name).filter(Vendor.id==device.vendor_id).first()[0]
-
                     } for device in devices
                 ]
             else:
@@ -1335,7 +1330,6 @@ class SiteRepository(BaseRepository):
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name.in_(device_names))
             )
 
-            
             if limit:
                 query = query.limit(limit)
 

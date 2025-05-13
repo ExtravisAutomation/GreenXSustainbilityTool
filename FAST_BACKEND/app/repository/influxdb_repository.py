@@ -1495,14 +1495,13 @@ class InfluxDBRepository:
 
         return throughput_metrics
 
-    def get_energy_consumption_metrics_with_filter1234(self, device_ips: List[str], start_date: datetime,
+    def model_wise_info(self, device_ips: List[str], start_date: datetime,
                                                       end_date: datetime, duration_str: str) -> List[dict]:
         total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
-        # Define the aggregate window and time format based on the duration string
-        if duration_str in ["24 hours"]:
+        if duration_str in ["24 hours"]:  # Define the aggregate window and time format based on the duration string
             aggregate_window = "1h"
             time_format = '%Y-%m-%d %H:00'
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
@@ -1525,17 +1524,8 @@ class InfluxDBRepository:
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             power_result = self.query_api1.query_data_frame(power_query)
-
-
             print(power_result)
-            # If the result is empty, skip this device
-
-
-            # Calculate energy efficiency and power efficiency
-
-            # power_result['energy_efficiency'] = (power_result['total_POut'] / power_result['total_PIn']).fillna(0)
-            # power_result['power_efficiency'] = (power_result['total_PIn'] / power_result['total_POut']).fillna(0)
-            # First check if columns exist
+                       # First check if columns exist
             if 'total_POut' in power_result.columns and 'total_PIn' in power_result.columns:
                 # Calculate energy efficiency
                 power_result['energy_efficiency'] = np.where(
@@ -1574,12 +1564,11 @@ class InfluxDBRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["_field"] == "total_bytesRateLast")
-                |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
 
             traffic_result = self.query_api1.query_data_frame(traffic_query)
-
             # If both results are empty, skip this device
             if power_result.empty and traffic_result.empty:
                 print(f"No data for IP: "
@@ -1592,11 +1581,6 @@ class InfluxDBRepository:
 
                 traffic_result['_time'] = pd.to_datetime(traffic_result['_time']).dt.strftime(time_format)
 
-            # print(f"Data for IP:", power_result, file=sys.stderr)
-            # print(f'Data for dataa',traffic_result,file=sys.stderr)
-            #
-            # # Merge traffic and power data
-            # combined_result = pd.merge(power_result, traffic_result, on='_time', how='outer').fillna(0)
             if power_result.empty and traffic_result.empty:
                 # If both are empty, create a new DataFrame with an empty _time column
                 combined_result = pd.DataFrame(columns=['_time'])
@@ -1616,8 +1600,8 @@ class InfluxDBRepository:
 
                 energy_consumption = pout / pin if pin > 0 else 0
                 power_efficiency = pin / pout if pout > 0 else 0
-                pin_kg = pin / 1000
-                co2 = pin_kg * 0.4041
+                pin_kw= pin / 1000
+                co2 = pin_kw * 0.4041
                 co2_tons = co2 / 1000
                 total_bytes_rate_last_gb = total_bytes_rate_last/(2 ** 30)
 

@@ -1,78 +1,5 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-import pymysql
-load_dotenv()
-# Base class for our classes definitions
-# Base = declarative_base()
-#
-#
-# class Database:
-#     def __init__(self):
-#         self.username = os.getenv('DB_USER')
-#         self.password = os.getenv('DB_PASSWORD')
-#         self.database = os.getenv('DB_NAME')
-#         self.host = os.getenv('DB_HOST')
-#         self.port = os.getenv('DB_PORT')
-#         self.session = None
-#         self.engine = None
-#         self.Session = None
-#
-#     def connect(self):
-#         """Create a database connection and session maker."""
-#         try:
-#             # Connection URL
-#             database_url = f"mysql+pymysql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
-#
-#             # Create engine
-#             self.engine = create_engine(database_url, echo=True, future=True)
-#
-#             # Bind the engine to the metadata of the Base class so that the
-#             # declaratives can be accessed through a DBSession instance
-#             Base.metadata.bind = self.engine
-#
-#             # Create a sessionmaker binding to the engine
-#             self.Session = sessionmaker(bind=self.engine)
-#             print("Database connection established.")
-#
-#         except Exception as e:
-#             print(f"An error occurred while connecting to the database: {e}")
-#
-#     @contextmanager
-#     def session_scope(self):
-#         """Provide a transactional scope around a series of operations."""
-#         session = self.SessionLocal()
-#         try:
-#             yield session
-#             session.commit()
-#         except:
-#             session.rollback()
-#             raise
-#         finally:
-#             session.close()
-#     def get_session(self):
-#         """Get a new session."""
-#         if self.Session is None:
-#             self.connect()
-#         return self.Session()
-#
-#     def close(self):
-#         """Close the session."""
-#         if self.session:
-#             self.session.close()
-#             print("Database session closed.")
-#
-#
-# # Example of how to use the Database class
-# if __name__ == "__main__":
-#     db = Database(username='your_username', password='your_password', database='your_database')
-#     db.connect()
-#     session = db.get_session()
-#     # You can now use session to interact with the database
-#     db.close()
-
 from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -92,9 +19,10 @@ class DBConnection:
         self.database = os.getenv('DB_NAME')
         self.host = os.getenv('DB_HOST')
         self.port = os.getenv('DB_PORT')
-
+        print(self.database)
         database_url = f"mysql+pymysql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
         # Initialize the SQLAlchemy database engine
+        print(database_url)
         self.engine = create_engine(database_url, echo=True)
 
         # Create a configured "Session" class for SQLAlchemy

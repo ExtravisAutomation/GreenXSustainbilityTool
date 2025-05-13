@@ -487,6 +487,6 @@ class modelResponse(BaseModel):
     site_id: Optional[int] = 0
     rack_id: Optional[int] = 0
     vendor_id: Optional[int] = 0
-    # duration: Optional[str] = ''
+    duration: Optional[str] = ''
 
 

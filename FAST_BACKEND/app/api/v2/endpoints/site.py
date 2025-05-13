@@ -1626,7 +1626,7 @@ def get_device_avg_energy_consumption_metrics(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
 
-    duration =  "24 hours"
+    duration = model_data.duration or "24 hours"
 
     avg_metrics = site_service.calculate_avg_energy_consumption_with_filters(model_data.limit,model_data.site_id, model_data.rack_id, model_data.vendor_id,
                                                                              duration)
