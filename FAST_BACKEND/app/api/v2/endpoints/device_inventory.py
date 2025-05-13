@@ -376,7 +376,7 @@ def generate_excel(filter_data:FilterSchema,
     device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
     devices = device_inventory_service.generate_excel(filter_data)
-    print(devices['pcr'])
+
     columns_to_drop = [
         '_sa_instance_state', 'created_at', 'device_id', 'item_desc', 'role', 'contract_number',
         'hardware_version',
@@ -384,16 +384,16 @@ def generate_excel(filter_data:FilterSchema,
         'manufacturer_date', 'status', 'sw_eol_date', 'updated_at', 'patch_version',
         'rfs_date', 'sw_eos_date', 'cisco_domain', 'device_ru', 'id', 'criticality', 'hw_eos_date',
         'section', 'tag_id', 'contract_expiry', 'domain', 'modified_by',
-        'source', 'department', 'item_code', 'rack_id', 'stack',
-        'apic_controller', 'rack', 'site', 'device'
+        'source', 'department', 'item_code', 'rack_id', 'stack','manufacturer','software_version','bandwidth_utilization',
+        'apic_controller', 'rack', 'site', 'device','pue','performance_score','performance_description'
     ]
     devices = devices.drop(columns=columns_to_drop, errors='ignore')  # errors='ignore' skips missing columns safely
     print(devices.columns,"After drop")
     devices.rename(columns={
         "device_name": "Device Name",
-        "manufacturer": "Manufacturer",
+        # "manufacturer": "Manufacturer",
         "serial_number": "Serial Number",
-        "software_version": "Software Version",
+        # "software_version": "Software Version",
         "pn_code": "Product Number (PN)",
         "hw_eol_ad": "HW End-of-Life (EoL)",
         "hw_eos": "HW End-of-Support (EoS)",
@@ -404,25 +404,20 @@ def generate_excel(filter_data:FilterSchema,
         "hw_ldos": "HW Last Day of Support",
         "rack_name": "Rack",
         "site_name": "Site",
-        "ip_address": "IP Address",
+        "device_ip": "IP Address",
         "device_type": "Device Type",
         "power_utilization": "Energy Efficiency (%)",
-        "pue": "Power Usage Effectiveness (PUE)",
         "power_input": "Power Input (W)",
         "power_output": "Power Output (W)",
         "datatraffic": "Data Traffic (GB)",
-        "bandwidth_utilization": "Bandwidth Utilization (%)",
+        # "bandwidth_utilization": "Bandwidth Utilization (%)",
         "carbon_emission": "Carbon Emission (kgCO₂)",
         "pcr": "Power Consumption Ratio (W/Gbps)",
-        "performance_score": "Performance Score",
-        "performance_description": "Performance Description"
+        # "performance_score": "Performance Score",
+        # "performance_description": "Performance Description"
     }, inplace=True)
-
     print(devices['Power Consumption Ratio (W/Gbps)'])
-
-
     file_path = "device_report.xlsx"
-
     # Save DataFrame to an Excel file
     devices.to_excel(file_path, index=False, engine="openpyxl")
     return FileResponse(file_path, filename="device_report.xlsx", media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")

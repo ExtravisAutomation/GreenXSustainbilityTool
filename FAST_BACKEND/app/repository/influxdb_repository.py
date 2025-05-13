@@ -1528,20 +1528,24 @@ class InfluxDBRepository:
                        # First check if columns exist
             if 'total_POut' in power_result.columns and 'total_PIn' in power_result.columns:
                 # Calculate energy efficiency
+                output=power_result['total_POut']
+                input_p=power_result['total_PIn']
+                if output > input_p:
+                    output=input_p
                 power_result['energy_efficiency'] = np.where(
-                    (power_result['total_POut'].notna() &
+                    (output.notna() &
                      power_result['total_PIn'].notna() &
                      (power_result['total_PIn'] != 0)),
-                    power_result['total_POut'] / power_result['total_PIn'],
+                    output / power_result['total_PIn'],
                     0
                 )
 
                 # Calculate power efficiency
                 power_result['power_efficiency'] = np.where(
-                    (power_result['total_POut'].notna() &
+                    (output.notna() &
                      power_result['total_PIn'].notna() &
-                     (power_result['total_POut'] != 0)),
-                    power_result['total_PIn'] / power_result['total_POut'],
+                     (output != 0)),
+                    power_result['total_PIn'] /output,
                     0
                 )
             else:
