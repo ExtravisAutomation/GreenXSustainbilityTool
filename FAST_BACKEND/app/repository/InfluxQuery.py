@@ -479,7 +479,7 @@ def get_24h_rack_datatraffic(apic_ips, rack_id) -> List[dict]:
 
 def get_24hDevice_power(apic_ip: str) -> List[dict]:
     total_drawn, total_supplied = 0, 0
-    start_range = "-1h"
+    start_range = "-24h"
 
     query = f'''
                               from(bucket: "Dcs_db")
@@ -546,7 +546,7 @@ def get_24hDevice_powerIn(apic_ip: str) -> List[dict]:
                |> range(start:  {start_range})
                |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
                |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
-               |> aggregateWindow(every: 24h, fn: mean)
+               |> aggregateWindow(every: 24h, fn: sum)
                |> yield(name: "mean_result")
         '''
     result = query_api.query(query)
@@ -740,7 +740,7 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
         print(f"Fetching traffic data for {apic_ip}")
         total_traffic = 0.0
         total_bandwidth = 0.0
-        start_range = "-1h"
+        start_range = "-24h"
 
         query = f'''
             from(bucket: "Dcs_db")
