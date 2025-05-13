@@ -314,6 +314,8 @@ class DeviceInventoryService:
         for device in devices['devices']:
             power_input = device.get("power_input") or 0
             power_output = device.get("power_output") or 0
+            if  power_output > power_input:
+                power_output=power_input
             power_utilization = device.get("power_utilization") or 0
             pue = device.get("pue") or 0
             datatraffic = device.get("datatraffic") or 0

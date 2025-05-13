@@ -2376,6 +2376,8 @@ class SiteService:
             total_pin = total_pout = total_traffic = total_co2 = count = 0
             for metric in all_metrics:
                 total_pin += metric.get("total_PIn", 0)
+                if total_pout > total_pin:
+                    total_pout += metric.get("total_PIn", 0)
                 total_pout += metric.get("total_POut", 0)
                 total_traffic += metric.get("data_traffic", 0)
                 total_co2 += metric.get("co2_kgs", 0)

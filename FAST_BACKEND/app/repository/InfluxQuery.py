@@ -523,6 +523,8 @@ def get_24hDevice_power(apic_ip: str) -> List[dict]:
             power_utilization = (pout_sum / pin_sum) *100
         if pout_sum > 0:
             pue = (pin_sum / pout_sum)
+        if pout_sum > pin_sum:
+            pout_sum=pin_sum
 
         data.append({
             "apic_controller_ip": apic_ip,

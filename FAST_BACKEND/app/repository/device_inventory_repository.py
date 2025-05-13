@@ -862,6 +862,7 @@ class DeviceInventoryRepository(BaseRepository):
 
                 power_input = enriched_device.get("power_input") or 0
                 power_output = enriched_device.get("power_output") or 0
+
                 power_utilization = enriched_device.get("power_utilization") or 0
                 pue = enriched_device.get("pue") or 0
                 datatraffic = enriched_device.get("datatraffic") or 0
