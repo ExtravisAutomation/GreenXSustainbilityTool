@@ -832,6 +832,7 @@ class DeviceInventoryRepository(BaseRepository):
                     **sntc_info,
                     "rack_name": device.rack.rack_name if device.rack else None,
                     "site_name": device.site.site_name if device.site else None,
+
                     "device_ip": apic_controller_ip,
                     "device_type": device_type,
                     # "device_name": device.device_name,
@@ -924,8 +925,14 @@ class DeviceInventoryRepository(BaseRepository):
                 .outerjoin(DeviceSNTC, DeviceInventory.pn_code == DeviceSNTC.model_name)
 
             )
-            query=query.filter(DeviceInventory.device.has((Devices.OnBoardingStatus==True) and (Devices.collection_status==True)))
-
+            query.filter(
+                DeviceInventory.device.has(
+                    (Devices.OnBoardingStatus == True) &
+                    (Devices.collection_status == True)
+                )
+            ).filter(
+                DeviceInventory.pn_code.notlike('%IE%')
+            )
             print(f"Base query count: {query.count()}")  # Debugging before filtering
 
             # Apply filters dynamically
@@ -1033,8 +1040,14 @@ class DeviceInventoryRepository(BaseRepository):
                 )
                 .outerjoin(DeviceSNTC, DeviceInventory.pn_code == DeviceSNTC.model_name)
             )
-            query = query.filter(DeviceInventory.device.has(
-                (Devices.OnBoardingStatus == True) and (Devices.collection_status == True)))
+            query = query.filter(
+                DeviceInventory.device.has(
+                    (Devices.OnBoardingStatus == True) &
+                    (Devices.collection_status == True)
+                )
+            ).filter(
+                DeviceInventory.pn_code.notlike('%IE%')
+            )
 
             print(f"Base query count: {query.count()}")  # Debugging before filtering
 
