@@ -383,12 +383,46 @@ def generate_excel(filter_data:FilterSchema,
         'parent', 'site_id', 'apic_controller_id', 'created_by', 'hw_eol_date',
         'manufacturer_date', 'status', 'sw_eol_date', 'updated_at', 'patch_version',
         'rfs_date', 'sw_eos_date', 'cisco_domain', 'device_ru', 'id', 'criticality', 'hw_eos_date',
-        'section', 'tag_id', 'contract_expiry', 'domain', 'modified_by',
+        'section', 'tag_id', 'contract_expiry', 'domain', 'modified_by','rack_name','command',
         'source', 'department', 'item_code', 'rack_id', 'stack','manufacturer','software_version','bandwidth_utilization',
         'apic_controller', 'rack', 'site', 'device','pue','performance_score','performance_description'
     ]
     devices = devices.drop(columns=columns_to_drop, errors='ignore')  # errors='ignore' skips missing columns safely
     print(devices.columns,"After drop")
+    new_column_order = [
+        # Basic Identification
+        "Device Name",
+        "Device Type",
+        "Serial Number",
+        "Product Number (PN)",
+        "IP Address",
+        "Site",
+
+
+        # Power Information
+        "Total Power Capacity",
+        "PSU Count",
+        "PSU Model",
+        "Power Input (W)",
+        "Power Output (W)",
+        "Energy Efficiency (%)",
+        "Power Consumption Ratio (W/Gbps)",
+
+        # Network Performance
+        "Data Traffic (GB)",
+
+        # Environmental Impact
+        "Carbon Emission (kgCO₂)",
+
+        # Lifecycle Dates
+        "HW End-of-Life (EoL)",
+        "HW End-of-Support (EoS)",
+        "HW Last Day of Support",
+        "HW Last Date of RFA",
+        "HW Security Support EoS",
+        "SW Maintenance EoL",
+        "SW Vulnerability Support EoS"
+    ]
     devices.rename(columns={
         "device_name": "Device Name",
         # "manufacturer": "Manufacturer",
@@ -402,7 +436,7 @@ def generate_excel(filter_data:FilterSchema,
         "sw_EoVSS": "SW Vulnerability Support EoS",
         "hw_EoSCR": "HW Security Support EoS",
         "hw_ldos": "HW Last Day of Support",
-        "rack_name": "Rack",
+        # "rack_name": "Rack",
         "site_name": "Site",
         "device_ip": "IP Address",
         "device_type": "Device Type",
@@ -410,12 +444,16 @@ def generate_excel(filter_data:FilterSchema,
         "power_input": "Power Input (W)",
         "power_output": "Power Output (W)",
         "datatraffic": "Data Traffic (GB)",
+        "total_power_capacity":"Total Power Capacity",
+        "psu_count":"PSU Count",
+        "psu_model":"PSU Model",
         # "bandwidth_utilization": "Bandwidth Utilization (%)",
         "carbon_emission": "Carbon Emission (kgCO₂)",
         "pcr": "Power Consumption Ratio (W/Gbps)",
         # "performance_score": "Performance Score",
         # "performance_description": "Performance Description"
     }, inplace=True)
+    devices = devices.reindex(columns=new_column_order)
     print(devices['Power Consumption Ratio (W/Gbps)'])
     file_path = "device_report.xlsx"
     # Save DataFrame to an Excel file

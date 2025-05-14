@@ -34,6 +34,10 @@ class DeviceInventory(BaseModel):
     status = Column(String(255), nullable=True)
     power_utilization = None
     role = Column(String(255), nullable=True)
+    psu_model = Column(String(100), nullable=True)
+    command = Column(String(100), nullable=True)
+    psu_count = Column(Integer, nullable=True)
+    total_power_capacity = Column(Integer, nullable=True)
     apic_controller_id = Column(Integer, ForeignKey('apic_controllers.id'))
     apic_controller = relationship("APICController", back_populates="deviceInventory")
     rack = relationship("Rack", backref="deviceInventory")
