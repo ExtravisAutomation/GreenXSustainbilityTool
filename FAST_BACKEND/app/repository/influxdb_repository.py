@@ -1530,8 +1530,7 @@ class InfluxDBRepository:
                 # Calculate energy efficiency
                 output=power_result['total_POut']
                 input_p=power_result['total_PIn']
-                if output > input_p:
-                    output=input_p
+
                 power_result['energy_efficiency'] = np.where(
                     (output.notna() &
                      power_result['total_PIn'].notna() &

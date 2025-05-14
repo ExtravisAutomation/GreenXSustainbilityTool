@@ -1282,6 +1282,8 @@ class SiteRepository(BaseRepository):
                 .join(Rack, DeviceInventory.rack_id == Rack.id)
                 .filter(APICControllers.OnBoardingStatus==True)
                 .filter(APICControllers.collection_status==True)
+                .filter(
+                    DeviceInventory.pn_code.notlike('%IE%'))
             )
             
             if site_id:
