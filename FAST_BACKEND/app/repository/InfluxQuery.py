@@ -486,16 +486,16 @@ def get_24hDevice_power(apic_ip: str) -> List[dict]:
                                |> range(start: {start_range})
                                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{apic_ip}")
                                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                               |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+                               |> aggregateWindow(every: 1h, fn: sum, createEmpty: false)
                                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
                            '''
-
-
-
     # result = query_api.query(query)
-
     try:
         result = query_api.query_data_frame(query)
+
+        result = result.drop_duplicates(subset=['_time', 'ApicController_IP'], keep='last')
+        print(type(result))
+
         data = []
         pin_sum,pout_sum=0,0
         if not result.empty:
