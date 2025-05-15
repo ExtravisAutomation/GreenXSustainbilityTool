@@ -479,7 +479,7 @@ def get_24h_rack_datatraffic(apic_ips, rack_id) -> List[dict]:
 
 def get_24hDevice_power(apic_ip: str) -> List[dict]:
     total_drawn, total_supplied = 0, 0
-    start_range = "-1h"
+    start_range = "-24h"
 
     query = f'''
                               from(bucket: "Dcs_db")
@@ -493,7 +493,7 @@ def get_24hDevice_power(apic_ip: str) -> List[dict]:
     try:
         result = query_api.query_data_frame(query)
 
-        result = result.drop_duplicates(subset=['_time', 'ApicController_IP'], keep='last')
+        # result = result.drop_duplicates(subset=['_time', 'ApicController_IP'], keep='last')
         print(type(result))
 
         data = []
@@ -742,7 +742,7 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
         print(f"Fetching traffic data for {apic_ip}")
         total_traffic = 0.0
         total_bandwidth = 0.0
-        start_range = "-1h"
+        start_range = "-24h"
 
         query = f'''
             from(bucket: "Dcs_db")
