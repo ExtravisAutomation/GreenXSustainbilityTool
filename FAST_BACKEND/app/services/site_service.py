@@ -1276,11 +1276,13 @@ class SiteService:
         metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter17(device_ips, start_date,
                                                                                         end_date, duration_str)
         total_pin_value_KW = sum(metric.get('total_PIn', 0) for metric in metrics)
+        total_POut_value_KW=sum(metric.get('total_POut',0) for metric in metrics)
+
 
         carbon_intensity=0.4041
         print()
-        carbon_emission_KG = round(float(total_pin_value_KW) * float(carbon_intensity),4)
-        print("Total pin_kw", total_pin_value_KW)
+        carbon_emission_KG = round(float(total_POut_value_KW) * float(carbon_intensity),4)
+        print("Total pin_kw", total_POut_value_KW)
         print("Emisssionsssssss", carbon_emission_KG, file=sys.stderr)
         # carbon_emission_KG = round(carbon_emission / 1000, 2)
         # print("KGGGGGGGGGGGG", carbon_emission_KG, file=sys.stderr)
@@ -1728,12 +1730,12 @@ class SiteService:
 
         print(f"Device details: {device}")
 
-        total_pin_value = self.influxdb_repository.get_device_total_pin_value(
+        total_pin_value,total_pout_value = self.influxdb_repository.get_device_total_values(
             device["ip_address"], start_date, end_date, duration_str)
         # carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
         carbon_intensity=0.4041
-        total_pin_value_KW = total_pin_value / 1000
-        carbon_emission_KG = float(total_pin_value_KW) * float(carbon_intensity)
+        total_pout_value_KW = total_pout_value / 1000
+        carbon_emission_KG = float(total_pout_value_KW) * float(carbon_intensity)
 
 
         return device, round(carbon_emission_KG,2)
@@ -1757,19 +1759,20 @@ class SiteService:
             if device.device_name in processed_device_names:
                 continue
 
-            total_pin_value = self.influxdb_repository.get_device_total_pin_value(
+            total_pin_value ,total_pout_value= self.influxdb_repository.get_device_total_values(
                 device.ip_address, start_date, end_date, duration_str)
             # carbon_intensity = self.influxdb_repository.get_carbon_intensity(start_date, end_date, duration_str)
 
             total_pin_value_KW = total_pin_value / 1000
-            carbon_emission_KG = float(total_pin_value_KW) * float(0.4041)
+            total_pout_value_KW = total_pout_value / 1000
+            carbon_emission_KG = float(total_pout_value_KW) * float(0.4041)
             # carbon_emission_KG = round(carbon_emission / 1000, 2)
 
             devices_carbon_emission.append({
                 "device_id": device.id,
                 "device_name": device.device_name,
                 "total_pin_value_KW":total_pin_value_KW,
-
+                " total_pout_value_KW": total_pout_value_KW,
                 "carbon_emission": round(carbon_emission_KG,2)
             })
 
@@ -1799,7 +1802,7 @@ class SiteService:
             if device.device_name in processed_device_names:
                 continue
 
-            total_pin_value = self.influxdb_repository.get_device_total_pin_value(
+            total_pin_value,total_pout_value = self.influxdb_repository.get_device_total_values(
                 device.ip_address, start_date, end_date, duration_str)
             datatraffic = self.influxdb_repository.get_device_datatraffic(device.ip_address, start_date, end_date, duration_str)
 
@@ -1816,6 +1819,7 @@ class SiteService:
             devices_datatraffic.append({
                 "device_id": device.id,
                 "total_pin_value_W":round(total_pin_value_W,2),
+                "total_pout_value_W": round(total_pout_value, 2),
                 "data_GB":round(data_GB,2),
                 "device_name": device.device_name,
                 "pcr": round(pcr,2)

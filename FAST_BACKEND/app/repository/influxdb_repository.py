@@ -3318,7 +3318,7 @@ class InfluxDBRepository:
         else:
             raise ValueError("Invalid granularity")
 
-    def get_device_total_pin_value(self, device_ip: str, start_date: datetime, end_date: datetime,
+    def get_device_total_values(self, device_ip: str, start_date: datetime, end_date: datetime,
                                    duration_str: str) -> float:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
@@ -3330,7 +3330,7 @@ class InfluxDBRepository:
         else:  # For "last 6 months", "last year", "current year"
             aggregate_window = "1m"
 
-        total_pin = 0
+        total_pin ,total_out= 0,0
 
         # query = f'''
         #     from(bucket: "{configs.INFLUXDB_BUCKET}")
@@ -3352,12 +3352,15 @@ class InfluxDBRepository:
 
         if not result.empty:
             total_pin += result['total_PIn'].sum() if 'total_PIn' in result else 0.0
+            total_out += result['total_POut'].sum() if 'total_POut' in result else 0.0
+
+
 
         # result = self.query_api1.query_data_frame(query)
         # if not result.empty:
         #     total_pin += result['_value'].sum()
 
-        return total_pin
+        return total_pin, total_out
 
     def get_device_datatraffic(self, device_ip: str, start_date: datetime, end_date: datetime,
                                    duration_str: str) -> float:
