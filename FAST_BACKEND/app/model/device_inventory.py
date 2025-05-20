@@ -31,9 +31,10 @@ class DeviceInventory(BaseModel):
     site_id = Column(Integer, ForeignKey('site.id'))
     software_version = Column(String(255), nullable=True)
     source = Column(String(255), nullable=True)
-    status = Column(String(255), nullable=True)
+    status = Column(Boolean, nullable=True)
     stack=Column(String(255), nullable=True)
     power_utilization = None
+
     role = Column(String(255), nullable=True)
     psu_model = Column(String(100), nullable=True)
     command = Column(String(100), nullable=True)
