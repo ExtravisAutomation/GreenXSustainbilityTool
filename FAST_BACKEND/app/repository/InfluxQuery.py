@@ -482,39 +482,39 @@ def get_24hDevice_power(apic_ip: str) -> List[dict]:
     start_range = "-1h"
 
     query = f'''
-                              from(bucket: "Dcs_db")
-                               |> range(start: {start_range})
-                               |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{apic_ip}")
-                               |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                               |> aggregateWindow(every: 1h, fn: sum, createEmpty: false)
-                               |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-                           '''
+          from(bucket: "Dcs_db")
+           |> range(start: {start_range})
+           |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{apic_ip}")
+           |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")       
+            | > sum()
+            | > yield (name: "sum")
+               '''
     # result = query_api.query(query)
     try:
         result = query_api.query_data_frame(query)
 
-        result = result.drop_duplicates(subset=['_time', 'ApicController_IP'], keep='last')
+        # result = result.drop_duplicates(subset=['_time', 'ApicController_IP'], keep='last')
         print(type(result))
 
         data = []
         pin_sum,pout_sum=0,0
         if not result.empty:
-            pin_sum = result['total_PIn'].sum() if 'total_PIn' in result else 0.0
-            pout_sum = result['total_POut'].sum() if 'total_POut' in result else 0.0
-    #     result = query_api.query(query)
-    #
-    #     drawnAvg,suppliedAvg = None, None
-    #
-    #     for table in result:
-    #         for record in table.records:
-    #             if record.get_field() == "total_POut":
-    #                 drawnAvg = record.get_value()
-    #             elif record.get_field() == "total_PIn":
-    #                 suppliedAvg = record.get_value()
-    #
-    #             if drawnAvg is not None and suppliedAvg is not None:
-    #                 total_drawn += drawnAvg
-    #                 total_supplied += suppliedAvg
+            pin_sum = result['total_PIn'] if 'total_PIn' in result else 0.0
+            pout_sum = result['total_POut'] if 'total_POut' in result else 0.0
+        result = query_api.query(query)
+
+        drawnAvg,suppliedAvg = None, None
+
+        for table in result:
+            for record in table.records:
+                if record.get_field() == "total_POut":
+                    drawnAvg = record.get_value()
+                elif record.get_field() == "total_PIn":
+                    suppliedAvg = record.get_value()
+
+                if drawnAvg is not None and suppliedAvg is not None:
+                    total_drawn += drawnAvg
+                    total_supplied += suppliedAvg
 
         power_utilization = None
         pue = None
@@ -533,12 +533,12 @@ def get_24hDevice_power(apic_ip: str) -> List[dict]:
             "total_drawn":pout_sum,
             "pue": round(pue, 4) if pue is not None else 0,
            })
+        return data
 
     except Exception as e:
         print(f"Error querying InfluxDB for {apic_ip}: {e}")
-        
 
-    return data
+
 
 def get_24hDevice_powerIn(apic_ip: str) -> List[dict]:
 
@@ -752,9 +752,7 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
             |> aggregateWindow(every: 1h, fn: sum, createEmpty: false)
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
-
         data = []
-
         try:
             result = query_api.query_data_frame(query)
             result = result.drop_duplicates(subset=['_time', 'ApicController_IP'], keep='last')
@@ -772,7 +770,6 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
                 "traffic_through": 0.0,
                 "bandwidth": 0.0
             }]
-        # Return cleaned and converted result
         return [{
             "apic_controller_ip": apic_ip,
             "traffic_through": total_traffic,
@@ -1072,7 +1069,6 @@ def get_all_hostutilizaton(hostname) -> List[dict]:
   |> filter(fn: (r) => r["_field"] != "uptime") // Exclude known string fields
   |>mean()
   |> yield(name: "mean")
-
        '''
     data = []
     try:

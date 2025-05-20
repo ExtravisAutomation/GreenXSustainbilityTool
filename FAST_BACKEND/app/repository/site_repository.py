@@ -903,11 +903,11 @@ class SiteRepository(BaseRepository):
             if not device_ips:
                 return []
             power_efficiency = self.influxdb_repository.get_energy_efficiency(device_ips, site_id)
-            sorted_efficiency = sorted(power_efficiency, key=lambda x: x['PowerInput'], reverse=True)[:4]
+            sorted_efficiency = sorted(power_efficiency, key=lambda x: x['PowerOutput'], reverse=True)[:4]
             for entry in sorted_efficiency:
                 entry['site_id']=site_id
                 entry['device_name'] = ip_to_name.get(entry['apic_controller_ip'], "Unknown")
-                entry['co2_emission']=round((entry['PowerInput']*0.4041),2)
+                entry['co2_emission']=round((entry['PowerOutput']*0.4041),2)
 
             return sorted_efficiency
 

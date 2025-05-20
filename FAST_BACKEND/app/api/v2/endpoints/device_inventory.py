@@ -376,6 +376,8 @@ def generate_excel(filter_data:FilterSchema,
     device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
     devices = device_inventory_service.generate_excel(filter_data)
+    print(devices.columns)
+
 
     columns_to_drop = [
         '_sa_instance_state', 'created_at', 'device_id', 'item_desc', 'role', 'contract_number',
@@ -397,14 +399,14 @@ def generate_excel(filter_data:FilterSchema,
         "Product Number (PN)",
         "IP Address",
         "Site",
-
-
         # Power Information
-        "Total Power Capacity",
+
+        "Stack",
         "PSU Count",
         "PSU Model",
-        "Power Input (W)",
+        "Total Power Capacity",
         "Power Output (W)",
+        "Power Input (W)",
         "Energy Efficiency (%)",
         "Power Consumption Ratio (W/Gbps)",
 
@@ -439,6 +441,7 @@ def generate_excel(filter_data:FilterSchema,
         # "rack_name": "Rack",
         "site_name": "Site",
         "device_ip": "IP Address",
+        "stack":"Stack",
         "device_type": "Device Type",
         "power_utilization": "Energy Efficiency (%)",
         "power_input": "Power Input (W)",

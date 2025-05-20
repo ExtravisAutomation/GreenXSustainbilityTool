@@ -786,9 +786,8 @@ class DeviceInventoryRepository(BaseRepository):
                     .first()
                 )
 
-                apic_controller_ip = device.device.ip_address if device.device else None
-                device_type = self.get_device_type_by_ip(session, apic_controller_ip)
-
+                ip_address = device.device.ip_address if device.device else None
+                device_type = self.get_device_type_by_ip(session, ip_address)
                 # Get latest APIC controller IP
                 ip_result = (
                     session.query(Devices.ip_address)
@@ -833,7 +832,7 @@ class DeviceInventoryRepository(BaseRepository):
                     "rack_name": device.rack.rack_name if device.rack else None,
                     "site_name": device.site.site_name if device.site else None,
 
-                    "device_ip": apic_controller_ip,
+                    "device_ip": ip_address,
                     "device_type": device_type,
                     # "device_name": device.device_name,
                     "power_utilization": power[0]['power_utilization'] if power else 0,
@@ -871,7 +870,7 @@ class DeviceInventoryRepository(BaseRepository):
                 bandwidth_utilization = enriched_device.get("bandwidth_utilization") or 0
 
                 # Carbon Emissions Calculation
-                carbon_emission = round(((power_input / 1000) * 0.4041), 2)
+                carbon_emission = round(((power_output / 1000) * 0.4041), 2)
 
                 # Power Consumption Ratio (PCR) Calculation
                 pcr = round(power_input/ datatraffic, 4) if datatraffic else 0
@@ -1045,8 +1044,6 @@ class DeviceInventoryRepository(BaseRepository):
                     (Devices.OnBoardingStatus == True) &
                     (Devices.collection_status == True)
                 )
-            ).filter(
-                DeviceInventory.pn_code.notlike('%IE%')
             )
 
             print(f"Base query count: {query.count()}")  # Debugging before filtering

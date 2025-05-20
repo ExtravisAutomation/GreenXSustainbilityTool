@@ -1009,7 +1009,7 @@ class InfluxDBRepository:
                 average_power = (total_power / count_measurements) if count_measurements > 0 else 0
                 average_powerkw = average_power / 1000
                 powerinkwh = total_power / 1000  # aed
-                cost_of_power = powerinkwh * 0.405
+                cost_of_power = powerinkwh * 0.32
                 top_devices_power.append({
                     'ip': ip,
                     'total_PIn': total_power,
@@ -1285,7 +1285,7 @@ class InfluxDBRepository:
             traffic_gbps = traffic_speed_mbps / 1000  if traffic_speed_mbps else 0# Convert Mbps to Gbps
             pcr = round((total_powerin / traffic_gbps),2) if traffic_gbps else 0  # PCR in W/Gbps
 
-            co2em=(total_powerin/1000) *0.4041
+            co2em=(total_powerout/1000) *0.4041
             print("co2emissions ", co2em)
             print(pcr,"PCR")
 
@@ -1604,7 +1604,8 @@ class InfluxDBRepository:
                 energy_consumption = pout / pin if pin > 0 else 0
                 power_efficiency = pin / pout if pout > 0 else 0
                 pin_kw= pin / 1000
-                co2 = pin_kw * 0.4041
+                pout_kw=pout/1000
+                co2 = pout_kw * 0.4041
                 co2_tons = co2 / 1000
                 total_bytes_rate_last_gb = total_bytes_rate_last/(2 ** 30)
 
@@ -2850,7 +2851,7 @@ class InfluxDBRepository:
                     metric_name = "energy efficiency ratio"
                     value=round(value, 2)
                 elif metric.lower() == "carbon emissions":
-                    value = average_pin* 0.4  # CO2 emission factor
+                    value = average_pout* 0.4041  # CO2 emission factor
                     metric_name = "carbon emissions"
                     value=f"{round(value, 2)} kgs"
                 elif metric.lower() == "pcr":
@@ -3023,7 +3024,7 @@ class InfluxDBRepository:
                         power_efficiency = pin / pout if pout > 0 else 0
                         pin_kg = pin / 1000
                         pout_kg = pout / 1000
-                        co2 = pin_kg * 0.4716
+                        co2 = pout_kg * 0.4041
                         co2_tons = co2 / 1000
 
                         total_power_metrics.append({
@@ -3705,7 +3706,7 @@ class InfluxDBRepository:
                             "total_POut": round(pout/1000, 4),
                             "total_PIn": round(pin/1000, 4),
                             "power_efficiency": round(power_efficiency, 4),
-                            "co2e": round((pin/1000)*0.4716,4),
+                            "co2e": round((pout/1000)*0.4041,4),
                             "eer": round(eer, 4),
                             "pue": round(pue, 4)
                         })
