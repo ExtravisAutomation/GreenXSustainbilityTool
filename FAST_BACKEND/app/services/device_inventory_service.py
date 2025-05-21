@@ -467,6 +467,7 @@ class DeviceInventoryService:
                 "score_desc": device.get("performance_description"),
             }
 
+
             enriched_devices.append(enriched_device)
 
         return {
