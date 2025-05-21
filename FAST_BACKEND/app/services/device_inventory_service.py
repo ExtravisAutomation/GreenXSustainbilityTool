@@ -471,6 +471,7 @@ class DeviceInventoryService:
 
         return {
             "page": devices['page'],
+
             "page_size": devices['page_size'],
             "total_devices": devices['total_devices'],
             "total_pages": devices['total_pages'],
