@@ -33,6 +33,7 @@ class DeviceInventory(BaseModel):
     source = Column(String(255), nullable=True)
     status = Column(Boolean, nullable=True)
     stack=Column(String(255), nullable=True)
+    error_message=Column(String(255), nullable=True)
     power_utilization = None
 
     role = Column(String(255), nullable=True)
