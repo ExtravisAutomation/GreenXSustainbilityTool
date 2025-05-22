@@ -76,7 +76,6 @@ def create_device(
         status_code=201
     )
 
-
 @router.put("update_device_inventory/{device_id}", response_model=Custom_Response_Inventory[DeviceInventoryInDB])
 @inject
 def update_device(
@@ -424,6 +423,7 @@ def generate_excel(filter_data:FilterSchema,
         "HW Security Support EoS",
         "SW Maintenance EoL",
         "SW Vulnerability Support EoS"
+        "Error Message"
     ]
     devices.rename(columns={
         "device_name": "Device Name",
@@ -453,6 +453,7 @@ def generate_excel(filter_data:FilterSchema,
         # "bandwidth_utilization": "Bandwidth Utilization (%)",
         "carbon_emission": "Carbon Emission (kgCO₂)",
         "pcr": "Power Consumption Ratio (W/Gbps)",
+        "error_message":"Error Message",
         # "performance_score": "Performance Score",
         # "performance_description": "Performance Description"
     }, inplace=True)
