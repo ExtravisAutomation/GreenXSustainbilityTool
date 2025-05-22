@@ -407,10 +407,10 @@ def generate_excel(filter_data:FilterSchema,
         "Power Output (W)",
         "Power Input (W)",
         "Energy Efficiency (%)",
-        "Power Consumption Ratio (W/Gbps)",
+        "Power Consumption Ratio (W/Mbps)",
 
         # Network Performance
-        "Data Traffic (GB)",
+        "Data Traffic (MBs)",
 
         # Environmental Impact
         "Carbon Emission (kgCO₂)",
