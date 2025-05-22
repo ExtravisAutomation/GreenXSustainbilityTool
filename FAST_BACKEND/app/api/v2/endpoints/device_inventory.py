@@ -452,7 +452,7 @@ def generate_excel(filter_data:FilterSchema,
         "psu_model":"PSU Model",
         # "bandwidth_utilization": "Bandwidth Utilization (%)",
         "carbon_emission": "Carbon Emission (kgCO₂)",
-        "pcr": "Power Consumption Ratio (W/Gbps)",
+        "pcr": "Power Consumption Ratio (W/Mbps)",
         "error_message":"Error Message",
         # "performance_score": "Performance Score",
         # "performance_description": "Performance Description"
