@@ -458,7 +458,7 @@ def generate_excel(filter_data:FilterSchema,
         # "performance_description": "Performance Description"
     }, inplace=True)
     devices = devices.reindex(columns=new_column_order)
-    print(devices['Power Consumption Ratio (W/Gbps)'])
+
     file_path = "device_report.xlsx"
     # Save DataFrame to an Excel file
     devices.to_excel(file_path, index=False, engine="openpyxl")
