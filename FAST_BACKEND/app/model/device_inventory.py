@@ -32,9 +32,8 @@ class DeviceInventory(BaseModel):
     software_version = Column(String(255), nullable=True)
     source = Column(String(255), nullable=True)
     status = Column(Boolean, nullable=True)
-    stack=Column(String(255), nullable=True)
-    error_message=Column(String(255), nullable=True)
     power_utilization = None
+    stack = Column(Boolean, nullable=True)
     error_message = Column(String(1000), nullable=True)
 
     role = Column(String(255), nullable=True)

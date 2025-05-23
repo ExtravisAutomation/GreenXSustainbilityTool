@@ -831,9 +831,9 @@ class DeviceInventoryRepository(BaseRepository):
                     **sntc_info,
                     "rack_name": device.rack.rack_name if device.rack else None,
                     "site_name": device.site.site_name if device.site else None,
-
                     "device_ip": ip_address,
                     "device_type": device_type,
+
                     # "device_name": device.device_name,
                     "power_utilization": power[0]['power_utilization'] if power else 0,
                     "pue": power[0]['pue'] if power else 0,
@@ -885,6 +885,7 @@ class DeviceInventoryRepository(BaseRepository):
                 enriched_device["performance_score"] = performance_score
                 enriched_device["performance_description"] = performance_description
                 enriched_devices.append(enriched_device)
+        # print(enriched_devices)
 
         return enriched_devices
 
@@ -1087,7 +1088,7 @@ class DeviceInventoryRepository(BaseRepository):
 
                 df=pd.DataFrame(enriched_devices)
 
-                print(df['pcr'])
+                print(df['error_message'])
 
                 return df
 

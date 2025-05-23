@@ -375,9 +375,8 @@ def generate_excel(filter_data:FilterSchema,
     device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
 ):
     devices = device_inventory_service.generate_excel(filter_data)
-    print(devices.columns)
 
-
+    print(devices.head(5))
     columns_to_drop = [
         '_sa_instance_state', 'created_at', 'device_id', 'item_desc', 'role', 'contract_number',
         'hardware_version',
@@ -385,7 +384,7 @@ def generate_excel(filter_data:FilterSchema,
         'manufacturer_date', 'status', 'sw_eol_date', 'updated_at', 'patch_version',
         'rfs_date', 'sw_eos_date', 'cisco_domain', 'device_ru', 'id', 'criticality', 'hw_eos_date',
         'section', 'tag_id', 'contract_expiry', 'domain', 'modified_by','rack_name','command',
-        'source', 'department', 'item_code', 'rack_id', 'stack','manufacturer','software_version','bandwidth_utilization',
+        'source', 'department', 'item_code', 'rack_id', 'manufacturer','software_version','bandwidth_utilization',
         'apic_controller', 'rack', 'site', 'device','pue','performance_score','performance_description'
     ]
     devices = devices.drop(columns=columns_to_drop, errors='ignore')  # errors='ignore' skips missing columns safely
@@ -422,7 +421,7 @@ def generate_excel(filter_data:FilterSchema,
         "HW Last Date of RFA",
         "HW Security Support EoS",
         "SW Maintenance EoL",
-        "SW Vulnerability Support EoS"
+        "SW Vulnerability Support EoS",
         "Error Message"
     ]
     devices.rename(columns={
