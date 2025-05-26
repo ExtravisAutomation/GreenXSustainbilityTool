@@ -805,13 +805,16 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
         print(f"Fetching traffic data for {apic_ip}")
         total_traffic = 0.0
         total_bandwidth = 0.0
+        total_output_bytes=0.0
+        total_input_bytes=0.0
+
         start_range = "-1h"
 
         query = f'''
             from(bucket: "Dcs_db")
             |> range(start: {start_range})
             |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["ApicController_IP"] == "{apic_ip}")
-            |> filter(fn: (r) => r["_field"] == "total_bytesRateLast" or r["_field"] == "bandwidth")
+            |> filter(fn: (r) => r["_field"] == "total_bytesRateLast" or r["_field"] == "bandwidth" or r["_field"]=="total_input_bytes" or r["_field"]=="total_output_bytes")
             |> aggregateWindow(every: 1h, fn: sum, createEmpty: false)
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
@@ -825,6 +828,11 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
                     total_traffic = float(result["total_bytesRateLast"].sum())
                 if "bandwidth" in result.columns:
                     total_bandwidth = float(result["bandwidth"].sum())
+                if "total_output_bytes" in result.columns:
+                    total_output_bytes=float(result["total_output_bytes"].sum())
+                if "total_input_bytes" in result.columns:
+                    total_input_bytes=float(result["total_input_bytes"].sum())
+
 
         except Exception as e:
             print(f"Error while querying InfluxDB: {e}")
@@ -836,6 +844,8 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
         return [{
             "apic_controller_ip": apic_ip,
             "traffic_through": total_traffic,
+            "total_output_bytes":total_output_bytes,
+            "total_input_bytes":total_input_bytes,
             "bandwidth": total_bandwidth
         }]
 # def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:

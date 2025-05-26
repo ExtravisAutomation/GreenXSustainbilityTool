@@ -365,9 +365,6 @@ def get_count(
         status_code=200
     )
 
-
-
-
 @router.post("/generate_excel")
 @inject
 def generate_excel(filter_data:FilterSchema,
@@ -408,10 +405,14 @@ def generate_excel(filter_data:FilterSchema,
         "Energy Efficiency (%)",
         "Power Consumption Ratio (W/Mbps)",
 
+
         # Network Performance
+        "RX (MBS)",
         "Data Traffic (MBs)",
+        "TX (MBS)",
 
         # Environmental Impact
+        
         "Carbon Emission (kgCO₂)",
 
         # Lifecycle Dates
@@ -449,6 +450,9 @@ def generate_excel(filter_data:FilterSchema,
         "total_power_capacity":"Total Power Capacity",
         "psu_count":"PSU Count",
         "psu_model":"PSU Model",
+        "total_output_mbs":"TX (MBS)",
+        "total_input_mbs":"RX (MBS)",
+
         # "bandwidth_utilization": "Bandwidth Utilization (%)",
         "carbon_emission": "Carbon Emission (kgCO₂)",
         "pcr": "Power Consumption Ratio (W/Mbps)",

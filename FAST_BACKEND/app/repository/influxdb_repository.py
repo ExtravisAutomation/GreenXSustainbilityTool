@@ -1246,7 +1246,7 @@ class InfluxDBRepository:
             return (round(value / 1000, 2), 'Gbps') if value > 1000 else (round(value, 2), 'Mbps')
 
         def convert_co2(value):
-            return (round(value / 1000, 3), 'tons') if value >= 1000 else (round(value, 2), 'kgs')
+            return (round(value / 1000, 3), 'tons') if value >= 1000 else (round(value, 4), 'kgs')
 
         total_power, power_unit = convert_power(total_powerin)
         total_power_out, power_unit_out = convert_power(totalpowerout)
@@ -1615,8 +1615,8 @@ class InfluxDBRepository:
                     "total_POut": round(pout / 1000, 2),  # Convert to kW
                     "total_PIn": round(pin / 1000, 2),  # Convert to kW
                     "power_efficiency": round(power_efficiency, 2),
-                    "co2_tons": round(co2_tons,3),
-                    "co2_kgs": round(co2, 2),
+                    "co2_tons": round(co2_tons,4),
+                    "co2_kgs": round(co2, 4),
                     "data_traffic": round(total_bytes_rate_last_gb, 2)
                 })
 
@@ -2853,7 +2853,7 @@ class InfluxDBRepository:
                 elif metric.lower() == "carbon emissions":
                     value = average_pout* 0.4041  # CO2 emission factor
                     metric_name = "carbon emissions"
-                    value=f"{round(value, 2)} kgs"
+                    value=f"{round(value, 4)} kgs"
                 elif metric.lower() == "pcr":
                     datatraffic = self.get_datatraffic(device_ip, start_date, end_date, duration_str)
                     if datatraffic['status'] == 'error':
@@ -3034,7 +3034,7 @@ class InfluxDBRepository:
                             "total_PIn": round(pin/1000, 2),
                             "power_efficiency": round(power_efficiency, 2),
                             "co2_tons": co2_tons,
-                            "co2_kgs": round(co2, 2)
+                            "co2_kgs": round(co2, 4)
                         })
 
         # df = pd.DataFrame(total_power_metrics).drop_duplicates(subset='time').to_dict(orient='records')

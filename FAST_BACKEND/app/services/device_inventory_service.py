@@ -456,6 +456,7 @@ class DeviceInventoryService:
                 "device_type": device.get("device_type"),
                 "power_utilization": power_utilization,
                 "pue": pue,
+
                 "power_input": power_input,
                 "datatraffic": datatraffic,
                 "power_output": power_output,

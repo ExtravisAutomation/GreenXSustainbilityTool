@@ -774,7 +774,10 @@ class DeviceInventoryRepository(BaseRepository):
             ]
 
         return enriched_devices
-
+    def convert_gb_mbs(self, data):
+        data_gb = data / (1024 ** 3) if data else 0
+        data_mb = data / (1024 ** 2)  if data else 0
+        return  data_gb,data_mb
     def get_devices_result(self, devices):
 
         with self.session_factory() as session:
@@ -846,20 +849,29 @@ class DeviceInventoryRepository(BaseRepository):
                 if datatraffic:
                     datatraffic_value = datatraffic[0]['traffic_through'] if datatraffic else 0
                     bandwidth_value = datatraffic[0]['bandwidth'] if datatraffic else 0
+                    total_input_bytes=datatraffic[0]['total_input_bytes'] if datatraffic else 0
+                    total_output_bytes=datatraffic[0]['total_output_bytes'] if datatraffic else  0
 
-                    datatraffic_gb = datatraffic_value / (1024 ** 3) if datatraffic_value else 0
-                    datatraffic_mb = datatraffic_value / (1024 ** 2) if datatraffic_value else 0
+                    datatraffic_gb , datatraffic_mb = self.convert_gb_mbs(datatraffic_value)
+
+                    total_output_gbs,total_output_mbs = self.convert_gb_mbs(total_output_bytes)
+                    total_input_gbs,total_input_mbs=self.convert_gb_mbs(total_input_bytes)
                     bandwidth_mbps = bandwidth_value / 1000 if bandwidth_value else 0
                     bandwidth_gbps = bandwidth_value / 1_000_000 if bandwidth_value else 0
 
                     bandwidth_utilization = (datatraffic_gb / bandwidth_gbps) * 100 if bandwidth_mbps else 0
                     enriched_device["bandwidth_gbps"] = round(bandwidth_gbps, 2)
+                    enriched_device["total_output_mbs"]=round(total_output_mbs,2)
+                    enriched_device["total_input_mbs"] = round(total_input_mbs, 2)
                     enriched_device["datatraffic"] = round(datatraffic_mb, 4)
                     enriched_device["bandwidth_utilization"] = round(bandwidth_utilization, 2)
+
                 else:
                     enriched_device["bandwidth_gbps"] = 0
                     enriched_device["datatraffic"] = 0
                     enriched_device["bandwidth_utilization"] = 0
+                    enriched_device["total_output_mbs"] = 0
+                    enriched_device["total_input_mbs"] = 0
 
                 power_input = enriched_device.get("power_input") or 0
                 power_output = enriched_device.get("power_output") or 0
@@ -871,7 +883,7 @@ class DeviceInventoryRepository(BaseRepository):
                 bandwidth_utilization = enriched_device.get("bandwidth_utilization") or 0
 
                 # Carbon Emissions Calculation
-                carbon_emission = round(((power_output / 1000) * 0.4041), 2)
+                carbon_emission = round(((power_output / 1000) * 0.4041), 4)
 
                 # Power Consumption Ratio (PCR) Calculation
                 pcr = round(power_input/ datatraffic, 4) if datatraffic else 0
