@@ -863,9 +863,9 @@ class DeviceInventoryRepository(BaseRepository):
 
                     bandwidth_utilization = (datatraffic_gb / bandwidth_gbps) * 100 if bandwidth_mbps else 0
                     enriched_device["bandwidth_gbps"] = round(bandwidth_gbps, 4)
-                    enriched_device["total_output_mbs"]=round(total_output_mbs,4)
-                    enriched_device["total_input_mbs"] = round(total_input_mbs, 4)
-                    enriched_device["datatraffic"] = round(datatraffic_mb, 4)
+                    enriched_device["total_output_mbs"]=round(total_output_bytes,4)
+                    enriched_device["total_input_mbs"] = round(total_input_bytes, 4)
+                    enriched_device["datatraffic"] = round(datatraffic_value, 4)
                     enriched_device["bandwidth_utilization"] = round(bandwidth_utilization, 4)
 
                 else:

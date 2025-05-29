@@ -408,13 +408,13 @@ def generate_excel(filter_data:FilterSchema,
         "Power Output (W)",
         "Power Input (W)",
         "Energy Efficiency (%)",
-        "Power Consumption Ratio (W/Mbps)",
+        "Power Consumption Ratio (W/bps)",
 
 
         # Network Performance
-        "RX (MBS)",
-        "Data Traffic (MBs)",
-        "TX (MBS)",
+        "RX (Bs)",
+        "Data Traffic (Bs)",
+        "TX (Bs)",
 
         # Environmental Impact
         
