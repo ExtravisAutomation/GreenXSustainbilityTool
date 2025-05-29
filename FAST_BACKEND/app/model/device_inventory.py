@@ -46,8 +46,9 @@ class DeviceInventory(BaseModel):
     rack = relationship("Rack", backref="deviceInventory")
     site = relationship("Site", backref="deviceInventory")
     device = relationship("APICControllers", backref="deviceInventory")
-    
-    
+    total_interface = Column(Integer, nullable=True)
+    up_link = Column(Integer, nullable=True)
+    down_link =Column(Integer, nullable=True)
 
 class DeviceSNTC(BaseModel):
     __tablename__ = 'devices_sntc'

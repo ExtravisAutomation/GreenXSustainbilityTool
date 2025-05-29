@@ -394,6 +394,11 @@ def generate_excel(filter_data:FilterSchema,
         "Product Number (PN)",
         "IP Address",
         "Site",
+        "Total Interfaces",
+        "Up Links",
+        "Down Links",
+
+
         # Power Information
 
         "Stack",
@@ -450,8 +455,12 @@ def generate_excel(filter_data:FilterSchema,
         "total_power_capacity":"Total Power Capacity",
         "psu_count":"PSU Count",
         "psu_model":"PSU Model",
-        "total_output_mbs":"TX (MBS)",
-        "total_input_mbs":"RX (MBS)",
+        "total_output_mbs":"TX (MBs)",
+        "total_input_mbs":"RX (MBs)",
+        "total_interface":"Total Interfaces",
+        "up_link":"Up Links",
+        "down_link":"Down Links",
+
 
         # "bandwidth_utilization": "Bandwidth Utilization (%)",
         "carbon_emission": "Carbon Emission (kgCO₂)",

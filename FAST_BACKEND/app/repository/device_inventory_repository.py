@@ -852,9 +852,11 @@ class DeviceInventoryRepository(BaseRepository):
                     total_input_bytes=datatraffic[0]['total_input_bytes'] if datatraffic else 0
                     total_output_bytes=datatraffic[0]['total_output_bytes'] if datatraffic else  0
 
+
                     datatraffic_gb , datatraffic_mb = self.convert_gb_mbs(datatraffic_value)
 
                     total_output_gbs,total_output_mbs = self.convert_gb_mbs(total_output_bytes)
+
                     total_input_gbs,total_input_mbs=self.convert_gb_mbs(total_input_bytes)
                     bandwidth_mbps = bandwidth_value / 1000 if bandwidth_value else 0
                     bandwidth_gbps = bandwidth_value / 1_000_000 if bandwidth_value else 0
