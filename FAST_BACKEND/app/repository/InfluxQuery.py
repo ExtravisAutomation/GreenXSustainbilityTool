@@ -841,6 +841,14 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
                 "traffic_through": 0.0,
                 "bandwidth": 0.0
             }]
+        print("datatat------------------------------------------------------------")
+        print([{
+            "apic_controller_ip": apic_ip,
+            "traffic_through": total_traffic,
+            "total_output_bytes":total_output_bytes,
+            "total_input_bytes":total_input_bytes,
+            "bandwidth": total_bandwidth
+        }])
         return [{
             "apic_controller_ip": apic_ip,
             "traffic_through": total_traffic,
