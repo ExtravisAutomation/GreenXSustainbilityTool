@@ -899,7 +899,8 @@ class DeviceInventoryRepository(BaseRepository):
                 enriched_device["performance_score"] = performance_score
                 enriched_device["performance_description"] = performance_description
                 enriched_devices.append(enriched_device)
-        # print(enriched_devices)
+        print("ddddddddddddddddddddddddddddddddddddddd")
+        print(enriched_devices)
 
         return enriched_devices
 
