@@ -886,7 +886,7 @@ class DeviceInventoryRepository(BaseRepository):
                 datatraffic = enriched_device.get("datatraffic") or 0
                 # datatraffic_gb = datatraffic / (1024 ** 3) if datatraffic_value else 0
                 bandwidth_utilization = enriched_device.get("bandwidth_utilization") or 0
-                eer_dt=round(datatraffic/power_input,3) or 0
+                eer_dt = round(datatraffic / power_input, 3) if power_input else 0
 
                 # Carbon Emissions Calculation
                 carbon_emission = round(((power_output / 1000) * 0.4041), 4)

@@ -824,7 +824,7 @@ def get_excel_df(ip_addresses):
         query = f'''
         from(bucket: "Dcs_db")
           |> range(start: -1h)
-          |> filter(fn: (r) => r._measurement == "DeviceEngreeTraffics")
+          |> filter(fn: (r) => r._measurement == "DeviceEngreeTraffic")
           |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
           |> filter(fn: (r) => {field_filter})
           |> aggregateWindow(every: 1m, fn: last, createEmpty: false)
