@@ -1,6 +1,8 @@
 import sys
 from typing import List
 import random
+
+import pandas as pd
 from dotenv import load_dotenv
 import os
 from influxdb_client import InfluxDBClient
@@ -800,6 +802,54 @@ def get_24hsite_datatraffc(apic_ips, site_id) -> List[dict]:
             
 
     return site_data
+def get_excel_df(ip_addresses):
+    # Fields to extract
+    fields = [
+        "total_bytesLast", "total_bytesRateLast", "total_pktsLast", "total_pktsRateLast",
+        "total_data_point", "total_input_bytes", "total_output_bytes", "total_output_rate",
+        "total_input_rate", "total_input_packets", "total_output_packets", "bandwidth"
+    ]
+
+    # Connect to InfluxDB
+
+
+    # Empty list to collect all records
+    all_records = []
+
+    for ip in ip_addresses:
+        print(f"🔍 Fetching data for IP: {ip}")
+
+        field_filter = " or ".join([f'r._field == "{field}"' for field in fields])
+
+        query = f'''
+        from(bucket: "Dcs_db")
+          |> range(start: -1h)
+          |> filter(fn: (r) => r._measurement == "DeviceEngreeTraffics")
+          |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
+          |> filter(fn: (r) => {field_filter})
+          |> aggregateWindow(every: 1m, fn: last, createEmpty: false)
+          |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+          |> keep(columns: ["_time", "ApicController_IP", {", ".join([f'"{f}"' for f in fields])}])
+          |> sort(columns: ["_time"])
+        '''
+
+        tables = query_api.query(query)
+
+        for table in tables:
+            for record in table.records:
+                row = {
+                    "time": record.get_time().replace(tzinfo=None),
+                    "ip": record.values.get("ApicController_IP"),
+                }
+                for f in fields:
+                    row[f] = record.values.get(f)
+                all_records.append(row)
+
+    # Convert combined results into a DataFrame
+    df = pd.DataFrame(all_records)
+    print(df)
+    return df
+
 
 def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
         print(f"Fetching traffic data for {apic_ip}")

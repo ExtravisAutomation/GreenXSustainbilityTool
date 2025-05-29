@@ -12,7 +12,7 @@ from app.model.DevicesSntc import DevicesSntc
 from app.model.rack import Rack
 from app.model.site import Site
 from app.model.DevicesSntc import DevicesSntc as DeviceSNTC
-from app.repository.InfluxQuery import get_24hDevice_dataTraffic, get_24hDevice_power, get_device_power
+from app.repository.InfluxQuery import get_24hDevice_dataTraffic, get_24hDevice_power, get_device_power,get_excel_df
 from app.model.device_inventory import ChassisFan, ChassisModule, ChassisPowerSupply, DeviceInventory, ChassisDevice
 
 from app.model.APIC_controllers import  APICControllers as Devices, Vendor, DeviceType
@@ -20,6 +20,8 @@ from app.model.APIC_controllers import  APICControllers as Devices, Vendor, Devi
 from app.repository.base_repository import BaseRepository
 from sqlalchemy import func, desc, and_
 from datetime import datetime, timedelta
+
+
 
 class DeviceInventoryRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]], influxdb_repository):
@@ -776,8 +778,9 @@ class DeviceInventoryRepository(BaseRepository):
         return enriched_devices
     def convert_gb_mbs(self, data):
         data_gb = data / (1024 ** 3) if data else 0
-        data_mb = data / (1024 ** 2)  if data else 0
+        data_mb = data / 1_000_000 if data else 0
         return  data_gb,data_mb
+
     def get_devices_result(self, devices):
 
         with self.session_factory() as session:
@@ -861,17 +864,17 @@ class DeviceInventoryRepository(BaseRepository):
                     bandwidth_mbps = bandwidth_value / 1000 if bandwidth_value else 0
                     bandwidth_gbps = bandwidth_value / 1_000_000 if bandwidth_value else 0
 
-                    bandwidth_utilization = (datatraffic_gb / bandwidth_gbps) * 100 if bandwidth_mbps else 0
-                    enriched_device["bandwidth_gbps"] = round(bandwidth_gbps, 4)
-                    enriched_device["total_output_mbs"]=round(total_output_bytes,4)
-                    enriched_device["total_input_mbs"] = round(total_input_bytes, 4)
-                    enriched_device["datatraffic"] = round(datatraffic_value, 4)
-                    enriched_device["bandwidth_utilization"] = round(bandwidth_utilization, 4)
+                    datatraffic_utilization = (datatraffic_mb / bandwidth_mbps) * 100 if bandwidth_mbps else 0
+                    enriched_device["bandwidth_mbps"] = round(bandwidth_mbps, 2)
+                    enriched_device["total_output_mbs"]=round(total_output_mbs,4)
+                    enriched_device["total_input_mbs"] = round(total_input_mbs, 4)
+                    enriched_device["datatraffic"] = round(datatraffic_mb, 4)
+                    enriched_device["datatraffic_utilization"] = round(datatraffic_utilization, 2)
 
                 else:
-                    enriched_device["bandwidth_gbps"] = 0
+                    enriched_device["bandwidth_mbps"] = 0
                     enriched_device["datatraffic"] = 0
-                    enriched_device["bandwidth_utilization"] = 0
+                    enriched_device["datatraffic_utilization"] = 0
                     enriched_device["total_output_mbs"] = 0
                     enriched_device["total_input_mbs"] = 0
 
@@ -883,6 +886,7 @@ class DeviceInventoryRepository(BaseRepository):
                 datatraffic = enriched_device.get("datatraffic") or 0
                 # datatraffic_gb = datatraffic / (1024 ** 3) if datatraffic_value else 0
                 bandwidth_utilization = enriched_device.get("bandwidth_utilization") or 0
+                eer_dt=round(datatraffic/power_input,3) or 0
 
                 # Carbon Emissions Calculation
                 carbon_emission = round(((power_output / 1000) * 0.4041), 4)
@@ -896,13 +900,21 @@ class DeviceInventoryRepository(BaseRepository):
                 )
                 enriched_device['carbon_emission']=carbon_emission
                 enriched_device['pcr']=pcr
+                enriched_device['eer_dt']=eer_dt
                 enriched_device["performance_score"] = performance_score
                 enriched_device["performance_description"] = performance_description
                 enriched_devices.append(enriched_device)
-        print("ddddddddddddddddddddddddddddddddddddddd")
-        print(enriched_devices)
+        # print(enriched_devices)
 
         return enriched_devices
+
+    def get_devices_result1(self, devices):
+
+        with self.session_factory() as session:
+            enriched_devices = []
+            ip_list = [device.device.ip_address for device in devices]
+
+            return get_excel_df(ip_list)
 
     def get_all_devices_test(self, filter_data) -> Dict:
         print("Getting all devices")
@@ -1106,7 +1118,91 @@ class DeviceInventoryRepository(BaseRepository):
                 print(df['error_message'])
 
                 return df
+    def generate_excel1(self, filter_data) -> Dict:
+        print("Getting all devices")
+        page_size = 10  # Number of devices per page
 
+        file_path = "device_report.xlsx"
+        page = filter_data.page
+        site_id = filter_data.site_id
+        rack_id = filter_data.rack_id
+        device_name = filter_data.device_name
+        ip_addresss = filter_data.ip_address
+        vendor_id = filter_data.vendor_id
+        device_type = filter_data.device_type
+        sntc_date = filter_data.sntc_date
+        serial_no = filter_data.serial_no
+        model_no = filter_data.model_no
+        department = filter_data.department
+        hardware_version = filter_data.hardware_version
+        software_version = filter_data.software_version
+        score_card = filter_data.score
+
+        if sntc_date:
+            try:
+                sntc_date = datetime.strptime(sntc_date, "%Y-%m-%d").date()
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+
+        with self.session_factory() as session:
+            query = (
+                session.query(DeviceInventory)
+                .options(
+                    joinedload(DeviceInventory.rack),
+                    joinedload(DeviceInventory.site),
+                    joinedload(DeviceInventory.device),
+                    joinedload(DeviceInventory.apic_controller)
+                )
+                .outerjoin(DeviceSNTC, DeviceInventory.pn_code == DeviceSNTC.model_name)
+            )
+            query = query.filter(
+                DeviceInventory.device.has(
+                    (Devices.OnBoardingStatus == True) &
+                    (Devices.collection_status == True)
+                )
+            )
+
+            print(f"Base query count: {query.count()}")  # Debugging before filtering
+
+            # Apply filters dynamically
+            if site_id:
+                query = query.filter(DeviceInventory.site_id == site_id)
+            if rack_id:
+                query = query.filter(DeviceInventory.rack_id == rack_id)
+            if device_name:
+                query = query.filter(DeviceInventory.device_name.ilike(f"%{device_name}%"))
+            if ip_addresss:
+                query = query.filter(DeviceInventory.device.has(Devices.ip_address.ilike(f"%{ip_addresss}%")))
+            if device_type:
+                query = query.filter(DeviceInventory.device.has(device_type=device_type))
+            if vendor_id:
+                query = query.filter(DeviceInventory.device.has(vendor_id=vendor_id))
+            if serial_no:
+                query = query.filter(DeviceInventory.serial_number.ilike(f"%{serial_no}%"))
+            if model_no:
+                query = query.filter(DeviceInventory.pn_code.ilike(f"%{model_no}%"))
+            if hardware_version:
+                query.filter(DeviceInventory.hardware_version.ilike(f"%{hardware_version}%"))
+            if software_version:
+                query = query.filter(DeviceInventory.software_version.ilike(f"%{software_version}%"))
+
+            print(f"Filtered query count: {query.count()}")  # Debugging after filtering
+            if score_card:
+
+                devices = query.order_by(DeviceInventory.id.desc()).all()
+
+                print(f"Devices fetched: {len(devices)}")  # Debugging
+                enriched_devices = self.get_devices_result1(devices)
+
+                return enriched_devices
+            else:
+                devices = query.order_by(DeviceInventory.id.desc()).all()
+
+                print(f"Devices fetched: {len(devices)}")  # Debugging
+                enriched_devices = self.get_devices_result1(devices)
+
+
+                return enriched_devices
     def get_hardware_versions(self):
         with self.session_factory() as session:
             distinct_hw_versions = session.query(distinct(DeviceInventory.hardware_version)).all()

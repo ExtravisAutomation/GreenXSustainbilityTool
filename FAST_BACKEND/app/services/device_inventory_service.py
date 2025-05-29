@@ -489,3 +489,5 @@ class DeviceInventoryService:
         return self.device_inventory_repository.add_vendor(vendor)
     def add_device_type(self,device_type):
         return self.device_inventory_repository.add_device_type(device_type)
+    def generate_excel1(self,filter_data):
+        return self.device_inventory_repository.generate_excel1(filter_data)

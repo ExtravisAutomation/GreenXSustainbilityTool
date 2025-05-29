@@ -49,6 +49,7 @@ class DeviceInventory(BaseModel):
     total_interface = Column(Integer, nullable=True)
     up_link = Column(Integer, nullable=True)
     down_link =Column(Integer, nullable=True)
+    access_port=Column(Integer, nullable=True)
 
 class DeviceSNTC(BaseModel):
     __tablename__ = 'devices_sntc'

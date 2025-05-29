@@ -397,7 +397,7 @@ def generate_excel(filter_data:FilterSchema,
         "Total Interfaces",
         "Up Links",
         "Down Links",
-
+        "Access Port",
 
         # Power Information
 
@@ -408,16 +408,17 @@ def generate_excel(filter_data:FilterSchema,
         "Power Output (W)",
         "Power Input (W)",
         "Energy Efficiency (%)",
-        "Power Consumption Ratio (W/bps)",
-
+        "Power Consumption Ratio (W/Mbps)",
 
         # Network Performance
-        "RX (Bs)",
-        "Data Traffic (Bs)",
-        "TX (Bs)",
+        "RX (Mbs)",
+        "Data Traffic Consumed (Mbs)",
+        "TX (Mbs)",
+        "Data Traffic Allocated (Mbs)",
+        "Energy_Efficiency(DataTraffic%)",
+        "DataTraffic Utilization%",
 
         # Environmental Impact
-        
         "Carbon Emission (kgCO₂)",
 
         # Lifecycle Dates
@@ -451,21 +452,24 @@ def generate_excel(filter_data:FilterSchema,
         "power_utilization": "Energy Efficiency (%)",
         "power_input": "Power Input (W)",
         "power_output": "Power Output (W)",
-        "datatraffic": "Data Traffic (Bs)",
+        "datatraffic": "Data Traffic Consumed (Mbs)",
         "total_power_capacity":"Total Power Capacity",
         "psu_count":"PSU Count",
         "psu_model":"PSU Model",
-        "total_output_mbs":"TX (Bs)",
-        "total_input_mbs":"RX (Bs)",
+        "total_output_mbs":"TX (Mbs)",
+        "total_input_mbs":"RX (Mbs)",
         "total_interface":"Total Interfaces",
         "up_link":"Up Links",
         "down_link":"Down Links",
-
+        "eer_dt":"Energy_Efficiency(DataTraffic%)",
+        "bandwidth_mbps": "Data Traffic Allocated (Mbs)",
+        "datatraffic_utilization": "DataTraffic Utilization%",
 
         # "bandwidth_utilization": "Bandwidth Utilization (%)",
         "carbon_emission": "Carbon Emission (kgCO₂)",
         "pcr": "Power Consumption Ratio (W/Mbps)",
         "error_message":"Error Message",
+        "access_port":"Access Port",
         # "performance_score": "Performance Score",
         # "performance_description": "Performance Description"
     }, inplace=True)
@@ -527,3 +531,18 @@ def create_device_type(device: DeviceTypeSchema, device_inventory_service: Devic
         data=device_type,
         status_code=200
     )
+
+
+@router.post("/generate_excel_test")
+@inject
+def generate_excel_td(filter_data:FilterSchema,
+    # current_user: User = Depends(get_current_active_user),
+    device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    devices = device_inventory_service.generate_excel1(filter_data)
+    file_path = ".xlsx"
+    # Save DataFrame to an Excel file
+    devices.to_excel(file_path, index=False, engine="openpyxl")
+    return FileResponse(file_path, filename="device_data.xlsx",
+                        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+

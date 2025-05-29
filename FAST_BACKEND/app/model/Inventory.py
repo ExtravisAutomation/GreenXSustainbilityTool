@@ -38,5 +38,6 @@ class DeviceInventories(BaseModel):
     sw_eol_date = Column(Date, nullable=True)
     sw_eos_date = Column(Date, nullable=True)
     tag_id = Column(String(255), nullable=True)
+
     Device_id = Column(Integer, ForeignKey('Devices.id'), nullable=False)
     device = relationship("APICControllers", back_populates="inventories")
