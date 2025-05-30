@@ -409,7 +409,7 @@ def generate_excel(filter_data:FilterSchema,
         "Total Power Capacity",
         "Power Output (W)",
         "Power Input (W)",
-        "Energy Efficiency%(Pout/Pin)"
+        "Energy Efficiency%(Pout/Pin)",
         "Power Consumption Ratio(Pin/DC)(W/MB)",
 
         # Network Performance

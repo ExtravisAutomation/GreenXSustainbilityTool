@@ -877,7 +877,7 @@ class DeviceInventoryRepository(BaseRepository):
                     total_input_gbs,total_input_mbs=self.convert_gb_mbs(total_input_bytes)
                     bandwidth_mbps = bandwidth_value / 1000 if bandwidth_value else 0
                     bandwidth_gbps = bandwidth_value / 1_000_000 if bandwidth_value else 0
-                    bandwidth_mbps = bandwidth / 1000 if bandwidth_value else 0
+                    bandwidth_mbps = bandwidth_value / 1000 if bandwidth_value else 0
 
                     datatraffic_utilization = (datatraffic_mb / bandwidth_mbps) * 100 if bandwidth_mbps > 0 else 0
                     enriched_device["bandwidth_mbps"] = round(bandwidth_mbps, 2)

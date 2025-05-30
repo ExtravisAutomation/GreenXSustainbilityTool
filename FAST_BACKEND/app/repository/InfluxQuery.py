@@ -485,7 +485,7 @@ def get_24hDevice_power(apic_ip: str) -> List[dict]:
 
     query = f'''
                               from(bucket: "Dcs_db")
-                               |> range(start: 2025-05-30T05:00:00Z, stop: 2025-05-30T06:00:00Z)
+                               |> range(start: {start_range})
                                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{apic_ip}")
                                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
                                |> aggregateWindow(every: 1h, fn: sum, createEmpty: false)
@@ -809,6 +809,10 @@ def get_excel_df(ip_addresses):
          "total_input_bytes", "total_output_bytes",
         "total_input_packets", "total_output_packets", "bandwidth"
     ]
+
+    # Connect to InfluxDB
+
+
     # Empty list to collect all records
     all_records = []
 
@@ -819,7 +823,7 @@ def get_excel_df(ip_addresses):
 
         query = f'''
         from(bucket: "Dcs_db")
-          |> range(start: 2025-05-30T05:00:00Z, stop: 2025-05-30T06:00:00Z)
+          |> range(start: 2025-05-30T09:00:00Z, stop: 2025-05-30T11:00:00Z)
           |> filter(fn: (r) => r._measurement == "DeviceEngreeTraffic")
           |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
           |> filter(fn: (r) => {field_filter})
@@ -930,7 +934,7 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
 
     query = f'''
         from(bucket: "Dcs_db")
-         |> range(start: 2025-05-30T05:00:00Z, stop: 2025-05-30T06:00:00Z)
+        |> range(start: {start_range})
         |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["ApicController_IP"] == "{apic_ip}")
         |> filter(fn: (r) =>
             r["_field"] == "total_bytesRateLast" or
