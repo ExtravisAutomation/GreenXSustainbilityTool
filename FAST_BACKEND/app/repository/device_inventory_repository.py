@@ -778,6 +778,15 @@ class DeviceInventoryRepository(BaseRepository):
 
         return enriched_devices
 
+    def calculate_utilization(self,datatraffic_gb, bandwidth_mbps):
+        try:
+            if not bandwidth_mbps or bandwidth_mbps == 0:
+                return 0.0  # or return None if you prefer to indicate invalid input
+            return (datatraffic_gb * 1024) / (bandwidth_mbps * 450) * 100
+        except Exception as e:
+            print(f"Error calculating utilization: {e}")
+            return 0.0
+
     def convert_gb_mbs(self, data):
         data_gb = round(data / (1024 ** 3), 3) if data else 0
         data_mb = round(data / (1024 ** 2), 3) if data else 0
@@ -884,7 +893,7 @@ class DeviceInventoryRepository(BaseRepository):
                     # Convert bandwidth to MB per hour
                     bandwidth_MB_per_hour = bandwidth_mbps * 0.125 * 3600  # (MB/s * seconds)
                     # Convert bandwidth to MB per hour
-                    utilization_percent = (datatraffic_gb * 1024) / (bandwidth_mbps * 450) * 100
+                    utilization_percent = self.calculate_utilization(datatraffic_gb, bandwidth_mbps)
 
                     enriched_device["total_output_mbs"]=round(total_output_mbs,4)
                     enriched_device["total_input_mbs"] = round(total_input_mbs, 4)
