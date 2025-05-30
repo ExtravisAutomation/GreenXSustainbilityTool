@@ -912,7 +912,7 @@ class DeviceInventoryRepository(BaseRepository):
 
                 # Carbon Emissions Calculation
                 carbon_emission = round(((power_output / 1000) * 0.4041), 4)
-                carbon_emission_tons=round(carbon_emission/1000,2)
+                carbon_emission_tons=round(carbon_emission/1000,4)
 
 
                 # Power Consumption Ratio (PCR) Calculation
