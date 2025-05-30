@@ -841,6 +841,7 @@ class DeviceInventoryRepository(BaseRepository):
                     "site_name": device.site.site_name if device.site else None,
                     "device_ip": ip_address,
                     "device_type": device_type,
+                    "bandwidth":device.bandwidth,
 
                     # "device_name": device.device_name,
                     "power_utilization": power[0]['power_utilization'] if power else 0,
@@ -848,7 +849,9 @@ class DeviceInventoryRepository(BaseRepository):
                     "power_input": power[0]['total_supplied'] if power else 0,
                     "power_output": power[0]['total_drawn'] if power else 0,
                 }
+
                 print(enriched_device)
+                bandwidth=enriched_device.get("bandwidth") or 0
 
                 # Add bandwidth utilization if datatraffic exists
                 if datatraffic:
@@ -874,8 +877,9 @@ class DeviceInventoryRepository(BaseRepository):
                     total_input_gbs,total_input_mbs=self.convert_gb_mbs(total_input_bytes)
                     bandwidth_mbps = bandwidth_value / 1000 if bandwidth_value else 0
                     bandwidth_gbps = bandwidth_value / 1_000_000 if bandwidth_value else 0
+                    bandwidth_mbps = bandwidth / 1000 if bandwidth_value else 0
 
-                    datatraffic_utilization = (datatraffic_mb / bandwidth_mbps) * 100 if bandwidth_mbps else 0
+                    datatraffic_utilization = (datatraffic_mb / bandwidth_mbps) * 100 if bandwidth_mbps > 0 else 0
                     enriched_device["bandwidth_mbps"] = round(bandwidth_mbps, 2)
                     enriched_device["total_output_mbs"]=round(total_output_mbs,4)
                     enriched_device["total_input_mbs"] = round(total_input_mbs, 4)
@@ -883,8 +887,6 @@ class DeviceInventoryRepository(BaseRepository):
                     enriched_device["datatraffic_utilization"] = round(datatraffic_utilization, 2)
                     enriched_device["total_input_packets"] = round(total_input_packets, 2)
                     enriched_device["total_output_packets"] = round(total_output_packets, 2)
-
-
                 else:
                     enriched_device["bandwidth_mbps"] = 0
                     enriched_device["datatraffic"] = 0

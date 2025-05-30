@@ -477,8 +477,6 @@ class DeviceInventoryService:
             "total_pages": devices['total_pages'],
             "devices": enriched_devices
         }
-
-
     def generate_excel(self,filter_data):
         return self.device_inventory_repository.generate_excel(filter_data)
     def get_hardware_versions(self):
