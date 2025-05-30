@@ -144,6 +144,7 @@ class DeviceInventoryRepository(BaseRepository):
                     bandwidth_mbps = bandwidth_value / 1000 if bandwidth_value else 0
                     bandwidth_utilization = (datatraffic_gb / bandwidth_mbps) * 100 if bandwidth_mbps else 0
 
+
                     enriched_device["datatraffic"] = round(datatraffic_gb, 2)
                     enriched_device["bandwidth_utilization"] = round(bandwidth_utilization, 2)
 
@@ -776,10 +777,11 @@ class DeviceInventoryRepository(BaseRepository):
             ]
 
         return enriched_devices
+
     def convert_gb_mbs(self, data):
-        data_gb = data / (1024 ** 3) if data else 0
-        data_mb = data / 1_000_000 if data else 0
-        return  data_gb,data_mb
+        data_gb = round(data / (1024 ** 3), 3) if data else 0
+        data_mb = round(data / (1024 ** 2), 3) if data else 0
+        return data_gb, data_mb
 
     def get_devices_result(self, devices):
 
@@ -854,11 +856,20 @@ class DeviceInventoryRepository(BaseRepository):
                     bandwidth_value = datatraffic[0]['bandwidth'] if datatraffic else 0
                     total_input_bytes=datatraffic[0]['total_input_bytes'] if datatraffic else 0
                     total_output_bytes=datatraffic[0]['total_output_bytes'] if datatraffic else  0
+                    total_output_rate = datatraffic[0]['total_output_rate'] if datatraffic else 0
 
+                    total_input_rate = datatraffic[0]['total_input_rate'] if datatraffic else 0
+
+                    total_input_packets = datatraffic[0]['total_input_packets'] if datatraffic else 0
+
+                    total_output_packets = datatraffic[0]['total_output_packets'] if datatraffic else 0
 
                     datatraffic_gb , datatraffic_mb = self.convert_gb_mbs(datatraffic_value)
 
                     total_output_gbs,total_output_mbs = self.convert_gb_mbs(total_output_bytes)
+                    bandwidth_bps = bandwidth_value * 1000  # = 1,000,000,000 bps
+
+                    mb_per_sec = bandwidth_bps / 8 / 1024 / 1024
 
                     total_input_gbs,total_input_mbs=self.convert_gb_mbs(total_input_bytes)
                     bandwidth_mbps = bandwidth_value / 1000 if bandwidth_value else 0
@@ -870,6 +881,9 @@ class DeviceInventoryRepository(BaseRepository):
                     enriched_device["total_input_mbs"] = round(total_input_mbs, 4)
                     enriched_device["datatraffic"] = round(datatraffic_mb, 4)
                     enriched_device["datatraffic_utilization"] = round(datatraffic_utilization, 2)
+                    enriched_device["total_input_packets"] = round(total_input_packets, 2)
+                    enriched_device["total_output_packets"] = round(total_output_packets, 2)
+
 
                 else:
                     enriched_device["bandwidth_mbps"] = 0
@@ -890,6 +904,8 @@ class DeviceInventoryRepository(BaseRepository):
 
                 # Carbon Emissions Calculation
                 carbon_emission = round(((power_output / 1000) * 0.4041), 4)
+                carbon_emission_tons=round(carbon_emission/1000,2)
+
 
                 # Power Consumption Ratio (PCR) Calculation
                 pcr = round(power_input/ datatraffic, 4) if datatraffic else 0
@@ -901,6 +917,7 @@ class DeviceInventoryRepository(BaseRepository):
                 enriched_device['carbon_emission']=carbon_emission
                 enriched_device['pcr']=pcr
                 enriched_device['eer_dt']=eer_dt
+                enriched_device['carbon_emission_tons']=carbon_emission_tons
                 enriched_device["performance_score"] = performance_score
                 enriched_device["performance_description"] = performance_description
                 enriched_devices.append(enriched_device)
