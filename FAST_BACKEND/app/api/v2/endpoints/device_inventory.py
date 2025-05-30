@@ -469,7 +469,7 @@ def generate_excel(filter_data:FilterSchema,
         "up_Link_interfaces":"UP Link Interfaces",
         "down_link":"Down Links",
         "interfaces_types":"Interface Types",
-        "eer_dt":"Energy_Efficiency(DataTraffic(MB/W)",
+        "eer_dt": "Energy_Efficiency(DataTraffic(DC/Pin))(MB/W)",
         "bandwidth_mbps": "Data Traffic Allocated (Mbs)",
         "datatraffic_utilization":  "DataTraffic Utilization%(DC/DA)",
 
