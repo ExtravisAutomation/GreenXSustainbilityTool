@@ -805,9 +805,9 @@ def get_24hsite_datatraffc(apic_ips, site_id) -> List[dict]:
 def get_excel_df(ip_addresses):
     # Fields to extract
     fields = [
-        "total_bytesLast", "total_bytesRateLast", "total_pktsLast", "total_pktsRateLast",
-        "total_data_point", "total_input_bytes", "total_output_bytes", "total_output_rate",
-        "total_input_rate", "total_input_packets", "total_output_packets", "bandwidth"
+        "total_bytesRateLast", "total_pktsRateLast",
+         "total_input_bytes", "total_output_bytes",
+        "total_input_packets", "total_output_packets", "bandwidth"
     ]
 
     # Connect to InfluxDB
@@ -838,17 +838,23 @@ def get_excel_df(ip_addresses):
         for table in tables:
             for record in table.records:
                 row = {
-                    "time": record.get_time().replace(tzinfo=None),
-                    "ip": record.values.get("ApicController_IP"),
+                    "Time": record.get_time().replace(tzinfo=None),
+                    "IP Address": record.values.get("ApicController_IP"),
+                    "Traffic Rate (MB)": round(record.values.get("total_bytesRateLast", 0) / (1024 * 1024), 2),
+                    "Total Input (MB)": round(record.values.get("total_input_bytes", 0) / (1024 * 1024), 2),
+                    "Total Output (MB)": round(record.values.get("total_output_bytes", 0) / (1024 * 1024), 2),
+                    "Input Packets": record.values.get("total_input_packets"),
+                    "Output Packets": record.values.get("total_output_packets"),
+                    "Bandwidth (Mbps)": round(record.values.get("bandwidth", 0) / 1000, 2)
                 }
-                for f in fields:
-                    row[f] = record.values.get(f)
                 all_records.append(row)
 
-    # Convert combined results into a DataFrame
-    df = pd.DataFrame(all_records)
-    print(df)
-    return df
+            # Convert to DataFrame
+        df = pd.DataFrame(all_records)
+
+        print(df)
+        return df
+
 
 
 # def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
