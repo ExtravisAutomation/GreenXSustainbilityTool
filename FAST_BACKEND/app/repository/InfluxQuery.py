@@ -850,10 +850,10 @@ def get_excel_df(ip_addresses):
                 all_records.append(row)
 
             # Convert to DataFrame
-        df = pd.DataFrame(all_records)
+    df = pd.DataFrame(all_records)
 
-        print(df)
-        return df
+    print(df)
+    return df
 
 
 
