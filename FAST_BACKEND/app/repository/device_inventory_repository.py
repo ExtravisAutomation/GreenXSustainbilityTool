@@ -884,7 +884,7 @@ class DeviceInventoryRepository(BaseRepository):
                     # Convert bandwidth to MB per hour
                     bandwidth_MB_per_hour = bandwidth_mbps * 0.125 * 3600  # (MB/s * seconds)
                     # Convert bandwidth to MB per hour
-                    utilization_percent = (datatraffic_mb / bandwidth_MB_per_hour) * 100 if bandwidth_MB_per_hour else 0
+                    utilization_percent = (datatraffic_gb * 1024) / (bandwidth_mbps * 450) * 100
 
                     enriched_device["total_output_mbs"]=round(total_output_mbs,4)
                     enriched_device["total_input_mbs"] = round(total_input_mbs, 4)
