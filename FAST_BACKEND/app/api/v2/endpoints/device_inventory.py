@@ -556,3 +556,17 @@ def generate_excel_td(filter_data:FilterSchema,
     return FileResponse(file_path, filename="device_data.xlsx",
                         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
+
+@router.post("/generate_excel_test1")
+@inject
+def generate_excel_td(filter_data:FilterSchema,
+    # current_user: User = Depends(get_current_active_user),
+    device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    devices = device_inventory_service.generate_excel1(filter_data)
+    file_path = ".xlsx"
+    # Save DataFrame to an Excel file
+    devices.to_excel(file_path, index=False, engine="openpyxl")
+    return FileResponse(file_path, filename="device_data.xlsx",
+                        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
