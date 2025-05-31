@@ -823,8 +823,8 @@ def get_excel_df(ip_addresses):
 
         query = f'''
         from(bucket: "Dcs_db")
-          |> range(start: 2025-05-30T09:00:00Z, stop: 2025-05-30T11:00:00Z)
-          |> filter(fn: (r) => r._measurement == "DeviceEngreeTraffic")
+          |> range(start: -24h)
+          |> filter(fn: (r) => r._measurement == "traffic_snapshot")
           |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
           |> filter(fn: (r) => {field_filter})
           |> aggregateWindow(every: 1m, fn: last, createEmpty: false)
@@ -840,12 +840,10 @@ def get_excel_df(ip_addresses):
                 row = {
                     "Time": record.get_time().replace(tzinfo=None),
                     "IP Address": record.values.get("ApicController_IP"),
-                    "Traffic Rate (MB)": round(record.values.get("total_bytesRateLast", 0) / (1024 * 1024), 2),
                     "Total Input (MB)": round(record.values.get("total_input_bytes", 0) / (1024 * 1024), 2),
                     "Total Output (MB)": round(record.values.get("total_output_bytes", 0) / (1024 * 1024), 2),
                     "Input Packets": record.values.get("total_input_packets"),
                     "Output Packets": record.values.get("total_output_packets"),
-                    "Bandwidth (Mbps)": round(record.values.get("bandwidth", 0) / 1000, 2)
                 }
                 all_records.append(row)
 
