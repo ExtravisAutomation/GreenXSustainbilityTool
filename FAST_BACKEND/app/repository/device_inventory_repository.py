@@ -864,6 +864,9 @@ class DeviceInventoryRepository(BaseRepository):
 
                 # Add bandwidth utilization if datatraffic exists
                 if datatraffic:
+                    print(datatraffic)
+                    print("*******************************************************")
+
                     datatraffic_value = datatraffic[0]['traffic_through'] if datatraffic else 0
                     bandwidth_value = datatraffic[0]['bandwidth'] if datatraffic else 0
                     total_input_bytes=datatraffic[0]['total_input_bytes'] if datatraffic else 0
