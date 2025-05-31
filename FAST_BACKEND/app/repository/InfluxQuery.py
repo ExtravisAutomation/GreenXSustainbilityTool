@@ -536,12 +536,12 @@ def get_24hDevice_power(apic_ip: str) -> List[dict]:
             "total_drawn": pout_sum,
             "pue": round(pue, 4) if pue is not None else 0,
         })
-
+        return data
 
     except Exception as e:
         print(f"Error querying InfluxDB for {apic_ip}: {e}")
 
-    return data
+
 # def get_24hDevice_power(apic_ip: str) -> List[dict]:
 #     total_drawn, total_supplied = 0, 0
 #     start_range = "-1h"
