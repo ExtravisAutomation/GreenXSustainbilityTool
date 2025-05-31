@@ -490,7 +490,7 @@ def get_24hDevice_power(apic_ip: str) -> List[dict]:
                                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
                                |> aggregateWindow(every: 1h, fn: sum, createEmpty: false)
                                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-                                |> last()
+                               
                            '''
     # result = query_api.query(query)
     try:
@@ -947,7 +947,7 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
         )
         |> aggregateWindow(every: 1h, fn: sum, createEmpty: false)
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-        |> last()
+        
     '''
 
     data = []
