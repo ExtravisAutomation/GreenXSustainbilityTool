@@ -822,6 +822,7 @@ def get_excel_df(ip_addresses):
 
         field_filter = " or ".join([f'r._field == "{field}"' for field in fields])
 
+
         query = f'''
         from(bucket: "Dcs_db")
           |> range(start: -1h)
