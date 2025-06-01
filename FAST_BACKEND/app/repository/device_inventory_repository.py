@@ -906,11 +906,14 @@ class DeviceInventoryRepository(BaseRepository):
                     enriched_device["total_input_packets"] = round(total_input_packets, 2)
                     enriched_device["total_output_packets"] = round(total_output_packets, 2)
                 else:
+                    enriched_device["datatraffic_gbs"] = 0
                     enriched_device["bandwidth_mbps"] = 0
                     enriched_device["datatraffic"] = 0
                     enriched_device["datatraffic_utilization"] = 0
                     enriched_device["total_output_mbs"] = 0
                     enriched_device["total_input_mbs"] = 0
+                    enriched_device["total_input_packets"] = 0
+                    enriched_device["total_output_packets"] = 0
 
                 power_input = enriched_device.get("power_input") or 0
                 power_output = enriched_device.get("power_output") or 0
