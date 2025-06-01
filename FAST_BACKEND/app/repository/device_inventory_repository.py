@@ -867,11 +867,12 @@ class DeviceInventoryRepository(BaseRepository):
                     print(datatraffic)
                     print("*******************************************************")
 
-                    datatraffic_value = datatraffic[0]['traffic_through'] if datatraffic else 0
+                     # = datatraffic[0]['traffic_through'] if datatraffic else 0
                     bandwidth_value = datatraffic[0]['bandwidth'] if datatraffic else 0
                     total_input_bytes=datatraffic[0]['total_input_bytes'] if datatraffic else 0
                     total_output_bytes=datatraffic[0]['total_output_bytes'] if datatraffic else  0
                     total_output_rate = datatraffic[0]['total_output_rate'] if datatraffic else 0
+                    datatraffic_value=total_input_bytes+total_output_bytes
 
                     total_input_rate = datatraffic[0]['total_input_rate'] if datatraffic else 0
 
