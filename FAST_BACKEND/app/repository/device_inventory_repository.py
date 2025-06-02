@@ -901,12 +901,17 @@ class DeviceInventoryRepository(BaseRepository):
 
                     # Bandwidth
                     # conversions
-                    bandwidth_mbps = bandwidth_kbps / 1000 if bandwidth_kbps else 0  # Megabits/sec
+                    # bandwidth_mbps = bandwidth_kbps / 1000 if bandwidth_kbps else 0  # Megabits/sec
+
+
                     bandwidth_MBps = bandwidth_kbps / 8000 if bandwidth_kbps else 0  # Megabytes/sec
-                    bandwidth_MB_per_hour = bandwidth_MBps   # MB/hour
+
+
+                    bandwidth_MB_per_hour = bandwidth_MBps * 3600  # MB/hour
 
                         # Utilization (data used ÷ available in same unit)
                     datatraffic_utilization = (datatraffic_mb / bandwidth_MB_per_hour) * 100 if bandwidth_MB_per_hour else 0
+
                     enriched_device["bandwidth_mbps"] = round(bandwidth_MB_per_hour, 4)
                     enriched_device["total_output_mbs"]=round(total_output_mbs,4)
                     enriched_device["total_input_mbs"] = round(total_input_mbs, 4)
