@@ -907,7 +907,7 @@ class DeviceInventoryRepository(BaseRepository):
 
                         # Utilization (data used ÷ available in same unit)
                     datatraffic_utilization = (datatraffic_mb / bandwidth_MB_per_hour) * 100 if bandwidth_MB_per_hour else 0
-
+                    enriched_device["bandwidth_mbps"] = round(bandwidth_MB_per_hour, 4)
                     enriched_device["total_output_mbs"]=round(total_output_mbs,4)
                     enriched_device["total_input_mbs"] = round(total_input_mbs, 4)
                     enriched_device["datatraffic"] = round(datatraffic_mb, 4)
