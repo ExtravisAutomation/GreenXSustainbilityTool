@@ -324,8 +324,6 @@ def get_site_powerRequired(apic_ips, site_id) -> List[dict]:
                 if record.get_field() == "total_Power":
                     TotalPower = record.get_value()
         print(TotalPower, "666666")
-        
-
 
         power_Required_data.append({
             "site_id": site_id,
@@ -956,9 +954,14 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
         result = result.drop_duplicates(subset=['_time', 'ApicController_IP'], keep='last')
 
         if not result.empty:
+            if "bandwidth" in result.columns:
+                bandwidth_series = result["bandwidth"].dropna()
+                total_bandwidth = float(bandwidth_series.iloc[-1]) if not bandwidth_series.empty else 0.0
+            else:
+                total_bandwidth = 0.0
             # Safely sum available columns
             total_traffic = float(result.get("total_bytesRateLast", 0).sum())
-            total_bandwidth = float(result.get("bandwidth", 0).sum())
+            total_bandwidth = total_bandwidth
             total_output_bytes = float(result.get("total_output_bytes", 0).sum())
             total_input_bytes = float(result.get("total_input_bytes", 0).sum())
             total_output_rate = float(result.get("total_output_rate", 0).sum())
