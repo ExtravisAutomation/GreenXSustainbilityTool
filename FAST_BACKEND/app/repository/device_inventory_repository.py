@@ -917,7 +917,7 @@ class DeviceInventoryRepository(BaseRepository):
                     enriched_device["total_input_mbs"] = round(total_input_mbs, 4)
                     enriched_device["datatraffic"] = round(datatraffic_mb, 4)
                     enriched_device["datatraffic_gbs"]=round(datatraffic_gb,4)
-                    enriched_device["datatraffic_utilization"] = round(datatraffic_utilization, 4)
+                    enriched_device["datatraffic_utilization"] = round(datatraffic_utilization, 6)
                     enriched_device["total_input_packets"] = round(total_input_packets, 2)
                     enriched_device["total_output_packets"] = round(total_output_packets, 2)
                 else:
