@@ -824,7 +824,7 @@ def get_excel_df(ip_addresses):
 
         query = f'''
         from(bucket: "Dcs_db")
-          |> range(start: )
+          |> range(start: 2025-06-02T15:05:00Z, stop: 2025-06-02T16:05:00Z)
           |> filter(fn: (r) => r._measurement == "DeviceEngreeTraffic")
           |> filter(fn: (r) => r["ApicController_IP"] == "{ip}")
           |> filter(fn: (r) => {field_filter})
