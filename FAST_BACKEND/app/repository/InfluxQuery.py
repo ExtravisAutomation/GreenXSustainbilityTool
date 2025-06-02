@@ -481,6 +481,7 @@ def get_24hDevice_power(apic_ip: str) -> List[dict]:
     total_drawn, total_supplied = 0, 0
     start_range = "-1h"
 
+
     query = f'''
                               from(bucket: "Dcs_db")
                                |> range(start: {start_range})
