@@ -903,7 +903,7 @@ class DeviceInventoryRepository(BaseRepository):
                     # conversions
                     bandwidth_mbps = bandwidth_kbps / 1000 if bandwidth_kbps else 0  # Megabits/sec
                     bandwidth_MBps = bandwidth_kbps / 8000 if bandwidth_kbps else 0  # Megabytes/sec
-                    bandwidth_MB_per_hour = bandwidth_MBps * 3600  # MB/hour
+                    bandwidth_MB_per_hour = bandwidth_MBps   # MB/hour
 
                         # Utilization (data used ÷ available in same unit)
                     datatraffic_utilization = (datatraffic_mb / bandwidth_MB_per_hour) * 100 if bandwidth_MB_per_hour else 0
