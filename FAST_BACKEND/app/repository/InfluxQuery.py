@@ -930,7 +930,7 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
     total_input_packets = 0.0
     total_output_packets = 0.0
 
-    start_range = "-30m"
+    start_range = "-1h"
 
     query = f'''
         from(bucket: "Dcs_db")
