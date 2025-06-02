@@ -931,7 +931,6 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
     total_output_packets = 0.0
 
     start_range = "-1h"
-
     query = f'''
         from(bucket: "Dcs_db")
         |> range(start: {start_range})
