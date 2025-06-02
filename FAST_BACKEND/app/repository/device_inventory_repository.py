@@ -868,7 +868,7 @@ class DeviceInventoryRepository(BaseRepository):
                     print("*******************************************************")
 
                      # = datatraffic[0]['traffic_through'] if datatraffic else 0
-                    bandwidth_value = datatraffic[0]['bandwidth'] if datatraffic else 0
+                    bandwidth_kbps = datatraffic[0]['bandwidth'] if datatraffic else 0 # in kbps
                     total_input_bytes=datatraffic[0]['total_input_bytes'] if datatraffic else 0
                     total_output_bytes=datatraffic[0]['total_output_bytes'] if datatraffic else  0
                     total_output_rate = datatraffic[0]['total_output_rate'] if datatraffic else 0
@@ -883,21 +883,30 @@ class DeviceInventoryRepository(BaseRepository):
                     datatraffic_gb , datatraffic_mb = self.convert_gb_mbs(datatraffic_value)
 
                     total_output_gbs,total_output_mbs = self.convert_gb_mbs(total_output_bytes)
-                    bandwidth_bps = bandwidth_value * 1000  # = 1,000,000,000 bps
-
-                    mb_per_sec = bandwidth_bps / 8 / 1024 / 1024
+                    # bandwidth_bps = bandwidth_value * 1000  # = 1,000,000,000 bps
+                    #
+                    # mb_per_sec = bandwidth_bps / 8 / 1024 / 1024
 
                     total_input_gbs,total_input_mbs=self.convert_gb_mbs(total_input_bytes)
-                    bandwidth_mbps = bandwidth_value / 1000 if bandwidth_value else 0
-                    bandwidth_gbps = bandwidth_value / 1_000_000 if bandwidth_value else 0
-                    bandwidth_mbps = bandwidth_value / 1000 if bandwidth_value else 0
+                    # bandwidth_mbps = bandwidth_value / 1000 if bandwidth_value else 0
+                    # bandwidth_gbps = bandwidth_value / 1_000_000 if bandwidth_value else 0
+                    # bandwidth_mbps = bandwidth_value / 1000 if bandwidth_value else 0
 
                     datatraffic_utilization = (datatraffic_mb / bandwidth_mbps) * 100 if bandwidth_mbps > 0 else 0
                     enriched_device["bandwidth_mbps"] = round(bandwidth_mbps, 2)
                     # Convert bandwidth to MB per hour
-                    bandwidth_MB_per_hour = bandwidth_mbps * 0.125 * 3600  # (MB/s * seconds)
-                    # Convert bandwidth to MB per hour
-                    utilization_percent = self.calculate_utilization(datatraffic_gb, bandwidth_mbps)
+                    # bandwidth_MB_per_hour = bandwidth_mbps * 0.125 * 3600  # (MB/s * seconds)
+                    # # Convert bandwidth to MB per hour
+                    # utilization_percent = self.calculate_utilization(datatraffic_gb, bandwidth_mbps)
+
+                    # Bandwidth
+                    # conversions
+                    bandwidth_mbps = bandwidth_kbps / 1000 if bandwidth_kbps else 0  # Megabits/sec
+                    bandwidth_MBps = bandwidth_kbps / 8000 if bandwidth_kbps else 0  # Megabytes/sec
+                    bandwidth_MB_per_hour = bandwidth_MBps * 3600  # MB/hour
+
+                        # Utilization (data used ÷ available in same unit)
+                    datatraffic_utilization = (datatraffic_mb / bandwidth_MB_per_hour) * 100 if bandwidth_MB_per_hour else 0
 
                     enriched_device["total_output_mbs"]=round(total_output_mbs,4)
                     enriched_device["total_input_mbs"] = round(total_input_mbs, 4)
