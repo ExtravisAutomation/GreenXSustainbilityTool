@@ -479,7 +479,7 @@ def get_24h_rack_datatraffic(apic_ips, rack_id) -> List[dict]:
 
 def get_24hDevice_power(apic_ip: str) -> List[dict]:
     total_drawn, total_supplied = 0, 0
-    start_range = "-1h"
+    start_range = "-24h"
 
 
     query = f'''
@@ -929,7 +929,7 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
     total_input_packets = 0.0
     total_output_packets = 0.0
 
-    start_range = "-25m"
+    start_range = "-24h"
     query = f'''
         from(bucket: "Dcs_db")
         |> range(start:2025-06-02T10:04:00Z, stop: 2025-06-02T11:04:00Z)
