@@ -386,100 +386,136 @@ def generate_excel(filter_data:FilterSchema,
     ]
     devices = devices.drop(columns=columns_to_drop, errors='ignore')  # errors='ignore' skips missing columns safely
     print(devices.columns,"After drop")
+
+    eer = "Energy Efficiency%\n\nCol Q/Col R\nNote: Power Output/Power Input"
+    DEVICE_NAME = "Device Name"
+    DEVICE_TYPE = "Device Type"
+    SERIAL_NUMBER = "Serial Number"
+    PN_CODE = "Product Number (PN)"
+    IP_ADDRESS = "IP Address"
+    SITE = "Site"
+    TOTAL_INTERFACES = "Total Interfaces"
+    UP_LINKS = "Up Links"
+    DOWN_LINKS = "Down Links"
+    ACCESS_PORT = "Access Port"
+    UP_LINK_INTERFACES = "UP Link Interfaces"
+    INTERFACE_TYPES = "Interface Types"
+    STACK = "Stack"
+    PSU_COUNT = "PSU Count"
+    PSU_MODEL = "PSU Model"
+    TOTAL_POWER_CAPACITY = "Total Power Capacity"
+    POWER_OUTPUT = "Power Output (W)"
+    POWER_INPUT = "Power Input (W)"
+    EER_COLUMN = "Energy Efficiency%\n\nCol Q/Col R\nNote: Power Output/Power Input"
+    PCR  = "Power Consumption Ratio(W/MB)\n\nCol  R / Col Z\nNote: Power used per input traffic."
+    INPUT_PACKETS = "Input Packets"
+    OUTPUT_PACKETS = "Output Packets"
+    RX_MB = "RX (MB)"
+    TX_MB = "TX (MB)"
+    DATA_CONSUMED_MB = "Data Traffic Consumed (MB)"
+    DATA_CONSUMED_GB = "Data Traffic Consumed (GB)"
+    DATA_ALLOCATED_MB = (
+        "Data Traffic Allocated (MB)\n\n"
+        "Σ {((Interface Bandwidth (in kbps) * 2(duplex)) /(8 * 1024(for kbps to MBps))} *3600(for MBps to MB)\n"
+        "Note: Only for Full Duplex we multiply with 2."
+    )
+
+    DATA_THROUGHPUT_MB_W = (
+        "Data Throughput per Watt (MB/W)\n\n"
+        "Col Y / Col AA\n"
+        "Note: Total data traffic handled per watt of power consumed."
+    )
+
+    DATA_UTILIZATION_PERCENT = (
+        "DataTraffic Utilization%\n\n"
+        "Note: Y/AA Data Traffic Consumed/ Data Traffic Allocated"
+    )
+    CARBON_KG = (
+        "Carbon Emission (kgCO₂)\n\n"
+        "Note: Power Input(Col R) / 1000(for W to KW) * 0.4041(Carbon Emission Factor)\n"
+        "Carbon Emission Factor is Region Specific i.e here UAE"
+    )
+
+    CARBON_TON = "Carbon Emission (tonCO₂)"
+
+    HW_EOL = "HW End-of-Life (EoL)"
+    HW_EOS = "HW End-of-Support (EoS)"
+    HW_LDOS = "HW Last Day of Support"
+    HW_RFA = "HW Last Date of RFA"
+    HW_SECURITY_EOS = "HW Security Support EoS"
+    SW_EOL = "SW Maintenance EoL"
+    SW_VULN_EOS = "SW Vulnerability Support EoS"
+    ERROR_MSG = "Error Message"
+
     new_column_order = [
-        # Basic Identification
-        "Device Name",
-        "Device Type",
-        "Serial Number",
-        "Product Number (PN)",
-        "IP Address",
-        "Site",
-        "Total Interfaces",
-        "Up Links",
-        "Down Links",
-        "Access Port",
-        "UP Link Interfaces",
-        "Interface Types",
-
-        # Power Information
-
-        "Stack",
-        "PSU Count",
-        "PSU Model",
-        "Total Power Capacity",
-        "Power Output (W)",
-        "Power Input (W)",
-        "Energy Efficiency%(Pout/Pin)",
-        "Power Consumption Ratio(Pin/DC)(W/MB)",
-
-        # Network Performance
-        "Input Packets",
-        "Output Packets",
-        "RX (MB)",
-        "TX (MB)",
-        "Data Traffic Consumed (MB)",
-        "Data Traffic Consumed (GB)",
-        "Data Traffic Allocated (MB)",
-       "Data Traffic Energy Efficiency (MB/W) (DC/Pin)",
-        "DataTraffic Utilization%(DC/DA)",
-
-        # Environmental Impact
-        "Carbon Emission (kgCO₂)(Pin*0.4041)",
-        "Carbon Emission (tonCO₂)",
-        # Lifecycle Dates
-        "HW End-of-Life (EoL)",
-        "HW End-of-Support (EoS)",
-        "HW Last Day of Support",
-        "HW Last Date of RFA",
-        "HW Security Support EoS",
-        "SW Maintenance EoL",
-        "SW Vulnerability Support EoS",
-        "Error Message"
+        # Basic Info
+        DEVICE_NAME, DEVICE_TYPE, SERIAL_NUMBER, PN_CODE, IP_ADDRESS, SITE,
+        TOTAL_INTERFACES, UP_LINKS, DOWN_LINKS, ACCESS_PORT, UP_LINK_INTERFACES, INTERFACE_TYPES,
+        # Power Info
+        STACK, PSU_COUNT, PSU_MODEL, TOTAL_POWER_CAPACITY,
+        POWER_OUTPUT, POWER_INPUT, EER_COLUMN, PCR,
+        # Network
+        INPUT_PACKETS, OUTPUT_PACKETS, RX_MB, TX_MB,
+        DATA_CONSUMED_MB, DATA_CONSUMED_GB, DATA_ALLOCATED_MB, DATA_THROUGHPUT_MB_W, DATA_UTILIZATION_PERCENT,
+        # Environmental
+        CARBON_KG, CARBON_TON,
+        # Lifecycle
+        HW_EOL, HW_EOS, HW_LDOS, HW_RFA, HW_SECURITY_EOS, SW_EOL, SW_VULN_EOS,
+        # Errors
+        ERROR_MSG
     ]
+
     devices.rename(columns={
-        "device_name": "Device Name",
-        # "manufacturer": "Manufacturer",
-        "serial_number": "Serial Number",
-        # "software_version": "Software Version",
-        "pn_code": "Product Number (PN)",
-        "hw_eol_ad": "HW End-of-Life (EoL)",
-        "hw_eos": "HW End-of-Support (EoS)",
-        "sw_EoSWM": "SW Maintenance EoL",
-        "hw_EoRFA": "HW Last Date of RFA",
-        "sw_EoVSS": "SW Vulnerability Support EoS",
-        "hw_EoSCR": "HW Security Support EoS",
-        "hw_ldos": "HW Last Day of Support",
-        # "rack_name": "Rack",
-        "site_name": "Site",
-        "total_input_packets":"Input Packets",
-        "total_output_packets": "Output Packets",
-        "device_ip": "IP Address",
-        "stack":"Stack",
-        "device_type": "Device Type",
-        "power_utilization":  "Energy Efficiency%(Pout/Pin)",
-        "power_input": "Power Input (W)",
-        "power_output": "Power Output (W)",
-        "datatraffic": "Data Traffic Consumed (MB)",
-        "total_power_capacity":"Total Power Capacity",
-        "psu_count":"PSU Count",
-        "psu_model":"PSU Model",
-        "total_output_mbs":"TX (MB)",
-        "total_input_mbs":"RX (MB)",
-        "total_interface":"Total Interfaces",
-        "up_link":"Up Links",
-        "up_Link_interfaces":"UP Link Interfaces",
-        "down_link":"Down Links",
-        "interfaces_types":"Interface Types",
-        "eer_dt": "Data Traffic Energy Efficiency (MB/W) (DC/Pin)",
-        "bandwidth_mbps": "Data Traffic Allocated (MB)",
-        "datatraffic_utilization":  "DataTraffic Utilization%(DC/DA)",
-        "datatraffic_gbs" :"Data Traffic Consumed (GB)",
-        # "bandwidth_utilization": "Bandwidth Utilization (%)",
-        "carbon_emission": "Carbon Emission (kgCO₂)(Pin*0.4041)",
-        "carbon_emission_tons": "Carbon Emission (tonCO₂)",
-        "pcr": "Power Consumption Ratio(Pin/DC)(W/MB)",
-        "error_message":"Error Message",
-        "access_port":"Access Port",
+        # Basic Info
+        "device_name": DEVICE_NAME,
+        "device_type": DEVICE_TYPE,
+        "serial_number": SERIAL_NUMBER,
+        "pn_code": PN_CODE,
+        "device_ip": IP_ADDRESS,
+        "site_name": SITE,
+        # Interfaces
+        "total_interface": TOTAL_INTERFACES,
+        "up_link": UP_LINKS,
+        "down_link": DOWN_LINKS,
+        "access_port": ACCESS_PORT,
+        "up_Link_interfaces": UP_LINK_INTERFACES,
+        "interfaces_types": INTERFACE_TYPES,
+        # Power
+        "stack": STACK,
+        "psu_count": PSU_COUNT,
+        "psu_model": PSU_MODEL,
+        "total_power_capacity": TOTAL_POWER_CAPACITY,
+        "power_output": POWER_OUTPUT,
+        "power_input": POWER_INPUT,
+        "power_utilization": EER_COLUMN,
+        "pcr": PCR,
+
+        # Network
+        "total_input_packets": INPUT_PACKETS,
+        "total_output_packets": OUTPUT_PACKETS,
+        "total_input_mbs": RX_MB,
+        "total_output_mbs": TX_MB,
+        "datatraffic": DATA_CONSUMED_MB,
+        "datatraffic_gbs": DATA_CONSUMED_GB,
+        "bandwidth_mbps": DATA_ALLOCATED_MB,
+        "eer_dt": DATA_THROUGHPUT_MB_W,
+        "datatraffic_utilization": DATA_UTILIZATION_PERCENT,
+
+        # Environment
+        "carbon_emission": CARBON_KG,
+        "carbon_emission_tons": CARBON_TON,
+
+        # Lifecycle
+        "hw_eol_ad": HW_EOL,
+        "hw_eos": HW_EOS,
+        "hw_ldos": HW_LDOS,
+        "hw_EoRFA": HW_RFA,
+        "hw_EoSCR": HW_SECURITY_EOS,
+        "sw_EoSWM": SW_EOL,
+        "sw_EoVSS": SW_VULN_EOS,
+
+        # Errors
+        "error_message": ERROR_MSG
         # "performance_score": "Performance Score",
         # "performance_description": "Performance Description"
     }, inplace=True)
