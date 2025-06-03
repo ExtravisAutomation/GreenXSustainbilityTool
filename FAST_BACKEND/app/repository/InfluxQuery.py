@@ -932,7 +932,7 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
     start_range = "-24h"
     query = f'''
         from(bucket: "Dcs_db")
-        |> range(start:2025-06-02T10:04:00Z, stop: 2025-06-02T11:04:00Z)
+        |> range(start:-24h)
         |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["ApicController_IP"] == "{apic_ip}")
         |> filter(fn: (r) =>
             r["_field"] == "total_bytesRateLast" or
