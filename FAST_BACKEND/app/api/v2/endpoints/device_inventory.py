@@ -1,3 +1,4 @@
+import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List, Optional
 from app.services.device_inventory_service import DeviceInventoryService
@@ -11,7 +12,8 @@ from app.model.user import User
 from dependency_injector.wiring import Provide, inject
 from app.core.container import Container
 from app.schema.site_schema import CustomResponse
-
+from openpyxl.styles import Alignment
+from openpyxl.utils import get_column_letter
 
 router = APIRouter(prefix="/device_inventory", tags=["Device Inventory"])
 
@@ -521,8 +523,28 @@ def generate_excel(filter_data:FilterSchema,
     devices = devices.reindex(columns=new_column_order)
 
     file_path = "device_report.xlsx"
-    # Save DataFrame to an Excel file
-    devices.to_excel(file_path, index=False, engine="openpyxl")
+    # # Save DataFrame to an Excel file
+    # devices.to_excel(file_path, index=False, engine="openpyxl")
+    with pd.ExcelWriter(file_path, engine="openpyxl") as writer:
+        devices.to_excel(writer, index=False)
+        workbook = writer.book
+        worksheet = writer.sheets['Sheet1']
+
+        max_col = len(new_column_order)
+
+        # Set column widths (customize as needed)
+        default_width = 25
+        for col_idx in range(1, max_col + 1):
+            col_letter = get_column_letter(col_idx)
+            worksheet.column_dimensions[col_letter].width = default_width
+
+        # Wrap text and center align header cells
+        for col_idx in range(1, max_col + 1):
+            cell = worksheet.cell(row=1, column=col_idx)
+            cell.alignment = Alignment(wrap_text=True, vertical='center', horizontal='center')
+
+        # Set header row height to fit multiline text
+        worksheet.row_dimensions[1].height = 60
     return FileResponse(file_path, filename="device_report.xlsx", media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 @router.get("/get_hardware_version",response_model=CustomResponse)
