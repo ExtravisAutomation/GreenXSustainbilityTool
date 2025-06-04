@@ -408,8 +408,8 @@ def generate_excel(filter_data:FilterSchema,
     TOTAL_POWER_CAPACITY = "Total Power Capacity"
     POWER_OUTPUT = "Power Output (W)"
     POWER_INPUT = "Power Input (W)"
-    EER_COLUMN = "Energy Efficiency%\n\nCol Q/Col R\nNote: Power Output/Power Input"
-    PCR  = "Power Consumption Ratio(W/MB)\n\nCol  R / Col Z\nNote: Power used per input traffic."
+    EER_COLUMN = "Energy Efficiency%\n\nCol Q(Power Output)/Col R(Power Input)"
+    PCR  = "Power Consumption Ratio(W/MB)\n\nCol  R(Power Input) / Col Z(Data Traffic Consumed)\nNote: Power used per input traffic."
     INPUT_PACKETS = "Input Packets"
     OUTPUT_PACKETS = "Output Packets"
     RX_MB = "RX (MB)"
@@ -430,7 +430,7 @@ def generate_excel(filter_data:FilterSchema,
 
     DATA_UTILIZATION_PERCENT = (
         "DataTraffic Utilization%\n\n"
-        "Note: Y/AA Data Traffic Consumed/ Data Traffic Allocated"
+        "Note: Col Y(Data Traffic Consumed)/Col AA(Data Traffic Allocated)"
     )
     CARBON_KG = (
         "Carbon Emission (kgCO₂)\n\n"

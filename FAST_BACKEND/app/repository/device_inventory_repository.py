@@ -903,7 +903,6 @@ class DeviceInventoryRepository(BaseRepository):
                     # conversions
                     # bandwidth_mbps = bandwidth_kbps / 1000 if bandwidth_kbps else 0  # Megabits/sec
 
-
                     bandwidth_MBps = bandwidth_kbps / 8000 if bandwidth_kbps else 0  # Megabytes/sec
                     bandwidth_MB_per_hour = bandwidth_MBps * 3600  # MB/hour
 
