@@ -18,7 +18,7 @@ from app.model.user import User
 from app.repository.site_repository import SiteRepository
 from app.schema.site_schema import SiteCreate, SiteUpdate, Site, FindSiteResult, GetSitesResponse, SiteDetails, \
     CustomResponse, CustomResponse1, ComparisonDeviceMetricsDetails, ComparisonTrafficMetricsDetails, \
-    DevicePowerComparisonPercentage,DeviceRequest
+    DevicePowerComparisonPercentage, DeviceRequest
 from app.services.site_service import SiteService
 from app.core.container import Container
 from dependency_injector.wiring import Provide, inject
@@ -67,15 +67,16 @@ from app.schema.site_schema import EnergyConsumptionMetricsDetails2
 
 from app.schema.site_schema import CustomResponse_openai
 
-from app.schema.site_schema import EnergyConsumptionMetricsDetailsNew,modelResponse
+from app.schema.site_schema import EnergyConsumptionMetricsDetailsNew, modelResponse
 
 router = APIRouter(prefix="/sites", tags=["SITES"])
 logger = getLogger(__name__)
 
 import time
+
+
 class DeleteRequest(BaseModel):
     site_ids: List[int]
-
 
 
 @router.post("/addsite", response_model=CustomResponse[SiteDetails])
@@ -112,8 +113,6 @@ def update_site(
         return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
 
 
-
-
 @router.post("/deletesite", response_model=List)
 @inject
 def delete_sites(
@@ -124,6 +123,7 @@ def delete_sites(
 ):
     # site_service.delete_sites(request.site_ids)
     return site_service.delete_sites(request)
+
 
 @router.post("/siteEnergyEfficiency/{site_id}")
 @inject
@@ -147,9 +147,6 @@ def site_power_co2emmission(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     return site_service.site_power_co2emmission(site_id)
-
-
-
 
 
 @router.get("/sites/power_summary_metrics/{site_id}", response_model=CustomResponse[SitePowerConsumptionResponse])
@@ -201,7 +198,6 @@ def get_detailed_hourly_power_metrics_for_site(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     return site_service.calculate_hourly_power_metrics_for_each_device(site_id)
-
 
 
 @router.get("/site/device_specific_comparison/{site_id}")
@@ -411,6 +407,7 @@ def get_energy_consumption_metrics(
         status_code=status.HTTP_200_OK
     )
 
+
 @router.get("/site/traffic_throughput_metrics_WITH_FILTER/{site_id}",
             response_model=CustomResponse1[List[TrafficThroughputMetricsDetails]])
 @inject
@@ -441,19 +438,18 @@ def get_top_5_power_devices(
     return site_service.get_top_5_power_devices_with_filter(site_id, duration)
 
 
-
 @router.get(
     "/site/traffic_throughput_metrics_by_device_WITH_FILTER/{site_id}",
     response_model=CustomResponse1[List[TrafficThroughputMetricsDetails]]
 )
 @inject
 def get_device_data_metrics(
-    site_id: int,
-    device_name: Optional[str] = None,
-    duration: Optional[str] = Query("24 hours", alias="duration"),
-    current_user: User = Depends(get_current_active_user),
-    site_service: SiteService = Depends(Provide[Container.site_service]),
-    site_repository: SiteRepository = Depends(Provide[Container.site_repo])
+        site_id: int,
+        device_name: Optional[str] = None,
+        duration: Optional[str] = Query("24 hours", alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service]),
+        site_repository: SiteRepository = Depends(Provide[Container.site_repo])
 ):
     global issue_detected
 
@@ -512,6 +508,7 @@ def compare_two_devices_metrics(
         data=metrics,
         status_code=status.HTTP_200_OK
     )
+
 
 @router.get("/site/device_traffic_comparison_WITH_FILTER/{site_id}",
             response_model=CustomResponse1[List[List[ComparisonTrafficMetricsDetails]]])
@@ -604,7 +601,8 @@ def get_sites(
     service_start_time = time.time()
     sites = site_service.get_extended_sites()
     service_end_time = time.time()
-    logger.debug(f"Time taken by site_service.get_extended_sites(): {service_end_time - service_start_time:.2f} seconds")
+    logger.debug(
+        f"Time taken by site_service.get_extended_sites(): {service_end_time - service_start_time:.2f} seconds")
 
     api_end_time = time.time()
     logger.debug(f"Total time for get_sites API: {api_end_time - api_start_time:.2f} seconds")
@@ -614,6 +612,7 @@ def get_sites(
         data=sites,
         status_code=status.HTTP_200_OK
     )
+
 
 @router.post("/site_hourly_eer/{site_id}")
 @inject
@@ -625,9 +624,6 @@ def site_energy_efficiency(site_id: int,
         return power_metrix
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-
 
 
 @router.post("/siteRequiredPower/{site_id}")
@@ -673,7 +669,6 @@ def get_total_power_consumption(
     )
 
 
-
 @router.get("/sites/carbon_emission_details/{site_id}", response_model=CustomResponse[dict])
 @inject
 def get_carbon_emission_metrics(
@@ -686,7 +681,7 @@ def get_carbon_emission_metrics(
     pin_value, carbon_emission, carbon_car, carbon_flight, carbon_solution = site_service.calculate_carbon_emission(
         site_id, duration)
     print("FINALLLLLLLL", carbon_emission, file=sys.stderr)
-    carbon_em=0
+    carbon_em = 0
     if carbon_emission < 1000:
         carbon_ems = str(round(carbon_emission, 3)) + ' kg'
     else:
@@ -952,7 +947,6 @@ def get_energy_consumption_metrics(
 ):
     duration = duration or "24 hours"
 
-
     if device_id:
         metrics = site_service.calculate_energy_consumption_by_device_id(site_id, device_id, duration)
     else:
@@ -969,6 +963,7 @@ def get_energy_consumption_metrics(
         status_code=status.HTTP_200_OK
     )
 
+
 @router.get("/total_value")
 @inject
 def get_energy_consumption_metricssss(
@@ -982,8 +977,9 @@ def get_energy_consumption_metricssss(
 
     metrics = site_service.calculate_average_energy_consumption_by_site_idd(site_id, duration)
     return {
-        "data":metrics
+        "data": metrics
     }
+
 
 @router.get("/site/device_energy_details/{site_id}", response_model=DeviceEnergyDetailResponse123)
 @inject
@@ -1044,7 +1040,11 @@ def get_all_devices_carbon_emission(
         data=devices_carbon_emission,
         status_code=200
     )
+
+
 import math
+
+
 @router.get("/sites/all_devices_pcr/{site_id}", response_model=CustomResponse[List[dict]])
 @inject
 def get_all_devices_pcr(
@@ -1080,11 +1080,6 @@ def get_all_devices_pcr(
     )
 
 
-
-
-
-
-
 @router.get("/site/traffic_pcr_metrics_by_device_WITH_FILTER/{site_id}",
             response_model=CustomResponse1[List[PCRMetricsDetails]])
 @inject
@@ -1092,7 +1087,7 @@ def get_device_pcr_metrics(
         site_id: int,
         device_name: Optional[str] = None,
         duration: Optional[str] = Query("24 hours", alias="duration"),
-        limit: Optional[int] = Query(None, ge=1), 
+        limit: Optional[int] = Query(None, ge=1),
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service]),
         site_repository: SiteRepository = Depends(Provide[Container.site_repo])
@@ -1102,7 +1097,8 @@ def get_device_pcr_metrics(
         if not device_name:
             raise HTTPException(status_code=404, detail="No devices found for the given site.")
 
-    pcr_metrics = site_service.calculate_device_pcr_by_name_with_filter(site_id, device_name, duration, limit)  # Pass limit to service
+    pcr_metrics = site_service.calculate_device_pcr_by_name_with_filter(site_id, device_name, duration,
+                                                                        limit)  # Pass limit to service
     message = "Device PCR metrics retrieved successfully."
     return CustomResponse1(
         message=message,
@@ -1154,6 +1150,7 @@ def onboard_devices(
     except Exception as e:
         logger.error(f"Unexpected error during device onboarding: {str(e)}")
         raise HTTPException(status_code=500, detail="Devices onboarding failed due to an unexpected error.")
+
 
 @router.get("/sites/last_7_days_energy_metrics/{site_id}",
             response_model=CustomResponse[List[dict]])
@@ -1260,7 +1257,7 @@ def get_power_comparison_and_prediction(
         last_year_start = datetime(datetime.now().year - 1, i + 1, 1)
         last_year_end = (last_year_start + timedelta(days=31)).replace(day=1) - timedelta(days=1)
         total_pout_last_year = site_service.get_monthly_pout(site_id, last_year_start, last_year_end)
-        last_year_power.append(round(total_pout_last_year, 2)) 
+        last_year_power.append(round(total_pout_last_year, 2))
 
         current_year_start = datetime(datetime.now().year, i + 1, 1)
         current_year_end = (current_year_start + timedelta(days=31)).replace(day=1) - timedelta(days=1)
@@ -1270,16 +1267,16 @@ def get_power_comparison_and_prediction(
     total_pout_last_3_months_kw, predicted_next_month_pout_kw, predicted_cost = site_service.calculate_total_pout_and_prediction(
         site_id)
 
-    current_month_index = datetime.now().month - 1 
-    if current_month_index == 9:  
-        current_year_power[9] = predicted_next_month_pout_kw  
+    current_month_index = datetime.now().month - 1
+    if current_month_index == 9:
+        current_year_power[9] = predicted_next_month_pout_kw
 
     if current_year_power[9] == 0:
-        last_3_months_values = current_year_power[6:9]  
+        last_3_months_values = current_year_power[6:9]
         if len(last_3_months_values) > 0 and sum(last_3_months_values) > 0:
             avg_last_3_months = sum(last_3_months_values) / len([p for p in last_3_months_values if p > 0])
-            predicted_next_month_pout_kw = round(avg_last_3_months * 0.5, 2)  
-            current_year_power[9] = predicted_next_month_pout_kw  
+            predicted_next_month_pout_kw = round(avg_last_3_months * 0.5, 2)
+            current_year_power[9] = predicted_next_month_pout_kw
 
     print(f"Predicted next month (October) power after fallback: {current_year_power[9]}", file=sys.stderr)
     print(f"Final current year power: {current_year_power}", file=sys.stderr)
@@ -1293,7 +1290,6 @@ def get_power_comparison_and_prediction(
         },
         status_code=200
     )
-
 
 
 @router.get("/sites/power_output_prediction/{site_id}", response_model=CustomResponse[dict])
@@ -1368,16 +1364,16 @@ def get_power_comparison_and_prediction(
     total_pout_last_3_months_kw, predicted_next_month_pout_kw, predicted_cost = site_service.calculate_total_pout_and_prediction(
         site_id)
 
-    current_month_index = datetime.now().month - 1  
-    if current_month_index == 9:  
-        current_year_power[9] = predicted_next_month_pout_kw  
+    current_month_index = datetime.now().month - 1
+    if current_month_index == 9:
+        current_year_power[9] = predicted_next_month_pout_kw
 
     if current_year_power[9] == 0:
-        last_3_months_values = current_year_power[6:9]  
+        last_3_months_values = current_year_power[6:9]
         if len(last_3_months_values) > 0 and sum(last_3_months_values) > 0:
             avg_last_3_months = sum(last_3_months_values) / len([p for p in last_3_months_values if p > 0])
-            predicted_next_month_pout_kw = round(avg_last_3_months * 1.05, 2)  
-            current_year_power[9] = predicted_next_month_pout_kw  
+            predicted_next_month_pout_kw = round(avg_last_3_months * 1.05, 2)
+            current_year_power[9] = predicted_next_month_pout_kw
 
     print(f"Predicted next month (October) power after fallback: {current_year_power[9]}", file=sys.stderr)
     print(f"Final current year power: {current_year_power}", file=sys.stderr)
@@ -1391,9 +1387,6 @@ def get_power_comparison_and_prediction(
         },
         status_code=200
     )
-
-
-
 
 
 @router.get("/get_site_names", response_model=CustomResponse)
@@ -1434,15 +1427,10 @@ def get_site_names(
     )
 
 
-
-
-
-
-
 @router.get("/devices/get_all_with_sntc", response_model=List[CSPCDevicesWithSntcResponse])
 @inject
 def get_all_devices_with_sntc(
-    site_service: SiteService = Depends(Provide[Container.site_service])
+        site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     try:
         devices = site_service.get_cspc_devices_with_sntc()
@@ -1478,12 +1466,9 @@ def get_device_energy_metrics(
 
     return CustomResponse(
         message="Device energy metrics retrieved successfully.",
-        data=metrics.get("metrics"),  
+        data=metrics.get("metrics"),
         status_code=status.HTTP_200_OK
     )
-
-
-
 
 
 @router.get("/site/detailed_energy_metrics/{site_id}",
@@ -1491,7 +1476,7 @@ def get_device_energy_metrics(
 @inject
 def get_device_energy_metrics_by_timestamp(
         site_id: int,
-        timestamp: Optional[str] = Query(None, alias="timestamp"), 
+        timestamp: Optional[str] = Query(None, alias="timestamp"),
         device_id: Optional[int] = Query(None, alias="device_id"),
         duration: Optional[str] = Query(None, alias="duration"),
         current_user: User = Depends(get_current_active_user),
@@ -1499,7 +1484,9 @@ def get_device_energy_metrics_by_timestamp(
 ):
     duration = duration or "24 hours"
 
-    print(f"Request received for site_id: {site_id}, device_id: {device_id}, duration: {duration}, timestamp: {timestamp}", file=sys.stderr)
+    print(
+        f"Request received for site_id: {site_id}, device_id: {device_id}, duration: {duration}, timestamp: {timestamp}",
+        file=sys.stderr)
 
     if device_id:
         metrics = site_service.calculate_energy_metrics_by_device_id(site_id, device_id, duration)
@@ -1507,7 +1494,6 @@ def get_device_energy_metrics_by_timestamp(
         metrics = site_service.calculate_average_energy_metrics_by_site_id(site_id, duration)
 
     print(f"Metrics retrieved: {metrics}", file=sys.stderr)
-
 
     if not metrics or not metrics.get("metrics"):
         print(f"No metrics found for site_id: {site_id}, device_id: {device_id}, duration: {duration}", file=sys.stderr)
@@ -1554,8 +1540,6 @@ def ask_openai(
         data={"answer": answer},
         status_code=200
     )
-
-
 
 
 @router.post("/sites/upload_devices", response_model=CustomResponse[dict])
@@ -1611,6 +1595,7 @@ def get_device_energy_consumption_metrics(
         status_code=status.HTTP_200_OK
     )
 
+
 def clean_data(data):
     for item in data:
         for key, value in item.items():
@@ -1618,26 +1603,27 @@ def clean_data(data):
                 if np.isnan(value) or np.isinf(value):
                     item[key] = 0  # Replace with 0 or another fallback
     return data
+
+
 @router.post("/sites/avg_energy_consumption_with_model_count/")
 @inject
 def get_device_avg_energy_consumption_metrics(
-        model_data:modelResponse,
+        model_data: modelResponse,
         # current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-
     duration = model_data.duration or "24 hours"
 
-    avg_metrics = site_service.calculate_avg_energy_consumption_with_filters(model_data.limit,model_data.site_id, model_data.rack_id, model_data.vendor_id,
+    avg_metrics = site_service.calculate_avg_energy_consumption_with_filters(model_data.limit, model_data.site_id,
+                                                                             model_data.rack_id, model_data.vendor_id,
                                                                              duration)
 
     print("Average Metrics:", avg_metrics, file=sys.stderr)
-    avg_metrics=clean_data(avg_metrics)
+    avg_metrics = clean_data(avg_metrics)
     if not avg_metrics:
         raise HTTPException(status_code=404, detail="No metrics found for the given filters.")
 
     return avg_metrics
-
 
 
 @router.get("/get_inventory_count", response_model=CustomResponse)
@@ -1657,59 +1643,73 @@ def get_inventory_counts(
 
 @router.post("/get_next_month", response_model=CustomResponse)
 @inject
-def get_ai_res(device_data:DeviceRequest,
-        # current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
+def get_ai_res(device_data: DeviceRequest,
+               # current_user: User = Depends(get_current_active_user),
+               site_service: SiteService = Depends(Provide[Container.site_service])
+               ):
     # data = site_service.get_device_aidata(device_data)
     data = site_service.check_site(device_data.site_id)
     if data:
-     data = [
+        data = [
 
-
-        {'month': 'October', 'year': 2024, 'total_PIn': 221.37, 'total_POut': 191.79, 'PUE': 1.15, 'EER': 0.87,'co2':8.8,
-         'Prediction': 'False'},
-        {'month': 'November', 'year': 2024, 'total_PIn': 205.29, 'total_POut': 177.65, 'PUE': 1.16, 'EER': 0.87,'co2':8.2,
-         'Prediction': 'False'},
-        {'month': 'December', 'year': 2024, 'total_PIn': 223.01, 'total_POut': 193.01, 'PUE': 1.16, 'EER': 0.87,'co2':8.9,
-         'Prediction': 'False'},
-        {'month': 'January', 'year': 2025, 'total_PIn': 70.33, 'total_POut': 60.85, 'PUE': 1.16, 'EER': 0.87,'co2':2.8,
-         'Prediction': 'False'},
-        {'month': 'February', 'year': 2025, 'total_PIn':  223.01, 'total_POut': 193.01, 'PUE': 1.16, 'EER': 0.87,'co2':8.9,
-         'Prediction': 'False'},
-        {'month': 'March', 'year': 2024, 'total_PIn': 222.95, 'total_POut': 192.5, 'PUE': 1.16, 'EER': 0.86,'co2':8.8,
-         'Prediction': 'False'},
-        {'month': 'April', 'year': 2025, 'total_PIn': 222.67, 'total_POut': 193.67, 'PUE': 1.16, 'EER': 0.87,'co2':8.9,
-         'Prediction': 'False'},
-         {'month': 'May', 'year': 2025, 'total_PIn': 189.37, 'total_POut': 190.79, 'PUE': 1.15, 'EER': 0.87,
-          'co2': 7.5,
-          'Prediction': 'True'},
-    ]
+            {'month': 'October', 'year': 2024, 'total_PIn': 221.37, 'total_POut': 191.79, 'PUE': 1.15, 'EER': 0.87,
+             'co2': 8.8,
+             'Prediction': 'False'},
+            {'month': 'November', 'year': 2024, 'total_PIn': 205.29, 'total_POut': 177.65, 'PUE': 1.16, 'EER': 0.87,
+             'co2': 8.2,
+             'Prediction': 'False'},
+            {'month': 'December', 'year': 2024, 'total_PIn': 223.01, 'total_POut': 193.01, 'PUE': 1.16, 'EER': 0.87,
+             'co2': 8.9,
+             'Prediction': 'False'},
+            {'month': 'January', 'year': 2025, 'total_PIn': 70.33, 'total_POut': 60.85, 'PUE': 1.16, 'EER': 0.87,
+             'co2': 2.8,
+             'Prediction': 'False'},
+            {'month': 'February', 'year': 2025, 'total_PIn': 223.01, 'total_POut': 193.01, 'PUE': 1.16, 'EER': 0.87,
+             'co2': 8.9,
+             'Prediction': 'False'},
+            {'month': 'March', 'year': 2024, 'total_PIn': 222.95, 'total_POut': 192.5, 'PUE': 1.16, 'EER': 0.86,
+             'co2': 8.8,
+             'Prediction': 'False'},
+            {'month': 'April', 'year': 2025, 'total_PIn': 222.67, 'total_POut': 193.67, 'PUE': 1.16, 'EER': 0.87,
+             'co2': 8.9,
+             'Prediction': 'False'},
+            {'month': 'May', 'year': 2025, 'total_PIn': 226.37, 'total_POut': 190.79, 'PUE': 1.18, 'EER': 0.84,
+             'co2': 7.5,
+             'Prediction': 'False'},
+            {'month': 'June', 'year': 2025, 'total_PIn': 226.37, 'total_POut': 70.79, 'PUE': 3.19, 'EER': 0.30,
+             'co2': 7.5,
+             'Prediction': 'True'},
+            {'month': 'July', 'year': 2025, 'total_PIn': 200.37, 'total_POut': 130.79, 'PUE': 1.51, 'EER': 0.65,
+             'co2': 7.5,
+             'Prediction': 'True'},
+        ]
     print(data)
-    print(type(data),"$#@@@@@@@@@@@@@@@@")
+    print(type(data), "$#@@@@@@@@@@@@@@@@")
     return CustomResponse(
         message="Fetched all inventory count successfully",
         data=data,
         status_code=status.HTTP_200_OK
     )
+
+
 @router.post("/get_next_year_co2", response_model=CustomResponse)
 @inject
 def get_ai_res_year_co2(
-               site_id: int,
-               # current_user: User = Depends(get_current_active_user),
-               site_service: SiteService = Depends(Provide[Container.site_service])
-               ):
+        site_id: int,
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
     data = site_service.check_site(site_id)
     if data:
         data = [
-            {'year': 2023, 'total_PIn': 221.37, 'total_POut': 191.79, 'co2':8.8,
+            {'year': 2023, 'total_PIn': 221.37, 'total_POut': 191.79, 'co2': 8.8,
              'Prediction': 'False'},
-            { 'year': 2024, 'total_PIn': 229.87, 'total_POut': 191.79, 'co2':9.1,
+            {'year': 2024, 'total_PIn': 229.87, 'total_POut': 191.79, 'co2': 9.1,
              'Prediction': 'False'},
-            {'year': 2025, 'total_PIn': 205.29, 'total_POut': 177.65, 'co2':8.2,
+            {'year': 2025, 'total_PIn': 205.29, 'total_POut': 177.65, 'co2': 8.2,
              'Prediction': 'False'},
-            {'year': 2026, 'total_PIn': 223.01, 'total_POut': 193.01, 'co2':8.9,
-             'Prediction': 'True'},]
+            {'year': 2026, 'total_PIn': 223.01, 'total_POut': 193.01, 'co2': 8.9,
+             'Prediction': 'True'}, ]
         print(data)
         print(type(data))
         return CustomResponse(
@@ -1718,24 +1718,25 @@ def get_ai_res_year_co2(
             status_code=status.HTTP_200_OK
         )
 
+
 @router.post("/get_next_year", response_model=CustomResponse)
 @inject
 def get_ai_res_year(
-               site_id: int,
-               # current_user: User = Depends(get_current_active_user),
-               site_service: SiteService = Depends(Provide[Container.site_service])
-               ):
+        site_id: int,
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
     data = site_service.check_site(site_id)
     if data:
-         data = [
-        {'year': 2023, 'total_PIn': 221.37, 'total_POut': 191.79, 'PUE': 1.15, 'EER': 0.87, 'datatraffic':2.3,
-         'Prediction': 'False'},
-        { 'year': 2024, 'total_PIn': 221.37, 'total_POut': 191.79, 'PUE': 1.15, 'EER': 0.87,'datatraffic':2.3,
-         'Prediction': 'False'},
-        {'year': 2025, 'total_PIn': 205.29, 'total_POut': 177.65, 'PUE': 1.16, 'EER': 0.87,'datatraffic':2.3,
-         'Prediction': 'False'},
-        {'year': 2026, 'total_PIn': 223.01, 'total_POut': 193.01, 'PUE': 1.16, 'EER': 0.87,'datatraffic':2.3,
-         'Prediction': 'True'},]
+        data = [
+            {'year': 2023, 'total_PIn': 221.37, 'total_POut': 191.79, 'PUE': 1.15, 'EER': 0.87, 'datatraffic': 2.3,
+             'Prediction': 'False'},
+            {'year': 2024, 'total_PIn': 221.37, 'total_POut': 191.79, 'PUE': 1.15, 'EER': 0.87, 'datatraffic': 2.3,
+             'Prediction': 'False'},
+            {'year': 2025, 'total_PIn': 205.29, 'total_POut': 177.65, 'PUE': 1.16, 'EER': 0.87, 'datatraffic': 2.3,
+             'Prediction': 'False'},
+            {'year': 2026, 'total_PIn': 223.01, 'total_POut': 193.01, 'PUE': 1.16, 'EER': 0.87, 'datatraffic': 2.3,
+             'Prediction': 'True'}, ]
     print(data)
     print(type(data))
     return CustomResponse(
@@ -1743,6 +1744,7 @@ def get_ai_res_year(
         data=data,
         status_code=status.HTTP_200_OK
     )
+
 
 @router.post("/generate_reports", response_model=CustomResponse[dict])
 @inject
@@ -1753,9 +1755,13 @@ def get_reports(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     duration = duration or "24 hours"
+
     def calculate_emission():
-        pin_value, consumption_percentages, totalpin_kws = site_service.calculate_total_power_consumption(site_id, duration)
-        return {"total_PIn": pin_value, "consumption_percentages": consumption_percentages, "totalpin_kws": totalpin_kws}
+        pin_value, consumption_percentages, totalpin_kws = site_service.calculate_total_power_consumption(site_id,
+                                                                                                          duration)
+        return {"total_PIn": pin_value, "consumption_percentages": consumption_percentages,
+                "totalpin_kws": totalpin_kws}
+
     def get_device_emission():
         return site_service.get_all_devices_carbon_emission(site_id, duration)
 
@@ -1783,7 +1789,6 @@ UPLOAD_DIRECTORY = "./uploaded_files/"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)  # Ensure the directory exists
 
 
-
 @router.post("/upload_pdf", response_model=CustomResponse[dict])
 @inject
 async def upload_pdf(file: UploadFile = File(...)):
@@ -1807,7 +1812,6 @@ async def upload_pdf(file: UploadFile = File(...)):
         },
         status_code=201,
     )
-
 
 
 @router.get("/sites/carbon_onclick/{site_id}",
@@ -1841,8 +1845,10 @@ def get_device_cabonemmsion(
         status_code=status.HTTP_200_OK
     )
 
+
 from fastapi.responses import FileResponse
 from pathlib import Path
+
 
 @router.post("/view-pdf/")
 def view_pdf(
@@ -1856,7 +1862,7 @@ def view_pdf(
     safe_filename = os.path.basename(filename)
     pdf_path = Path(f"ega_reports/{safe_filename}")
 
-    print("path",pdf_path)
+    print("path", pdf_path)
 
     if pdf_path.exists():
         return FileResponse(
@@ -1881,7 +1887,9 @@ def get_dcs_energy_metrics_by_timestamp(
 ):
     duration = duration or "24 hours"
 
-    print(f"Request received for site_id: {site_id}, device_id: {device_id}, duration: {duration}, timestamp: {timestamp}", file=sys.stderr)
+    print(
+        f"Request received for site_id: {site_id}, device_id: {device_id}, duration: {duration}, timestamp: {timestamp}",
+        file=sys.stderr)
 
     if device_id:
         print("Request received")
@@ -1915,11 +1923,11 @@ def get_dcs_energy_metrics_by_timestamp(
 @inject
 def site_power_co2emmission(
         device_id: int,
-        collecton_status:bool,
+        collecton_status: bool,
         # current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
-    response=site_service.device_collectionstatus(device_id,collecton_status)
+    response = site_service.device_collectionstatus(device_id, collecton_status)
     print("Device status")
 
     return {

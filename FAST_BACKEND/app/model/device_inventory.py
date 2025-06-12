@@ -35,6 +35,10 @@ class DeviceInventory(BaseModel):
     power_utilization = None
     stack = Column(Boolean, nullable=True)
     error_message = Column(String(1000), nullable=True)
+    active_psu = Column(Integer, nullable=True)
+    non_active_psu = Column(Integer, nullable=True)
+    switch_topology = Column(String(100), nullable=True)
+    switch_mode = Column(String(100), nullable=True)
 
     role = Column(String(255), nullable=True)
     psu_model = Column(String(100), nullable=True)

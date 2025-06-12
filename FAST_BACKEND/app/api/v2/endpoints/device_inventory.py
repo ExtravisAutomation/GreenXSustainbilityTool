@@ -448,13 +448,17 @@ def generate_excel(filter_data:FilterSchema,
     SW_EOL = "SW Maintenance EoL"
     SW_VULN_EOS = "SW Vulnerability Support EoS"
     ERROR_MSG = "Error Message"
+    active_psu ="Active PSU"
+    non_active_psu = "Non Active PSU"
+    switch_topology = "Switch Topology"
+    switch_mode = "Switch Mode"
 
     new_column_order = [
         # Basic Info
         DEVICE_NAME, DEVICE_TYPE, SERIAL_NUMBER, PN_CODE, IP_ADDRESS, SITE,
         TOTAL_INTERFACES, UP_LINKS, DOWN_LINKS, ACCESS_PORT, UP_LINK_INTERFACES, INTERFACE_TYPES,
         # Power Info
-        STACK, PSU_COUNT, PSU_MODEL, TOTAL_POWER_CAPACITY,
+        STACK,active_psu,non_active_psu,switch_topology,switch_mode, PSU_COUNT, PSU_MODEL, TOTAL_POWER_CAPACITY,
         POWER_OUTPUT, POWER_INPUT, EER_COLUMN, PCR,
         # Network
         INPUT_PACKETS, OUTPUT_PACKETS, RX_MB, TX_MB,
@@ -484,6 +488,10 @@ def generate_excel(filter_data:FilterSchema,
         "interfaces_types": INTERFACE_TYPES,
         # Power
         "stack": STACK,
+        "active_psu":active_psu,
+        "non_active_psu" :non_active_psu,
+        "switch_topology" :switch_topology,
+        "switch_mode" :switch_mode,
         "psu_count": PSU_COUNT,
         "psu_model": PSU_MODEL,
         "total_power_capacity": TOTAL_POWER_CAPACITY,

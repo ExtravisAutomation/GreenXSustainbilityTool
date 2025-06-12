@@ -481,7 +481,7 @@ def get_24hDevice_power(apic_ip: str) -> List[dict]:
     total_drawn, total_supplied = 0, 0
     start_range = "-1h"
     query = f'''
-                              from(bucket: "Dcs_db")
+                               from(bucket: "Dcs_db")
                                |> range(start: {start_range})
                                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{apic_ip}")
                                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
@@ -569,13 +569,13 @@ def get_24hDevice_power(apic_ip: str) -> List[dict]:
 #         # for table in result:
 #         #     for record in table.records:
 #         #         if record.get_field() == "total_POut":
-#         #             drawnAvg = record.get_value()
+#         #
+# #         #         if drawnAvg is not None and suppliedAvg is not None:
+# #         #             total_drawn += drawnAvg
+# #         #             total           drawnAvg = record.get_value()
 #         #         elif record.get_field() == "total_PIn":
 #         #             suppliedAvg = record.get_value()
-#         #
-#         #         if drawnAvg is not None and suppliedAvg is not None:
-#         #             total_drawn += drawnAvg
-#         #             total_supplied += suppliedAvg
+#         #_supplied += suppliedAvg
 #
 #         power_utilization = None
 #         pue = None
