@@ -479,16 +479,16 @@ def get_24h_rack_datatraffic(apic_ips, rack_id) -> List[dict]:
 
 def get_24hDevice_power(apic_ip: str) -> List[dict]:
     total_drawn, total_supplied = 0, 0
-    start_range = "-1h"
+    start_range = "-12m"
 
     query = f'''
                                from(bucket: "Dcs_db")
-                               |> range(start:2025-06-12T12:08:59Z, stop: 2025-06-12T12:30:00Z)
+                               |> range(start: {start_range})
                                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{apic_ip}")
                                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
                                |> aggregateWindow(every: 1h, fn: sum, createEmpty: false)
                                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")                             
-                          '''
+                           '''
     # result = query_api.query(query)
     try:
         result = query_api.query_data_frame(query)
