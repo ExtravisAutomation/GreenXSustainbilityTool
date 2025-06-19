@@ -17,10 +17,8 @@ class SiteBase(BaseModel):
     status: str
     total_devices: Optional[str] = None
 
-
 class SiteDetails(SiteBase):
     id: int
-
 
 class GetSitesResponse(BaseModel):
     sites: List[SiteDetails]

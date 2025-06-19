@@ -5,6 +5,8 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 import os
 import time
+from fastapi.responses import FileResponse
+from pathlib import Path
 import numpy as np
 from fastapi import File, UploadFile
 from datetime import datetime, timedelta
@@ -1846,8 +1848,7 @@ def get_device_cabonemmsion(
     )
 
 
-from fastapi.responses import FileResponse
-from pathlib import Path
+
 
 
 @router.post("/view-pdf/")

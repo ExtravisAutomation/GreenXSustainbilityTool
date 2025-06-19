@@ -10,11 +10,12 @@ from app.repository.rack_repository import RackRepository
 from app.services.site_service import SiteService
 from app.repository.blacklisted_token_repository import BlacklistedTokenRepository
 from influxdb_client import InfluxDBClient, Point, WritePrecision
-
+from app.repository.admin_repository import AdminPanelRepository
 from app.repository.influxdb_repository import InfluxDBRepository
 from app.services.apic_service import APICService
 from app.repository.apic_repository import APICRepository
 from app.services.device_service import DeviceService
+from app.services.admin_service import AdminPanelService
 from app.repository.device_inventory_repository import DeviceInventoryRepository
 from app.services.device_inventory_service import DeviceInventoryService
 
@@ -46,6 +47,7 @@ class Container(containers.DeclarativeContainer):
             "app.api.v2.endpoints.vcenter",
             "app.api.v2.endpoints.perhr",
             "app.api.v2.endpoints.aimodule",
+            "app.api.v2.endpoints.admin",
             "app.core.dependencies",
         ]
     )
@@ -74,6 +76,7 @@ class Container(containers.DeclarativeContainer):
         BlacklistedTokenRepository,
         session_factory=db.provided.session
     )
+    admin_repository=providers.Factory(AdminPanelRepository, session_factory=db.provided.session)
     apic_repository = providers.Factory(APICRepository, session_factory=db.provided.session, influxdb_repository=influxdb_repository)
     device_inventory_repository = providers.Factory(
         DeviceInventoryRepository,
@@ -89,6 +92,8 @@ class Container(containers.DeclarativeContainer):
     auth_service = providers.Factory(AuthService, user_repository=user_repository,
                                      blacklisted_token_repository=blacklisted_token_repository)
     site_service = providers.Factory(SiteService, site_repository=site_repo, influxdb_repository=influxdb_repository,ai_repository=ai_repository)
+    admin_service = providers.Factory(AdminPanelService, admin_repository=admin_repository, influxdb_repository=influxdb_repository)
+
     user_service = providers.Factory(UserService, user_repository=user_repository)
     apic_service = providers.Factory(APICService, apic_repository=apic_repository)
     device_inventory_service = providers.Factory(DeviceInventoryService, device_inventory_repository=device_inventory_repository)

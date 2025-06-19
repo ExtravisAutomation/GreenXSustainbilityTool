@@ -27,17 +27,11 @@
 #     name: str = Field(default=None, nullable=True)
 #     is_active: bool = Field(default=True)
 #     is_superuser: bool = Field(default=False)
-
+from sqlalchemy.orm import relationship
 
 from sqlalchemy import Column, String, Boolean,Integer,DateTime, ForeignKey,func
 from .base_model import BaseModel
-class Role(BaseModel):
-    __tablename__ = "roles"
 
-
-    role_name = Column(String(255), nullable=False)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
 # class User(BaseModel):
 #     __tablename__ = "user"
@@ -49,32 +43,48 @@ class Role(BaseModel):
 #     is_active = Column(Boolean, default=True)
 #     is_superuser = Column(Boolean, default=False)
 #     role = Column(String, default='user')
-
+class Role(BaseModel):
+    __tablename__ = "roles"
+    role_name = Column(String(255), nullable=False, unique=True)
+    # one-to-many → users
+    users = relationship("User", back_populates="role_obj", cascade="all, delete-orphan")
 
 class User(BaseModel):
-    __tablename__ = "user"
+    __tablename__ = "user"                       # *** singular ***
 
+    email        = Column(String(255), unique=True, nullable=False)
+    password     = Column(String(255), nullable=False)
+    user_token   = Column(String(255), unique=True, nullable=False)
+    name         = Column(String(255))
+    is_active    = Column(Boolean, nullable=False, default=True)
+    is_superuser = Column(Boolean, nullable=False, default=False)
 
-    email = Column(String(255), unique=True, nullable=False)
-    password = Column(String(255), nullable=False)
-    user_token = Column(String(255), unique=True, nullable=False)
-    name = Column(String(255), nullable=True)
-    is_active = Column(Boolean, nullable=False)
-    is_superuser = Column(Boolean, nullable=False)
-    role = Column(String(255), default='user')
-    role_id = Column(Integer, ForeignKey('roles.id'))
+    role_id      = Column(Integer, ForeignKey("roles.id"))
+    role_obj     = relationship("Role", back_populates="users")
 
+    # one-to-many → user_modules_access
+    module_accesses = relationship(
+        "UserModulesAccess",
+        back_populates="user"
+
+    )
 
 class DashboardModule(BaseModel):
-    __tablename__ = "dashboard_module"
+    __tablename__ = "dashboard_modules"
 
+    modules_name = Column(String(255), nullable=False, unique=True)
 
-    modules_name = Column(String(255), nullable=False)
-
+    # one-to-many → user_modules_access
+    user_accesses = relationship(
+        "UserModulesAccess",
+        back_populates="module"
+    )
 
 class UserModulesAccess(BaseModel):
     __tablename__ = "user_modules_access"
 
-    # id = Column(Integer, primary_key=True, autoincrement=True)
-    module_id = Column(Integer, ForeignKey('dashboard_module.id'))
-    user_id = Column(Integer, ForeignKey('user.id'))
+    module_id = Column(Integer, ForeignKey("dashboard_modules.id"), nullable=False)
+    user_id   = Column(Integer, ForeignKey("user.id"),               nullable=False)  # *** fixed ***
+
+    module = relationship("DashboardModule", back_populates="user_accesses")
+    user   = relationship("User",             back_populates="module_accesses")
