@@ -52,10 +52,6 @@ class AuthService(BaseService):
         role_name,module=self.user_repository.get_data_modules(user.id, user.role_id)
         print(role_name)
         print(module)
-
-
-
-
         #
         payload = Payload(
             id=user.id,

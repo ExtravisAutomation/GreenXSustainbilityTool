@@ -3,7 +3,8 @@ import time
 from typing import List, Optional, Dict, Any, Union
 from app.api.v2.endpoints.test_script import main
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from app.schema.admin_schema import CustomResponse,RoleCreate,RoleUpdate,DashboardModuleCreate,DashboardModuleUpdate
+from app.schema.admin_schema import (CustomResponse,RoleCreate,RoleUpdate,DashboardModuleCreate,
+                                     UserCreate,DashboardModuleUpdate,UserUpdate)
 from app.services.admin_service import AdminPanelService
 from app.core.container import Container
 from dependency_injector.wiring import Provide, inject
@@ -71,19 +72,7 @@ def get_roles(
         data=role,
         status_code=status.HTTP_200_OK
     )
-@router.post("/adduser", response_model=CustomResponse)
-@inject
-def add_roles(
-        role_data: RoleCreate,
-        # current_user: User = Depends(get_current_active_user),
-        admin_service: AdminPanelService = Depends(Provide[Container.admin_service])
-):
-    role = admin_service.add_role(role_data)
-    return CustomResponse(
-        message="Role created successfully",
-        data=role,
-        status_code=status.HTTP_200_OK
-    )
+
 
 @router.post("/addmodule", response_model=CustomResponse)
 @inject
@@ -138,3 +127,39 @@ def get_modules(
         data=module,
         status_code=status.HTTP_200_OK
     )
+
+@router.post("/adduser", response_model=CustomResponse)
+@inject
+def add_roles(
+        user_data: UserCreate,
+        # current_user: User = Depends(get_current_active_user),
+        admin_service: AdminPanelService = Depends(Provide[Container.admin_service])
+):
+    user = admin_service.add_user_access(user_data)
+    return CustomResponse(
+        message="User  created successfully",
+        data=user,
+        status_code=status.HTTP_200_OK
+    )
+@router.post("/updateUser", response_model=CustomResponse)
+@inject
+def add_roles(
+        user_data: UserUpdate,
+        # current_user: User = Depends(get_current_active_user),
+        admin_service: AdminPanelService = Depends(Provide[Container.admin_service])
+):
+    user = admin_service.add_user_access(user_data)
+    return CustomResponse(
+        message="User Updated successfully",
+        data=user,
+        status_code=status.HTTP_200_OK
+    )
+
+@router.post("/deleteUser")
+@inject
+def delete_roles(
+        request: int,
+        current_user: User = Depends(get_current_active_user),
+        admin_service: AdminPanelService = Depends(Provide[Container.admin_service])
+):
+    return admin_service.delete_user_access(request)

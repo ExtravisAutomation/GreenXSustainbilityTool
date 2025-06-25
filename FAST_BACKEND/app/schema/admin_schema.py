@@ -1,7 +1,8 @@
 from app.schema.base_schema import ModelBaseInfo, FindBase, SearchOptions, FindResult, Blank
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, EmailStr, constr
 from typing import Generic, TypeVar, Optional, List, Dict
 from pydantic.generics import GenericModel
+
 from datetime import datetime, date
 
 DataT = TypeVar('DataT')
@@ -37,10 +38,33 @@ class DashboardModuleDetails(DashboardModule):
 class RoleUpdate(BaseModel):
     role_name: Optional[str] = None
 
-class SignUp(BaseModel):
-    email: str
-    password: str
+
+
+class UserRead(BaseModel):
+    id: int
+    email: EmailStr
     name: str
-    username:str
+    name: str
+    username: str
     role_id: int
-    module_id: List
+    module_ids: List[int]
+
+    class Config:
+        orm_mode = True
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: constr(min_length=8)
+    name: str
+    username: str
+    role_id: int
+    module_ids: List[int]                  # ← renamed for clarity
+    status: Optional[str] = "active"
+
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    password: Optional[constr(min_length=8)] = None
+    name: Optional[str] = None
+    username: Optional[str] = None
+    role_id: Optional[int] = None
+    status: Optional[str] = None
+    module_ids: Optional[List[int]] = None

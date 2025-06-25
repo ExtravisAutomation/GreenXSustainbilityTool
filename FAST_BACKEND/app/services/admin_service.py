@@ -13,7 +13,7 @@ from sqlalchemy.engine import Row
 from sqlalchemy.orm import Session
 from app.repository.admin_repository import AdminPanelRepository
 
-from app.schema.admin_schema import RoleDetails,DashboardModuleDetails
+from app.schema.admin_schema import RoleDetails,DashboardModuleDetails,UserUpdate
 
 from app.repository.influxdb_repository import InfluxDBRepository
 
@@ -37,6 +37,14 @@ class AdminPanelService:
         site = self.admin_repository.add_role(role_data)
         return RoleDetails(**site.__dict__)
 
+    def add_user_access(self, user_data) :
+         return   self.admin_repository.add_user_access(user_data)
+
+    def update_user_access(self, user_data) :
+        return self.admin_repository.update_user_access(user_data)
+    def delete_user_access(self, user_id: int) -> str:
+        self.admin_repository.delete_user_access(user_id)
+        return {"message": " User deleted successfully"}
     def update_role(self,id:int,update_data):
         return self.admin_repository.update_role(id, update_data)
 
