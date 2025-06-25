@@ -1,5 +1,5 @@
 from app.schema.base_schema import ModelBaseInfo, FindBase, SearchOptions, FindResult, Blank
-from pydantic import BaseModel, validator,  constr
+from pydantic import BaseModel, validator, EmailStr, constr
 from typing import Generic, TypeVar, Optional, List, Dict
 from pydantic.generics import GenericModel
 
@@ -42,7 +42,7 @@ class RoleUpdate(BaseModel):
 
 class UserRead(BaseModel):
     id: int
-    email: str
+    email: EmailStr
     name: str
     name: str
     username: str
@@ -52,7 +52,7 @@ class UserRead(BaseModel):
     class Config:
         orm_mode = True
 class UserCreate(BaseModel):
-    email: str
+    email: EmailStr
     password: constr(min_length=8)
     name: str
     username: str
@@ -61,7 +61,7 @@ class UserCreate(BaseModel):
     status: Optional[str] = "active"
 
 class UserUpdate(BaseModel):
-    email: Optional[str] = None
+    email: Optional[EmailStr] = None
     password: Optional[constr(min_length=8)] = None
     name: Optional[str] = None
     username: Optional[str] = None
