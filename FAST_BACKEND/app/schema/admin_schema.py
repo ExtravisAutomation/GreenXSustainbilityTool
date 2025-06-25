@@ -68,3 +68,16 @@ class UserUpdate(BaseModel):
     role_id: Optional[int] = None
     status: Optional[str] = None
     module_ids: Optional[List[int]] = None
+class UserWithModulesRead(BaseModel):
+    id: int
+    email: Optional[str] = None
+    name: Optional[str] = None
+    username: Optional[str] = None
+    role_id: Optional[int] = None
+    status: Optional[str] = None
+    role_id: Optional[int] = None
+    module_names: Optional[List[str]]=None
+
+    class Config:
+        orm_mode = True
+

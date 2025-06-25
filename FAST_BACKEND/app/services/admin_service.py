@@ -50,6 +50,8 @@ class AdminPanelService:
 
     def get_role(self):
         return self.admin_repository.get_role()
+    def get_all_users_with_modules(self):
+        return self.admin_repository.get_all_users_with_modules()
 
     def delete_role(self, role_id: int) -> str:
         self.admin_repository.delete_role(role_id)

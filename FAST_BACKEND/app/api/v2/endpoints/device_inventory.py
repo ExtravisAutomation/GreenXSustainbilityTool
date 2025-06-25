@@ -583,7 +583,6 @@ def get_software_versions(
     )
 
 
-
 @router.post("/create_vendor/")
 @inject
 def create_vendor(vendor: VendorSchema, device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])

@@ -7,6 +7,7 @@ from passlib.context import CryptContext
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from app.util.hash import get_rand_hash
+from app.schema.admin_schema import UserWithModulesRead
 import logging
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -121,6 +122,7 @@ class AdminPanelRepository(BaseRepository):
                 name=user_data.name,
                 username=user_data.username,
                 user_token=user_token,
+
                 role_id=user_data.role_id,
                 is_active=(user_data.status.lower() == "active"),
             )
@@ -233,3 +235,28 @@ class AdminPanelRepository(BaseRepository):
             except IntegrityError:
                 session.rollback()
                 raise HTTPException(500, "Failed to delete user and module accesses.")
+
+    def get_all_users_with_modules(self) -> List[UserWithModulesRead]:
+        with self.session_factory() as session:
+
+            users = session.query(User).all()
+
+            result = []
+            for user in users:
+                module_names = [
+                    access.module.modules_name
+                    for access in user.module_accesses
+                    if access.module  # ensure not None
+                ]
+
+                result.append(UserWithModulesRead(
+                    id=user.id,
+                    email=user.email,
+                    name=user.name,
+                    username=user.username,
+                    status=user.is_active,
+                    role_id=user.role_id,
+                    module_names=module_names
+                ))
+
+            return result

@@ -1,5 +1,6 @@
 import sys
 import time
+
 from typing import List, Optional, Dict, Any, Union
 from app.api.v2.endpoints.test_script import main
 from fastapi import APIRouter, Depends, HTTPException, status, Query
@@ -163,3 +164,18 @@ def delete_roles(
         admin_service: AdminPanelService = Depends(Provide[Container.admin_service])
 ):
     return admin_service.delete_user_access(request)
+
+
+@router.get("/getalluser", response_model=CustomResponse)
+@inject
+def list_users(
+
+        # current_user: User = Depends(get_current_active_user),
+        admin_service: AdminPanelService = Depends(Provide[Container.admin_service])
+):
+    module=admin_service.get_all_users_with_modules()
+    return CustomResponse(
+        message="Fetched all user successfully",
+        data=module,
+        status_code=status.HTTP_200_OK
+    )
