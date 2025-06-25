@@ -20,13 +20,27 @@ class UserModulesAccess(BaseModel):
     module_id: int
     user_id: int
 
-class RoleCreate(RoleBase):
-    pass
 class DashboardModuleCreate(DashboardModule):
     pass
+class DashboardModuleUpdate(DashboardModule):
+    modules_name: Optional[str] = None
+
+class RoleCreate(RoleBase):
+    pass
+
 class RoleDetails(RoleBase):
     id: int
 
+class DashboardModuleDetails(DashboardModule):
+    id: int
 
 class RoleUpdate(BaseModel):
     role_name: Optional[str] = None
+
+class SignUp(BaseModel):
+    email: str
+    password: str
+    name: str
+    username:str
+    role_id: int
+    module_id: List

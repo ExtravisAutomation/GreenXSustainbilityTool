@@ -26,7 +26,7 @@ class BaseRepository:
             filter_options = dict_to_sqlalchemy_filter_options(self.model, schema.dict(exclude_none=True))
 
             if "user_name" in schema_as_dict:
-                filter_options = filter_options & (self.model.name == schema_as_dict['user_name'])
+                filter_options = filter_options & (self.model.username == schema_as_dict['user_name'])
 
             query = session.query(self.model)
             if eager:

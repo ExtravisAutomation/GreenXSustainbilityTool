@@ -18,6 +18,7 @@ class SignUp(BaseModel):
     email: str
     password: str
     name: str
+    username:str
     role_id: int
 
 

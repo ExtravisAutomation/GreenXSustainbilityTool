@@ -3,7 +3,7 @@ import time
 from typing import List, Optional, Dict, Any, Union
 from app.api.v2.endpoints.test_script import main
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from app.schema.admin_schema import CustomResponse,RoleCreate,RoleUpdate
+from app.schema.admin_schema import CustomResponse,RoleCreate,RoleUpdate,DashboardModuleCreate,DashboardModuleUpdate
 from app.services.admin_service import AdminPanelService
 from app.core.container import Container
 from dependency_injector.wiring import Provide, inject
@@ -67,7 +67,7 @@ def get_roles(
 ):
     role=admin_service.get_role()
     return CustomResponse(
-        message="Site updated successfully",
+        message="Fetched role successfully",
         data=role,
         status_code=status.HTTP_200_OK
     )
@@ -82,5 +82,59 @@ def add_roles(
     return CustomResponse(
         message="Role created successfully",
         data=role,
+        status_code=status.HTTP_200_OK
+    )
+
+@router.post("/addmodule", response_model=CustomResponse)
+@inject
+def add_modules(
+        module_data: DashboardModuleCreate,
+        current_user: User = Depends(get_current_active_user),
+        admin_service: AdminPanelService = Depends(Provide[Container.admin_service])
+):
+    module = admin_service.add_module(module_data)
+    return CustomResponse(
+        message="Module created successfully",
+        data=module,
+        status_code=status.HTTP_200_OK
+    )
+
+@router.post("/updateDashboardmodule/{id}", response_model=CustomResponse)
+@inject
+def update_modules(
+        id: int,
+        module_data: DashboardModuleUpdate,
+        current_user: User = Depends(get_current_active_user),
+        admin_service: AdminPanelService = Depends(Provide[Container.admin_service])
+):
+    try:
+        module = admin_service.update_module(id, module_data)
+        return CustomResponse(
+            message="Module updated successfully",
+            data=module,
+            status_code=status.HTTP_200_OK
+        )
+    except HTTPException as e:
+        return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
+
+@router.post("/deleteDashboardmodule")
+@inject
+def delete_modules(
+        request: List[int],
+        current_user: User = Depends(get_current_active_user),
+        admin_service: AdminPanelService = Depends(Provide[Container.admin_service])
+):
+    return admin_service.delete_module(request)
+
+@router.get("/getDashboardmodules", response_model=CustomResponse)
+@inject
+def get_modules(
+        current_user: User = Depends(get_current_active_user),
+        admin_service: AdminPanelService = Depends(Provide[Container.admin_service])
+):
+    module=admin_service.get_module()
+    return CustomResponse(
+        message="Fetched all module successfully",
+        data=module,
         status_code=status.HTTP_200_OK
     )

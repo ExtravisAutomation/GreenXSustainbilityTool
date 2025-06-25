@@ -166,7 +166,7 @@ def get_site_power_metrics(
     )
 
 
-@router.get("/sites//energy_consumption_metrics{site_id}",
+@router.get("/sites/energy_consumption_metrics{site_id}",
             response_model=CustomResponse[list[EnergyConsumptionMetricsDetails]])
 @inject
 def get_energy_consumption_metrics(

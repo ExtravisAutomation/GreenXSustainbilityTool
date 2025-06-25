@@ -2,7 +2,7 @@ from contextlib import AbstractContextManager
 from typing import Callable, List
 from sqlalchemy.orm import Session, joinedload
 from app.repository.base_repository import BaseRepository
-from app.model.user import Role
+from app.model.user import Role,DashboardModule
 from fastapi import HTTPException, status
 import logging
 
@@ -51,4 +51,40 @@ class AdminPanelRepository(BaseRepository):
             if db_role is None:
                 raise HTTPException(status_code=404, detail="Site not found")
             session.delete(db_role)
+            session.commit()
+
+    def add_module(self, module_data) -> DashboardModule:
+        with self.session_factory() as session:
+            new_module = DashboardModule(**module_data.dict())
+            session.add(new_module)
+            session.commit()
+            session.refresh(new_module)
+            return new_module
+
+    def update_module(self, id: int, module_data) -> DashboardModule:
+        with self.session_factory() as session:
+            db_module = session.get(DashboardModule, id)
+            if not db_module:
+                raise HTTPException(status_code=404, detail="Site not found")
+
+            for key, value in module_data.dict(exclude_unset=True).items():
+                if value is not None and value != '' and value != 'string':
+                    setattr(db_module, key, value)
+
+            session.commit()
+
+            session.refresh(db_module)
+            return db_module
+
+    def get_module(self):
+        with self.session_factory() as session:
+            modules = session.query(DashboardModule).all()
+            return modules
+
+    def delete_module(self, module_id: int):
+        with self.session_factory() as session:
+            db_module = session.get(DashboardModule, module_id)
+            if db_module is None:
+                raise HTTPException(status_code=404, detail="Site not found")
+            session.delete(db_module)
             session.commit()

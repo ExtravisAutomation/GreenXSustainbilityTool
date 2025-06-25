@@ -33,16 +33,6 @@ from sqlalchemy import Column, String, Boolean,Integer,DateTime, ForeignKey,func
 from .base_model import BaseModel
 
 
-# class User(BaseModel):
-#     __tablename__ = "user"
-#
-#     email = Column(String, unique=True, index=True)
-#     password = Column(String)
-#     user_token = Column(String, unique=True, index=True)
-#     name = Column(String, default=None, nullable=True)
-#     is_active = Column(Boolean, default=True)
-#     is_superuser = Column(Boolean, default=False)
-#     role = Column(String, default='user')
 class Role(BaseModel):
     __tablename__ = "roles"
     role_name = Column(String(255), nullable=False, unique=True)
@@ -55,10 +45,10 @@ class User(BaseModel):
     email        = Column(String(255), unique=True, nullable=False)
     password     = Column(String(255), nullable=False)
     user_token   = Column(String(255), unique=True, nullable=False)
-    name         = Column(String(255))
+    name= Column(String(255))
+    username         = Column(String(255))
     is_active    = Column(Boolean, nullable=False, default=True)
     is_superuser = Column(Boolean, nullable=False, default=False)
-
     role_id      = Column(Integer, ForeignKey("roles.id"))
     role_obj     = relationship("Role", back_populates="users")
 
@@ -66,14 +56,12 @@ class User(BaseModel):
     module_accesses = relationship(
         "UserModulesAccess",
         back_populates="user"
-
     )
 
 class DashboardModule(BaseModel):
     __tablename__ = "dashboard_module"
 
     modules_name = Column(String(255), nullable=False, unique=True)
-
     # one-to-many → user_modules_access
     user_accesses = relationship(
         "UserModulesAccess",

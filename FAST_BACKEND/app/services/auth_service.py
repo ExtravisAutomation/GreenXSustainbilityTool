@@ -33,14 +33,14 @@ class AuthService(BaseService):
         print(f"Attempting to find user with username: {find_user.user_name}", file=sys.stderr)
 
         user: User = self.user_repository.read_by_options(find_user)["found"]
-        print(f"User found: {user.name}", file=sys.stderr)
+        print(f"User found: {user.username}", file=sys.stderr)
 
         if user is None:
             print("Authentication error: Incorrect username or password", file=sys.stderr)
             raise AuthError(detail="Incorrect username or password")
 
         if not user.is_active:
-            print(f"Account activity error: Account for {user.user_name} is not active", file=sys.stderr)
+            print(f"Account activity error: Account for {user.username} is not active", file=sys.stderr)
             raise AuthError(detail="Account is not active")
 
         if not verify_password(sign_in_info.password, user.password):
@@ -61,7 +61,8 @@ class AuthService(BaseService):
             id=user.id,
             email=user.email,
             user_token=user.user_token,
-            name=user.name,
+            username=user.username,
+            name=user.name  if user.name else "",
             is_active=user.is_active,
             is_superuser=user.is_superuser,
             user_role=role_name,
@@ -89,7 +90,6 @@ class AuthService(BaseService):
         user_token = get_rand_hash()
         user_data = user_info.dict(exclude_none=True)
         # role = user_data.pop('role', 'user')
-
         role=user_data.pop('role', 'user')
         is_superuser = True if user_info.role_id != 1 else False
 
@@ -98,7 +98,6 @@ class AuthService(BaseService):
             is_active=True,
             is_superuser=is_superuser,  
             user_token=user_token,
-            role=role,
         )
         print("USERRRRRR", user)
         user.password = get_password_hash(user_info.password)
