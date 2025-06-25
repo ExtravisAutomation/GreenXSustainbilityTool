@@ -70,7 +70,7 @@ class User(BaseModel):
     )
 
 class DashboardModule(BaseModel):
-    __tablename__ = "dashboard_modules"
+    __tablename__ = "dashboard_module"
 
     modules_name = Column(String(255), nullable=False, unique=True)
 
@@ -83,7 +83,7 @@ class DashboardModule(BaseModel):
 class UserModulesAccess(BaseModel):
     __tablename__ = "user_modules_access"
 
-    module_id = Column(Integer, ForeignKey("dashboard_modules.id"), nullable=False)
+    module_id = Column(Integer, ForeignKey("dashboard_module.id"), nullable=False)
     user_id   = Column(Integer, ForeignKey("user.id"),               nullable=False)  # *** fixed ***
 
     module = relationship("DashboardModule", back_populates="user_accesses")

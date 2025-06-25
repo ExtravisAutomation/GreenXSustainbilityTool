@@ -26,3 +26,7 @@ class DashboardModuleCreate(DashboardModule):
     pass
 class RoleDetails(RoleBase):
     id: int
+
+
+class RoleUpdate(BaseModel):
+    role_name: Optional[str] = None

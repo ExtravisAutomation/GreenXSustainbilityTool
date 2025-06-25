@@ -12,6 +12,7 @@ class SiteBase(BaseModel):
     site_type: str
     region: str
     city: str
+    city: str
     latitude: str
     longitude: str
     status: str

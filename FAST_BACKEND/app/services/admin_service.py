@@ -37,4 +37,13 @@ class AdminPanelService:
         site = self.admin_repository.add_role(role_data)
         return RoleDetails(**site.__dict__)
 
+    def update_role(self,id:int,update_data):
+        return self.admin_repository.update_role(id, update_data)
+
+    def get_role(self):
+        return self.admin_repository.get_role()
+
+    def delete_role(self, role_id: int) -> str:
+        self.admin_repository.delete_role(role_id)
+        return {"message": " Role deleted successfully"}
 

@@ -3,7 +3,7 @@ from typing import Callable, List
 from sqlalchemy.orm import Session, joinedload
 from app.repository.base_repository import BaseRepository
 from app.model.user import Role
-
+from fastapi import HTTPException, status
 import logging
 
 # Configure logging
@@ -27,4 +27,28 @@ class AdminPanelRepository(BaseRepository):
             session.commit()
             session.refresh(new_role)
             return new_role
+    def update_role(self, id: int, role_data) -> Role:
+        with self.session_factory() as session:
+            db_role = session.get(Role, id)
+            if not db_role:
+                raise HTTPException(status_code=404, detail="Site not found")
 
+            for key, value in role_data.dict(exclude_unset=True).items():
+                if value is not None and value != '' and value != 'string':
+                    setattr(db_role, key, value)
+
+            session.commit()
+
+            session.refresh(db_role)
+            return db_role
+    def get_role(self):
+        with self.session_factory() as session:
+            roles=session.query(Role).all()
+            return roles
+    def delete_role(self, role_id: int):
+        with self.session_factory() as session:
+            db_role = session.get(Role, role_id)
+            if db_role is None:
+                raise HTTPException(status_code=404, detail="Site not found")
+            session.delete(db_role)
+            session.commit()
