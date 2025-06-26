@@ -936,7 +936,7 @@ def get_racks_by_site_id(site_id: int,
     )
 
 
-@router.get("/sites/energy_cost_summary/{site_id}",
+@router.get("/energy_cost_summary/{site_id}",
             response_model=CustomResponse)
 @inject
 def energy_cost_summary(
