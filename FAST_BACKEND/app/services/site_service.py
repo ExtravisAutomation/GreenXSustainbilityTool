@@ -1567,7 +1567,7 @@ class SiteService:
         metrics = self.influxdb_repository.get_total_power_metrics_all_ips_24h(device_ips, start_date, end_date, duration_str)
         return  metrics
 
-    def calculate_average_energy_consumption_by_site_id(self, site_id: int, duration_str: str) -> dict:
+    def energy_cost_summary_by_site_id(self, site_id: int, duration_str: str) -> dict:
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
         device_ips = [device.ip_address for device in devices if device.ip_address]
@@ -1589,76 +1589,147 @@ class SiteService:
 
         return {
             "time": f"{start_date} - {end_date}",
-            "energy_consumption": round(total_POut / total_PIn, 2) if count > 0 else None,
-            "total_POut": round(total_POut, 2) if count > 0 else None,
-            "total_PIn": round(total_PIn, 2) if count > 0 else None,
-            "power_efficiency": round(total_PIn / total_POut, 2) if count > 0 else None
+            "energy_consumption": round(total_POut / total_PIn, 2) if count > 0 else 0,
+            "total_POut_kw": round(total_POut, 2) if count > 0 else 0,
+            "total_PIn_kw": round(total_PIn, 2) if count > 0 else 0,
+            "power_efficiency": round(total_PIn / total_POut, 2) if count > 0 else 0,
+           "cost_estimation_AED":round((total_PIn *0.37),2) if total_PIn else 0 }
+
+    def energy_cost_summary_by_device_id(
+            self, site_id: int, device_id: int, duration_str: str
+    ) -> dict:
+        """
+        Aggregate energy metrics for a single device over a time range.
+
+        Returns a dict with:
+            - time (str)               : "start - end"
+            - energy_consumption (float)
+            - total_POut (float)
+            - total_PIn (float)
+            - power_efficiency (float)
+            - cost_estimation_AED (float)
+        """
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        result = {
+            "time": f"{start_date} - {end_date}",
+            "energy_consumption": 0.0,
+            "total_POut_kw": 0.0,
+            "total_PIn_kw": 0.0,
+            "power_efficiency": 0.0,
+            "cost_estimation_AED": 0.0,
         }
 
-
-
-
-
-
-
-    def calculate_energy_consumption_by_device_id(self, site_id: int, device_id: int, duration_str: str) -> dict:
-        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        # ── 1. Get device & IP ────────────────────────────────────────────────
         device = self.site_repository.get_device_by_site_id_and_device_id(site_id, device_id)
+        if not device or not device.get("ip_address"):
+            return result
 
-        print(f"Device Data: {device}", file=sys.stderr)
-
-        if not device or not device["ip_address"]:
-            return {
-                "time": f"{start_date} - {end_date}",
-                "energy_consumption": 0,
-                "total_POut": 0,
-                "total_PIn": 0,
-                "power_efficiency": 0
-            }
-
-        metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter17([device["ip_address"]],
-                                                                                        start_date, end_date,
-                                                                                        duration_str)
-
+        # ── 2. Query InfluxDB ─────────────────────────────────────────────────
+        metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter17(
+            [device["ip_address"]], start_date, end_date, duration_str
+        )
         if not metrics:
-            return {
-                "time": f"{start_date} - {end_date}",
-                "energy_consumption": 0,
-                "total_POut": 0,
-                "total_PIn": 0,
-                "power_efficiency": 0
-            }
+            return result
 
-        total_energy_consumption = sum(
-            metric['energy_consumption'] for metric in metrics if metric['energy_consumption'] is not None)
-        total_POut = sum(metric['total_POut'] for metric in metrics if metric['total_POut'] is not None)
-        total_PIn = sum(metric['total_PIn'] for metric in metrics if metric['total_PIn'] is not None)
-        total_power_efficiency = sum(
-            metric['power_efficiency'] for metric in metrics if metric['power_efficiency'] is not None)
-        count = len(metrics)
+        # ── 3. Single-pass aggregation (skip None values) ────────────────────
+        totals = {
+            "energy_consumption": 0.0,
+            "total_POut_kw": 0.0,  # renamed
+            "total_PIn_kw": 0.0,  # renamed
+            "power_efficiency": 0.0,
+        }
+        count = 0
 
-        print(f"Total energy consumption: {total_energy_consumption}", file=sys.stderr)
-        print(f"Total POut: {total_POut}", file=sys.stderr)
-        print(f"Total PIn: {total_PIn}", file=sys.stderr)
-        print(f"Total power efficiency: {total_power_efficiency}", file=sys.stderr)
+        for m in metrics:
+            # Count only if at least one metric is present
+            if any(m.get(k) is not None for k in ["energy_consumption", "total_POut", "total_PIn", "power_efficiency"]):
+                count += 1
+                if m.get("energy_consumption") is not None:
+                    totals["energy_consumption"] += m["energy_consumption"]
+                if m.get("total_POut") is not None:
+                    totals["total_POut_kw"] += m["total_POut"]
+                if m.get("total_PIn") is not None:
+                    totals["total_PIn_kw"] += m["total_PIn"]
+                if m.get("power_efficiency") is not None:
+                    totals["power_efficiency"] += m["power_efficiency"]
+
+        print(f"Total energy consumption: {totals['energy_consumption']}", file=sys.stderr)
+        print(f"Total Output (kW): {totals['total_POut_kw']}", file=sys.stderr)
+        print(f"Total Input (kW): {totals['total_PIn_kw']}", file=sys.stderr)
+        print(f"Total power efficiency: {totals['power_efficiency']}", file=sys.stderr)
         print(f"Count: {count}", file=sys.stderr)
 
-        if count == 0:
-            return {
-                "time": f"{start_date} - {end_date}",
-                "energy_consumption": 0,
-                "total_POut": 0,
-                "total_PIn": 0,
-                "power_efficiency": 0
-            }
+        if count > 0:
+            result.update({
+                "energy_consumption": round(totals["energy_consumption"] / count, 2),
+                "total_POut_kw": round(totals["total_POut_kw"] / count, 2),
+                "total_PIn_kw": round(totals["total_PIn_kw"] / count, 2),
+                "power_efficiency": round(totals["power_efficiency"] / count, 2),
+                "cost_estimation_AED": round(totals["total_PIn_kw"] * 0.37, 2),
+            })
 
-        return {
-            "time": f"{start_date} - {end_date}",
-            "energy_consumption": round(total_energy_consumption / count, 2),
-            "total_POut": round(total_POut / count, 2),
-            "total_PIn": round(total_PIn / count, 2),
-            "power_efficiency": round(total_power_efficiency / count, 2)
-        }
+        return result
+
+    # def calculate_energy_consumption_by_device_id(self, site_id: int, device_id: int, duration_str: str) -> dict:
+    #     start_date, end_date = self.calculate_start_end_dates(duration_str)
+    #     device = self.site_repository.get_device_by_site_id_and_device_id(site_id, device_id)
+    #
+    #     print(f"Device Data: {device}", file=sys.stderr)
+    #
+    #     if not device or not device["ip_address"]:
+    #         return {
+    #             "time": f"{start_date} - {end_date}",
+    #             "energy_consumption": 0,
+    #             "total_POut": 0,
+    #             "total_PIn": 0,
+    #             "power_efficiency": 0
+    #         }
+    #
+    #     metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter17([device["ip_address"]],
+    #                                                                                     start_date, end_date,
+    #                                                                                     duration_str)
+    #     if not metrics:
+    #         return {
+    #             "time": f"{start_date} - {end_date}",
+    #             "energy_consumption": 0,
+    #             "total_POut": 0,
+    #             "total_PIn": 0,
+    #             "power_efficiency": 0
+    #         }
+    #
+    #     total_energy_consumption = sum(
+    #         metric['energy_consumption'] for metric in metrics if metric['energy_consumption'] is not None)
+    #     total_POut = sum(metric['total_POut'] for metric in metrics if metric['total_POut'] is not None)
+    #     total_PIn = sum(metric['total_PIn'] for metric in metrics if metric['total_PIn'] is not None)
+    #     total_power_efficiency = sum(
+    #         metric['power_efficiency'] for metric in metrics if metric['power_efficiency'] is not None)
+    #     count = len(metrics)
+    #
+    #     print(f"Total energy consumption: {total_energy_consumption}", file=sys.stderr)
+    #     print(f"Total POut: {total_POut}", file=sys.stderr)
+    #     print(f"Total PIn: {total_PIn}", file=sys.stderr)
+    #     print(f"Total power efficiency: {total_power_efficiency}", file=sys.stderr)
+    #     print(f"Count: {count}", file=sys.stderr)
+    #
+    #     if count == 0:
+    #         return {
+    #             "time": f"{start_date} - {end_date}",
+    #             "energy_consumption": 0,
+    #             "total_POut": 0,
+    #             "total_PIn": 0,
+    #             "power_efficiency": 0
+    #         }
+    #
+    #     return {
+    #         "time": f"{start_date} - {end_date}",
+    #         "energy_consumption": round(total_energy_consumption / count, 2),
+    #         "total_POut": round(total_POut / count, 2),
+    #         "total_PIn": round(total_PIn / count, 2),
+    #         "power_efficiency": round(total_power_efficiency / count, 2),
+    #         "cost_estimation_AED":round((total_PIn *0.37),2)
+    #     }
+    #
+
 
     def format_device_energy_detail(self, data: dict) -> DeviceEnergyDetailResponse123:
         return DeviceEnergyDetailResponse123(

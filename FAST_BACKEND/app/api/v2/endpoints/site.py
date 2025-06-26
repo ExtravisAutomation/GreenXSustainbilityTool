@@ -936,11 +936,10 @@ def get_racks_by_site_id(site_id: int,
     )
 
 
-@router.get("/sites/average_energy_consumption_metrics/{site_id}",
-            response_model=CustomResponse[
-                Union[EnergyConsumptionMetricsDetails1, List[EnergyConsumptionMetricsDetails1]]])
+@router.get("/sites/energy_cost_summary/{site_id}",
+            response_model=CustomResponse)
 @inject
-def get_energy_consumption_metrics(
+def energy_cost_summary(
         site_id: int,
         device_id: Optional[int] = Query(None, alias="device_id"),
         duration: Optional[str] = Query(None, alias="duration"),
@@ -950,15 +949,16 @@ def get_energy_consumption_metrics(
     duration = duration or "24 hours"
 
     if device_id:
-        metrics = site_service.calculate_energy_consumption_by_device_id(site_id, device_id, duration)
+        metrics = site_service.energy_cost_summary_by_device_id(site_id, device_id, duration)
     else:
-        metrics = site_service.calculate_average_energy_consumption_by_site_id(site_id, duration)
+        metrics = site_service.energy_cost_summary_by_site_id(site_id, duration)
 
     print(f"Metrics: {metrics}", file=sys.stderr)
+    print("what the hell")
 
     if not metrics:
         raise HTTPException(status_code=404, detail="No metrics found for the given site/device and duration.")
-
+    print("exact response", metrics)
     return CustomResponse(
         message="Energy consumption metrics retrieved successfully.",
         data=metrics,
