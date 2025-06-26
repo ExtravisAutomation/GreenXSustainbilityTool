@@ -866,7 +866,6 @@ class DeviceInventoryRepository(BaseRepository):
                 if datatraffic:
                     print(datatraffic)
                     print("*******************************************************")
-
                      # = datatraffic[0]['traffic_through'] if datatraffic else 0
                     bandwidth_kbps = datatraffic[0]['bandwidth'] if datatraffic else 0 # in kbps
                     total_input_bytes=datatraffic[0]['total_input_bytes'] if datatraffic else 0

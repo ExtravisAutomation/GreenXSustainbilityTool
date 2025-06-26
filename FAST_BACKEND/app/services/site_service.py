@@ -2671,6 +2671,7 @@ class SiteService:
                 metric["model_no"] = device.get('pn_code')
                 metric["ip_address"] = device_ip
 
+
             return {
                 "time": f"{start_date} - {end_date}",
                 "metrics": metrics

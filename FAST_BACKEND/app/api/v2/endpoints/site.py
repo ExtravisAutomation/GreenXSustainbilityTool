@@ -1448,7 +1448,7 @@ def get_device_energy_metrics(
         site_id: int,
         device_id: Optional[int] = Query(None, alias="device_id"),
         duration: Optional[str] = Query(None, alias="duration"),
-        current_user: User = Depends(get_current_active_user),
+        # current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     duration = duration or "24 hours"
