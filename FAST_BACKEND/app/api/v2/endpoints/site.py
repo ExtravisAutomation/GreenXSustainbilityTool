@@ -47,7 +47,7 @@ class DeleteRequest(BaseModel):
     site_ids: List[int]
 
 # Energy Efficiency Graph
-@router.get("/energy_efficiency_ratio_WITH_FILTER/{site_id}",
+@router.get("/energy_efficiency_trends/{site_id}",
             response_model=CustomResponse[List[EnergyEfficiencyResponse]])
 @inject
 def get_energy_efficiency(
@@ -66,9 +66,7 @@ def get_energy_efficiency(
     issue_detected1 = False
     for metric in metrics:
         energy_efficiency = metric['energy_efficiency_per']
-
         time_stamp = metric['time']
-
         if energy_efficiency == 0:
             continue  # Skip metrics with zero values for energy consumption and power efficiency
 
