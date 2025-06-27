@@ -116,6 +116,13 @@ class SitePowerConsumptionResponse(BaseModel):
     max_power: Optional[float]
     total_power_duration: Optional[str]
 
+class EnergyEfficiencyResponse(BaseModel):
+    time: str
+    energy_efficiency_per: Optional[float] = None
+    total_POut_kW: Optional[float] = None
+    total_PIn_kW: Optional[float] = None
+    co2_tons: Optional[float] = None
+    co2_kgs : Optional[float] = None
 
 class EnergyConsumptionMetricsDetails(BaseModel):
     time: str

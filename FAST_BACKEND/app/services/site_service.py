@@ -188,7 +188,97 @@ class SiteService:
         self.site_repository = site_repository
         self.influxdb_repository = influxdb_repository
         self.ai_repository = ai_repository
-        
+
+    def get_energy_efficiency_by_site_id(self, site_id: int, duration_str: str) -> List[dict]:
+
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        if not device_ips:
+            return []
+
+        energy_metrics = self.influxdb_repository.get_energy_efficiency_metrics_with_filter(device_ips, start_date,
+                                                                                             end_date,
+                                                                                             duration_str)
+        print("ENERGY_METRIC_OF_KPIIIIIIIIIII", energy_metrics, file=sys.stderr)
+        return energy_metrics
+    def calculate_energy_metrics_by_device_id(self, site_id: int, device_id: int, duration_str: str) -> dict:
+
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+
+        device = self.site_repository.get_device_by_site_id_and_device_id_pue(site_id, device_id)
+
+        print(f"Device fetched for site_id {site_id}, device_id {device_id}: {device}", file=sys.stderr)
+
+        if not device:
+            print(f"No device found with device_id {device_id} for site_id {site_id}", file=sys.stderr)
+            return {"time": f"{start_date} - {end_date}", "metrics": []}
+
+        device_ip = device.get('ip_address')
+        if not device_ip:
+            print(f"Device IP not found for device_id {device_id} at site_id {site_id}", file=sys.stderr)
+            return {"time": f"{start_date} - {end_date}", "metrics": []}
+
+        metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date, end_date,
+                                                                               duration_str)
+
+        print(f"Metrics from InfluxDB for device {device['device_name']} ({device_ip}): {metrics}", file=sys.stderr)
+
+        if metrics:
+            for metric in metrics:
+                metric["device_name"] = device.get('device_name')
+                metric["model_no"] = device.get('pn_code')
+                metric["ip_address"] = device_ip
+
+
+            return {
+                "time": f"{start_date} - {end_date}",
+                "metrics": metrics
+            }
+        else:
+
+            print(f"No metrics available for device {device['device_name']} ({device_ip})", file=sys.stderr)
+            return {"time": f"{start_date} - {end_date}", "metrics": []}
+
+    def calculate_average_energy_metrics_by_site_id(self, site_id: int, duration_str: str) -> dict:
+        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        print(f"Device IPs for site_id {site_id}: {device_ips}", file=sys.stderr)
+
+        if not device_ips:
+            print(f"No device IPs found for site_id {site_id}", file=sys.stderr)
+            return {"time": f"{start_date} - {end_date}", "metrics": []}
+
+        aggregated_metrics = []
+
+        for device in devices:
+            device_ip = device.ip_address
+
+            if device_ip:
+                metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date,
+                                                                                       end_date, duration_str)
+
+                print(f"Metrics for device {device.device_name} ({device_ip}): {metrics}", file=sys.stderr)
+
+                if metrics:
+                    for metric in metrics:
+                        metric["device_name"] = device.device_name
+                        metric["ip_address"] = device_ip
+                        metric["model_no"] = ''
+
+                        aggregated_metrics.append(metric)
+        print({
+            "time": f"{start_date} - {end_date}",
+            "metrics": aggregated_metrics
+        })
+
+        return {
+            "time": f"{start_date} - {end_date}",
+            "metrics": aggregated_metrics
+        }
 
     def get_sites(self) -> List[SiteDetails]:
         sites = self.site_repository.get_all_sites()
@@ -453,8 +543,7 @@ class SiteService:
 
         return comparison_metrics
 
-    def calculate_energy_consumption_by_id_with_filter(self, site_id: int, duration_str: str) -> List[
-        dict]:
+    def calculate_energy_consumption_by_id_with_filter(self, site_id: int, duration_str: str) -> List[dict]:
 
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
@@ -2186,47 +2275,6 @@ class SiteService:
 
 
 
-    def calculate_average_energy_metrics_by_site_id(self, site_id: int, duration_str: str) -> dict:
-        start_date, end_date = self.calculate_start_end_dates(duration_str)
-        devices = self.site_repository.get_devices_by_site_id(site_id)
-        device_ips = [device.ip_address for device in devices if device.ip_address]
-
-        print(f"Device IPs for site_id {site_id}: {device_ips}", file=sys.stderr)
-
-        if not device_ips:
-            print(f"No device IPs found for site_id {site_id}", file=sys.stderr)
-            return {"time": f"{start_date} - {end_date}", "metrics": []}
-
-        aggregated_metrics = []
-
-        
-        for device in devices:
-            device_ip = device.ip_address
-
-            if device_ip:
-                metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date,
-                                                                                       end_date, duration_str)
-
-                print(f"Metrics for device {device.device_name} ({device_ip}): {metrics}", file=sys.stderr)
-
-                if metrics:
-                    for metric in metrics:
-                        
-                        metric["device_name"] = device.device_name  
-                        metric["ip_address"] = device_ip
-                        metric["model_no"]=''
-
-                        aggregated_metrics.append(metric)
-        print({
-            "time": f"{start_date} - {end_date}",
-            "metrics": aggregated_metrics
-        })
-
-
-        return {
-            "time": f"{start_date} - {end_date}",
-            "metrics": aggregated_metrics  
-        }
 
     def ask_openai_question(self, question: str) -> str:
         return self.site_repository.get_openai_answer(question)
@@ -2643,43 +2691,6 @@ class SiteService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error processing the CO2 calculation: {str(e)}")
 
-    def calculate_energy_metrics_by_device_id(self, site_id: int, device_id: int, duration_str: str) -> dict:
-
-        start_date, end_date = self.calculate_start_end_dates(duration_str)
-
-        device = self.site_repository.get_device_by_site_id_and_device_id_pue(site_id, device_id)
-
-        print(f"Device fetched for site_id {site_id}, device_id {device_id}: {device}", file=sys.stderr)
-
-        if not device:
-            print(f"No device found with device_id {device_id} for site_id {site_id}", file=sys.stderr)
-            return {"time": f"{start_date} - {end_date}", "metrics": []}
-
-        device_ip = device.get('ip_address')
-        if not device_ip:
-            print(f"Device IP not found for device_id {device_id} at site_id {site_id}", file=sys.stderr)
-            return {"time": f"{start_date} - {end_date}", "metrics": []}
-
-        metrics = self.influxdb_repository.get_energy_metrics_with_pue_and_eer([device_ip], start_date, end_date,
-                                                                               duration_str)
-
-        print(f"Metrics from InfluxDB for device {device['device_name']} ({device_ip}): {metrics}", file=sys.stderr)
-
-        if metrics:
-            for metric in metrics:
-                metric["device_name"] = device.get('device_name')
-                metric["model_no"] = device.get('pn_code')
-                metric["ip_address"] = device_ip
-
-
-            return {
-                "time": f"{start_date} - {end_date}",
-                "metrics": metrics
-            }
-        else:
-
-            print(f"No metrics available for device {device['device_name']} ({device_ip})", file=sys.stderr)
-            return {"time": f"{start_date} - {end_date}", "metrics": []}
 
     def calculate_dcs_metrics_by_device_id(self, site_id: int, device_id: int, duration_str: str) -> dict:
 

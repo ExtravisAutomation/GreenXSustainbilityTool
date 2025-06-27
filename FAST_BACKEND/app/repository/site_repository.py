@@ -46,7 +46,16 @@ class SiteRepository(BaseRepository):
         super().__init__(session_factory, Site)
         openai.api_key = configs.OPENAI_API_KEY
 
-    
+    def get_devices_by_site_id(self, site_id: int) -> List[APICControllers]:
+        with self.session_factory() as session:
+            devices = (
+                session.query(APICControllers)
+                .filter(APICControllers.site_id == site_id)
+                .filter(APICControllers.OnBoardingStatus==True)
+                .filter(APICControllers.collection_status==True)
+                .all()
+            )
+            return devices
 
     def get_all_sites(self) -> list[Site]:
         with self.session_factory() as session:
@@ -153,16 +162,7 @@ class SiteRepository(BaseRepository):
             return result
 
 
-    def get_devices_by_site_id(self, site_id: int) -> List[APICControllers]:
-        with self.session_factory() as session:
-            devices = (
-                session.query(APICControllers)
-                .filter(APICControllers.site_id == site_id)
-                .filter(APICControllers.OnBoardingStatus==True)
-                .filter(APICControllers.collection_status==True)
-                .all()
-            )
-            return devices
+
         
     def get_device_names(self, sorted_power_required: list):
         with self.session_factory() as session:

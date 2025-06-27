@@ -188,7 +188,8 @@ def get_site_power_data_per_hour(apic_ips, site_id) -> List[dict]:
     for i in range(24):
         hour = (now - datetime.timedelta(hours=i)).strftime('%Y-%m-%d %H:00')
         aggregated_data[hour] = {
-            "total_power_utilization": 0,
+            "total_power"
+            "_utilization": 0,
             "count": 0
         }
 

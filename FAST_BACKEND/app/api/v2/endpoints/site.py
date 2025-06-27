@@ -20,57 +20,23 @@ from app.model.user import User
 from app.repository.site_repository import SiteRepository
 from app.schema.site_schema import SiteCreate, SiteUpdate, Site, FindSiteResult, GetSitesResponse, SiteDetails, \
     CustomResponse, CustomResponse1, ComparisonDeviceMetricsDetails, ComparisonTrafficMetricsDetails, \
-    DevicePowerComparisonPercentage, DeviceRequest
+    DevicePowerComparisonPercentage, DeviceRequest,EnergyEfficiencyResponse
 from app.services.site_service import SiteService
 from app.core.container import Container
 from dependency_injector.wiring import Provide, inject
 from starlette.responses import JSONResponse
-from app.schema.site_schema import SiteDetails1
-from app.schema.site_schema import SitePowerConsumptionResponse
-
-from app.schema.site_schema import EnergyConsumptionMetricsDetails
-
-from app.schema.site_schema import HourlyEnergyMetricsResponse
-
-from app.schema.site_schema import HourlyDevicePowerMetricsResponse
-
-from app.schema.site_schema import TopDevicesPowerResponse
-
-from app.schema.site_schema import TrafficThroughputMetricsDetails
-
-from app.schema.site_schema import TrafficThroughputMetricsResponse
-
-from app.schema.site_schema import PasswordGroupResponse, PasswordGroupCreate
-
-from app.schema.site_schema import APICControllersResponse, APICControllersUpdate, APICControllersCreate
+from app.schema.site_schema import (HourlyDevicePowerMetricsResponse,HourlyEnergyMetricsResponse,SiteDetails1,SitePowerConsumptionResponse,EnergyConsumptionMetricsDetails,TopDevicesPowerResponse,TrafficThroughputMetricsDetails,
+                                    TrafficThroughputMetricsResponse,PasswordGroupResponse, PasswordGroupCreate,APICControllersResponse, APICControllersUpdate, APICControllersCreate)
 import subprocess
 import logging
 import os
 from app.ONBOARDING.main import DeviceProcessor
 
-from app.schema.site_schema import PasswordGroupUpdate
+from app.schema.site_schema import (PasswordGroupUpdate,GetRacksResponse,EnergyConsumptionMetricsDetails1,DeviceEnergyDetailResponse123,EnergyConsumptionMetricsDetailsNew, modelResponse,CustomResponse_openai,PCRMetricsDetails,EnergyConsumptionMetricsDetails2
+,DeviceCreateRequest,OnboardingRequest,CSPCDevicesWithSntcResponse)
 
-from app.schema.site_schema import GetRacksResponse
 
-from app.schema.site_schema import EnergyConsumptionMetricsDetails1
-
-from app.schema.site_schema import DeviceEnergyDetailResponse123
-
-from app.schema.site_schema import PCRMetricsDetails
-
-from app.schema.site_schema import DeviceCreateRequest
 from logging import getLogger
-
-from app.schema.site_schema import OnboardingRequest
-
-from app.schema.site_schema import CSPCDevicesWithSntcResponse
-
-from app.schema.site_schema import EnergyConsumptionMetricsDetails2
-
-from app.schema.site_schema import CustomResponse_openai
-
-from app.schema.site_schema import EnergyConsumptionMetricsDetailsNew, modelResponse
-
 router = APIRouter(prefix="/sites", tags=["SITES"])
 logger = getLogger(__name__)
 
@@ -79,6 +45,92 @@ import time
 
 class DeleteRequest(BaseModel):
     site_ids: List[int]
+
+# Energy Efficiency Graph
+@router.get("/energy_efficiency_ratio_WITH_FILTER/{site_id}",
+            response_model=CustomResponse[List[EnergyEfficiencyResponse]])
+@inject
+def get_energy_efficiency(
+        site_id: int,
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    global issue_detected1
+    duration = duration or "24 hours"
+    metrics = site_service.get_energy_efficiency_by_site_id(site_id, duration)
+    print("Metric********************************")
+    print(metrics)
+    response_data = []
+    message = "Energy efficiency data retrieved successfully."
+    issue_detected1 = False
+    for metric in metrics:
+        energy_efficiency = metric['energy_efficiency_per']
+
+        time_stamp = metric['time']
+
+        if energy_efficiency == 0:
+            continue  # Skip metrics with zero values for energy consumption and power efficiency
+
+        if energy_efficiency < 50:
+            message = (f"At {time_stamp}, the energy efficiency ratio recorded was {energy_efficiency}%, "
+                       "which is unusually low and may indicate hardware malfunctions or inefficiencies. ")
+            issue_detected1 = True
+        elif 50 <= energy_efficiency < 75:
+            message = (f"Overall, the energy efficiency ratio measured was average, "
+                       "which indicates that the hardware is generally performing well. ")
+        elif energy_efficiency >= 75:
+            message = (f"Overall, the energy efficiency ratio is high, "
+                       "demonstrating excellent performance and optimal operation of the hardware. ")
+    return CustomResponse(
+        message=message,
+        data=metrics,
+        status_code=status.HTTP_200_OK
+    )
+
+@router.get("/on_click_detailed_energy_efficiency/{site_id}",
+            response_model=CustomResponse[List[EnergyConsumptionMetricsDetails2]])
+@inject
+def get_eer_details(
+        site_id: int,
+        timestamp: Optional[str] = Query(None, alias="timestamp"),
+        device_id: Optional[int] = Query(None, alias="device_id"),
+        duration: Optional[str] = Query(None, alias="duration"),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    duration = duration or "24 hours"
+
+    print(
+        f"Request received for site_id: {site_id}, device_id: {device_id}, duration: {duration}, timestamp: {timestamp}",
+        file=sys.stderr)
+
+    if device_id:
+        metrics = site_service.calculate_energy_metrics_by_device_id(site_id, device_id, duration)
+    else:
+        metrics = site_service.calculate_average_energy_metrics_by_site_id(site_id, duration)
+    print(f"Metrics retrieved: {metrics}", file=sys.stderr)
+    if not metrics or not metrics.get("metrics"):
+        print(f"No metrics found for site_id: {site_id}, device_id: {device_id}, duration: {duration}", file=sys.stderr)
+        raise HTTPException(status_code=404, detail="No metrics found for the given site/device and duration.")
+    # Filter the metrics by timestamp if provided
+    if timestamp:
+        filtered_metrics = [metric for metric in metrics.get("metrics", []) if metric["time"] == timestamp]
+        if not filtered_metrics:
+            print(f"No metrics found for the given timestamp: {timestamp}", file=sys.stderr)
+            raise HTTPException(status_code=404, detail=f"No metrics found for the timestamp: {timestamp}")
+    else:
+        filtered_metrics = metrics.get("metrics")
+
+    return CustomResponse(
+        message="Device energy metrics retrieved successfully.",
+        data=filtered_metrics,
+        status_code=status.HTTP_200_OK
+    )
+
+
+
+
 
 
 @router.post("/addsite", response_model=CustomResponse[SiteDetails])
@@ -1472,49 +1524,6 @@ def get_device_energy_metrics(
         status_code=status.HTTP_200_OK
     )
 
-
-@router.get("/site/detailed_energy_metrics/{site_id}",
-            response_model=CustomResponse[List[EnergyConsumptionMetricsDetails2]])
-@inject
-def get_device_energy_metrics_by_timestamp(
-        site_id: int,
-        timestamp: Optional[str] = Query(None, alias="timestamp"),
-        device_id: Optional[int] = Query(None, alias="device_id"),
-        duration: Optional[str] = Query(None, alias="duration"),
-        current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    duration = duration or "24 hours"
-
-    print(
-        f"Request received for site_id: {site_id}, device_id: {device_id}, duration: {duration}, timestamp: {timestamp}",
-        file=sys.stderr)
-
-    if device_id:
-        metrics = site_service.calculate_energy_metrics_by_device_id(site_id, device_id, duration)
-    else:
-        metrics = site_service.calculate_average_energy_metrics_by_site_id(site_id, duration)
-
-    print(f"Metrics retrieved: {metrics}", file=sys.stderr)
-
-    if not metrics or not metrics.get("metrics"):
-        print(f"No metrics found for site_id: {site_id}, device_id: {device_id}, duration: {duration}", file=sys.stderr)
-        raise HTTPException(status_code=404, detail="No metrics found for the given site/device and duration.")
-
-    # Filter the metrics by timestamp if provided
-    if timestamp:
-        filtered_metrics = [metric for metric in metrics.get("metrics", []) if metric["time"] == timestamp]
-        if not filtered_metrics:
-            print(f"No metrics found for the given timestamp: {timestamp}", file=sys.stderr)
-            raise HTTPException(status_code=404, detail=f"No metrics found for the timestamp: {timestamp}")
-    else:
-        filtered_metrics = metrics.get("metrics")
-
-    return CustomResponse(
-        message="Device energy metrics retrieved successfully.",
-        data=filtered_metrics,
-        status_code=status.HTTP_200_OK
-    )
 
 
 @router.get("/ask_openai", response_model=CustomResponse_openai[dict])
