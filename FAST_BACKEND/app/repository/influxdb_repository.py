@@ -78,14 +78,76 @@ class InfluxDBRepository:
             })
         return total_power_metrics
 
+    def get_energy_metrics_detail(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+                                            duration_str: str) -> List[dict]:
+        total_power_metrics = []
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+
+        print(f"Querying InfluxDB from {start_time} to {end_time} for device_ips: {device_ips}", file=sys.stderr)
+
+        aggregate_window = self.get_aggregate_window(duration_str)
+        time_format = self.get_time_format(duration_str)
+
+        for ip in device_ips:
+            query = f'''
+                   from(bucket: "{configs.INFLUXDB_BUCKET}")
+                   |> range(start: {start_time}, stop: {end_time})
+                   |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                   |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                   |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
+                   |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+               '''
+
+            print(f"InfluxDB Query for IP {ip}: {query}", file=sys.stderr)
+            result = self.query_api1.query_data_frame(query)
+
+            print(f"Result for IP {ip}: {result}", file=sys.stderr)
+
+            if not result.empty:
+                result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
+                numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
+                if '_time' in result.columns and numeric_cols:
+                    grouped = result.groupby('_time')[numeric_cols].mean().reset_index()
+                    grouped['_time'] = pd.to_datetime(grouped['_time'])
+                    grouped.set_index('_time', inplace=True)
+
+                    all_times = pd.date_range(start=start_date, end=end_date, freq=aggregate_window.upper()).strftime(
+                        time_format)
+                    grouped = grouped.reindex(all_times).fillna(0).reset_index()
+
+                    for _, row in grouped.iterrows():
+                        pin = row['total_PIn']
+                        pout = row['total_POut']
+
+                        eer = pout / pin if pin > 0 else 0
+                        pue = pin / pout if pout > 0 else 1.0
+
+                        energy_consumption = (pout / pin) * 100 if pin > 0 else 0
+                        power_efficiency = (pin / pout) if pout > 0 else 0
+                        co2_kgs=(pout / 1000) * 0.4041
+
+                        total_power_metrics.append({
+                            "time": row['index'],
+                            "energy_consumption": round(energy_consumption, 4),
+                            "total_POut_kW": round(pout / 1000, 4),
+                            "total_PIn_kW": round(pin / 1000, 4),
+                            "co2_tons": round(co2_kgs/1000, 4),
+                            "co2_kgs":co2_kgs,
+                            "eer_per": round(eer * 100, 4),
+                            "energy_cost_AED": round((pin / 1000) * 0.37, 4),
+                        })
+
+        print(f"Final power metrics: {total_power_metrics}", file=sys.stderr)
+
+        return total_power_metrics
+
     def get_energy_consumption_metrics_with_filter(self, device_ips: List[str], start_date: datetime,
                                                    end_date: datetime, duration_str: str) -> List[dict]:
         total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
         aggregate_window, time_format = self.get_aggregate_windows(duration_str)
-
-        print("##############5555")
         all_dataframes = []
         for ip in device_ips:
             query = f'''
@@ -3646,7 +3708,7 @@ class InfluxDBRepository:
 
         return total_pout
 
-    def get_energy_metrics_with_pue_and_eer(self, device_ips: List[str], start_date: datetime, end_date: datetime,
+    def get_energy_metrics_eer_details(self, device_ips: List[str], start_date: datetime, end_date: datetime,
                                             duration_str: str) -> List[dict]:
         total_power_metrics = []
         start_time = start_date.isoformat() + 'Z'
@@ -3666,12 +3728,9 @@ class InfluxDBRepository:
                 |> aggregateWindow(every: {aggregate_window}, fn: mean, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
-
             print(f"InfluxDB Query for IP {ip}: {query}", file=sys.stderr)
             result = self.query_api1.query_data_frame(query)
-
             print(f"Result for IP {ip}: {result}", file=sys.stderr)
-
             if not result.empty:
                 result['_time'] = pd.to_datetime(result['_time']).dt.strftime(time_format)
                 numeric_cols = result.select_dtypes(include=[np.number]).columns.tolist()
@@ -3687,7 +3746,6 @@ class InfluxDBRepository:
                     for _, row in grouped.iterrows():
                         pin = row['total_PIn']
                         pout = row['total_POut']
-
                         eer = pout / pin if pin > 0 else 0
                         pue = pin / pout if pout > 0 else 1.0
 
@@ -3697,10 +3755,10 @@ class InfluxDBRepository:
                         total_power_metrics.append({
                             "time": row['index'],
                             "energy_consumption": round(energy_consumption, 4),
-                            "total_POut": round(pout/1000, 4),
-                            "total_PIn": round(pin/1000, 4),
+                            "total_POut_kW": round(pout/1000, 4),
+                            "total_PIn_kW": round(pin/1000, 4),
                             "co2e": round((pout/1000)*0.4041,4),
-                            "eer": round(eer, 4),
+                            "eer%": round(eer * 100, 4),
                             "pue": round(pue, 4),
                             "energy_cost_AED": round((pin/1000) *0.37, 4),
                         })

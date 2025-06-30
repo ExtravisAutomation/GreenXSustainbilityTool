@@ -15,12 +15,15 @@ from app.api.v2.endpoints.test_script import main
 from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+
+from app.schema.site_schema import EnergyEfficiencyResponse,EnergyEfficiencyDetails
+
 from app.core.dependencies import get_db, get_current_active_user
 from app.model.user import User
 from app.repository.site_repository import SiteRepository
 from app.schema.site_schema import SiteCreate, SiteUpdate, Site, FindSiteResult, GetSitesResponse, SiteDetails, \
     CustomResponse, CustomResponse1, ComparisonDeviceMetricsDetails, ComparisonTrafficMetricsDetails, \
-    DevicePowerComparisonPercentage, DeviceRequest,EnergyEfficiencyResponse
+    DevicePowerComparisonPercentage, DeviceRequest
 from app.services.site_service import SiteService
 from app.core.container import Container
 from dependency_injector.wiring import Provide, inject
@@ -46,21 +49,26 @@ import time
 class DeleteRequest(BaseModel):
     site_ids: List[int]
 
+
+
 # Energy Efficiency Graph
 @router.get("/energy_efficiency_trends/{site_id}",
             response_model=CustomResponse[List[EnergyEfficiencyResponse]])
 @inject
 def get_energy_efficiency(
         site_id: int,
+        pue: Optional[float] = Query(None),
         duration: Optional[str] = Query(None, alias="duration"),
-        current_user: User = Depends(get_current_active_user),
+        # current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     global issue_detected1
     duration = duration or "24 hours"
     metrics = site_service.get_energy_efficiency_by_site_id(site_id, duration)
-    print("Metric********************************")
     print(metrics)
+    print("sdklgkkdkajjggggggggggggggggggggggggggggggggggggggggggggggggggggg")
+    if pue:
+        metrics=site_service.get_pue_response(pue,metrics)
     response_data = []
     message = "Energy efficiency data retrieved successfully."
     issue_detected1 = False
@@ -87,7 +95,7 @@ def get_energy_efficiency(
     )
 
 @router.get("/on_click_detailed_energy_efficiency/{site_id}",
-            response_model=CustomResponse[List[EnergyConsumptionMetricsDetails2]])
+            response_model=CustomResponse[List[EnergyEfficiencyDetails]])
 @inject
 def get_eer_details(
         site_id: int,
@@ -98,11 +106,9 @@ def get_eer_details(
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
     duration = duration or "24 hours"
-
     print(
         f"Request received for site_id: {site_id}, device_id: {device_id}, duration: {duration}, timestamp: {timestamp}",
         file=sys.stderr)
-
     if device_id:
         metrics = site_service.calculate_energy_metrics_by_device_id(site_id, device_id, duration)
     else:
@@ -119,17 +125,11 @@ def get_eer_details(
             raise HTTPException(status_code=404, detail=f"No metrics found for the timestamp: {timestamp}")
     else:
         filtered_metrics = metrics.get("metrics")
-
     return CustomResponse(
         message="Device energy metrics retrieved successfully.",
         data=filtered_metrics,
         status_code=status.HTTP_200_OK
     )
-
-
-
-
-
 
 @router.post("/addsite", response_model=CustomResponse[SiteDetails])
 @inject
@@ -144,7 +144,6 @@ def add_site(
         data=site,
         status_code=status.HTTP_200_OK
     )
-
 
 @router.post("/updatesite/{id}", response_model=CustomResponse[SiteDetails1])
 @inject

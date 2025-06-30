@@ -65,11 +65,36 @@ class FindSite(FindBase, SiteBase):
 class UpsertSite(SiteBase):
     pass
 
+class EnergyEfficiencyResponse(BaseModel):
+    time: str
+    energy_efficiency_per: Optional[float] = None
+    total_POut_kW: Optional[float] = None
+    total_PIn_kW: Optional[float] = None
+    co2_tons: Optional[float] = None
+    co2_kgs : Optional[float] = None
+    pue: Optional[float] = None
+    baseline_model:Optional[str]=None
+class EnergyEfficiencyDetails(BaseModel):
+    time: Optional[str] = None  # Start and end time of the metrics calculation
+    energy_consumption: Optional[float] = None  # Energy consumption in kW
+    total_POut_kW: Optional[float] = None
+    total_PIn_kW: Optional[float] = None
+    eer_per: Optional[float] = None  # Energy Efficiency Ratio
+    co2_tons: Optional[float] = None #
+    co2_kgs: Optional[float] = None
+    datatraffic_MB:Optional[float] =None
+    dataAllocated_MB:Optional[float] = None # Bandwidth
+    pcr_WMB:Optional[float] = None #
+    traffic_throughput_MBW: Optional[float] = None  #
+    data_utilization_per:Optional[float]=None
+    device_name: Optional[str] = None  # Device name
+    ip_address: Optional[str] = None  # APIC controller IP
+    model_no:Optional[str] = None #
+    energy_cost_AED:Optional[float] = None
 
 class FindSiteResult(FindResult):
     founds: Optional[List[Site]]
     search_options: Optional[SearchOptions]
-
 
 class CustomResponse(GenericModel, Generic[DataT]):
     message: str
@@ -116,13 +141,7 @@ class SitePowerConsumptionResponse(BaseModel):
     max_power: Optional[float]
     total_power_duration: Optional[str]
 
-class EnergyEfficiencyResponse(BaseModel):
-    time: str
-    energy_efficiency_per: Optional[float] = None
-    total_POut_kW: Optional[float] = None
-    total_PIn_kW: Optional[float] = None
-    co2_tons: Optional[float] = None
-    co2_kgs : Optional[float] = None
+
 
 class EnergyConsumptionMetricsDetails(BaseModel):
     time: str
