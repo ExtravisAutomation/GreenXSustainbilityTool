@@ -12,15 +12,14 @@ class SiteBase(BaseModel):
     site_type: str
     region: str
     city: str
+    city: str
     latitude: str
     longitude: str
     status: str
     total_devices: Optional[str] = None
 
-
 class SiteDetails(SiteBase):
     id: int
-
 
 class GetSitesResponse(BaseModel):
     sites: List[SiteDetails]
@@ -32,11 +31,14 @@ class SiteCreate(SiteBase):
 
 class SiteDetails_get(SiteBase):
     id: int
-    power_utilization: Optional[float] = None
+    energy_efficiency: Optional[float] = None
     power_input: Optional[float] = None
     power_output: Optional[float] = None
     pue: Optional[float] = None
     datatraffic: Optional[float] = None
+    pcr:Optional[float]=None
+    site_cost:Optional[float]=None
+    co2emmision:Optional[str]=None
     num_racks: Optional[int] = None
     num_devices: Optional[int] = None
 
@@ -63,11 +65,36 @@ class FindSite(FindBase, SiteBase):
 class UpsertSite(SiteBase):
     pass
 
+class EnergyEfficiencyResponse(BaseModel):
+    time: str
+    energy_efficiency_per: Optional[float] = None
+    total_POut_kW: Optional[float] = None
+    total_PIn_kW: Optional[float] = None
+    co2_tons: Optional[float] = None
+    co2_kgs : Optional[float] = None
+    pue: Optional[float] = None
+    baseline_model:Optional[str]=None
+class EnergyEfficiencyDetails(BaseModel):
+    time: Optional[str] = None  # Start and end time of the metrics calculation
+    energy_consumption: Optional[float] = None  # Energy consumption in kW
+    total_POut_kW: Optional[float] = None
+    total_PIn_kW: Optional[float] = None
+    eer_per: Optional[float] = None  # Energy Efficiency Ratio
+    co2_tons: Optional[float] = None #
+    co2_kgs: Optional[float] = None
+    datatraffic_MB:Optional[float] =None
+    dataAllocated_MB:Optional[float] = None # Bandwidth
+    pcr_WMB:Optional[float] = None #
+    traffic_throughput_MBW: Optional[float] = None  #
+    data_utilization_per:Optional[float]=None
+    device_name: Optional[str] = None  # Device name
+    ip_address: Optional[str] = None  # APIC controller IP
+    model_no:Optional[str] = None #
+    energy_cost_AED:Optional[float] = None
 
 class FindSiteResult(FindResult):
     founds: Optional[List[Site]]
     search_options: Optional[SearchOptions]
-
 
 class CustomResponse(GenericModel, Generic[DataT]):
     message: str
@@ -113,6 +140,7 @@ class SitePowerConsumptionResponse(BaseModel):
     total_cost: Optional[float]
     max_power: Optional[float]
     total_power_duration: Optional[str]
+
 
 
 class EnergyConsumptionMetricsDetails(BaseModel):
@@ -184,6 +212,7 @@ class DevicePowerConsumption1(BaseModel):
     id: Optional[int] = None
     device_name: Optional[str] = None
     total_power: Optional[str] = None
+    total_powerout:Optional[str]=None
     total_bandwidth: Optional[str] = None
     traffic_speed: Optional[str] =None
     bandwidth_utilization: Optional[str] = None
@@ -420,7 +449,6 @@ class EnergyConsumptionMetricsDetails2(BaseModel):
     energy_consumption: Optional[float] = None  # Energy consumption in kW
     total_POut: Optional[float] = None  # Total Power Output in kW
     total_PIn: Optional[float] = None  # Total Power Input in kW
-    power_efficiency: Optional[float] = None  # Power Efficiency percentage
     eer: Optional[float] = None  # Energy Efficiency Ratio
     pue: Optional[float] = None  # Power Usage Effectiveness
     co2e: Optional[float] = None #
@@ -431,6 +459,7 @@ class EnergyConsumptionMetricsDetails2(BaseModel):
     device_name: Optional[str] = None  # Device name
     ip_address: Optional[str] = None  # APIC controller IP
     model_no:Optional[str] = None #
+    energy_cost_AED:Optional[float] = None
 
 
 
@@ -476,10 +505,13 @@ class EnergyConsumptionMetricsDetailsNew(BaseModel):
 
 class DeviceRequest(BaseModel):
     device_id: int
+    site_id:Optional[int] = 0
 
 class modelResponse(BaseModel):
     limit: Optional[int] = 0
     site_id: Optional[int] = 0
     rack_id: Optional[int] = 0
     vendor_id: Optional[int] = 0
-    # duration: Optional[str] = ''
+    duration: Optional[str] = ''
+
+

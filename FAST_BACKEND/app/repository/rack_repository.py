@@ -30,19 +30,21 @@ from app.schema.building_schema import BuildingDetails
 class RackRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
         super().__init__(session_factory, Rack)
+    def get_device_rack_id(self,rack_id):
+        with (self.session_factory() as session):
+            ips=session.query(Devices.ip_address).filter(
+                rack_id == DeviceInventory.rack_id, Devices.id == DeviceInventory.device_id
+            ) .filter(Devices.OnBoardingStatus==True).filter(Devices.collection_status==True).distinct().all()
+
+            return ips
 
     def get_all_racks(self,site_id) -> List[RackDetails]:
-        with self.session_factory() as session:
+        with (self.session_factory() as session):
             if site_id:
                 racks = session.query(Rack).filter(Rack.site_id==site_id).all()
-
             else:
                 racks = session.query(Rack).all()
-
-
-
             for rack in racks:
-                
                 building = (
                     session.query(Building.building_name)
                     .join(rack_building_association, Building.id == rack_building_association.c.building_id)
@@ -51,30 +53,28 @@ class RackRepository(BaseRepository):
                 )
                 rack.building_name = building[0] if building else None  
 
-                
-                apic_ips = session.query(APICController.ip_address).filter(
-                    rack.id == DeviceInventory.rack_id, APICController.id == DeviceInventory.apic_controller_id
-                ).distinct().all()
+                ips =self.get_device_rack_id(rack.id )
+                # session.query(Devices.ip_address).filter(
+                #     rack.id == DeviceInventory.rack_id, Devices.id == DeviceInventory.device_id
+                # ).distinct().all()
 
-                
                 site_result = session.query(Site.site_name).filter(Site.id == rack.site_id).first()
                 rack.site_name = site_result[0] if site_result else None
 
-                
-                num_devices = session.query(func.count(Devices.id)).filter(Devices.rack_id == rack.id).scalar()
+                num_devices = len(ips)
                 rack.num_devices = num_devices
+                rack_power_data =  get_24hrack_power(ips, rack.id)
+                rack_traffic_data = get_24h_rack_datatraffic(ips, rack.id)
 
-                
-                rack_power_data = get_24hrack_power(apic_ips, rack.id)
-                rack_traffic_data = get_24h_rack_datatraffic(apic_ips, rack.id)
-
-
-
-                
                 if rack_power_data:
-                    power_utilization_values = [data.get('power_utilization', 0) for data in rack_power_data]
-                    total_power_utilization = sum(power_utilization_values)
-                    average_power_utilization = total_power_utilization / len(power_utilization_values)
+                    print("data")
+                    print(rack_power_data)
+                    energy_effieciency_values = [data.get('energy_effieciency', 0) for data in rack_power_data]
+                    total_effieciency_values = sum(energy_effieciency_values)
+                    print(total_effieciency_values)
+                    print(len(energy_effieciency_values))
+
+                    average_power_utilization = total_effieciency_values / len(energy_effieciency_values)
                     rack.power_utilization = round(average_power_utilization, 2)
 
                     pue_values = [data.get('pue', 0) for data in rack_power_data]
@@ -258,7 +258,7 @@ class RackRepository(BaseRepository):
                 response.append({
                     'Rack_id': rack_id,
                     'hour': data['hour'],
-                    'power_utilization': data['average_power_utilization']
+                    'energy_efficieny': data['average_power_utilization']
                 })
             return response
 

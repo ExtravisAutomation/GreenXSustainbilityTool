@@ -201,8 +201,8 @@ class DeviceInventoryService:
     def get_vendor_count(self):
         return self.device_inventory_repository.get_vendor_device_count()
 
-    def get_device_expiry(self,site_id):
-        return self.device_inventory_repository.get_device_expiry(site_id)
+    def get_notifications(self,site):
+        return self.device_inventory_repository.get_notifications(site)
 
     # def classify_performance(self,avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr, avg_co2_emissions):
     #     score = 0
@@ -246,6 +246,7 @@ class DeviceInventoryService:
     #         return score, "This device offers moderate efficiency, performing well in key areas but with some potential for optimization."
     #     else:
     #         return score, "This device has a lower efficiency and may require optimization to improve performance and resource utilization."
+
     def classify_performance(self, avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr,
                              avg_co2_emissions, thresholds=None):
         if thresholds is None:
@@ -300,33 +301,131 @@ class DeviceInventoryService:
         else:
             return score, "Low efficiency device that may require significant optimization."
 
+    # def get_all_devices_test(self, filter_data) -> dict:
+    #
+    #     devices = self.device_inventory_repository.get_all_devices_test(filter_data)
+    #     print("all devices", devices)
+    #
+    #     print("type", type(devices))
+    #     # score=filter_data.score
+    #
+    #     enriched_devices = []
+    #
+    #     for device in devices['devices']:
+    #         power_input = device.get("power_input") or 0
+    #         power_output = device.get("power_output") or 0
+    #         if  power_output > power_input:
+    #             power_output=power_input
+    #         power_utilization = device.get("power_utilization") or 0
+    #         pue = device.get("pue") or 0
+    #         datatraffic = device.get("datatraffic") or 0
+    #         bandwidth_utilization = device.get("bandwidth_utilization") or 0
+    #         bandwidth = device.get("bandwidth_gbps") or 0
+    #
+    #
+    #         pcr = device.get("pcr") or 0
+    #         carbon_emission=device.get("carbon_emission") or 0
+    #         # Carbon Emissions Calculation
+    #         # carbon_emission = round(((power_input / 1000) * 0.4041), 2)
+    #
+    #         # Power Consumption Ratio (PCR) Calculation
+    #         # pcr = round(power_input *1000 / datatraffic, 4) if datatraffic else None
+    #
+    #         # Classify device performance and power consumption
+    #         # performance_score, performance_description = self.classify_performance(
+    #         #     power_utilization, pue, datatraffic, pcr or 0, carbon_emission
+    #         # )
+    #         enriched_device = {
+    #             "id": device.get("id"),
+    #             "criticality": device.get("criticality"),
+    #             "department": device.get("department"),
+    #             "device_name": device.get("device_name"),
+    #             "hardware_version": device.get("hardware_version"),
+    #             "manufacturer_date": device.get("manufacturer_date"),
+    #             "manufacturer": device.get("manufacturer"),
+    #             "modified_by": device.get("modified_by"),
+    #             "pn_code": device.get("pn_code"),
+    #             "site_id": device.get("site_id"),
+    #             "rack_id": device.get("rack_id"),
+    #             "section": device.get("section"),
+    #             "stack":device.get('stack'),
+    #             "total_power_capacity": device.get('total_power_capacity'),
+    #             "psu_count": device.get('psu_count'),
+    #             "psu_model": device.get('psu_model'),
+    #             "serial_number": device.get("serial_number"),
+    #             "software_version": device.get("software_version"),
+    #             "status": device.get("status"),
+    #             "apic_controller_id": device.get("apic_controller_id"),
+    #             "hw_eol_ad": device.get("hw_eol_ad"),
+    #             "hw_eos": device.get("hw_eos"),
+    #             "sw_EoSWM": device.get("sw_EoSWM"),
+    #             "hw_EoRFA": device.get("hw_EoRFA"),
+    #             "sw_EoVSS": device.get("sw_EoVSS"),
+    #             "hw_EoSCR": device.get("hw_EoSCR"),
+    #             "hw_ldos": device.get("hw_ldos"),
+    #             "site_name": device.get("site_name"),
+    #             "rack_name": device.get("rack_name"),
+    #             "device_ip": device.get("device_ip"),
+    #             "device_type": device.get("device_type"),
+    #             "power_utilization": power_utilization,
+    #             "pue": pue,
+    #             "power_input": power_input,
+    #             "datatraffic": datatraffic,
+    #             "bandwidth":bandwidth,
+    #             "bandwidth_utilization": round(bandwidth_utilization,4),
+    #             "power_output":power_output,
+    #             "carbon-emmison": round(carbon_emission, 4),
+    #             "pcr": pcr ,
+    #             "score_num": device.get("performance_score"),
+    #             "score_desc":device.get("performance_description"),
+    #
+    #         }
+    #
+    #         enriched_devices.append(enriched_device)
+    #
+    #     return {
+    #         "page": devices['page'],
+    #
+    #         "page_size": devices['page_size'],
+    #         "total_devices": devices['total_devices'],
+    #         "total_pages": devices['total_pages'],
+    #         "devices": enriched_devices
+    #     }
     def get_all_devices_test(self, filter_data) -> dict:
-
         devices = self.device_inventory_repository.get_all_devices_test(filter_data)
-        print("all devices", devices)
+        print("all devices")
         print("type", type(devices))
-        # score=filter_data.score
 
         enriched_devices = []
 
         for device in devices['devices']:
-            power_input = device.get("power_input") or 0
-            power_output = device.get("power_output") or 0
-            power_utilization = device.get("power_utilization") or 0
-            pue = device.get("pue") or 0
-            datatraffic = device.get("datatraffic") or 0
-            bandwidth_utilization = device.get("bandwidth_utilization") or 0
+            # Convert numpy types to native Python types
+            power_input = int(device.get("power_input") or 0) if hasattr(device.get("power_input"),
+                                                                         '__int__') else device.get("power_input") or 0
+            power_output = int(device.get("power_output") or 0) if hasattr(device.get("power_output"),
+                                                                           '__int__') else device.get(
+                "power_output") or 0
+            if power_output > power_input:
+                power_output = power_input
 
-            # Carbon Emissions Calculation
-            carbon_emission = round(((power_input / 1000) * 0.4041), 2)
+            power_utilization = float(device.get("power_utilization") or 0) if hasattr(device.get("power_utilization"),
+                                                                                       '__float__') else device.get(
+                "power_utilization") or 0
+            pue = float(device.get("pue") or 0) if hasattr(device.get("pue"), '__float__') else device.get("pue") or 0
+            datatraffic = float(device.get("datatraffic") or 0) if hasattr(device.get("datatraffic"),
+                                                                           '__float__') else device.get(
+                "datatraffic") or 0
+            bandwidth_utilization = float(device.get("bandwidth_utilization") or 0) if hasattr(
+                device.get("bandwidth_utilization"), '__float__') else device.get("bandwidth_utilization") or 0
+            bandwidth = float(device.get("bandwidth_gbps") or 0) if hasattr(device.get("bandwidth_gbps"),
+                                                                            '__float__') else device.get(
+                "bandwidth_gbps") or 0
 
-            # Power Consumption Ratio (PCR) Calculation
-            pcr = round(power_input *1000 / datatraffic, 4) if datatraffic else None
+            pcr = float(device.get("pcr") or 0) if hasattr(device.get("pcr"), '__float__') else device.get("pcr") or 0
+            carbon_emission = float(device.get("carbon_emission") or 0) if hasattr(device.get("carbon_emission"),
+                                                                                   '__float__') else device.get(
+                "carbon_emission") or 0
 
-            # Classify device performance and power consumption
-            # performance_score, performance_description = self.classify_performance(
-            #     power_utilization, pue, datatraffic, pcr or 0, carbon_emission
-            # )
             enriched_device = {
                 "id": device.get("id"),
                 "criticality": device.get("criticality"),
@@ -357,17 +456,17 @@ class DeviceInventoryService:
                 "device_type": device.get("device_type"),
                 "power_utilization": power_utilization,
                 "pue": pue,
+
                 "power_input": power_input,
                 "datatraffic": datatraffic,
-                "bandwidth_utilization": round(bandwidth_utilization,4),
-                "power_output":power_output,
-                "carbon-emmison": round(carbon_emission, 4),
-                "pcr": pcr ,
-                "score_num": device.get("performance_score"),
-                "score_desc":device.get("performance_description"),
-
+                "power_output": power_output,
+                "carbon-emmison": round(float(carbon_emission), 4) if carbon_emission is not None else 0,
+                "pcr": pcr,
+                "score_num": float(device.get("performance_score")) if hasattr(device.get("performance_score"),
+                                                                               '__float__') else device.get(
+                    "performance_score"),
+                "score_desc": device.get("performance_description"),
             }
-
             enriched_devices.append(enriched_device)
 
         return {
@@ -378,9 +477,6 @@ class DeviceInventoryService:
             "total_pages": devices['total_pages'],
             "devices": enriched_devices
         }
-
-
-
     def generate_excel(self,filter_data):
         return self.device_inventory_repository.generate_excel(filter_data)
     def get_hardware_versions(self):
@@ -391,3 +487,5 @@ class DeviceInventoryService:
         return self.device_inventory_repository.add_vendor(vendor)
     def add_device_type(self,device_type):
         return self.device_inventory_repository.add_device_type(device_type)
+    def generate_excel1(self,filter_data):
+        return self.device_inventory_repository.generate_excel1(filter_data)

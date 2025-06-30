@@ -30,6 +30,7 @@ class DeviceProcessor:
             try:
                 if device_ids:
                     print(device_ids)
+                    print("here")
                     logging.info(f"Fetching devices for IDs: {device_ids}")
                     devices = session.query(Device).filter(Device.id.in_(device_ids)).all()
                     logging.info(f"{len(devices)} devices found")
@@ -59,6 +60,7 @@ class DeviceProcessor:
                 if not device.device_type:
                     logging.info(f"Device type for {device.ip_address} not found, fetching...")
                     device_type = get_devices(device, session, password_group)
+
                     logging.info(f"Fetched device type for {device.ip_address}: {device_type}")
                     device.device_type = device_type
                     session.commit()  # Commit only when device type is updated

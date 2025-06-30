@@ -70,14 +70,36 @@ class Device(Base):
     credential_id  = Column(Integer)
     messages = Column(String(1000), nullable=True)
     node_id=Column(Integer)
+    collection_status = Column(Boolean, nullable=True, default=True)
     created_at = Column(DateTime, default=func.current_timestamp())
     updated_at = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
     password_group_id = Column(Integer, ForeignKey('password_groups.id'))
+    device_type_id = Column(Integer, ForeignKey('device_type.id'), nullable=True)  # Added device_type_id
+    vendor_id = Column(Integer, ForeignKey('vendor.id'), nullable=True)
 
     # Relationships
     site = relationship("Site")
     rack = relationship("Rack")
     password_group = relationship("PasswordGroup")
+
+    vendor = relationship("Vendor", back_populates="devices")
+    device_type_rel = relationship("DeviceType", back_populates="devices")
+
+class Vendor(Base):
+    __tablename__ = "vendor"
+    id = Column(Integer, primary_key=True)
+    vendor_name = Column(String(200), nullable=True)
+    devices = relationship("Device", back_populates="vendor")
+    devices1 = relationship("DeviceType", back_populates="vendor")
+
+
+class DeviceType(Base):
+    __tablename__ = "device_type"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    device_type = Column(String(255), nullable=False)
+    vendor_id = Column(Integer, ForeignKey("vendor.id"), nullable=False)
+    vendor = relationship("Vendor", back_populates="devices1")
+    devices = relationship("Device", back_populates="device_type_rel")
 class APICController(Base):
     __tablename__ = 'apic_controllers'
 
@@ -128,7 +150,7 @@ class DeviceInventory(Base):
     created_by = Column(String(255), nullable=True)
     criticality = Column(String(255), nullable=True)
     department = Column(String(255), nullable=True)
-    device_id = Column(Integer, nullable=True)
+    device_id = Column(Integer, ForeignKey('Devices.id'), nullable=True)
     device_name = Column(String(255), nullable=True)
     device_ru = Column(Integer, nullable=True)
     domain = Column(String(255), nullable=True)
@@ -162,3 +184,4 @@ class DeviceInventory(Base):
     apic_controller = relationship("APICController", backref="deviceInventory")
     rack = relationship("Rack", backref="deviceInventory")
     site = relationship("Site", backref="deviceInventory")
+    device = relationship("Device", backref="deviceInventory")
