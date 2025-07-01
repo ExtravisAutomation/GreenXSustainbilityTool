@@ -20,7 +20,7 @@ class Configs(BaseSettings):
     ENV_DATABASE_MAPPER: dict = {
         "prod": "fca",
         "stage": "stage-fca",
-        "dev": "Dcs_db",
+        "dev": "DCS_DB",
 
         # "dev": "dcs_db", # for local development ahmed laptop
         "test": "test-fca",
