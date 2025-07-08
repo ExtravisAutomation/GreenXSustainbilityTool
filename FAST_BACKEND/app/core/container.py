@@ -11,6 +11,7 @@ from app.services.site_service import SiteService
 from app.repository.blacklisted_token_repository import BlacklistedTokenRepository
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from app.repository.admin_repository import AdminPanelRepository
+from app.repository.comparison_repository import ComparisonRepository
 from app.repository.influxdb_repository import InfluxDBRepository
 from app.services.apic_service import APICService
 from app.repository.apic_repository import APICRepository
@@ -48,6 +49,7 @@ class Container(containers.DeclarativeContainer):
             "app.api.v2.endpoints.perhr",
             "app.api.v2.endpoints.aimodule",
             "app.api.v2.endpoints.admin",
+            "app.api.v2.endpoints.comparison",
             "app.core.dependencies",
         ]
     )
@@ -67,6 +69,13 @@ class Container(containers.DeclarativeContainer):
         org=configs.INFLUXDB_ORG,
         token=configs.INFLUXDB_TOKEN
     )
+    dataquery_repository = providers.Factory(
+        InfluxDBRepository,
+        client=influxdb_client,
+        bucket=configs.INFLUXDB_BUCKET,
+        org=configs.INFLUXDB_ORG,
+        token=configs.INFLUXDB_TOKEN
+    )
     device_service = providers.Factory(DeviceService, influxdb_repository=influxdb_repository)
 
     site_repo = providers.Factory(SiteRepository, session_factory=db.provided.session)
@@ -77,6 +86,7 @@ class Container(containers.DeclarativeContainer):
         session_factory=db.provided.session
     )
     admin_repository=providers.Factory(AdminPanelRepository, session_factory=db.provided.session)
+    comparison_repository = providers.Factory(ComparisonRepository, session_factory=db.provided.session)
     apic_repository = providers.Factory(APICRepository, session_factory=db.provided.session, influxdb_repository=influxdb_repository)
     device_inventory_repository = providers.Factory(
         DeviceInventoryRepository,
@@ -87,13 +97,13 @@ class Container(containers.DeclarativeContainer):
     perhr_repository = providers.Factory(PerhrRepository, session_factory=db.provided.session)
     ai_repository= providers.Factory(AIRepository, session_factory=db.provided.session,
     influxdb_repository = influxdb_repository)
-
     rack_service = providers.Factory(RackService, rack_repository=rack_repository)
     auth_service = providers.Factory(AuthService, user_repository=user_repository,
                                      blacklisted_token_repository=blacklisted_token_repository)
     site_service = providers.Factory(SiteService, site_repository=site_repo, influxdb_repository=influxdb_repository,ai_repository=ai_repository)
     admin_service = providers.Factory(AdminPanelService, admin_repository=admin_repository, influxdb_repository=influxdb_repository)
-
+    comparison_service = providers.Factory(ComparisonRepository, comparison_repository=comparison_repository,
+                                      dataquery_repository=dataquery_repository)
     user_service = providers.Factory(UserService, user_repository=user_repository)
     apic_service = providers.Factory(APICService, apic_repository=apic_repository)
     device_inventory_service = providers.Factory(DeviceInventoryService, device_inventory_repository=device_inventory_repository)
