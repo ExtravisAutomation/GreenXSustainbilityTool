@@ -23,7 +23,7 @@ def compare_data(
 ):
     data = compare_service.get_comparison_response(filter_data)
     return CustomResponse(
-        message="Data Retrieved Successfully",
+        message="*Data Retrieved Successfully*",
         data=data,
         status_code=status.HTTP_200_OK
     )
