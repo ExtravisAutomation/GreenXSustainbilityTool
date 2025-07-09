@@ -14,7 +14,7 @@ from starlette.responses import JSONResponse
 from app.services.comparison_service import ComparisonService
 router = APIRouter(prefix="/comparison", tags=["Comparison Module"])
 logger = getLogger(__name__)
-@router.post("/compare_data", response_model=CustomResponse)
+@router.post("/compare_analytics", response_model=CustomResponse)
 @inject
 def compare_data(
         filter_data: comparisonPayload,
@@ -23,7 +23,7 @@ def compare_data(
 ):
     data = compare_service.get_comparison_response(filter_data)
     return CustomResponse(
-        message="data recieved successfully",
+        message="Data Retrieved Successfully",
         data=data,
         status_code=status.HTTP_200_OK
     )
