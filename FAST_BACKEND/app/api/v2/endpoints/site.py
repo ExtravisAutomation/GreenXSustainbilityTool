@@ -1660,9 +1660,7 @@ def get_ai_res(device_data: DeviceRequest,
     if data:
         data = [
 
-            {'month': 'October', 'year': 2024, 'total_PIn': 221.37, 'total_POut': 191.79, 'PUE': 1.15, 'EER': 0.87,
-             'co2': 8.8,
-             'Prediction': 'False'},
+
             {'month': 'November', 'year': 2024, 'total_PIn': 205.29, 'total_POut': 177.65, 'PUE': 1.16, 'EER': 0.87,
              'co2': 8.2,
              'Prediction': 'False'},
@@ -1686,8 +1684,11 @@ def get_ai_res(device_data: DeviceRequest,
              'Prediction': 'False'},
             {'month': 'June', 'year': 2025, 'total_PIn': 226.37, 'total_POut': 70.79, 'PUE': 3.19, 'EER': 0.30,
              'co2': 7.5,
-             'Prediction': 'True'},
-            {'month': 'July', 'year': 2025, 'total_PIn': 200.37, 'total_POut': 130.79, 'PUE': 1.51, 'EER': 0.65,
+             'Prediction': 'False'},
+            {'month': 'July', 'year': 2025, 'total_PIn': 212.37, 'total_POut': 130.79, 'PUE': 1.51, 'EER': 0.65,
+             'co2': 7.5,
+             'Prediction': 'False'},
+            {'month': 'August', 'year': 2025, 'total_PIn': 200.37, 'total_POut': 135.79, 'PUE': 1.51, 'EER': 0.65,
              'co2': 7.5,
              'Prediction': 'True'},
         ]

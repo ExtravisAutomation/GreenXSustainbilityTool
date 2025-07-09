@@ -16,7 +16,7 @@ from app.repository.comparison_repository import ComparisonRepository
 from app.schema.admin_schema import RoleDetails,DashboardModuleDetails,UserUpdate
 
 from app.repository.dataquery_repository import DataQueryRepository
-
+from app.repository.site_repository import SiteRepository
 from app.schema.ai_schema import *
 import logging
 
@@ -30,10 +30,31 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class ComparisonService:
-    def __init__(self, comparison_repository: ComparisonRepository, DataQueryRepository: DataQueryRepository):
+    def __init__(self, comparison_repository: ComparisonRepository,
+                 dataquery_repository: DataQueryRepository,
+                 site_repository:SiteRepository):
         self.comparison_repository = comparison_repository
-        self.DataQueryRepository = DataQueryRepository
+        self.dataquery_repository = dataquery_repository
+        self.site_repository=site_repository
 
-    def delete_module(self, module_id: int) -> str:
-        self.comparison_repository.delete_module(module_id)
-        return {"message": " Module deleted successfully"}
+    def get_comparison_response(self, filterdata):
+
+        # Validate site_id and fetch device IPs
+        if not filterdata.site_id:
+            return {"error": "Site ID is required."}
+
+        devices = self.site_repository.get_devices_by_site_id(filterdata.site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+        print(device_ips)
+
+        if not device_ips:
+            return {"message": f"No devices found for site during {filterdata.duration}"}
+
+        if filterdata.duration:
+            # Fetch metrics
+            metrics = self.dataquery_repository.get_power_traffic_data(
+                device_ips, filterdata.duration
+            )
+            data=self.comparison_repository.get_comparison_response(metrics,filterdata)
+
+            return data

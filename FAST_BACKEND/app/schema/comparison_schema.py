@@ -10,6 +10,7 @@ DataT = TypeVar('DataT')
 class CustomResponse(GenericModel, Generic[DataT]):
     message: str
     data: Optional[DataT]
+
     status_code: int
 
 class comparisonPayload(BaseModel):
@@ -17,10 +18,31 @@ class comparisonPayload(BaseModel):
     duration: Optional[str] = "24 hours"
     pue: Optional[float]=None
     co_em_factor: Optional[float]=None
-    input_power: Optional[float]=None
-    output_power:Optional[float]=None
+    input_power_kw: Optional[float]=None
+    output_power_kw:Optional[float]=None
     cost_factor:Optional[float]=None
+    cost_unit:Optional[str]=None
 
+
+
+class comparisonDetail(BaseModel):
+    site_id: Optional[int]=None
+    duration: Optional[str]=None
+    pue: Optional[float]=None
+    eer_per:Optional[float]=None
+    input_power_kw: Optional[float]=None
+    output_power_kw:Optional[float]=None
+    co_em_factor: Optional[float]=None
+    co2_em_kg:Optional[float]=None
+    co2_em_tons:Optional[float]=None
+    cost_factor:Optional[float]=None
+    cost_unit: Optional[str] = None
+    cost_estimation:Optional[float]=None
+    datatraffic_allocated_gb:Optional[float]=None
+    datatraffic_consumed_gb:Optional[float]=None
+    datautilization_per:Optional[float]=None
+    pcr_kw_per_gb:Optional[float]=None
+    traffic_throughput_gb_per_watt:Optional[float]=None
 
 
 

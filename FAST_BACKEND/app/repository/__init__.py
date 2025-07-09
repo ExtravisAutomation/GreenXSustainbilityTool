@@ -10,5 +10,5 @@ from app.repository.vcenter_repository import VcenterRepository
 from app.repository.perhr_repository import PerhrRepository
 from app.repository.ai_repository import AIRepository
 from app.repository.admin_repository import AdminPanelRepository
-from app.repository.comparison_repository import ComparisonRepository
 from app.repository.dataquery_repository import DataQueryRepository
+from app.repository.comparison_repository import ComparisonRepository

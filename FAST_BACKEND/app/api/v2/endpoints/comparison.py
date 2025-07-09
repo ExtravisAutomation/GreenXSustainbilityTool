@@ -12,18 +12,18 @@ from app.model.user import User
 from logging import getLogger
 from starlette.responses import JSONResponse
 from app.services.comparison_service import ComparisonService
-router = APIRouter(prefix="/comprison", tags=["Comparison Module"])
+router = APIRouter(prefix="/comparison", tags=["Comparison Module"])
 logger = getLogger(__name__)
 @router.post("/compare_data", response_model=CustomResponse)
 @inject
 def compare_data(
         filter_data: comparisonPayload,
         # current_user: User = Depends(get_current_active_user),
-        compare_service: ComparisonService = Depends(Provide[Container.admin_service])
+        compare_service: ComparisonService = Depends(Provide[Container.comparison_service])
 ):
-    role = compare_service.add_role(filter_data)
+    data = compare_service.get_comparison_response(filter_data)
     return CustomResponse(
-        message="Role created successfully",
-        data=role,
+        message="data recieved successfully",
+        data=data,
         status_code=status.HTTP_200_OK
     )

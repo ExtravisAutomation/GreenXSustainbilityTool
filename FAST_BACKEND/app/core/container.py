@@ -14,6 +14,7 @@ from app.repository.admin_repository import AdminPanelRepository
 from app.repository.comparison_repository import ComparisonRepository
 from app.repository.influxdb_repository import InfluxDBRepository
 from app.services.apic_service import APICService
+from app.repository.dataquery_repository import DataQueryRepository
 from app.repository.apic_repository import APICRepository
 from app.services.device_service import DeviceService
 from app.services.admin_service import AdminPanelService
@@ -30,6 +31,7 @@ from app.repository.vcenter_repository import VcenterRepository
 from app.services.perhr_service import PerhrService
 from app.repository.perhr_repository import PerhrRepository
 from app.repository.ai_repository import AIRepository
+from app.services.comparison_service import ComparisonService
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -70,7 +72,7 @@ class Container(containers.DeclarativeContainer):
         token=configs.INFLUXDB_TOKEN
     )
     dataquery_repository = providers.Factory(
-        InfluxDBRepository,
+        DataQueryRepository,
         client=influxdb_client,
         bucket=configs.INFLUXDB_BUCKET,
         org=configs.INFLUXDB_ORG,
@@ -102,8 +104,8 @@ class Container(containers.DeclarativeContainer):
                                      blacklisted_token_repository=blacklisted_token_repository)
     site_service = providers.Factory(SiteService, site_repository=site_repo, influxdb_repository=influxdb_repository,ai_repository=ai_repository)
     admin_service = providers.Factory(AdminPanelService, admin_repository=admin_repository, influxdb_repository=influxdb_repository)
-    comparison_service = providers.Factory(ComparisonRepository, comparison_repository=comparison_repository,
-                                      dataquery_repository=dataquery_repository)
+    comparison_service = providers.Factory(ComparisonService, comparison_repository=comparison_repository,
+                                      dataquery_repository=dataquery_repository,site_repository = site_repo    )
     user_service = providers.Factory(UserService, user_repository=user_repository)
     apic_service = providers.Factory(APICService, apic_repository=apic_repository)
     device_inventory_service = providers.Factory(DeviceInventoryService, device_inventory_repository=device_inventory_repository)
