@@ -35,6 +35,7 @@ class ComparisonRepository(BaseRepository):
 
         default_cost = 0.37
         default_emission = 0.4041
+        default_cost_unit="AED"
 
         def percent_diff(old: float, new: float) -> float:
             if old in [None, 0] or new is None:
@@ -76,13 +77,16 @@ class ComparisonRepository(BaseRepository):
         def calculate_traffic_throughput(consumed_gb, input_kw):
             return round(consumed_gb / input_kw, 4) if input_kw and consumed_gb else None  # GB/W
 
-        def build_detail(input_kw, output_kw, cost_factor, co_em_factor):
+        def build_detail(input_kw, output_kw, cost_factor, co_em_factor,cost_unit):
             eer = calculate_eer(output_kw, input_kw)
             pue = calculate_pue(input_kw, output_kw)
             pcr = calculate_pcr(input_kw, traffic_consumed_gb)
             throughput = calculate_traffic_throughput(traffic_consumed_gb, input_kw)
             print("PCR", pcr)
             print("Throughput", throughput)
+            pue_evaluation= evaluate_pue(pue)
+            eer_evaluation = evaluate_eer(eer)
+
             detail = comparisonDetail(
                 site_id=payload.site_id,
                 duration=payload.duration,
@@ -91,13 +95,16 @@ class ComparisonRepository(BaseRepository):
                 pue=pue,
                 eer_per=eer,
                 cost_factor=cost_factor,
-                cost_unit=payload.cost_unit,
+                cost_unit=cost_unit,
                 co_em_factor=co_em_factor,
                 datatraffic_allocated_gb=traffic_allocated_gb,
                 datatraffic_consumed_gb=traffic_consumed_gb,
                 datautilization_per=calculate_utilization(traffic_consumed_gb, traffic_allocated_gb),
                 pcr_kw_per_gb=pcr,
-                traffic_throughput_gb_per_watt=throughput
+                traffic_throughput_gb_per_watt=throughput,
+                pue_evaluation=pue_evaluation,
+                eer_evaluation=eer_evaluation
+
             )
             daily_input_value=input_kw/days_count
             if input_kw and cost_factor:
@@ -116,7 +123,9 @@ class ComparisonRepository(BaseRepository):
             input_kw=base_input_kw,
             output_kw=base_output_kw,
             cost_factor=default_cost,
-            co_em_factor=default_emission
+            co_em_factor=default_emission,
+            cost_unit=default_cost_unit
+
         )
 
         # Check for any updated values
@@ -148,27 +157,18 @@ class ComparisonRepository(BaseRepository):
             input_kw=updated_input_kw,
             output_kw=updated_output_kw,
             cost_factor=updated_cost_factor,
-            co_em_factor=updated_emission_factor
+            co_em_factor=updated_emission_factor,
+            cost_unit=payload.cost_unit or default_cost_unit,
         )
         # Convert to dicts first
         base_dict = base_detail.dict(exclude_none=True)
         updated_dict = updated_detail.dict(exclude_none=True)
 
         # Add evaluations
-        base_dict["pue_evaluation"] = evaluate_pue(base_dict.get("pue"))
+
         updated_dict["pue_evaluation"] = evaluate_pue(updated_dict.get("pue"))
 
-        base_dict["eer_evaluation"] = evaluate_eer(base_dict.get("eer_per"))
         updated_dict["eer_evaluation"] = evaluate_eer(updated_dict.get("eer_per"))
-        if has_updates:
-            cost_percent_change = percent_diff(
-                base_dict.get("cost_estimation"),
-                updated_dict.get("cost_estimation")
-            )
-            co2_percent_change = percent_diff(
-                base_dict.get("co2_em_kg"),
-                updated_dict.get("co2_em_kg")
-            )
 
         return {
 

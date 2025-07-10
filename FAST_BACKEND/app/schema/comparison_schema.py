@@ -26,28 +26,28 @@ class comparisonPayload(BaseModel):
 
 
 class comparisonDetail(BaseModel):
-    site_id: Optional[int]=None
+    site_id: int=None
     duration: Optional[str]=None
-    pue: Optional[float]=None
-    eer_per:Optional[float]=None
-    input_power_kw: Optional[float]=None
-    output_power_kw:Optional[float]=None
-    co_em_factor: Optional[float]=None
-    co2_em_kg:Optional[float]=None
-    co2_em_tons:Optional[float]=None
-    cost_factor:Optional[float]=None
-    cost_unit: Optional[str] = None
-    cost_estimation:Optional[float]=None
-    cost_estimation_daily:Optional[float]=None
-    cost_estimation_monthly: Optional[float] = None
-    cost_estimation_yearly: Optional[float] = None
-    datatraffic_allocated_gb:Optional[float]=None
-    datatraffic_consumed_gb:Optional[float]=None
-    datautilization_per:Optional[float]=None
-    pcr_kw_per_gb:Optional[float]=None
-    traffic_throughput_gb_per_watt:Optional[float]=None
-    pue_evaluation: Optional[str] = None
-    eer_evaluation: Optional[str] = None
+    pue: float=0.0
+    eer_per:float=0.0
+    input_power_kw: float=0.0
+    output_power_kw:float=0.0
+    co_em_factor: float=0.0
+    co2_em_kg:float=0.0
+    co2_em_tons:float=0.0
+    cost_factor:float=0.0
+    cost_unit: str=None
+    cost_estimation:float=0.0
+    cost_estimation_daily:float=0.0
+    cost_estimation_monthly: float=0.0
+    cost_estimation_yearly: float=0.0
+    datatraffic_allocated_gb:float=0.0
+    datatraffic_consumed_gb:float=0.0
+    datautilization_per:float=0.0
+    pcr_kw_per_gb:float=0.0
+    traffic_throughput_gb_per_watt:float=0.0
+    pue_evaluation: str=None
+    eer_evaluation:str=None
 
 
 
