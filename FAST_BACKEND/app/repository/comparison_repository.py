@@ -81,7 +81,8 @@ class ComparisonRepository(BaseRepository):
             pue = calculate_pue(input_kw, output_kw)
             pcr = calculate_pcr(input_kw, traffic_consumed_gb)
             throughput = calculate_traffic_throughput(traffic_consumed_gb, input_kw)
-
+            print("PCR", pcr)
+            print("Throughput", throughput)
             detail = comparisonDetail(
                 site_id=payload.site_id,
                 duration=payload.duration,
@@ -175,8 +176,11 @@ class ComparisonRepository(BaseRepository):
             "updated": updated_dict,
             "difference_percent": {
                  "cost_estimation_percent_change": percent_diff(base_dict.get("cost_estimation"), updated_dict.get("cost_estimation")),
-        "co2_em_kg_percent_change": percent_diff(base_dict.get("co2_em_kg"), updated_dict.get("co2_em_kg"))
-    }
+        "co2_em_kg_percent_change": percent_diff(base_dict.get("co2_em_kg"), updated_dict.get("co2_em_kg")),
+                "eer_percent_change": percent_diff(base_dict.get("eer_per"), updated_dict.get("eer_per")),
+                "pue_percent_change": percent_diff(base_dict.get("pue"), updated_dict.get("pue")),
+
+            }
         }
 
     # def get_comparison_response(self, metrics: dict, payload: comparisonPayload) -> dict:
