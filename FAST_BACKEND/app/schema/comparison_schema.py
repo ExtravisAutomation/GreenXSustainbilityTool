@@ -22,6 +22,7 @@ class comparisonPayload(BaseModel):
     output_power_kw:Optional[float]=None
     cost_factor:Optional[float]=None
     cost_unit:Optional[str]=None
+    comparison:bool=False
 
 
 

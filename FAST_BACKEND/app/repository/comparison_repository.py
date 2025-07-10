@@ -22,8 +22,70 @@ class ComparisonRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]],
                  ):
         self.session_factory = session_factory
+        self.conclusion=''
         super().__init__(session_factory, Role)
 
+    def data_center_performance(self,pue_value: float, eer_value: float) -> str:
+        pue_rating = self.evaluate_pue(pue_value)
+        eer_rating = self.evaluate_eer(eer_value)
+
+        if pue_rating == "Unknown" and eer_rating == "Unknown":
+            return "Cannot assess performance due to missing energy efficiency metrics."
+
+        # Cases where both metrics are available
+        if pue_rating == "Efficient" and eer_rating == "Efficient":
+            return "Optimal energy performance: Both DataCenter's infrastructure power usage (PUE) and equipment energy ratio (EER) show excellent efficiency."
+        elif pue_rating == "Moderate" and eer_rating == "Moderate":
+            return "Standard energy performance: DataCenter's power usage overhead and equipment energy conversion are within typical operational ranges."
+        elif pue_rating == "Inefficient" and eer_rating == "Inefficient":
+            return "Energy improvement needed: Both DataCenter's infrastructure power overhead and equipment energy conversion show significant inefficiencies."
+
+        # Mixed cases - PUE variations
+        elif pue_rating == "Efficient" and eer_rating == "Moderate":
+            return "Strong infrastructure efficiency with average equipment performance: DataCenter's facility power usage is excellent while equipment energy conversion is typical."
+        elif pue_rating == "Efficient" and eer_rating == "Inefficient":
+            return "Contrasting performance: While DataCenter's infrastructure power usage is excellent, it's equipment shows poor energy conversion efficiency."
+
+        # Mixed cases - EER variations
+        elif pue_rating == "Moderate" and eer_rating == "Efficient":
+            return "Balanced operation: DataCenter's infrastructure shows typical power overhead but its's equipment demonstrates excellent energy conversion."
+        elif pue_rating == "Inefficient" and eer_rating == "Efficient":
+            return "Mixed efficiency: DataCenter's equipment energy conversion is excellent, but significant power is wasted in infrastructure overhead."
+
+        # Cases with one unknown metric
+        elif pue_rating == "Unknown":
+            base = f"DataCenter's equipment shows {eer_rating.lower()} energy conversion efficiency"
+            if eer_rating == "Efficient":
+                return f"{base}, but overall infrastructure power usage cannot be evaluated."
+            return f"{base}, but facility power utilization cannot be assessed."
+
+        elif eer_rating == "Unknown":
+            base = f"DataCenter's infrastructure shows {pue_rating.lower()} power utilization"
+            if pue_rating == "Efficient":
+                return f"{base}, but equipment energy performance cannot be evaluated."
+            return f"{base}, but equipment energy metrics are unavailable."
+
+        return "Energy efficiency assessment completed."
+
+    def evaluate_pue(self,pue_value: float) -> str:
+        if pue_value is None:
+            return "Unknown"
+        if pue_value <= 1.5:
+            return "Efficient"
+        elif 1.5 < pue_value <= 2.5:
+            return "Moderate"
+        else:
+            return "Inefficient"
+
+    def evaluate_eer(self,eer_value: float) -> str:
+        if eer_value is None:
+            return "Unknown"
+        if eer_value <= 50:
+            return "Inefficient"
+        elif 50 < eer_value <= 75:
+            return "Moderate"
+        else:
+            return "Efficient"
     def get_comparison_response(self, metrics: dict, payload: comparisonPayload) -> dict:
         # Extract base power values
         base_input_kw = metrics.get("total_PIn_kw")
@@ -42,25 +104,7 @@ class ComparisonRepository(BaseRepository):
                 return None
             return round(((new - old) / old) * 100, 2)
 
-        def evaluate_pue(pue_value: float) -> str:
-            if pue_value is None:
-                return "Unknown"
-            if pue_value <= 1.5:
-                return "Efficient"
-            elif 1.5 < pue_value <= 2.5:
-                return "Moderate"
-            else:
-                return "Inefficient"
 
-        def evaluate_eer(eer_value: float) -> str:
-            if eer_value is None:
-                return "Unknown"
-            if eer_value <= 50 :
-                return "Inefficient"
-            elif 50  < eer_value <=75:
-                return "Moderate"
-            else:
-                return "Efficient"
         # Utility functions
         def calculate_eer(output_kw, input_kw):
             return round((output_kw / input_kw) * 100, 2) if input_kw and output_kw else None
@@ -84,8 +128,9 @@ class ComparisonRepository(BaseRepository):
             throughput = calculate_traffic_throughput(traffic_consumed_gb, input_kw)
             print("PCR", pcr)
             print("Throughput", throughput)
-            pue_evaluation= evaluate_pue(pue)
-            eer_evaluation = evaluate_eer(eer)
+            pue_evaluation= self.evaluate_pue(pue)
+            eer_evaluation = self.evaluate_eer(eer)
+            self.conclusion=self.data_center_performance(pue,eer )
 
             detail = comparisonDetail(
                 site_id=payload.site_id,
@@ -135,7 +180,8 @@ class ComparisonRepository(BaseRepository):
             if field not in ['site_id', 'duration']
         )
         if not has_updates:
-            return {"current": base_detail.dict(exclude_none=True)}
+            return {"current": base_detail.dict(exclude_none=True),
+                    "conclusion":self.conclusion}
 
         # Prepare updated values
         updated_input_kw = payload.input_power_kw or base_input_kw
@@ -147,6 +193,10 @@ class ComparisonRepository(BaseRepository):
             updated_output_kw = round(updated_input_kw / updated_pue, 2)
         else:
             updated_output_kw = base_output_kw
+        # Recalculate EER (Efficiency %)
+        updated_eer = None
+        if updated_input_kw and updated_output_kw:
+            updated_eer = round((updated_output_kw / updated_input_kw) * 100, 2)
 
         updated_cost_factor = payload.cost_factor or base_detail.cost_factor
         updated_emission_factor = payload.co_em_factor or base_detail.co_em_factor
@@ -166,14 +216,19 @@ class ComparisonRepository(BaseRepository):
 
         # Add evaluations
 
-        updated_dict["pue_evaluation"] = evaluate_pue(updated_dict.get("pue"))
+        updated_dict["pue_evaluation"] = self.evaluate_pue(updated_dict.get("updated_pue"))
 
-        updated_dict["eer_evaluation"] = evaluate_eer(updated_dict.get("eer_per"))
+        updated_dict["eer_evaluation"] = self.evaluate_eer(updated_dict.get("updated_eer"))
+        if payload.comparison==False:
+            self.conclusion=self.data_center_performance(updated_pue, updated_eer)
+        else:
+            return 0
 
         return {
 
             "current": base_dict,
             "updated": updated_dict,
+            "conclusion": self.conclusion,
             "difference_percent": {
                  "cost_estimation_percent_change": percent_diff(base_dict.get("cost_estimation"), updated_dict.get("cost_estimation")),
         "co2_em_kg_percent_change": percent_diff(base_dict.get("co2_em_kg"), updated_dict.get("co2_em_kg")),
@@ -182,116 +237,3 @@ class ComparisonRepository(BaseRepository):
 
             }
         }
-
-    # def get_comparison_response(self, metrics: dict, payload: comparisonPayload) -> dict:
-    #     # Extract system metrics
-    #     base_input_power = metrics.get("total_PIn_kw")
-    #     base_output_power = metrics.get("total_POut_kw")
-    #     traffic_consumed_mb = metrics.get("traffic_consumed_mb")
-    #     traffic_allocated_mb = metrics.get("total_traffic__mb")
-    #
-    #     # Default factors
-    #     default_cost = 0.37
-    #     default_emission = 0.4041
-    #
-    #     # Calculate base EER (convert to percentage)
-    #     base_eer = None
-    #     if base_input_power and base_output_power and base_input_power > 0:
-    #         base_eer = round((base_output_power / base_input_power) * 100, 2)  # As percentage
-    #     # Convert total kWh to total Wh (for W/GB interpretation, though it's technically Wh/GB)
-    #     total_input_power_wh = base_input_power * 1000 if base_input_power is not None else None
-    #
-    #         # Convert total Megabits to total Gigabytes
-    #     # Calculate data utilization if traffic data is available
-    #     data_utilization = None
-    #     if traffic_allocated_mb and traffic_consumed_mb and traffic_allocated_mb > 0:
-    #         data_utilization = round((traffic_consumed_mb / traffic_allocated_mb) * 100, 2)
-    #     pcr=None
-    #     if base_input_power and traffic_consumed_mb > 0:
-    #         pcr=round((base_input_power / traffic_consumed_mb), 2)
-    #     traffic_throughput = None
-    #     if traffic_consumed_mb and base_input_power >0:
-    #         traffic_throughput = round((traffic_consumed_mb / base_input_power) , 2)
-    #
-    #     # Build base (current) detail
-    #     base_detail = comparisonDetail(
-    #         site_id=payload.site_id,
-    #         duration=payload.duration,
-    #         input_power_kw=base_input_power,
-    #         output_power_kw=base_output_power,
-    #         pue=round(base_input_power / base_output_power, 3) if base_input_power and base_output_power else None,
-    #         eer_per=base_eer,  # This is now in percentage
-    #         cost_factor=default_cost,
-    #         cost_unit=payload.cost_unit,
-    #         co_em_factor=default_emission,
-    #         datatraffic_allocated_mb=traffic_allocated_mb,
-    #         datatraffic_consumed_mb=traffic_consumed_mb,
-    #         datautilization_per=data_utilization
-    #     )
-    #
-    #     # Calculate derived fields for base detail
-    #     if base_detail.input_power_kw and base_detail.cost_factor:
-    #         base_detail.cost_estimation = round(base_detail.input_power_kw * base_detail.cost_factor, 2)
-    #
-    #     if base_detail.output_power_kw and base_detail.co_em_factor:
-    #         base_detail.co2_em_kg = round(base_detail.output_power_kw * base_detail.co_em_factor, 2)
-    #         base_detail.co2_em_tons = round(base_detail.co2_em_kg / 1000, 3)
-    #
-    #     # Check if any update values were provided (excluding site_id and duration)
-    #     has_updates = any(
-    #         getattr(payload, field) is not None
-    #         for field in payload.__fields__
-    #         if field not in ['site_id', 'duration']
-    #     )
-    #
-    #     if not has_updates:
-    #         return {"current": base_detail.dict(exclude_none=True)}
-    #
-    #     # Process updates only if they exist
-    #     changed_input_power = payload.input_power_kw if payload.input_power_kw is not None else base_detail.input_power_kw
-    #     changed_pue = payload.pue if payload.pue is not None else base_detail.pue
-    #
-    #     # Determine output_power logic
-    #     if payload.output_power_kw is not None:
-    #         changed_output_power = payload.output_power_kw
-    #     elif payload.pue is not None and changed_input_power is not None:
-    #         changed_output_power = round(changed_input_power / changed_pue, 2)
-    #     else:
-    #         changed_output_power = base_detail.output_power_kw
-    #
-    #     # Calculate changed EER (convert to percentage)
-    #     changed_eer = None
-    #     if changed_input_power and changed_output_power and changed_input_power > 0:
-    #         changed_eer = round((changed_output_power / changed_input_power) * 100, 2)
-    #
-    #     # Create updated detail
-    #     changed_detail = comparisonDetail(
-    #         site_id=payload.site_id,
-    #         duration=payload.duration,
-    #         pue=changed_pue,
-    #         input_power_kw=changed_input_power,
-    #         output_power_kw=changed_output_power,
-    #         eer_per=changed_eer,  # This is now in percentage
-    #         co_em_factor=payload.co_em_factor if payload.co_em_factor is not None else base_detail.co_em_factor,
-    #         cost_factor=payload.cost_factor if payload.cost_factor is not None else base_detail.cost_factor,
-    #         cost_unit=payload.cost_unit,
-    #         datatraffic_allocated_mb=traffic_allocated_mb,
-    #         datatraffic_consumed_mb=traffic_consumed_mb,
-    #         datautilization_per=data_utilization
-    #     )
-    #
-    #     # Calculate derived fields for changed detail
-    #     if changed_detail.input_power and changed_detail.cost_factor:
-    #         changed_detail.cost_estimation = round(changed_detail.input_power * changed_detail.cost_factor, 2)
-    #
-    #     if changed_detail.output_power and changed_detail.co_em_factor:
-    #         changed_detail.co2_em_kg = round(changed_detail.output_power * changed_detail.co_em_factor, 2)
-    #         changed_detail.co2_em_tons = round(changed_detail.co2_em_kg / 1000, 3)
-    #
-    #     return {
-    #         "current": base_detail.dict(exclude_none=True),
-    #         "updated": changed_detail.dict(exclude_none=True)
-    #     }
-    #
-    #
-    #
