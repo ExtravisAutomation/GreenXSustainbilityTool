@@ -37,7 +37,7 @@ class comparisonDetail(BaseModel):
     co2_em_tons:Optional[float]=None
     cost_factor:Optional[float]=None
     cost_unit: Optional[str] = None
-    cost_estimation_daily:Optional[float]=None
+    cost_estimation:Optional[float]=None
     cost_estimation_monthly: Optional[float] = None
     cost_estimation_yearly: Optional[float] = None
     datatraffic_allocated_gb:Optional[float]=None

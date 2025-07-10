@@ -76,6 +76,7 @@ class ComparisonRepository(BaseRepository):
             )
             daily_input_value=input_kw/days_count
             if input_kw and cost_factor:
+                detail.cost_estimation=round((input_kw * cost_factor),2)
                 detail.cost_estimation_daily = round(daily_input_value * cost_factor, 2)
                 detail.cost_estimation_monthly = round(daily_input_value *30 * cost_factor, 2)
                 detail.cost_estimation_yearly = round( daily_input_value * 365 * cost_factor, 2)
