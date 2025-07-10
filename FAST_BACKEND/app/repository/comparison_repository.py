@@ -34,7 +34,7 @@ class ComparisonRepository(BaseRepository):
 
         # Cases where both metrics are available
         if pue_rating == "Efficient" and eer_rating == "Efficient":
-            return "Optimal energy performance: Both DataCenter's infrastructure power usage (PUE) and equipment energy ratio (EER) show excellent efficiency."
+            return "Optimal energy performance: Both DataCenter's infrastructure power usage (PUE) and  energy efficiency ratio (EER) show excellent efficiency."
         elif pue_rating == "Moderate" and eer_rating == "Moderate":
             return "Standard energy performance: DataCenter's power usage overhead and equipment energy conversion are within typical operational ranges."
         elif pue_rating == "Inefficient" and eer_rating == "Inefficient":
@@ -42,7 +42,7 @@ class ComparisonRepository(BaseRepository):
 
         # Mixed cases - PUE variations
         elif pue_rating == "Efficient" and eer_rating == "Moderate":
-            return "Strong infrastructure efficiency with average equipment performance: DataCenter's facility power usage is excellent while equipment energy conversion is typical."
+            return "Strong infrastructure efficiency with average  performance: DataCenter's facility power usage is excellent while equipment energy conversion is typical."
         elif pue_rating == "Efficient" and eer_rating == "Inefficient":
             return "Contrasting performance: While DataCenter's infrastructure power usage is excellent, it's equipment shows poor energy conversion efficiency."
 
@@ -219,10 +219,16 @@ class ComparisonRepository(BaseRepository):
         updated_dict["pue_evaluation"] = self.evaluate_pue(updated_dict.get("updated_pue"))
 
         updated_dict["eer_evaluation"] = self.evaluate_eer(updated_dict.get("updated_eer"))
+        cost_diff=percent_diff(base_dict.get("cost_estimation"), updated_dict.get("cost_estimation"))
+        emission_diff=percent_diff(base_dict.get("co2_em_kg"), updated_dict.get("co2_em_kg"))
+        eer_diff=percent_diff(base_dict.get("eer_per"), updated_dict.get("eer_per"))
+        pue_diff=percent_diff(base_dict.get("pue"), updated_dict.get("pue"))
+
+
         if payload.comparison==False:
             self.conclusion=self.data_center_performance(updated_pue, updated_eer)
         else:
-            return 0
+            self.conclusion=self.generate_one_line_summary(eer_diff,pue_diff,emission_diff,cost_diff)
 
         return {
 
@@ -230,10 +236,47 @@ class ComparisonRepository(BaseRepository):
             "updated": updated_dict,
             "conclusion": self.conclusion,
             "difference_percent": {
-                 "cost_estimation_percent_change": percent_diff(base_dict.get("cost_estimation"), updated_dict.get("cost_estimation")),
-        "co2_em_kg_percent_change": percent_diff(base_dict.get("co2_em_kg"), updated_dict.get("co2_em_kg")),
-                "eer_percent_change": percent_diff(base_dict.get("eer_per"), updated_dict.get("eer_per")),
-                "pue_percent_change": percent_diff(base_dict.get("pue"), updated_dict.get("pue")),
-
+                 "cost_estimation_percent_change": cost_diff,
+                 "co2_em_kg_percent_change": emission_diff,
+                "eer_percent_change": eer_diff,
+                "pue_percent_change": pue_diff,
             }
         }
+
+    def generate_one_line_summary(
+            self,eer_diff,pue_diff,emission_diff,cost_diff
+    ) -> str:
+
+
+        impacts = []
+
+        if eer_diff > 5:
+            impacts.append(f"a significant improvement of {eer_diff}% in energy efficiency (EER)")
+        elif eer_diff < -5:
+            impacts.append(f"a decline of {abs(eer_diff)}% in energy efficiency (EER)")
+
+        if pue_diff < -5:
+            impacts.append(f"a notable reduction of {abs(pue_diff)}% in PUE")
+        elif pue_diff > 5:
+            impacts.append(f"an increase of {pue_diff}% in PUE")
+
+        if emission_diff < -5:
+            impacts.append(f"reduced carbon emissions by {abs(emission_diff)}%")
+        elif emission_diff > 5:
+            impacts.append(f"increased carbon emissions by {emission_diff}%")
+
+        if cost_diff < -5:
+            impacts.append(f"lowered operational cost by {abs(cost_diff)}%")
+        elif cost_diff > 5:
+            impacts.append(f"increased operational cost by {cost_diff}%")
+
+        if not impacts:
+            return "Your updated configuration shows minimal changes across key metrics."
+
+        summary = "Your updated configuration shows " + ", ".join(impacts[:-1])
+        if len(impacts) > 1:
+            summary += ", and " + impacts[-1]
+        else:
+            summary = "Your updated configuration shows " + impacts[0]
+
+        return summary + "."
