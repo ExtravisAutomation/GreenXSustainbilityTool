@@ -28,7 +28,7 @@ class ComparisonRepository(BaseRepository):
         # Extract base power values
         base_input_kw = metrics.get("total_PIn_kw")
         base_output_kw = metrics.get("total_POut_kw")
-
+        days_count=metrics.get("day_count")
         # Convert traffic to GB
         traffic_consumed_gb = round((metrics.get("traffic_consumed_mb") or 0) / 1024,2)
         traffic_allocated_gb = round((metrics.get("total_traffic__mb") or 0) / 1024,2)
@@ -74,9 +74,11 @@ class ComparisonRepository(BaseRepository):
                 pcr_kw_per_gb=pcr,
                 traffic_throughput_gb_per_watt=throughput
             )
-
+            daily_input_value=input_kw/days_count
             if input_kw and cost_factor:
-                detail.cost_estimation = round(input_kw * cost_factor, 2)
+                detail.cost_estimation_daily = round(daily_input_value * cost_factor, 2)
+                detail.cost_estimation_monthly = round(daily_input_value *30 * cost_factor, 2)
+                detail.cost_estimation_yearly = round( daily_input_value * 365 * cost_factor, 2)
             if output_kw and co_em_factor:
                 detail.co2_em_kg = round(output_kw * co_em_factor, 2)
                 detail.co2_em_tons = round(detail.co2_em_kg / 1000, 3)

@@ -39,7 +39,6 @@ class DataQueryRepository:
     def calculate_start_end_dates(self, duration_str: str) -> Tuple[datetime, datetime]:
         today = datetime.today()
         year = today.year
-
         if duration_str == "First Quarter":
             start_date = datetime(year, 1, 1)
             end_date = datetime(year, 3, 31)
@@ -80,8 +79,11 @@ class DataQueryRepository:
             end_date = today
         else:
             raise ValueError("Unsupported duration format")
+            # Calculate number of days (inclusive)
+        day_count = (end_date - start_date).days
 
-        return start_date, end_date
+        return start_date, end_date, day_count
+
 
     # ---- 2. Aggregate Settings ----
     def aggregate(self, duration_str: str) -> Tuple[str, str]:
@@ -98,7 +100,7 @@ class DataQueryRepository:
         if not device_ips:
             return []
 
-        start_date, end_date = self.calculate_start_end_dates(duration_str)
+        start_date, end_date, day_count = self.calculate_start_end_dates(duration_str)
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
@@ -153,7 +155,9 @@ class DataQueryRepository:
             "total_input_bytes": round(total_input_bytes, 2),
             "total_output_bytes": round(total_output_bytes, 2),
             "total_traffic__mb": traffic_allocated_mb,
-            "traffic_consumed_mb": traffic_consumed_mb
+            "traffic_consumed_mb": traffic_consumed_mb,
+            "day_count": day_count,
+
         }
 
         print(f"Final metrics: {metrics}", file=sys.stderr)
