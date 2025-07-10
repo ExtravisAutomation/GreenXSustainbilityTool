@@ -36,6 +36,30 @@ class ComparisonRepository(BaseRepository):
         default_cost = 0.37
         default_emission = 0.4041
 
+        def percent_diff(old: float, new: float) -> float:
+            if old in [None, 0] or new is None:
+                return None
+            return round(((new - old) / old) * 100, 2)
+
+        def evaluate_pue(pue_value: float) -> str:
+            if pue_value is None:
+                return "Unknown"
+            if pue_value <= 1.5:
+                return "Efficient"
+            elif 1.5 < pue_value <= 2.5:
+                return "Moderate"
+            else:
+                return "Inefficient"
+
+        def evaluate_eer(eer_value: float) -> str:
+            if eer_value is None:
+                return "Unknown"
+            if eer_value <= 50 :
+                return "Inefficient"
+            elif 50  < eer_value <=75:
+                return "Moderate"
+            else:
+                return "Efficient"
         # Utility functions
         def calculate_eer(output_kw, input_kw):
             return round((output_kw / input_kw) * 100, 2) if input_kw and output_kw else None
@@ -117,6 +141,7 @@ class ComparisonRepository(BaseRepository):
         updated_cost_factor = payload.cost_factor or base_detail.cost_factor
         updated_emission_factor = payload.co_em_factor or base_detail.co_em_factor
 
+
         # Build updated detail
         updated_detail = build_detail(
             input_kw=updated_input_kw,
@@ -124,10 +149,34 @@ class ComparisonRepository(BaseRepository):
             cost_factor=updated_cost_factor,
             co_em_factor=updated_emission_factor
         )
+        # Convert to dicts first
+        base_dict = base_detail.dict(exclude_none=True)
+        updated_dict = updated_detail.dict(exclude_none=True)
+
+        # Add evaluations
+        base_dict["pue_evaluation"] = evaluate_pue(base_dict.get("pue"))
+        updated_dict["pue_evaluation"] = evaluate_pue(updated_dict.get("pue"))
+
+        base_dict["eer_evaluation"] = evaluate_eer(base_dict.get("eer_per"))
+        updated_dict["eer_evaluation"] = evaluate_eer(updated_dict.get("eer_per"))
+        if has_updates:
+            cost_percent_change = percent_diff(
+                base_dict.get("cost_estimation"),
+                updated_dict.get("cost_estimation")
+            )
+            co2_percent_change = percent_diff(
+                base_dict.get("co2_em_kg"),
+                updated_dict.get("co2_em_kg")
+            )
 
         return {
-            "current": base_detail.dict(exclude_none=True),
-            "updated": updated_detail.dict(exclude_none=True)
+
+            "current": base_dict,
+            "updated": updated_dict,
+            "difference_percent": {
+                 "cost_estimation_percent_change": percent_diff(base_dict.get("cost_estimation"), updated_dict.get("cost_estimation")),
+        "co2_em_kg_percent_change": percent_diff(base_dict.get("co2_em_kg"), updated_dict.get("co2_em_kg"))
+    }
         }
 
     # def get_comparison_response(self, metrics: dict, payload: comparisonPayload) -> dict:

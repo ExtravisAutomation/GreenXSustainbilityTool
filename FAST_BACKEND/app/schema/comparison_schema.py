@@ -46,6 +46,8 @@ class comparisonDetail(BaseModel):
     datautilization_per:Optional[float]=None
     pcr_kw_per_gb:Optional[float]=None
     traffic_throughput_gb_per_watt:Optional[float]=None
+    pue_evaluation: Optional[str] = None
+    eer_evaluation: Optional[str] = None
 
 
 
