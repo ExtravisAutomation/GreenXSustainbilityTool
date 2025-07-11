@@ -245,11 +245,16 @@ class ComparisonRepository(BaseRepository):
 
         if payload.comparison==False:
             print(updated_pue,updated_eer)
+
             self.conclusion=self.data_center_performance(updated_pue, updated_eer)
+            return {
+            "current": updated_dict,
+            "conclusion": self.conclusion}
+
         else:
             self.conclusion=self.generate_one_line_summary(eer_diff,pue_diff,emission_diff,cost_diff)
 
-        return {
+            return {
 
             "current": base_dict,
             "updated": updated_dict,
