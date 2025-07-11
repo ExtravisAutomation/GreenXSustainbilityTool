@@ -148,6 +148,7 @@ class ComparisonRepository(BaseRepository):
         def percent_diff(old: float, new: float) -> float:
             if old in [None, 0] or new is None:
                 return None
+
             return round(((new - old) / old) * 100, 2)
 
 
@@ -159,7 +160,7 @@ class ComparisonRepository(BaseRepository):
             return round(input_kw / output_kw, 3) if input_kw and output_kw else None
 
         def calculate_utilization(consumed, allocated):
-            return round((consumed / allocated) * 100, 2) if allocated else None
+            return round((consumed / allocated) * 100, 4) if allocated else None
 
         def calculate_pcr(input_kw, consumed_gb):
             return round(input_kw / consumed_gb, 4) if input_kw and consumed_gb else None
@@ -282,7 +283,9 @@ class ComparisonRepository(BaseRepository):
         cost_diff=percent_diff(base_dict.get("cost_estimation"), updated_dict.get("cost_estimation"))
         emission_diff=percent_diff(base_dict.get("co2_em_kg"), updated_dict.get("co2_em_kg"))
         eer_diff=percent_diff(base_dict.get("eer_per"),updated_eer)
+        print()
         pue_diff=percent_diff(base_dict.get("pue"), updated_pue)
+        print(base_dict.get("pue"), updated_pue)
         print("true")
         print(updated_dict.get("eer_per"))
 
