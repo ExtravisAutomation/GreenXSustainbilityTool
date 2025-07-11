@@ -188,20 +188,20 @@ class ComparisonRepository(BaseRepository):
         updated_input_kw = payload.input_power_kw or base_input_kw
         updated_pue = payload.pue or base_detail.pue
 
-        if payload.output_power_kw is not None:
-            updated_output_kw = payload.output_power_kw
-        elif payload.pue is not None and updated_input_kw:
+
+        if payload.pue is not None and updated_input_kw:
             updated_output_kw = round(updated_input_kw / updated_pue, 2)
+        elif payload.output_power_kw is not None:
+            updated_output_kw = payload.output_power_kw
         else:
             updated_output_kw = base_output_kw
         # Recalculate EER (Efficiency %)
         updated_eer = None
-        if updated_input_kw and updated_output_kw:
-            print("Iam here")
-            # updated_eer = ((updated_output_kw / updated_input_kw) * 100)
-            # print("DATA",updated_eer)
-            updated_eer=round((updated_output_kw / updated_input_kw) * 100, 2) if updated_input_kw and updated_output_kw else None
-            print(updated_eer,type(updated_eer),"updated_eer")
+        updated_pue = None
+
+        updated_eer=round((updated_output_kw / updated_input_kw) * 100, 2) if updated_input_kw and updated_output_kw else 0
+        updated_pue=round((updated_input_kw / updated_output_kw), 2) if updated_input_kw and updated_output_kw else 0
+        print(updated_eer,type(updated_eer),"updated_eer")
 
 
         updated_cost_factor = payload.cost_factor or base_detail.cost_factor
