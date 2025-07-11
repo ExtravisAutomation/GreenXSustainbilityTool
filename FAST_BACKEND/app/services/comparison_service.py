@@ -56,5 +56,5 @@ class ComparisonService:
                 device_ips, filterdata.duration
             )
             data=self.comparison_repository.get_comparison_response(metrics,filterdata)
-
+            print(data)
             return data
