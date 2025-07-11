@@ -24,48 +24,94 @@ class ComparisonRepository(BaseRepository):
         self.session_factory = session_factory
         self.conclusion=''
         super().__init__(session_factory, Role)
-
-    def data_center_performance(self,pue_value: float, eer_value: float) -> str:
+    #
+    # def data_center_performance(self,pue_value: float, eer_value: float) -> str:
+    #     pue_rating = self.evaluate_pue(pue_value)
+    #     eer_rating = self.evaluate_eer(eer_value)
+    #     print(pue_rating,eer_rating)
+    #     if pue_rating == "Unknown" and eer_rating == "Unknown":
+    #         return "Cannot assess performance due to missing energy efficiency metrics."
+    #
+    #     # Cases where both metrics are available
+    #     if pue_rating == "Efficient" and eer_rating == "Efficient":
+    #         return "Optimal energy performance: Both DataCenter's infrastructure power usage (PUE) and  energy efficiency ratio (EER) show excellent efficiency."
+    #     elif pue_rating == "Moderate" and eer_rating == "Moderate":
+    #         return "Standard energy performance: DataCenter's power usage overhead and equipment energy conversion are within typical operational ranges."
+    #     elif pue_rating == "Inefficient" and eer_rating == "Inefficient":
+    #         return "Energy improvement needed: Both DataCenter's infrastructure power overhead and equipment energy conversion show significant inefficiencies."
+    #
+    #     # Mixed cases - PUE variations
+    #     elif pue_rating == "Efficient" and eer_rating == "Moderate":
+    #         return "Strong infrastructure efficiency with average  performance: DataCenter's facility power usage is excellent while equipment energy conversion is typical."
+    #     elif pue_rating == "Efficient" and eer_rating == "Inefficient":
+    #         return "Contrasting performance: While DataCenter's infrastructure power usage is excellent, it's equipment shows poor energy conversion efficiency."
+    #
+    #     # Mixed cases - EER variations
+    #     elif pue_rating == "Moderate" and eer_rating == "Efficient":
+    #         return "Balanced operation: DataCenter's infrastructure shows typical power overhead but its's equipment demonstrates excellent energy conversion."
+    #     elif pue_rating == "Inefficient" and eer_rating == "Efficient":
+    #         return "Mixed efficiency: DataCenter's equipment energy conversion is excellent, but significant power is wasted in infrastructure overhead."
+    #
+    #     # Cases with one unknown metric
+    #     elif pue_rating == "Unknown":
+    #         base = f"DataCenter's equipment shows {eer_rating.lower()} energy conversion efficiency"
+    #         if eer_rating == "Efficient":
+    #             return f"{base}, but overall infrastructure power usage cannot be evaluated."
+    #         return f"{base}, but facility power utilization cannot be assessed."
+    #
+    #     elif eer_rating == "Unknown":
+    #         base = f"DataCenter's infrastructure shows {pue_rating.lower()} power utilization"
+    #         if pue_rating == "Efficient":
+    #             return f"{base}, but equipment energy performance cannot be evaluated."
+    #         return f"{base}, but equipment energy metrics are unavailable."
+    #     elif pue_rating == "Moderate" and eer_rating == "Inefficient":
+    #         return "Moderate infrastructure efficiency but poor energy performance: Energy loss is primarily due to inefficient hardware utilization."
+    #     elif pue_rating == "Inefficient" and eer_rating == "Moderate":
+    #         return "Inefficient infrastructure despite average energy performance: Energy loss is mostly due to power overhead in non-IT systems."
+    #
+    #     return ""
+    def data_center_performance(self, pue_value: float, eer_value: float) -> str:
         pue_rating = self.evaluate_pue(pue_value)
         eer_rating = self.evaluate_eer(eer_value)
-        print(pue_rating,eer_rating)
+        print(pue_rating, eer_rating)
+
         if pue_rating == "Unknown" and eer_rating == "Unknown":
             return "Cannot assess performance due to missing energy efficiency metrics."
 
-        # Cases where both metrics are available
         if pue_rating == "Efficient" and eer_rating == "Efficient":
-            return "Optimal energy performance: Both DataCenter's infrastructure power usage (PUE) and  energy efficiency ratio (EER) show excellent efficiency."
+            return "Optimal energy performance: Both PUE and EER indicate excellent efficiency."
+
         elif pue_rating == "Moderate" and eer_rating == "Moderate":
-            return "Standard energy performance: DataCenter's power usage overhead and equipment energy conversion are within typical operational ranges."
+            return "Standard energy performance: Both PUE and EER fall within acceptable operational thresholds."
+
         elif pue_rating == "Inefficient" and eer_rating == "Inefficient":
-            return "Energy improvement needed: Both DataCenter's infrastructure power overhead and equipment energy conversion show significant inefficiencies."
+            return "Low energy performance: Both PUE and EER indicate significant inefficiencies."
 
-        # Mixed cases - PUE variations
         elif pue_rating == "Efficient" and eer_rating == "Moderate":
-            return "Strong infrastructure efficiency with average  performance: DataCenter's facility power usage is excellent while equipment energy conversion is typical."
+            return "Strong infrastructure efficiency with average overall energy conversion."
+
         elif pue_rating == "Efficient" and eer_rating == "Inefficient":
-            return "Contrasting performance: While DataCenter's infrastructure power usage is excellent, it's equipment shows poor energy conversion efficiency."
+            return "Infrastructure is efficient, but overall energy conversion is poor."
 
-        # Mixed cases - EER variations
         elif pue_rating == "Moderate" and eer_rating == "Efficient":
-            return "Balanced operation: DataCenter's infrastructure shows typical power overhead but its's equipment demonstrates excellent energy conversion."
-        elif pue_rating == "Inefficient" and eer_rating == "Efficient":
-            return "Mixed efficiency: DataCenter's equipment energy conversion is excellent, but significant power is wasted in infrastructure overhead."
+            return "Balanced profile: EER is excellent while PUE shows moderate power usage overhead."
 
-        # Cases with one unknown metric
+        elif pue_rating == "Inefficient" and eer_rating == "Efficient":
+            return "High conversion efficiency with inefficient infrastructure usage."
+
+        elif pue_rating == "Moderate" and eer_rating == "Inefficient":
+            return "Moderate infrastructure usage with poor energy conversion efficiency."
+
+        elif pue_rating == "Inefficient" and eer_rating == "Moderate":
+            return "Moderate conversion efficiency with inefficient infrastructure power usage."
+
         elif pue_rating == "Unknown":
-            base = f"DataCenter's equipment shows {eer_rating.lower()} energy conversion efficiency"
-            if eer_rating == "Efficient":
-                return f"{base}, but overall infrastructure power usage cannot be evaluated."
-            return f"{base}, but facility power utilization cannot be assessed."
+            return f"EER indicates {eer_rating.lower()} energy conversion, but PUE is unavailable."
 
         elif eer_rating == "Unknown":
-            base = f"DataCenter's infrastructure shows {pue_rating.lower()} power utilization"
-            if pue_rating == "Efficient":
-                return f"{base}, but equipment energy performance cannot be evaluated."
-            return f"{base}, but equipment energy metrics are unavailable."
+            return f"PUE indicates {pue_rating.lower()} infrastructure usage, but EER is unavailable."
 
-        return "Energy efficiency assessment completed."
+        return ""
 
     def evaluate_pue(self,pue_value: float) -> str:
         if pue_value is None:
