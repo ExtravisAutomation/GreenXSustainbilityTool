@@ -184,7 +184,6 @@ class ComparisonRepository(BaseRepository):
         if not has_updates:
             return {"current": base_detail.dict(exclude_none=True),
                     "conclusion":self.conclusion}
-
         # Prepare updated values
         updated_input_kw = payload.input_power_kw or base_input_kw
         updated_pue = payload.pue or base_detail.pue
@@ -198,7 +197,12 @@ class ComparisonRepository(BaseRepository):
         # Recalculate EER (Efficiency %)
         updated_eer = None
         if updated_input_kw and updated_output_kw:
-            updated_eer = round((updated_output_kw / updated_input_kw) * 100, 2)
+            print("Iam here")
+            # updated_eer = ((updated_output_kw / updated_input_kw) * 100)
+            # print("DATA",updated_eer)
+            updated_eer=round((updated_output_kw / updated_input_kw) * 100, 2) if updated_input_kw and updated_output_kw else None
+            print(updated_eer,type(updated_eer),"updated_eer")
+
 
         updated_cost_factor = payload.cost_factor or base_detail.cost_factor
         updated_emission_factor = payload.co_em_factor or base_detail.co_em_factor
@@ -211,30 +215,37 @@ class ComparisonRepository(BaseRepository):
             cost_factor=updated_cost_factor,
             co_em_factor=updated_emission_factor,
             cost_unit=payload.cost_unit or default_cost_unit,
+
         )
         # Convert to dicts first
         base_dict = base_detail.dict(exclude_none=True)
         updated_dict = updated_detail.dict(exclude_none=True)
-
+        print("updated_dict", type(updated_eer))
         # Add evaluations
+        updated_dict["eer_per"] = updated_eer
+        print(updated_dict["eer_per"],"updated_dict_eer")
+        updated_dict["pue"] = updated_pue
+        print(updated_dict["pue"], "updated_dict_pue")
+        updated_dict["pue_evaluation"] = self.evaluate_pue(updated_pue)
 
-        updated_dict["pue_evaluation"] = self.evaluate_pue(updated_dict.get("pue"))
-        print(updated_dict.get("eer_per"))
-        print(updated_dict.get("pue"))
-        updated_dict["eer_evaluation"] = self.evaluate_eer(updated_dict.get("eer_per"))
-        print(updated_dict["pue_evaluation"] , updated_dict["eer_evaluation"])
+        # print("updated",updated_eer)
+        # print(updated_dict.get("pue"))
+        updated_dict["eer_evaluation"] = self.evaluate_eer(updated_eer)
+        # print("updated" ,updated_dict["pue_evaluation"] , updated_dict["eer_evaluation"])
 
         cost_diff=percent_diff(base_dict.get("cost_estimation"), updated_dict.get("cost_estimation"))
         emission_diff=percent_diff(base_dict.get("co2_em_kg"), updated_dict.get("co2_em_kg"))
-        eer_diff=percent_diff(base_dict.get("eer_per"), updated_dict.get("eer_per"))
-        pue_diff=percent_diff(base_dict.get("pue"), updated_dict.get("pue"))
+        eer_diff=percent_diff(base_dict.get("eer_per"),updated_eer)
+        pue_diff=percent_diff(base_dict.get("pue"), updated_pue)
+        print("true")
         print(updated_dict.get("eer_per"))
+
         print(updated_dict.get("pue"))
 
 
         if payload.comparison==False:
             print(updated_pue,updated_eer)
-            self.conclusion=self.data_center_performance(updated_dict.get("pue"), updated_dict.get("eer_per"))
+            self.conclusion=self.data_center_performance(updated_pue, updated_eer)
         else:
             self.conclusion=self.generate_one_line_summary(eer_diff,pue_diff,emission_diff,cost_diff)
 
