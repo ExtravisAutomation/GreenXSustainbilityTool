@@ -154,19 +154,19 @@ class ComparisonRepository(BaseRepository):
 
         # Utility functions
         def calculate_eer(output_kw, input_kw):
-            return round((output_kw / input_kw) * 100, 2) if input_kw and output_kw else None
+            return round((output_kw / input_kw) * 100, 2) if input_kw and output_kw else 0.0
 
         def calculate_pue(input_kw, output_kw):
-            return round(input_kw / output_kw, 3) if input_kw and output_kw else None
+            return round(input_kw / output_kw, 3) if input_kw and output_kw else 0.0
 
         def calculate_utilization(consumed, allocated):
-            return round((consumed / allocated) * 100, 4) if allocated else None
+            return round((consumed / allocated) * 100, 4) if allocated else 0.0
 
         def calculate_pcr(input_kw, consumed_gb):
-            return round(input_kw / consumed_gb, 4) if input_kw and consumed_gb else None
+            return round(input_kw / consumed_gb, 4) if input_kw and consumed_gb else 0.0
 
         def calculate_traffic_throughput(consumed_gb, input_kw):
-            return round(consumed_gb / input_kw, 4) if input_kw and consumed_gb else None  # GB/W
+            return round(consumed_gb / input_kw, 4) if input_kw and consumed_gb else 0.0  # GB/W
 
         def build_detail(input_kw, output_kw, cost_factor, co_em_factor,cost_unit):
             eer = calculate_eer(output_kw, input_kw)
@@ -189,11 +189,11 @@ class ComparisonRepository(BaseRepository):
                 cost_factor=cost_factor,
                 cost_unit=cost_unit,
                 co_em_factor=co_em_factor,
-                datatraffic_allocated_gb=traffic_allocated_gb,
-                datatraffic_consumed_gb=traffic_consumed_gb,
+                datatraffic_allocated_gb=traffic_allocated_gb or 0.0,
+                datatraffic_consumed_gb=traffic_consumed_gb or 0.0,
                 datautilization_per=calculate_utilization(traffic_consumed_gb, traffic_allocated_gb),
-                pcr_kw_per_gb=pcr,
-                traffic_throughput_gb_per_watt=throughput,
+                pcr_kw_per_gb=pcr or 0.0,
+                traffic_throughput_gb_per_watt=throughput or 0.0,
                 pue_evaluation=pue_evaluation,
                 eer_evaluation=eer_evaluation
 
