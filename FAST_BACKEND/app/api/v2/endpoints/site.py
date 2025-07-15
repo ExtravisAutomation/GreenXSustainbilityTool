@@ -1659,8 +1659,6 @@ def get_ai_res(device_data: DeviceRequest,
     data = site_service.check_site(device_data.site_id)
     if data:
         data = [
-
-
             {'month': 'November', 'year': 2024, 'total_PIn': 205.29, 'total_POut': 177.65, 'PUE': 1.16, 'EER': 0.87,
              'co2': 8.2,
              'Prediction': 'False'},

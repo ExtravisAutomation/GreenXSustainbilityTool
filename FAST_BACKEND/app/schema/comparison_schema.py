@@ -13,6 +13,7 @@ class CustomResponse(GenericModel, Generic[DataT]):
 
     status_code: int
 
+
 class comparisonPayload(BaseModel):
     site_id: int
     duration: Optional[str] = "24 hours"

@@ -20,7 +20,8 @@ from app.services.device_service import DeviceService
 from app.services.admin_service import AdminPanelService
 from app.repository.device_inventory_repository import DeviceInventoryRepository
 from app.services.device_inventory_service import DeviceInventoryService
-
+from app.services.dashboard_service import DashboardService
+from app.repository.dashboard_repository import DashboardRepository
 from app.services.ai_service import AIService
 from app.services.report_service import ReportService
 from app.repository.report_repository import ReportRepository
@@ -52,6 +53,7 @@ class Container(containers.DeclarativeContainer):
             "app.api.v2.endpoints.aimodule",
             "app.api.v2.endpoints.admin",
             "app.api.v2.endpoints.comparison",
+            "app.api.v2.endpoints.dashboard",
             "app.core.dependencies",
         ]
     )
@@ -81,6 +83,12 @@ class Container(containers.DeclarativeContainer):
     device_service = providers.Factory(DeviceService, influxdb_repository=influxdb_repository)
 
     site_repo = providers.Factory(SiteRepository, session_factory=db.provided.session)
+
+    dashboard_repository = providers.Factory(DashboardRepository,session_factory=db.provided.session,dataquery_repository=dataquery_repository,site_repository=site_repo)
+
+
+
+
     user_repository = providers.Factory(UserRepository, session_factory=db.provided.session)
     rack_repository = providers.Factory(RackRepository, session_factory=db.provided.session)
     blacklisted_token_repository = providers.Factory(
@@ -113,3 +121,4 @@ class Container(containers.DeclarativeContainer):
     vcenter_service = providers.Factory(VcenterService, vcenter_repository=vcenter_repository)
     perhr_service = providers.Factory(PerhrService, perhr_repository=perhr_repository)
     ai_service = providers.Factory(AIService, site_repository=site_repo, influxdb_repository=influxdb_repository,ai_repository=ai_repository)
+    dashboard_services=providers.Factory(DashboardService, dashboard_repository=dashboard_repository)

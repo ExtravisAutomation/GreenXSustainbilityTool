@@ -12,3 +12,4 @@ from app.repository.ai_repository import AIRepository
 from app.repository.admin_repository import AdminPanelRepository
 from app.repository.dataquery_repository import DataQueryRepository
 from app.repository.comparison_repository import ComparisonRepository
+from app.repository.dashboard_repository import DashboardRepository

@@ -11,3 +11,4 @@ from app.services.perhr_service import PerhrService
 from app.services.ai_service import AIService
 from app.services.admin_service import AdminPanelService
 from app.services.comparison_service import ComparisonService
+from app.services.dashboard_service import DashboardService
