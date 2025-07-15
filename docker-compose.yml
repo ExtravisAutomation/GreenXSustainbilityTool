@@ -3,9 +3,9 @@ services:
   dcs_db:
     image: mysql:latest
     restart: always
-    container_name: DATABASE_Container-DCS
+    container_name:  DCS_test_container_Database
     ports:
-      - "3309:3306"
+      - "3311:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: fca
@@ -13,7 +13,7 @@ services:
       - dcs-db-volume:/var/lib/mysql
 
   dcs_backend:
-    container_name: Backend_Container-DCS
+    container_name: DCS_test_container_Backend
     image: dcs_backend_image:latest
     restart: always
     build: ./FAST_BACKEND
@@ -24,33 +24,20 @@ services:
     environment:
       - WATCHFILES_FORCE_POLLING=true
 
-  dcs_frontend:
-    container_name: React_Container-DCS
-    image: frontend_dcs_image:latest
-    restart: always
-    build: ./datacenter
-    ports:
-      - "3010:3000"
-    volumes:
-      - ./datacenter:/frontend-app
-      - node_modules:/frontend-app/node_modules
-    command: ["npm", "start"]
 
   influxdb_dcs:
     image: influxdb:latest
-    container_name: INFLUXDB_CONTAINER_DCS
+    container_name: DCS_test_container_Influxdb
     ports:
-      - "8086:8086"
+      - "8089:8086"
     volumes:
 
       # - C:\Users\Hp\influxdb-docker-data-volume:/var/lib/influxdb
       - myInfluxVolume:/var/lib/influxdb2/
 
-      #- C:\Users\Hp\influxdb-docker-data-volume:/var/lib/influxdb
-      - myInfluxVolume:/var/lib/influxdb2
 
     environment:
-      DOCKER_INFLUXDB_URL: http://localhost:8086
+      DOCKER_INFLUXDB_URL: http://localhost:8089
       DOCKER_INFLUXDB_INIT_ORG: dcs
       DOCKER_INFLUXDB_INIT_BUCKET: actual_power
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: BTjOoqiLJMxwdqaPM37yx7Rpupb6lYAyX7I3f95JdDjEmDf67E3pviNfoto7VKC-hpL_KiSRTSnC_E-d5x85Sw==
@@ -60,6 +47,6 @@ volumes:
   node_modules:
   myInfluxVolume:
 
-    # external: true
+    
 
-    #external: true
+  
