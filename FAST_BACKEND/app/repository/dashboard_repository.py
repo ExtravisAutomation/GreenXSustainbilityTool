@@ -167,7 +167,6 @@ class DashboardRepository(object):
         # Calculate equivalents
         flights_avoided = round(carbon_emission_kg / 700 ,4) # NYC-Dubai flight equivalent
         car_trip_km = round(carbon_emission_kg / 0.25 ,4) # Petrol car km equivalent
-
         return {
             'input_kw': input_kw,
             'output_kw': output_kw,
