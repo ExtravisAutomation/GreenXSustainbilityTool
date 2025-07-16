@@ -86,9 +86,6 @@ class Container(containers.DeclarativeContainer):
 
     dashboard_repository = providers.Factory(DashboardRepository,session_factory=db.provided.session,dataquery_repository=dataquery_repository,site_repository=site_repo)
 
-
-
-
     user_repository = providers.Factory(UserRepository, session_factory=db.provided.session)
     rack_repository = providers.Factory(RackRepository, session_factory=db.provided.session)
     blacklisted_token_repository = providers.Factory(

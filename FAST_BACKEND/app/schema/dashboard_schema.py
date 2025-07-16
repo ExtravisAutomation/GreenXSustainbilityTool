@@ -12,3 +12,37 @@ class CustomResponse(GenericModel, Generic[DataT]):
     data: Optional[DataT]
 
     status_code: int
+class MetricesPayload(BaseModel):
+    site_id: int
+    duration: Optional[str] = "24 hours"
+
+
+
+class MetricsDetail(BaseModel):
+    site_id: int=None
+
+    duration: Optional[str]=None
+    total_devices: Optional[int]=None
+    total_up_links:Optional[int]=None
+    total_down_links:Optional[int]=None
+    pue: float=0.0
+    eer_per:float=0.0
+    input_power_kw: float=0.0
+    output_power_kw:float=0.0
+    co_em_factor: float=0.0
+    co2_em_kg:float=0.0
+    co2_em_tons:float=0.0
+    cost_factor:float=0.0
+    cost_unit: str=None
+    cost_estimation:float=0.0
+    datatraffic_allocated_gb:float=0.0
+    datatraffic_consumed_gb:float=0.0
+    datautilization_per:float=0.0
+    pcr_kw_per_gb:float=0.0
+    traffic_throughput_gb_per_watt:float=0.0
+    co2_car_trip_km:float=0.0
+    co2_flights_avoided:float=0.0
+
+
+
+
