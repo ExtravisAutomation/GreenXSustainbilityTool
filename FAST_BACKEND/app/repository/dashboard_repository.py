@@ -173,6 +173,7 @@ class DashboardRepository(object):
             'traffic_consumed_gb': traffic_consumed_gb,
             'traffic_allocated_gb': traffic_allocated_gb,
             'eer': eer,
+
             'pue': pue,
             'pcr': pcr,
             'throughput': throughput,
