@@ -185,6 +185,7 @@ class DashboardRepository(object):
             'default_emission': default_emission,
             'co2_flights_avoided':flights_avoided,
             'co2_car_trip_km':car_trip_km
+
         }
 
 
