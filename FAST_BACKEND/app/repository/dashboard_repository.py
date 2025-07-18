@@ -151,10 +151,12 @@ class DashboardRepository(object):
         output_kw = metrics.get("total_POut_kw")
         days_count = metrics.get("day_count")
         # Convert traffic to GB
-        traffic_consumed_gb = round((metrics.get("traffic_consumed_mb") or 0) / 1024, 2)
+
         traffic_allocated_gb = round((metrics.get("total_traffic__mb") or 0) / 1024, 2)
         total_input_bytes_gb = round((metrics.get("total_input_bytes") or 0) / 1024, 2)
         total_output_bytes_gb = round((metrics.get("total_output_bytes") or 0) / 1024, 2)
+        traffic_consumed_gb = round(total_input_bytes_gb+total_output_bytes_gb, 2)
+
 
         default_cost = 0.37
         default_emission = 0.4041
