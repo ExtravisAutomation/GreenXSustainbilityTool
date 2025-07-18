@@ -40,6 +40,7 @@ class MetricsDetail(BaseModel):
     cost_estimation:float=0.0
     total_input_bytes_gb:float=0.0
     total_output_bytes_gb:float=0.0
+    power_usage_percentage:float=0.0
     datatraffic_allocated_gb:float=0.0
     datatraffic_consumed_gb:float=0.0
     datautilization_per:float=0.0

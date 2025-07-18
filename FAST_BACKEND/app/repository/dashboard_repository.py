@@ -124,6 +124,7 @@ class DashboardRepository(object):
                     co_em_factor=aggregated_data.get('default_emission', 0.4041),
                     co2_em_kg=aggregated_data.get('carbon_emission_kg', 0.0),
                     co2_em_tons=aggregated_data.get('carbon_emission_tons', 0.0),
+
                     cost_factor=aggregated_data.get('default_cost', 0.37),
                     cost_unit="AED",
                     cost_estimation=aggregated_data.get('cost_estimation', 0.0),
@@ -136,6 +137,7 @@ class DashboardRepository(object):
                     traffic_throughput_gb_per_watt=aggregated_data.get('throughput', 0.0),
                     co2_flights_avoided=aggregated_data.get('co2_flights_avoided', 0.0),
                     co2_car_trip_km=aggregated_data.get('co2_car_trip_km', 0.0),
+                    power_usage_percentage=aggregated_data.get('power_usage_percentage', 0.0),
 
                 )
                 logger.info("Successfully generated metrics response")
@@ -181,6 +183,7 @@ class DashboardRepository(object):
             'total_input_bytes_gb': round(total_input_bytes_gb,2),
             'total_output_bytes_gb': round(total_output_bytes_gb,2),
             'eer': eer,
+            'power_usage_percentage':round((output_kw / (input_kw+output_kw)) * 100, 2),
 
             'pue': pue,
             'pcr': pcr,
