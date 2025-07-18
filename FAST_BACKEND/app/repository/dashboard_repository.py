@@ -113,6 +113,9 @@ class DashboardRepository(object):
                     total_devices=total_devices,
                     total_up_links=total_up_links,
                     total_down_links=total_down_links,
+                    total_interface=total_interfaces,
+                    up_link_percentage=round((total_up_links/total_interfaces) * 100,2),
+                    down_link_percentage=round((total_down_links/total_interfaces) * 100,2),
                     duration=metrics.duration,
                     pue=aggregated_data.get('pue', 0.0),
                     eer_per=aggregated_data.get('eer', 0.0),
@@ -126,6 +129,8 @@ class DashboardRepository(object):
                     cost_estimation=aggregated_data.get('cost_estimation', 0.0),
                     datatraffic_allocated_gb=aggregated_data.get('traffic_allocated_gb', 0.0),
                     datatraffic_consumed_gb=aggregated_data.get('traffic_consumed_gb', 0.0),
+                    total_input_bytes_gb=aggregated_data.get('total_input_bytes_gb', 0.0),
+                    total_output_bytes_gb=aggregated_data.get('total_output_bytes_gb', 0.0),
                     datautilization_per=aggregated_data.get('data_utilization', 0.0),
                     pcr_kw_per_gb=aggregated_data.get('pcr', 0.0),
                     traffic_throughput_gb_per_watt=aggregated_data.get('throughput', 0.0),
@@ -148,13 +153,12 @@ class DashboardRepository(object):
         # Convert traffic to GB
         traffic_consumed_gb = round((metrics.get("traffic_consumed_mb") or 0) / 1024, 2)
         traffic_allocated_gb = round((metrics.get("total_traffic__mb") or 0) / 1024, 2)
+        total_input_bytes_gb = round((metrics.get("total_input_bytes") or 0) / 1024, 2)
+        total_output_bytes_gb = round((metrics.get("total_output_bytes") or 0) / 1024, 2)
 
         default_cost = 0.37
         default_emission = 0.4041
         default_cost_unit = "AED"
-
-
-
 
         eer = self.calculate_eer(output_kw, input_kw)
         pue = self.calculate_pue(input_kw, output_kw)
@@ -170,8 +174,10 @@ class DashboardRepository(object):
         return {
             'input_kw': input_kw,
             'output_kw': output_kw,
-            'traffic_consumed_gb': traffic_consumed_gb,
-            'traffic_allocated_gb': traffic_allocated_gb,
+            'traffic_consumed_gb': round(traffic_consumed_gb,2),
+            'traffic_allocated_gb': round(traffic_allocated_gb,2),
+            'total_input_bytes_gb': round(total_input_bytes_gb,2),
+            'total_output_bytes_gb': round(total_output_bytes_gb,2),
             'eer': eer,
 
             'pue': pue,

@@ -25,6 +25,9 @@ class MetricsDetail(BaseModel):
     total_devices: Optional[int]=None
     total_up_links:Optional[int]=None
     total_down_links:Optional[int]=None
+    total_interface:Optional[int]=None
+    up_link_percentage:Optional[float]=None
+    down_link_percentage:Optional[float]=None
     pue: float=0.0
     eer_per:float=0.0
     input_power_kw: float=0.0
@@ -35,6 +38,8 @@ class MetricsDetail(BaseModel):
     cost_factor:float=0.0
     cost_unit: str=None
     cost_estimation:float=0.0
+    total_input_bytes_gb:float=0.0
+    total_output_bytes_gb:float=0.0
     datatraffic_allocated_gb:float=0.0
     datatraffic_consumed_gb:float=0.0
     datautilization_per:float=0.0
