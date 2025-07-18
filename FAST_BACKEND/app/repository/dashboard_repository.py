@@ -63,7 +63,7 @@ class DashboardRepository(object):
         return round(input_kw / output_kw, 3) if input_kw and output_kw else 0.0
 
     def calculate_utilization(self,consumed, allocated):
-        return round((consumed / allocated) * 100, 4) if allocated else 0.0
+        return round((consumed / allocated) * 100, 6) if allocated else 0.0
 
     def calculate_pcr(self,input_kw, consumed_gb):
         return round(input_kw / consumed_gb, 4) if input_kw and consumed_gb else 0.0
