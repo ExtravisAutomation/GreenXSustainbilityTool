@@ -140,7 +140,7 @@ class DashboardRepository(object):
                     power_usage_percentage=aggregated_data.get('power_usage_percentage', 0.0),
 
                 )
-                logger.info("Successfully generated metrics response")
+                logger.info("Successfully Generated Metrics Response")
                 return response
 
         except Exception as e:
