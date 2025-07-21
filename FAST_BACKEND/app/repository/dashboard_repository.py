@@ -144,7 +144,7 @@ class DashboardRepository(object):
                 return response
 
         except Exception as e:
-            logger.error(f"Error in get_metrics_info: {str(e)}", exc_info=True)
+            logger.error(f"Error in get_metrics_info found: {str(e)}", exc_info=True)
             return {"error": "An unexpected error occurred while processing metrics"}
 
     def get_aggregatted_data(self,metrics):
