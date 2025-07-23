@@ -27,7 +27,7 @@ def get_metrics(filter_data: MetricesPayload,
     data=dashboard_service.get_metrics_info(payload=filter_data)
     print(data,"datata")
     return CustomResponse(
-        message="*Data Retrieved Successfully*",
+        message="*Metrics Data Retrieved Successfully*",
         data=data,
         status_code=status.HTTP_200_OK
     )
@@ -47,3 +47,16 @@ def get_metrics(filter_data: MetricesPayload,
     )
 
 
+
+@router.post("/peak_low_devices", response_model=CustomResponse)
+@inject
+def get_peak_low_devices(filter_data: MetricesPayload,
+    # current_user: User = Depends(get_current_active_user),
+    dashboard_service: DashboardService = Depends(Provide[Container.dashboard_services])):
+
+    data=dashboard_service.get_peak_low_devices(payload=filter_data)
+    return CustomResponse(
+        message="Energy Efficiency data Retrieved Successfully*",
+        data=data,
+        status_code=status.HTTP_200_OK
+    )

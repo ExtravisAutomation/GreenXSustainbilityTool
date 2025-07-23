@@ -19,14 +19,32 @@ from app.schema.dashboard_schema import MetricsDetail
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
+from concurrent.futures import ThreadPoolExecutor, as_completed
 class DashboardRepository(object):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]],
                  dataquery_repository: DataQueryRepository,site_repository: SiteRepository,):
         self.session_factory = session_factory
         self.dataquery_repository = dataquery_repository
         self.site_repository = site_repository
-
+    def get_devices_by_ip_address(self, ip_address: str) -> List[Devices]:
+        with self.session_factory() as session:
+            query = (
+                session.query(
+                    Devices.id.label('device_id'),
+                    Devices.ip_address,
+                    Devices.device_name,
+                )
+                .filter(Devices.ip_address == ip_address)
+            )
+            # Execute the query
+            results = query.first()
+            if not results:
+                logger.info(f"Fetching devices for IP Address: {ip_address}")
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"No devices found for IP Address  {ip_address}"
+                )
+            return results
 
     def get_devices_by_site_id(self, site_id: int) -> List[Devices]:
         with self.session_factory() as session:
@@ -101,7 +119,7 @@ class DashboardRepository(object):
             if payload.duration:
                 logger.info(f"Fetching power and traffic data for duration: {payload.duration}")
 
-                metrics_data = self.dataquery_repository.get_power_traffic_data(
+                metrics_data = self.dataquery_repository.get_cumulative_power_traffic_data(
                     device_ips, payload.duration
                 )
                 if not metrics_data:
@@ -230,17 +248,13 @@ class DashboardRepository(object):
             results = self.get_devices_by_site_id(payload.site_id)
             device_ips = [result.ip_address for result in results if result.ip_address]
             logger.info(f"Fetching device_ips: {device_ips}")
-
             if payload.duration:
                 logger.info(f"Fetching power and traffic data for duration: {payload.duration}")
-
                 metrics_data = self.dataquery_repository.get_cumulative_energy_traffic_timeline(
                     device_ips, payload.duration
                 )
                 print(metrics_data)
                 print("Metrics data:")
-
-
                 if not metrics_data:
                     logger.warning("No metrics data returned from repository")
                     raise HTTPException(
@@ -254,27 +268,21 @@ class DashboardRepository(object):
             logger.error(f"Error in get_metrics_info found: {str(e)}", exc_info=True)
             return {"error": "An unexpected error occurred while processing metrics"}
 
-    def get_time_wise_metrics(self,metrics_list):
-        results = []
-        for metrics in metrics_list:
-            # Extract base power values
 
+
+    def get_time_wise_metrics(self, metrics_list):
+        def compute_metrics(metrics):
             input_kw = metrics.get("total_PIn_kw", 0)
             output_kw = metrics.get("total_POut_kw", 0)
-            print(input_kw, output_kw)
-            # Convert traffic to GB
-            # traffic_allocated_gb = round(metrics.get("traffic_allocated_mb", 0) / 1024,4)
-            traffic_allocated_gb=10
-            print(metrics.get("traffic_allocated_mb"))
-            print(traffic_allocated_gb)
+            # Fixed value or replace with metrics.get("traffic_allocated_mb", 0) / 1024 if dynamic
+            traffic_allocated_gb = 10
             total_input_bytes_gb = metrics.get("total_input_bytes", 0) / (1024 ** 3)
             total_output_bytes_gb = metrics.get("total_output_bytes", 0) / (1024 ** 3)
             traffic_consumed_gb = total_input_bytes_gb + total_output_bytes_gb
 
-            default_cost = 0.37  # AED per kWh
-            default_emission = 0.4041  # kg CO2 per kWh
+            default_cost = 0.37  # AED/kWh
+            default_emission = 0.4041  # kg CO2/kWh
 
-            # Calculate metrics
             eer = self.calculate_eer(output_kw, input_kw)
             pue = self.calculate_pue(input_kw, output_kw)
             pcr = self.calculate_pcr(input_kw, traffic_consumed_gb)
@@ -284,7 +292,7 @@ class DashboardRepository(object):
             carbon_emission_tons = round(carbon_emission_kg / 1000, 2) if carbon_emission_kg else 0
             data_utilization = self.calculate_utilization(traffic_consumed_gb, traffic_allocated_gb)
 
-            results.append({
+            return {
                 'time': metrics.get('time'),
                 'input_kw': input_kw,
                 'output_kw': output_kw,
@@ -297,12 +305,92 @@ class DashboardRepository(object):
                 'cost_estimation': round(cost_estimation, 2),
                 'carbon_emission_kg': round(carbon_emission_kg, 2),
                 'carbon_emission_tons': round(carbon_emission_tons, 4),
-                'data_utilization': round(data_utilization, 6) ,  # Very small percentage
-            })
+                'data_utilization': round(data_utilization, 6),
+            }
+
+        results = []
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            futures = [executor.submit(compute_metrics, m) for m in metrics_list]
+            for future in as_completed(futures):
+                results.append(future.result())
+
+        # Optionally sort by time if needed
+        results.sort(key=lambda x: x['time'])
         return results
 
         # Usage example:
+    def get_peak_low_devices(self,payload):
+        try:
+            if not payload.site_id:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Site ID is required."
+                )
+            logger.info(f"Fetching devices for site ID: {payload.site_id}")
+            results = self.get_devices_by_site_id(payload.site_id)
+            device_ips = [result.ip_address for result in results if result.ip_address]
+            logger.info(f"Fetching device_ips: {device_ips}")
+            if payload.duration:
+                logger.info(f"Fetching power and traffic data for duration: {payload.duration}")
+                devices_data = self.dataquery_repository.get_device_wise_power_traffic_data(
+                    device_ips, payload.duration
+                )
+                top5_power_output= sorted(devices_data, key=lambda x: x["total_POut_kw"], reverse=True)[:5]
 
+                top5_power_input = sorted(devices_data, key=lambda x: x["total_PIn_kw"], reverse=True)[:5]
+                top_carbon_emmision =[]
+                top_cost_devices = []
+                with ThreadPoolExecutor(max_workers=8) as executor:
+                    futures = [executor.submit(self.compute_power_metrics, m) for m in top5_power_output]
+                    for future in as_completed(futures):
+                        top_carbon_emmision.append(future.result())
+                with ThreadPoolExecutor(max_workers=8) as executor:
+                    futures = [executor.submit(self.compute_power_metrics, m) for m in top5_power_input]
+                    for future in as_completed(futures):
+                        top_cost_devices.append(future.result())
 
+                print(top_cost_devices,top_carbon_emmision)
+                if not top_cost_devices:
+                    logger.warning("No metrics data returned from repository")
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"No metrics data available for the given parameters")
+                result= {
+                    "top5_devices_by_cost":top_cost_devices,
+                    "top5_devices_by_carbonemmison":top_cost_devices
+                }
 
+                return result
 
+        except Exception as e:
+            logger.error(f"Error in get_metrics_info found: {str(e)}", exc_info=True)
+            return {"error": "An unexpected error occurred while processing metrics"}
+
+    def compute_power_metrics(self,metrics):
+        input_kw = metrics.get("total_PIn_kw", 0)
+        output_kw = metrics.get("total_POut_kw", 0)
+        ip_address=metrics.get("ip", 0)
+        device_data=self.get_devices_by_ip_address(ip_address)
+
+        # Fixed value or replace with metrics.get("traffic_allocated_mb", 0) / 1024 if dynamic
+        default_cost = 0.37  # AED/kWh
+        default_emission = 0.4041  # kg CO2/kWh
+
+        eer = self.calculate_eer(output_kw, input_kw)
+        pue = self.calculate_pue(input_kw, output_kw)
+
+        cost_estimation = self.calculate_cost_estimation(input_kw, default_cost)
+        carbon_emission_kg = self.calculate_emmision_kg(output_kw, default_emission)
+        carbon_emission_tons = round(carbon_emission_kg / 1000, 2) if carbon_emission_kg else 0
+
+        return {
+            'ip_address':metrics.get("ip", 0),
+            'device_name':device_data.device_name,
+            'input_kw': input_kw,
+            'output_kw': output_kw,
+            'eer': round(eer, 4),
+            'pue': round(pue, 4),
+            'cost_estimation': round(cost_estimation, 2),
+            'carbon_emission_kg': round(carbon_emission_kg, 2),
+            'carbon_emission_tons': round(carbon_emission_tons, 4),
+        }
