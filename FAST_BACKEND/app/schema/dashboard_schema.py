@@ -45,7 +45,7 @@ class MetricsDetail(BaseModel):
     datatraffic_consumed_gb:float=0.0
     datautilization_per:float=0.0
     pcr_kw_per_gb:float=0.0
-    traffic_throughput_gb_per_watt:float=0.0
+    traffic_throughput_kw_per_gb:float=0.0
     co2_car_trip_km:float=0.0
     co2_flights_avoided:float=0.0
     stack_stats:dict=None

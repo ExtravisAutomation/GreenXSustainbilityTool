@@ -154,7 +154,7 @@ class DashboardRepository(object):
                     total_output_bytes_gb=aggregated_data.get('total_output_bytes_gb', 0.0),
                     datautilization_per=3.6 ,#aggregated_data.get('data_utilization', 0.0),
                     pcr_kw_per_gb=aggregated_data.get('pcr', 0.0),
-                    traffic_throughput_gb_per_watt=aggregated_data.get('throughput', 0.0),
+                    traffic_throughput_kw_per_gb=aggregated_data.get('throughput', 0.0),
                     co2_flights_avoided=aggregated_data.get('co2_flights_avoided', 0.0),
                     co2_car_trip_km=aggregated_data.get('co2_car_trip_km', 0.0),
                     power_usage_percentage=aggregated_data.get('power_usage_percentage', 0.0),
