@@ -152,7 +152,7 @@ class DashboardRepository(object):
                     datatraffic_consumed_gb=aggregated_data.get('traffic_consumed_gb', 0.0),
                     total_input_bytes_gb=aggregated_data.get('total_input_bytes_gb', 0.0),
                     total_output_bytes_gb=aggregated_data.get('total_output_bytes_gb', 0.0),
-                    datautilization_per=3.6 ,#aggregated_data.get('data_utilization', 0.0),
+                    datautilization_per=aggregated_data.get('data_utilization', 0.0),
                     pcr_kw_per_gb=aggregated_data.get('pcr', 0.0),
                     traffic_throughput_kw_per_gb=aggregated_data.get('throughput', 0.0),
                     co2_flights_avoided=aggregated_data.get('co2_flights_avoided', 0.0),
@@ -175,10 +175,11 @@ class DashboardRepository(object):
         output_kw = metrics.get("total_POut_kw")
         days_count = metrics.get("day_count")
         # Convert traffic to GB
-        traffic_allocated_gb = round((metrics.get("traffic_allocated_mb") or 0) / 1024, 2)
+        # traffic_allocated_gb = round((metrics.get("traffic_allocated_mb") or 0) / 1024, 2)
         total_input_bytes_gb = round((metrics.get("total_input_bytes") or 0) / (1024 ** 3), 2)
         total_output_bytes_gb = round((metrics.get("total_output_bytes") or 0) / (1024 ** 3), 2)
         traffic_consumed_gb = round(total_input_bytes_gb+total_output_bytes_gb, 2)
+        traffic_allocated_gb = 10
 
         default_cost = 0.37
         default_emission = 0.4041
@@ -262,7 +263,8 @@ class DashboardRepository(object):
             output_kw = metrics.get("total_POut_kw", 0)
             print(input_kw, output_kw)
             # Convert traffic to GB
-            traffic_allocated_gb = round(metrics.get("traffic_allocated_mb", 0) / 1024,4)
+            # traffic_allocated_gb = round(metrics.get("traffic_allocated_mb", 0) / 1024,4)
+            traffic_allocated_gb=10
             print(metrics.get("traffic_allocated_mb"))
             print(traffic_allocated_gb)
             total_input_bytes_gb = metrics.get("total_input_bytes", 0) / (1024 ** 3)
@@ -273,15 +275,14 @@ class DashboardRepository(object):
             default_emission = 0.4041  # kg CO2 per kWh
 
             # Calculate metrics
-            eer = output_kw / input_kw if input_kw else 0
-            pue = input_kw / output_kw if output_kw else 0
-            pcr = input_kw / traffic_consumed_gb if traffic_consumed_gb else 0
-            throughput = traffic_consumed_gb / (input_kw * 24) if input_kw else 0  # GB/kW/day
-            cost_estimation = input_kw * default_cost * 24  # Daily cost
-            carbon_emission_kg = input_kw * default_emission * 24  # Daily emissions
-            carbon_emission_tons = carbon_emission_kg / 1000
-            data_utilization = (traffic_consumed_gb / traffic_allocated_gb) * 100 if traffic_allocated_gb else 0
-
+            eer = self.calculate_eer(output_kw, input_kw)
+            pue = self.calculate_pue(input_kw, output_kw)
+            pcr = self.calculate_pcr(input_kw, traffic_consumed_gb)
+            throughput = self.calculate_traffic_throughput(traffic_consumed_gb, input_kw)
+            cost_estimation = self.calculate_cost_estimation(input_kw, default_cost)
+            carbon_emission_kg = self.calculate_emmision_kg(output_kw, default_emission)
+            carbon_emission_tons = round(carbon_emission_kg / 1000, 2) if carbon_emission_kg else 0
+            data_utilization = self.calculate_utilization(traffic_consumed_gb, traffic_allocated_gb)
 
             results.append({
                 'time': metrics.get('time'),
@@ -296,7 +297,7 @@ class DashboardRepository(object):
                 'cost_estimation': round(cost_estimation, 2),
                 'carbon_emission_kg': round(carbon_emission_kg, 2),
                 'carbon_emission_tons': round(carbon_emission_tons, 4),
-                'data_utilization': round(data_utilization, 6) if data_utilization else 0.36,  # Very small percentage
+                'data_utilization': round(data_utilization, 6) ,  # Very small percentage
             })
         return results
 
