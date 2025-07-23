@@ -28,7 +28,7 @@ class DataQueryRepository:
         self.bucket = bucket
         self.org = org
         self.token = token
-        self.query_api1 = self.client.query_api()
+        self.query_api = self.client.query_api()
 
     from datetime import datetime, timedelta
     from typing import List, Tuple
@@ -86,7 +86,7 @@ class DataQueryRepository:
 
 
     # ---- 2. Aggregate Settings ----
-    def aggregate(self, duration_str: str) -> Tuple[str, str]:
+    def aggregate_window(self, duration_str: str) -> Tuple[str, str]:
         if duration_str == "24 hours":
             return "1h", "%Y-%m-%d %H:00"
         elif duration_str in ["7 Days", "Current Month", "Last Month"]:
@@ -104,7 +104,7 @@ class DataQueryRepository:
         start_time = start_date.isoformat() + 'Z'
         end_time = end_date.isoformat() + 'Z'
 
-        aggregate_window, _ = self.aggregate(duration_str)
+        aggregate_window, _ = self.aggregate_window(duration_str)
 
         total_pin = total_pout = 0.0
         total_input_bytes = total_output_bytes = total_bandwidth = 0.0
@@ -121,7 +121,7 @@ class DataQueryRepository:
                 |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
-            power_result = self.query_api1.query_data_frame(power_query)
+            power_result = self.query_api.query_data_frame(power_query)
             if not power_result.empty:
                 total_pin += power_result.get('total_PIn', pd.Series(dtype=float)).sum()
                 total_pout += power_result.get('total_POut', pd.Series(dtype=float)).sum()
@@ -137,7 +137,7 @@ class DataQueryRepository:
                 |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
-            traffic_result = self.query_api1.query_data_frame(traffic_query)
+            traffic_result = self.query_api.query_data_frame(traffic_query)
             if not traffic_result.empty:
                 total_input_bytes += traffic_result.get('total_input_bytes', pd.Series(dtype=float)).sum()
                 total_output_bytes += traffic_result.get('total_output_bytes', pd.Series(dtype=float)).sum()
@@ -154,7 +154,7 @@ class DataQueryRepository:
             "total_PIn_kw": round(total_pin / 1000, 2),
             "total_input_bytes": round(total_input_bytes, 2),
             "total_output_bytes": round(total_output_bytes, 2),
-            "total_traffic__mb": traffic_allocated_mb,
+            "traffic_allocated_mb": traffic_allocated_mb,
             "traffic_consumed_mb": traffic_consumed_mb,
             "day_count": day_count,
 
@@ -162,3 +162,122 @@ class DataQueryRepository:
 
         print(f"Final metrics: {metrics}", file=sys.stderr)
         return metrics
+
+    def get_cumulative_energy_traffic_timeline(self, device_ips: List[str], duration_str: str) -> List[dict]:
+        start_date, end_date, day_count = self.calculate_start_end_dates(duration_str)
+        print(start_date,end_date)
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+        aggregate_window, time_format = self.aggregate_window(duration_str)
+
+        power_frames = []
+        traffic_frames = []
+
+        for ip in device_ips:
+            # Power Query
+            power_query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+            power_result = self.query_api.query_data_frame(power_query)
+
+            if not power_result.empty:
+                power_result['_time'] = pd.to_datetime(power_result['_time'])
+                power_result['ip'] = ip
+                power_frames.append(power_result)
+
+            # Traffic Query
+            traffic_query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_input_bytes" or r["_field"] == "total_output_bytes" or r["_field"] == "bandwidth")
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+            traffic_result = self.query_api.query_data_frame(traffic_query)
+
+
+            if not traffic_result.empty:
+                traffic_result['_time'] = pd.to_datetime(traffic_result['_time'])
+                traffic_result['ip'] = ip
+                traffic_frames.append(traffic_result)
+
+        if not power_frames and not traffic_frames:
+            return []
+
+        final_df = pd.DataFrame()
+
+        # Merge and aggregate both if available
+        if power_frames:
+            power_df = pd.concat(power_frames)
+            power_df['_formatted_time'] = power_df['_time'].dt.strftime(time_format)
+            required_columns = ['total_PIn', 'total_POut']
+
+            # Create missing columns with default value 0
+            for col in required_columns:
+                if col not in power_df.columns:
+                    power_df[col] = 0
+
+            # Now safely group the data
+            power_grouped = power_df.groupby('_formatted_time')[required_columns].sum()
+        else:
+            power_grouped = pd.DataFrame(columns=['total_PIn', 'total_POut'])
+        print(traffic_frames)
+        if traffic_frames:
+            traffic_df = pd.concat(traffic_frames)
+            traffic_df['_formatted_time'] = traffic_df['_time'].dt.strftime(time_format)
+            required_columns = ['total_input_bytes', 'total_output_bytes', 'bandwidth']
+
+            # Create missing columns with default value 0
+            for col in required_columns:
+                if col not in traffic_df.columns:
+                    traffic_df[col] = 0
+
+            # Now safely group the data
+            traffic_grouped = traffic_df.groupby('_formatted_time')[required_columns].sum()
+        else:
+            traffic_grouped = pd.DataFrame(columns=['total_input_bytes', 'total_output_bytes', 'bandwidth'])
+
+        # Merge both
+        all_time_keys = set()
+        if not power_grouped.empty:
+            all_time_keys.update(power_grouped.index.tolist())
+        if not traffic_grouped.empty:
+            all_time_keys.update(traffic_grouped.index.tolist())
+
+        # Sort and create full time index
+        full_time_index = pd.Index(sorted(all_time_keys), name='_formatted_time')
+
+        # Reindex both DataFrames to the full time range and fill NaNs with 0
+        power_grouped = power_grouped.reindex(full_time_index, fill_value=0)
+        traffic_grouped = traffic_grouped.reindex(full_time_index, fill_value=0)
+        # Now combine and reset index
+        combined = pd.concat([power_grouped, traffic_grouped], axis=1).fillna(0).reset_index()
+        result = []
+        for _, row in combined.iterrows():
+            pin = row.get('total_PIn', 0.0)
+            pout = row.get('total_POut', 0.0)
+            input_bytes = row.get('total_input_bytes', 0.0)
+            output_bytes = row.get('total_output_bytes', 0.0)
+            bandwidth_kbps = row.get('bandwidth', 0.0)
+
+            traffic_consumed_mb = (input_bytes + output_bytes) * 8 / 1e6  # bytes to Mbit
+            traffic_allocated_mb = bandwidth_kbps / 1000  # kbps to Mbps
+            print("data evaluated")
+            result.append({
+                "time": row['_formatted_time'],
+                "total_PIn_kw": round(pin / 1000, 4),
+                "total_POut_kw": round(pout / 1000, 4),
+                "total_input_bytes": round(input_bytes, 2),
+                "total_output_bytes": round(output_bytes, 2),
+                "traffic_consumed_gb": round(traffic_consumed_mb, 2),
+                "traffic_allocated_mb": round(traffic_allocated_mb, 2)
+            })
+            print("flsfdldfl")
+
+        return result

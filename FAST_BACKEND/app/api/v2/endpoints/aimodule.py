@@ -10,6 +10,9 @@ from app.core.container import Container
 from dependency_injector.wiring import Provide, inject
 from logging import getLogger
 from app.services.ai_service import AIService
+
+from app.schema.site_schema import DeviceRequest
+
 router = APIRouter(prefix="/ai", tags=["AI module"])
 logger = getLogger(__name__)
 
@@ -29,3 +32,15 @@ def get_all_reports(
         data=data,
         status_code=status.HTTP_200_OK
     )
+@router.post("/get_forcastddta", response_model=CustomResponse)
+@inject
+def get_ai_res(device_data: DeviceRequest,
+               # current_user: User = Depends(get_current_active_user),
+               ai_module_service: AIService = Depends(Provide[Container.ai_service])
+               ):
+    data = ai_module_service.get_device_ai_prediction(device_data)
+    return {
+        "message": "Device collection status updated successfully.",
+        "data": data,
+        "status_code": status.HTTP_200_OK
+    }

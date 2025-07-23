@@ -6,5 +6,7 @@ class DashboardService:
         self.dashboard_repository = dashboard_repository
 
 
-    def get_metrics_info(self, metrics):
-        return self.dashboard_repository.get_metrics_info(metrics)
+    def get_metrics_info(self, payload):
+        return self.dashboard_repository.get_metrics_info(payload)
+    def get_energy_traffic_data_timeline(self,payload):
+        return self.dashboard_repository.get_energy_traffic_data_timeline(payload)

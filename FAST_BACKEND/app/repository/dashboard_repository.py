@@ -36,8 +36,10 @@ class DashboardRepository(object):
                     Devices.ip_address,
                     DeviceInventory.total_interface,
                     DeviceInventory.up_link,
-                    DeviceInventory.down_link
-
+                    DeviceInventory.down_link,
+                    DeviceInventory.stack,
+                    DeviceInventory.active_psu,
+                    DeviceInventory.non_active_psu,
                 )
                 .join(DeviceInventory, DeviceInventory.device_id == Devices.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
@@ -73,17 +75,17 @@ class DashboardRepository(object):
         return round(consumed_gb / input_kw, 4) if input_kw and consumed_gb else 0.0  # GB/W
     def calculate_emmision_kg(self,output_kw, default_emission):
         return round((output_kw * default_emission), 2) if output_kw else 0.0
-    def get_metrics_info(self, metrics):
+    def get_metrics_info(self, payload):
         # Validate site_id and fetch device IPs
         try:
 
-            if not metrics.site_id:
+            if not payload.site_id:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Site ID is required."
                 )
-            logger.info(f"Fetching devices for site ID: {metrics.site_id}")
-            results = self.get_devices_by_site_id(metrics.site_id)
+            logger.info(f"Fetching devices for site ID: {payload.site_id}")
+            results = self.get_devices_by_site_id(payload.site_id)
             device_ips = [result.ip_address for result in results if result.ip_address]
 
             # Calculate totals
@@ -91,13 +93,16 @@ class DashboardRepository(object):
             total_up_links = sum(result.up_link for result in results if result.up_link)
             total_down_links = sum(result.down_link for result in results if result.down_link)
             total_interfaces = total_up_links+total_down_links
+            stacked = sum(result.stack == True for result in results if hasattr(result, 'stack'))
+            unstacked = sum(result.stack == False for result in results if hasattr(result, 'stack'))
+            total_active_psu = sum(result.active_psu for result in results if result.active_psu)
+            total_in_active_psu = sum(result.non_active_psu for result in results if result.non_active_psu)
 
-
-            if metrics.duration:
-                logger.info(f"Fetching power and traffic data for duration: {metrics.duration}")
+            if payload.duration:
+                logger.info(f"Fetching power and traffic data for duration: {payload.duration}")
 
                 metrics_data = self.dataquery_repository.get_power_traffic_data(
-                    device_ips, metrics.duration
+                    device_ips, payload.duration
                 )
                 if not metrics_data:
                     logger.warning("No metrics data returned from repository")
@@ -107,16 +112,32 @@ class DashboardRepository(object):
                     )
                 logger.info("Processing and aggregating metrics data")
                 aggregated_data =self.get_aggregatted_data(metrics_data)
+                stack_data={
+                    "stacked":stacked,
+                    "unstacked":unstacked,
+                }
+                psu_stats={
+                    "active_psu":total_active_psu,
+                    "non_active_psu":total_in_active_psu,
+                }
+                interface_stats={
+                "total_up_links":total_up_links,
+                "total_up_links" : total_up_links,
+                "total_down_links" : total_down_links,
+                "total_interface" : total_interfaces,
+                "up_link_percentage" : round((total_up_links / total_interfaces) * 100, 2),
+                "down_link_percentage" : round((total_down_links / total_interfaces) * 100, 2),
+                }
                 # Create MetricsDetail response
                 response = MetricsDetail(
-                    site_id=metrics.site_id,
+                    site_id=payload.site_id,
                     total_devices=total_devices,
                     total_up_links=total_up_links,
                     total_down_links=total_down_links,
                     total_interface=total_interfaces,
                     up_link_percentage=round((total_up_links/total_interfaces) * 100,2),
                     down_link_percentage=round((total_down_links/total_interfaces) * 100,2),
-                    duration=metrics.duration,
+                    duration=payload.duration,
                     pue=aggregated_data.get('pue', 0.0),
                     eer_per=aggregated_data.get('eer', 0.0),
                     input_power_kw=aggregated_data.get('input_kw', 0.0),
@@ -124,7 +145,6 @@ class DashboardRepository(object):
                     co_em_factor=aggregated_data.get('default_emission', 0.4041),
                     co2_em_kg=aggregated_data.get('carbon_emission_kg', 0.0),
                     co2_em_tons=aggregated_data.get('carbon_emission_tons', 0.0),
-
                     cost_factor=aggregated_data.get('default_cost', 0.37),
                     cost_unit="AED",
                     cost_estimation=aggregated_data.get('cost_estimation', 0.0),
@@ -138,7 +158,9 @@ class DashboardRepository(object):
                     co2_flights_avoided=aggregated_data.get('co2_flights_avoided', 0.0),
                     co2_car_trip_km=aggregated_data.get('co2_car_trip_km', 0.0),
                     power_usage_percentage=aggregated_data.get('power_usage_percentage', 0.0),
-
+                    stack_stats=stack_data,
+                    psu_stats=psu_stats,
+                    interface_stats=interface_stats
                 )
                 logger.info("Successfully generated Metrics Response")
                 return response
@@ -153,12 +175,10 @@ class DashboardRepository(object):
         output_kw = metrics.get("total_POut_kw")
         days_count = metrics.get("day_count")
         # Convert traffic to GB
-
-        traffic_allocated_gb = round((metrics.get("total_traffic__mb") or 0) / 1024, 2)
-        total_input_bytes_gb = round((metrics.get("total_input_bytes") or 0) / 1024, 2)
-        total_output_bytes_gb = round((metrics.get("total_output_bytes") or 0) / 1024, 2)
+        traffic_allocated_gb = round((metrics.get("traffic_allocated_mb") or 0) / 1024, 2)
+        total_input_bytes_gb = round((metrics.get("total_input_bytes") or 0) / (1024 ** 3), 2)
+        total_output_bytes_gb = round((metrics.get("total_output_bytes") or 0) / (1024 ** 3), 2)
         traffic_consumed_gb = round(total_input_bytes_gb+total_output_bytes_gb, 2)
-
 
         default_cost = 0.37
         default_emission = 0.4041
@@ -184,7 +204,6 @@ class DashboardRepository(object):
             'total_output_bytes_gb': round(total_output_bytes_gb,2),
             'eer': eer,
             'power_usage_percentage':round((output_kw / (input_kw+output_kw)) * 100, 2),
-
             'pue': pue,
             'pcr': pcr,
             'throughput': throughput,
@@ -198,6 +217,91 @@ class DashboardRepository(object):
             'co2_car_trip_km':car_trip_km
 
         }
+
+    def get_energy_traffic_data_timeline(self,payload):
+        try:
+            if not payload.site_id:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Site ID is required."
+                )
+            logger.info(f"Fetching devices for site ID: {payload.site_id}")
+            results = self.get_devices_by_site_id(payload.site_id)
+            device_ips = [result.ip_address for result in results if result.ip_address]
+            logger.info(f"Fetching device_ips: {device_ips}")
+
+            if payload.duration:
+                logger.info(f"Fetching power and traffic data for duration: {payload.duration}")
+
+                metrics_data = self.dataquery_repository.get_cumulative_energy_traffic_timeline(
+                    device_ips, payload.duration
+                )
+                print(metrics_data)
+                print("Metrics data:")
+
+
+                if not metrics_data:
+                    logger.warning("No metrics data returned from repository")
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"No metrics data available for the given parameters"
+                    )
+                metrics_data=self.get_time_wise_metrics(metrics_data)
+                return metrics_data
+
+        except Exception as e:
+            logger.error(f"Error in get_metrics_info found: {str(e)}", exc_info=True)
+            return {"error": "An unexpected error occurred while processing metrics"}
+
+    def get_time_wise_metrics(self,metrics_list):
+        results = []
+        for metrics in metrics_list:
+            # Extract base power values
+
+            input_kw = metrics.get("total_PIn_kw", 0)
+            output_kw = metrics.get("total_POut_kw", 0)
+            print(input_kw, output_kw)
+            # Convert traffic to GB
+            traffic_allocated_gb = round(metrics.get("traffic_allocated_mb", 0) / 1024,4)
+            print(metrics.get("traffic_allocated_mb"))
+            print(traffic_allocated_gb)
+            total_input_bytes_gb = metrics.get("total_input_bytes", 0) / (1024 ** 3)
+            total_output_bytes_gb = metrics.get("total_output_bytes", 0) / (1024 ** 3)
+            traffic_consumed_gb = total_input_bytes_gb + total_output_bytes_gb
+
+            default_cost = 0.37  # AED per kWh
+            default_emission = 0.4041  # kg CO2 per kWh
+
+            # Calculate metrics
+            eer = output_kw / input_kw if input_kw else 0
+            pue = input_kw / output_kw if output_kw else 0
+            pcr = input_kw / traffic_consumed_gb if traffic_consumed_gb else 0
+            throughput = traffic_consumed_gb / (input_kw * 24) if input_kw else 0  # GB/kW/day
+            cost_estimation = input_kw * default_cost * 24  # Daily cost
+            carbon_emission_kg = input_kw * default_emission * 24  # Daily emissions
+            carbon_emission_tons = carbon_emission_kg / 1000
+            data_utilization = (traffic_consumed_gb / traffic_allocated_gb) * 100 if traffic_allocated_gb else 0
+
+
+            results.append({
+                'time': metrics.get('time'),
+                'input_kw': input_kw,
+                'output_kw': output_kw,
+                'traffic_consumed_gb': round(traffic_consumed_gb, 4),
+                'traffic_allocated_gb': round(traffic_allocated_gb, 2),
+                'eer': round(eer, 4),
+                'pue': round(pue, 4),
+                'pcr': round(pcr, 4),
+                'throughput': round(throughput, 4),
+                'cost_estimation': round(cost_estimation, 2),
+                'carbon_emission_kg': round(carbon_emission_kg, 2),
+                'carbon_emission_tons': round(carbon_emission_tons, 4),
+                'data_utilization': round(data_utilization, 6),  # Very small percentage
+
+            })
+        return results
+
+        # Usage example:
 
 
 

@@ -48,6 +48,9 @@ class MetricsDetail(BaseModel):
     traffic_throughput_gb_per_watt:float=0.0
     co2_car_trip_km:float=0.0
     co2_flights_avoided:float=0.0
+    stack_stats:dict=None
+    psu_stats:dict=None
+    interface_stats:dict=None
 
 
 

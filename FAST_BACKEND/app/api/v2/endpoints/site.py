@@ -1941,3 +1941,17 @@ def site_power_co2emmission(
         "data": response,
         "status_code": status.HTTP_200_OK
     }
+
+
+@router.post("/get_forcastddta", response_model=CustomResponse)
+@inject
+def get_ai_res(device_data: DeviceRequest,
+               # current_user: User = Depends(get_current_active_user),
+               site_service: SiteService = Depends(Provide[Container.site_service])
+               ):
+    data = site_service.get_device_aidata(device_data)
+    return {
+        "message": "Device collection status updated successfully.",
+        "data": data,
+        "status_code": status.HTTP_200_OK
+    }
