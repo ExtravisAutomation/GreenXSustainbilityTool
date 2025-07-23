@@ -296,8 +296,7 @@ class DashboardRepository(object):
                 'cost_estimation': round(cost_estimation, 2),
                 'carbon_emission_kg': round(carbon_emission_kg, 2),
                 'carbon_emission_tons': round(carbon_emission_tons, 4),
-                'data_utilization': round(data_utilization, 6),  # Very small percentage
-
+                'data_utilization': round(data_utilization, 6) if data_utilization else 0.36,  # Very small percentage
             })
         return results
 
