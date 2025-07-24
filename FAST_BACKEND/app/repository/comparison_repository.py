@@ -134,7 +134,6 @@ class ComparisonRepository(BaseRepository):
             traffic_consumed_gb=traffic_consumed_gb,
             traffic_allocated_gb=traffic_allocated_gb,
             days_count=days_count
-
         )
         # Check for any updated values
         has_updates = any(
@@ -152,7 +151,6 @@ class ComparisonRepository(BaseRepository):
         # Prepare updated values
         updated_input_kw = payload.input_power_kw or base_input_kw
         updated_pue = payload.pue or base_detail.pue
-
 
         if payload.pue is not None and updated_input_kw:
             updated_output_kw = round(updated_input_kw / updated_pue, 2)

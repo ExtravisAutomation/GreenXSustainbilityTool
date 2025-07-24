@@ -36,6 +36,7 @@ class DashboardRepository(object):
                 )
                 .filter(Devices.ip_address == ip_address)
             )
+
             # Execute the query
             results = query.first()
             if not results:

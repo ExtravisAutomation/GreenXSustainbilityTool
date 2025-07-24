@@ -52,7 +52,7 @@ class ComparisonService:
 
         if filterdata.duration:
             # Fetch metrics
-            metrics = self.dataquery_repository.get_power_traffic_data(
+            metrics = self.dataquery_repository.get_cumulative_power_traffic_data(
                 device_ips, filterdata.duration
             )
             data=self.comparison_repository.get_comparison_response(metrics,filterdata)
