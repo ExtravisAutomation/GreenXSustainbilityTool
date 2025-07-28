@@ -432,7 +432,6 @@ class DashboardRepository(object):
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Site ID is required."
                 )
-
             logger.info(f"Fetching devices for site ID: {payload.site_id}")
             results = self.get_devices_by_site_id(payload.site_id)
             device_ips = [result.ip_address for result in results if result.ip_address]
@@ -457,9 +456,10 @@ class DashboardRepository(object):
 
                 return {"devices_data": get_metrics_data}
 
+
+            # Case 2: Specific device_ids provided
+            devices_comparison = {}
             if payload.comparison:
-                # Case 2: Specific device_ids provided
-                devices_comparison = {}
                 for id in payload.device_ids:
                     logger.info(f"Processing device ID: {id}")
                     device_data = self.get_device(device_id=id)
