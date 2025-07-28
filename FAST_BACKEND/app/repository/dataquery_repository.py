@@ -240,7 +240,7 @@ class DataQueryRepository:
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             power_df = self.query_api.query_data_frame(power_query)
-            print(power_df)
+
             if not power_df.empty:
                 power_df['_time'] = pd.to_datetime(power_df['_time'])
                 power_df['ip'] = ip
@@ -266,7 +266,6 @@ class DataQueryRepository:
 
         # Process power
         if power_frames:
-            print(power_frames)
             power_df = pd.concat(power_frames)
             power_df['_formatted_time'] = power_df['_time'].dt.strftime(time_format)
             for col in ['total_PIn', 'total_POut']:

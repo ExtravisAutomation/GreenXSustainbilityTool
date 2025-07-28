@@ -27,7 +27,6 @@ def get_metrics(filter_data: MetricesPayload,
     dashboard_service: DashboardService = Depends(Provide[Container.dashboard_services])):
 
     data=dashboard_service.get_metrics_info(payload=filter_data)
-    print(data,"datata")
     return CustomResponse(
         message="*Metrics Data Retrieved Successfully*",
         data=data,

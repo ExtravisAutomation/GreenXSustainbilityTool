@@ -1,5 +1,5 @@
 from contextlib import AbstractContextManager
-from typing import Callable, List
+from typing import Callable, List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
@@ -16,6 +16,7 @@ from app.model.site import Site
 
 from app.schema.dashboard_schema import MetricsDetail
 
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,27 +27,57 @@ class DashboardRepository(object):
         self.session_factory = session_factory
         self.dataquery_repository = dataquery_repository
         self.site_repository = site_repository
-    def get_devices_by_ip_address(self, ip_address: str) -> List[Devices]:
-        with self.session_factory() as session:
-            query = (
-                session.query(
-                    Devices.id.label('device_id'),
-                    Devices.ip_address,
-                    Devices.device_name,
-                )
-                .filter(Devices.ip_address == ip_address)
+        self.default_cost = 0.32
+        self.default_emission = 0.4041
+        self.default_cost_unit = "AED"
+    # def get_devices_by_ip_address(self, ip_address: str) -> List[Devices]:
+    #     with self.session_factory() as session:
+    #         query = (
+    #             session.query(
+    #                 Devices.id.label('device_id'),
+    #                 Devices.ip_address,
+    #                 Devices.device_name,
+    #             )
+    #             .filter(Devices.ip_address == ip_address)
+    #
+    #         )
+    #
+    #         # Execute the query
+    #         results = query.first()
+    #         if not results:
+    #             logger.info(f"Fetching devices for IP Address: {ip_address}")
+    #             raise HTTPException(
+    #                 status_code=status.HTTP_404_NOT_FOUND,
+    #                 detail=f"No devices found for IP Address  {ip_address}"
+    #             )
+    #         return results
+    def get_device(self,ip_address: Optional[str] = None,device_id: Optional[int] = None) ->Devices:
+        print("tell here Everything is fine")
+        if not ip_address and not device_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Either 'ip_address' or 'device_id' must be provided."
             )
-
-            # Execute the query
-            results = query.first()
-            if not results:
-                logger.info(f"Fetching devices for IP Address: {ip_address}")
+        with self.session_factory() as session:
+            query = session.query(
+                Devices.id,
+                Devices.ip_address,
+                Devices.device_name,
+            )
+            if ip_address:
+                query = query.filter(Devices.ip_address == ip_address)
+            elif device_id:
+                query = query.filter(Devices.id == device_id)
+            result = query.first()
+            if not result:
+                identifier = ip_address or device_id
+                logger.info(f"No device found for identifier: {identifier}")
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"No devices found for IP Address  {ip_address}"
+                    detail=f"No device found for given identifier: {identifier}"
                 )
-            return results
-
+            logger.info(f"Devices Data: {result}")
+            return result
     def get_devices_by_site_id(self, site_id: int) -> List[Devices]:
         with self.session_factory() as session:
             query = (
@@ -164,7 +195,7 @@ class DashboardRepository(object):
                     co_em_factor=aggregated_data.get('default_emission', 0.4041),
                     co2_em_kg=aggregated_data.get('carbon_emission_kg', 0.0),
                     co2_em_tons=aggregated_data.get('carbon_emission_tons', 0.0),
-                    cost_factor=aggregated_data.get('default_cost', 0.37),
+                    cost_factor=aggregated_data.get('default_cost', 0.32),
                     cost_unit="AED",
                     cost_estimation=aggregated_data.get('cost_estimation', 0.0),
                     datatraffic_allocated_gb=aggregated_data.get('traffic_allocated_gb', 0.0),
@@ -200,16 +231,12 @@ class DashboardRepository(object):
         traffic_consumed_gb = round(total_input_bytes_gb+total_output_bytes_gb, 2)
         traffic_allocated_gb = 10
 
-        default_cost = 0.37
-        default_emission = 0.4041
-        default_cost_unit = "AED"
-
         eer = self.calculate_eer(output_kw, input_kw)
         pue = self.calculate_pue(input_kw, output_kw)
         pcr = self.calculate_pcr(input_kw, traffic_consumed_gb)
         throughput = self.calculate_traffic_throughput(traffic_consumed_gb, input_kw)
-        cost_estimation = self.calculate_cost_estimation(input_kw, default_cost)
-        carbon_emission_kg=self.calculate_emmision_kg(output_kw, default_emission)
+        cost_estimation = self.calculate_cost_estimation(input_kw, self.default_cost)
+        carbon_emission_kg=self.calculate_emmision_kg(output_kw, self.default_emission)
         carbon_emission_tons= round(carbon_emission_kg/1000,2) if carbon_emission_kg else 0
         data_utilization = self.calculate_utilization(traffic_consumed_gb, traffic_allocated_gb)
         # Calculate equivalents
@@ -231,8 +258,8 @@ class DashboardRepository(object):
             'carbon_emission_kg': carbon_emission_kg,
             'carbon_emission_tons': carbon_emission_tons,
             'data_utilization': data_utilization,
-            'default_cost': default_cost,
-            'default_emission': default_emission,
+            'default_cost': self.default_cost,
+            'default_emission': self.default_emission,
             'co2_flights_avoided':flights_avoided,
             'co2_car_trip_km':car_trip_km
 
@@ -281,15 +308,13 @@ class DashboardRepository(object):
             total_output_bytes_gb = metrics.get("total_output_bytes", 0) / (1024 ** 3)
             traffic_consumed_gb = total_input_bytes_gb + total_output_bytes_gb
 
-            default_cost = 0.37  # AED/kWh
-            default_emission = 0.4041  # kg CO2/kWh
 
             eer = self.calculate_eer(output_kw, input_kw)
             pue = self.calculate_pue(input_kw, output_kw)
             pcr = self.calculate_pcr(input_kw, traffic_consumed_gb)
             throughput = self.calculate_traffic_throughput(traffic_consumed_gb, input_kw)
-            cost_estimation = self.calculate_cost_estimation(input_kw, default_cost)
-            carbon_emission_kg = self.calculate_emmision_kg(output_kw, default_emission)
+            cost_estimation = self.calculate_cost_estimation(input_kw, self.default_cost)
+            carbon_emission_kg = self.calculate_emmision_kg(output_kw, self.default_emission)
             carbon_emission_tons = round(carbon_emission_kg / 1000, 2) if carbon_emission_kg else 0
             data_utilization = self.calculate_utilization(traffic_consumed_gb, traffic_allocated_gb)
 
@@ -308,6 +333,7 @@ class DashboardRepository(object):
                 'carbon_emission_tons': round(carbon_emission_tons, 4),
                 'data_utilization': round(data_utilization, 6),
             }
+
 
         results = []
         with ThreadPoolExecutor(max_workers=8) as executor:
@@ -342,11 +368,11 @@ class DashboardRepository(object):
                 top_carbon_emmision =[]
                 top_cost_devices = []
                 with ThreadPoolExecutor(max_workers=8) as executor:
-                    futures = [executor.submit(self.compute_power_metrics, m) for m in top5_power_output]
+                    futures = [executor.submit(self.compute_power_traffic_metrics_per_devices, m) for m in top5_power_output]
                     for future in as_completed(futures):
                         top_carbon_emmision.append(future.result())
                 with ThreadPoolExecutor(max_workers=8) as executor:
-                    futures = [executor.submit(self.compute_power_metrics, m) for m in top5_power_input]
+                    futures = [executor.submit(self.compute_power_traffic_metrics_per_devices, m) for m in top5_power_input]
                     for future in as_completed(futures):
                         top_cost_devices.append(future.result())
 
@@ -371,27 +397,22 @@ class DashboardRepository(object):
         input_kw = metrics.get("total_PIn_kw", 0)
         output_kw = metrics.get("total_POut_kw", 0)
         ip_address=metrics.get("ip", 0)
-        device_data=self.get_devices_by_ip_address(ip_address)
+        device_data=self.get_device(ip_address=ip_address)
         total_input_bytes_gb = round((metrics.get("total_input_bytes") or 0) / (1024 ** 3), 2)
         total_output_bytes_gb = round((metrics.get("total_output_bytes") or 0) / (1024 ** 3), 2)
         traffic_consumed_gb = round(total_input_bytes_gb + total_output_bytes_gb, 2)
-
-
-
-        # Fixed value or replace with metrics.get("traffic_allocated_mb", 0) / 1024 if dynamic
-        default_cost = 0.37  # AED/kWh
-        default_emission = 0.4041  # kg CO2/kWh
 
         eer = self.calculate_eer(output_kw, input_kw)
         pue = self.calculate_pue(input_kw, output_kw)
         pcr = self.calculate_pcr(input_kw, traffic_consumed_gb)
 
-        cost_estimation = self.calculate_cost_estimation(input_kw, default_cost)
-        carbon_emission_kg = self.calculate_emmision_kg(output_kw, default_emission)
+        cost_estimation = self.calculate_cost_estimation(input_kw, self.default_cost)
+        carbon_emission_kg = self.calculate_emmision_kg(output_kw,self.default_emission)
         carbon_emission_tons = round(carbon_emission_kg / 1000, 2) if carbon_emission_kg else 0
 
         return {
             'ip_address':metrics.get("ip", 0),
+            'device_id':device_data.id,
             'device_name':device_data.device_name,
             'input_kw': input_kw,
             'output_kw': output_kw,
@@ -409,28 +430,73 @@ class DashboardRepository(object):
             if not payload.site_id:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Site ID is required."
+                    detail="Site ID is required."
                 )
+
             logger.info(f"Fetching devices for site ID: {payload.site_id}")
             results = self.get_devices_by_site_id(payload.site_id)
             device_ips = [result.ip_address for result in results if result.ip_address]
             logger.info(f"Fetching device_ips: {device_ips}")
-            get_metrics_data = []
-            if payload.duration:
-                if not payload.device_ids:
-                    logger.info(f"Fetching power and traffic data for duration: {payload.duration}")
-                    devices_data = self.dataquery_repository.get_device_wise_power_traffic_data(
-                        device_ips, payload.duration)
-                    with ThreadPoolExecutor(max_workers=8) as executor:
-                        futures = [executor.submit(self.compute_power_traffic_metrics_per_devices, m) for m in devices_data]
-                        for future in as_completed(futures):
-                            get_metrics_data.append(future.result())
-                    return {
-                        "devices_data":get_metrics_data}
+            logger.info(f"Fetching power and traffic data for duration: {payload.duration}")
+            if not payload.duration:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Duration is required."
+                )
+            # Case 1: All devices in site
+            if not payload.device_ids:
+                logger.info(f"Fetching data for all devices in site {payload.site_id}")
+                devices_data = self.dataquery_repository.get_device_wise_power_traffic_data(
+                    device_ips, payload.duration
+                )
+                get_metrics_data = []
+                with ThreadPoolExecutor(max_workers=8) as executor:
+                    futures = [executor.submit(self.compute_power_traffic_metrics_per_devices, m) for m in devices_data]
+                    for future in as_completed(futures):
+                        get_metrics_data.append(future.result())
+
+                return {"devices_data": get_metrics_data}
+
+            # Case 2: Specific device_ids provided
+            devices_comparison = {}
+            for id in payload.device_ids:
+                logger.info(f"Processing device ID: {id}")
+                device_data = self.get_device(device_id=id)
+
+                if not device_data or not device_data.ip_address:
+                    logger.warning(f"Device not found or missing IP for ID: {id}")
+                    continue
+
+                metrics_data = self.dataquery_repository.get_cumulative_energy_traffic_timeline(
+                    [device_data.ip_address], payload.duration
+                )
+                if not metrics_data:
+                    logger.warning("No metrics data returned from repository")
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"No metrics data available for the given parameters"
+                    )
+                metrics_data = self.get_time_wise_metrics(metrics_data)
+                if not metrics_data:
+                    logger.warning("No metrics data returned from repository")
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"No metrics data available for the given parameters"
+                    )
+                devices_comparison[str(device_data.id)] = {
+                    "device_name": device_data.device_name,
+                    "ip_address": device_data.ip_address,
+                    "metrics_data": metrics_data
+                }
+                logger.info(f"Added metrics for: {device_data.device_name}")
+                print(devices_comparison)
+
+            return devices_comparison
 
         except Exception as e:
-            logger.error(f"Error in get_metrics_info found: {str(e)}", exc_info=True)
+            logger.error(f"Error in get_metrics_info: {str(e)}", exc_info=True)
             return {"error": "An unexpected error occurred while processing metrics"}
+
 
 
 
