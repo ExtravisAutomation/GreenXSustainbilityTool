@@ -457,41 +457,42 @@ class DashboardRepository(object):
 
                 return {"devices_data": get_metrics_data}
 
-            # Case 2: Specific device_ids provided
-            devices_comparison = {}
-            for id in payload.device_ids:
-                logger.info(f"Processing device ID: {id}")
-                device_data = self.get_device(device_id=id)
+            if payload.comparison:
+                # Case 2: Specific device_ids provided
+                devices_comparison = {}
+                for id in payload.device_ids:
+                    logger.info(f"Processing device ID: {id}")
+                    device_data = self.get_device(device_id=id)
 
-                if not device_data or not device_data.ip_address:
-                    logger.warning(f"Device not found or missing IP for ID: {id}")
-                    continue
+                    if not device_data or not device_data.ip_address:
+                        logger.warning(f"Device not found or missing IP for ID: {id}")
+                        continue
 
-                metrics_data = self.dataquery_repository.get_cumulative_energy_traffic_timeline(
-                    [device_data.ip_address], payload.duration
-                )
-                if not metrics_data:
-                    logger.warning("No metrics data returned from repository")
-                    raise HTTPException(
-                        status_code=status.HTTP_404_NOT_FOUND,
-                        detail=f"No metrics data available for the given parameters"
+                    metrics_data = self.dataquery_repository.get_cumulative_energy_traffic_timeline(
+                        [device_data.ip_address], payload.duration
                     )
-                metrics_data = self.get_time_wise_metrics(metrics_data)
-                if not metrics_data:
-                    logger.warning("No metrics data returned from repository")
-                    raise HTTPException(
-                        status_code=status.HTTP_404_NOT_FOUND,
-                        detail=f"No metrics data available for the given parameters"
-                    )
-                devices_comparison[str(device_data.id)] = {
-                    "device_name": device_data.device_name,
-                    "ip_address": device_data.ip_address,
-                    "metrics_data": metrics_data
-                }
-                logger.info(f"Added metrics for: {device_data.device_name}")
-                print(devices_comparison)
+                    if not metrics_data:
+                        logger.warning("No metrics data returned from repository")
+                        raise HTTPException(
+                            status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"No metrics data available for the given parameters"
+                        )
+                    metrics_data = self.get_time_wise_metrics(metrics_data)
+                    if not metrics_data:
+                        logger.warning("No metrics data returned from repository")
+                        raise HTTPException(
+                            status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"No metrics data available for the given parameters"
+                        )
+                    devices_comparison[str(device_data.id)] = {
+                        "device_name": device_data.device_name,
+                        "ip_address": device_data.ip_address,
+                        "metrics_data": metrics_data
+                    }
+                    logger.info(f"Added metrics for: {device_data.device_name}")
+                    print(devices_comparison)
 
-            return devices_comparison
+                return devices_comparison
 
         except Exception as e:
             logger.error(f"Error in get_metrics_info: {str(e)}", exc_info=True)

@@ -20,6 +20,7 @@ class DevicePayload(BaseModel):
     site_id: int
     duration: Optional[str] = "24 hours"
     device_ids: Optional[List[int]] = None  # Specify type inside List
+    comparison:bool=False
 
 class MetricsDetail(BaseModel):
     site_id: int=None
