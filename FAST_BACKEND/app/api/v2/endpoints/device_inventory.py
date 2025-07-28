@@ -470,7 +470,6 @@ def generate_excel(filter_data:FilterSchema,
         # Errors
         ERROR_MSG
     ]
-
     devices.rename(columns={
         # Basic Info
         "device_name": DEVICE_NAME,

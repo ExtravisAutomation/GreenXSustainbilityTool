@@ -12,3 +12,5 @@ class DashboardService:
         return self.dashboard_repository.get_energy_traffic_data_timeline(payload)
     def get_peak_low_devices(self,payload):
         return self.dashboard_repository.get_peak_low_devices(payload)
+    def get_devices_co2emmision_pcr(self,payload):
+        return self.dashboard_repository.get_devices_co2emmision_pcr(payload)

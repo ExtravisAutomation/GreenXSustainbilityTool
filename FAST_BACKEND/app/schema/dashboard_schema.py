@@ -16,11 +16,13 @@ class MetricesPayload(BaseModel):
     site_id: int
     duration: Optional[str] = "24 hours"
 
-
+class DevicePayload(BaseModel):
+    site_id: int
+    duration: Optional[str] = "24 hours"
+    device_ids: Optional[List[int]] = None  # Specify type inside List
 
 class MetricsDetail(BaseModel):
     site_id: int=None
-
     duration: Optional[str]=None
     total_devices: Optional[int]=None
     total_up_links:Optional[int]=None

@@ -367,11 +367,16 @@ class DashboardRepository(object):
             logger.error(f"Error in get_metrics_info found: {str(e)}", exc_info=True)
             return {"error": "An unexpected error occurred while processing metrics"}
 
-    def compute_power_metrics(self,metrics):
+    def compute_power_traffic_metrics_per_devices(self,metrics):
         input_kw = metrics.get("total_PIn_kw", 0)
         output_kw = metrics.get("total_POut_kw", 0)
         ip_address=metrics.get("ip", 0)
         device_data=self.get_devices_by_ip_address(ip_address)
+        total_input_bytes_gb = round((metrics.get("total_input_bytes") or 0) / (1024 ** 3), 2)
+        total_output_bytes_gb = round((metrics.get("total_output_bytes") or 0) / (1024 ** 3), 2)
+        traffic_consumed_gb = round(total_input_bytes_gb + total_output_bytes_gb, 2)
+
+
 
         # Fixed value or replace with metrics.get("traffic_allocated_mb", 0) / 1024 if dynamic
         default_cost = 0.37  # AED/kWh
@@ -379,6 +384,7 @@ class DashboardRepository(object):
 
         eer = self.calculate_eer(output_kw, input_kw)
         pue = self.calculate_pue(input_kw, output_kw)
+        pcr = self.calculate_pcr(input_kw, traffic_consumed_gb)
 
         cost_estimation = self.calculate_cost_estimation(input_kw, default_cost)
         carbon_emission_kg = self.calculate_emmision_kg(output_kw, default_emission)
@@ -391,7 +397,40 @@ class DashboardRepository(object):
             'output_kw': output_kw,
             'eer': round(eer, 4),
             'pue': round(pue, 4),
+            'pcr': round(pcr, 4),
             'cost_estimation': round(cost_estimation, 2),
             'carbon_emission_kg': round(carbon_emission_kg, 2),
             'carbon_emission_tons': round(carbon_emission_tons, 4),
+            'traffic_consumed_gb': round(traffic_consumed_gb, 4),
         }
+
+    def get_devices_co2emmision_pcr(self, payload):
+        try:
+            if not payload.site_id:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Site ID is required."
+                )
+            logger.info(f"Fetching devices for site ID: {payload.site_id}")
+            results = self.get_devices_by_site_id(payload.site_id)
+            device_ips = [result.ip_address for result in results if result.ip_address]
+            logger.info(f"Fetching device_ips: {device_ips}")
+            get_metrics_data = []
+            if payload.duration:
+                if not payload.device_ids:
+                    logger.info(f"Fetching power and traffic data for duration: {payload.duration}")
+                    devices_data = self.dataquery_repository.get_device_wise_power_traffic_data(
+                        device_ips, payload.duration)
+                    with ThreadPoolExecutor(max_workers=8) as executor:
+                        futures = [executor.submit(self.compute_power_traffic_metrics_per_devices, m) for m in devices_data]
+                        for future in as_completed(futures):
+                            get_metrics_data.append(future.result())
+                    return {
+                        "devices_data":get_metrics_data}
+
+        except Exception as e:
+            logger.error(f"Error in get_metrics_info found: {str(e)}", exc_info=True)
+            return {"error": "An unexpected error occurred while processing metrics"}
+
+
+

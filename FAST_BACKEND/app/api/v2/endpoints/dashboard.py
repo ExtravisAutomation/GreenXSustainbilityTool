@@ -15,6 +15,8 @@ from requests import Session
 from starlette.responses import JSONResponse
 from app.services.dashboard_service import DashboardService
 
+from app.schema.dashboard_schema import DevicePayload
+
 router = APIRouter(prefix="/dashboard", tags=["Dashboard Module"])
 
 
@@ -57,6 +59,18 @@ def get_peak_low_devices(filter_data: MetricesPayload,
     data=dashboard_service.get_peak_low_devices(payload=filter_data)
     return CustomResponse(
         message="Energy Efficiency data Retrieved Successfully*",
+        data=data,
+        status_code=status.HTTP_200_OK
+    )
+@router.post("/get_devices_co2emmision_pcr", response_model=CustomResponse)
+@inject
+def devices_co2emmision_pcr(filter_data: DevicePayload,
+    # current_user: User = Depends(get_current_active_user),
+    dashboard_service: DashboardService = Depends(Provide[Container.dashboard_services])):
+
+    data=dashboard_service.get_devices_co2emmision_pcr(payload=filter_data)
+    return CustomResponse(
+        message="Emission and PCR Retrieved Successfully*",
         data=data,
         status_code=status.HTTP_200_OK
     )
