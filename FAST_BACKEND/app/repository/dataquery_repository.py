@@ -335,6 +335,7 @@ class DataQueryRepository:
             traffic_allocated_mb = traffic_metrics["bandwidth"] / 1000 if traffic_metrics["bandwidth"] > 0 else 0
             traffic_consumed_mb = total_traffic * 8 / 1e6 if total_traffic > 0 else 0
 
+
             device_data.append({
                 "ip": ip,
                 "total_POut_kw": round(power_metrics["pout"] / 1000, 2),
@@ -343,6 +344,7 @@ class DataQueryRepository:
                 "total_output_bytes": round(traffic_metrics["output_bytes"], 2),
                 "traffic_allocated_mb": traffic_allocated_mb,
                 "traffic_consumed_mb": traffic_consumed_mb,
+
                 "day_count": day_count
             })
 

@@ -424,33 +424,28 @@ class DashboardRepository(object):
                 top5_power_output= sorted(devices_data, key=lambda x: x["total_POut_kw"], reverse=True)[:5]
 
                 top5_power_input = sorted(devices_data, key=lambda x: x["total_PIn_kw"], reverse=True)[:5]
-                top_carbon_emmision =[]
-                top_cost_devices = []
-                with ThreadPoolExecutor(max_workers=8) as executor:
-                    futures = [executor.submit(self.compute_power_traffic_metrics_per_devices, m) for m in top5_power_output]
-                    for future in as_completed(futures):
-                        top_carbon_emmision.append(future.result())
-                with ThreadPoolExecutor(max_workers=8) as executor:
-                    futures = [executor.submit(self.compute_power_traffic_metrics_per_devices, m) for m in top5_power_input]
-                    for future in as_completed(futures):
-                        top_cost_devices.append(future.result())
 
-                print(top_cost_devices,top_carbon_emmision)
-                if not top_cost_devices:
-                    logger.warning("No metrics data returned from repository")
-                    raise HTTPException(
-                        status_code=status.HTTP_404_NOT_FOUND,
-                        detail=f"No metrics data available for the given parameters")
-                result= {
-                    "top5_devices_by_cost":top_cost_devices,
-                    "top5_devices_by_carbonemmison":top_cost_devices
-                }
+                final_mertric_response=[]
+                with ThreadPoolExecutor(max_workers=8) as executor:
+                    futures = [executor.submit(self.compute_power_traffic_metrics_per_devices, m) for m in devices_data]
+                    for future in as_completed(futures):
+                        final_mertric_response.append(future.result())
+                # with ThreadPoolExecutor(max_workers=8) as executor:
+                #     futures = [executor.submit(self.compute_power_traffic_metrics_per_devices, m) for m in top5_power_input]
+                #     for future in as_completed(futures):
+                #         top_cost_devices.append(future.result())
+
+                # print(top_cost_devices,top_carbon_emmision)
+                result=self.response_detail(final_mertric_response)
+
+
+
 
                 return result
-
         except Exception as e:
             logger.error(f"Error in get_metrics_info found: {str(e)}", exc_info=True)
             return {"error": "An unexpected error occurred while processing metrics"}
+
 
     def compute_power_traffic_metrics_per_devices(self,metrics):
         input_kw = metrics.get("total_PIn_kw", 0)
@@ -460,10 +455,13 @@ class DashboardRepository(object):
         total_input_bytes_gb = round((metrics.get("total_input_bytes") or 0) / (1024 ** 3), 2)
         total_output_bytes_gb = round((metrics.get("total_output_bytes") or 0) / (1024 ** 3), 2)
         traffic_consumed_gb = round(total_input_bytes_gb + total_output_bytes_gb, 2)
+        traffic_allocated_gb = round((metrics.get("traffic_allocated_mb") or 0) / (1024 ** 3), 2)
+
 
         eer = self.calculate_eer(output_kw, input_kw)
         pue = self.calculate_pue(input_kw, output_kw)
         pcr = self.calculate_pcr(input_kw, traffic_consumed_gb)
+        data_utilization = self.calculate_utilization(traffic_consumed_gb, traffic_allocated_gb)
 
         cost_estimation = self.calculate_cost_estimation(input_kw, self.default_cost)
         carbon_emission_kg = self.calculate_emmision_kg(output_kw,self.default_emission)
@@ -482,6 +480,8 @@ class DashboardRepository(object):
             'carbon_emission_kg': round(carbon_emission_kg, 2),
             'carbon_emission_tons': round(carbon_emission_tons, 4),
             'traffic_consumed_gb': round(traffic_consumed_gb, 4),
+            'traffic_allocated_gb': round(traffic_allocated_gb, 2),
+            'data_utilization_per': round(data_utilization, 6),
         }
 
     def get_devices_co2emmision_pcr(self, payload):
@@ -556,6 +556,96 @@ class DashboardRepository(object):
         except Exception as e:
             logger.error(f"Error in get_metrics_info: {str(e)}", exc_info=True)
             return {"error": "An unexpected error occurred while processing metrics"}
+
+    def response_detail(self,final_mertric_response):
+        # Sort by data utilization %
+        sorted_by_utilization = sorted(final_mertric_response, key=lambda x: x['data_utilization_per'],
+                                       reverse=True)
+        # Top 5 Peak Utilization
+        top5_utilization = [{
+            "device_name": d["device_name"],
+            "traffic_consumed_gb": d["traffic_consumed_gb"],
+            "traffic_allocated_gb": d["traffic_allocated_gb"],
+            "data_utilization_per": d["data_utilization_per"]
+        } for d in sorted_by_utilization[:5]]
+
+        # Bottom 5 Utilization
+        bottom5_utilization = [{
+            "device_name": d["device_name"],
+            "traffic_consumed_gb": d["traffic_consumed_gb"],
+            "traffic_allocated_gb": d["traffic_allocated_gb"],
+            "data_utilization_per": d["data_utilization_per"]
+        } for d in sorted_by_utilization[-5:]]
+
+        # Sort by EER
+        sorted_by_eer = sorted(final_mertric_response, key=lambda x: x['eer'], reverse=True)
+
+        # Top 5 EER
+        top5_eer = [{
+            "device_name": d["device_name"],
+            "power_input_kw": d["input_kw"],
+            "power_output_kw": d["output_kw"],
+            "eer": d["eer"]
+        } for d in sorted_by_eer[:5]]
+
+        # Bottom 5 EER
+        bottom5_eer = [{
+            "device_name": d["device_name"],
+            "power_input_kw": d["input_kw"],
+            "power_output_kw": d["output_kw"],
+            "eer": d["eer"]
+        } for d in sorted_by_eer[-5:]]
+        sorted_by_cost = sorted(final_mertric_response, key=lambda x: x['cost_estimation'], reverse=True)
+
+        top5_cost = [{
+            "device_name": d["device_name"],
+            "power_input_kw": d["input_kw"],
+            "power_output_kw": d["output_kw"],
+            "cost_estimation": d["cost_estimation"]
+        } for d in sorted_by_cost[:5]]
+
+        bottom5_cost = [{
+            "device_name": d["device_name"],
+            "power_input_kw": d["input_kw"],
+            "power_output_kw": d["output_kw"],
+            "cost_estimation": d["cost_estimation"]
+        } for d in sorted_by_cost[-5:]]
+
+        # Sort by carbon emission
+        sorted_by_emission = sorted(final_mertric_response, key=lambda x: x['carbon_emission_kg'], reverse=True)
+
+        top5_emission = [{
+            "device_name": d["device_name"],
+            "power_input_kw": d["input_kw"],
+            "power_output_kw": d["output_kw"],
+            "carbon_emission_kg": d["carbon_emission_kg"]
+        } for d in sorted_by_emission[:5]]
+
+        bottom5_emission = [{
+            "device_name": d["device_name"],
+            "power_input_kw": d["input_kw"],
+            "power_output_kw": d["output_kw"],
+            "carbon_emission_kg": d["carbon_emission_kg"]
+        } for d in sorted_by_emission[-5:]]
+        response = {
+            "data_utilization": {
+                "top": top5_utilization,
+                "bottom": bottom5_utilization
+            },
+            "eer": {
+                "top": top5_eer,
+                "bottom": bottom5_eer
+            },
+            "cost_estimation": {
+                "top": top5_cost,
+                "bottom": bottom5_cost
+            },
+            "carbon_emission": {
+                "top": top5_emission,
+                "bottom": bottom5_emission
+            }
+        }
+        return response
 
 
 
