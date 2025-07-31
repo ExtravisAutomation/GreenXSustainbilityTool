@@ -36,6 +36,9 @@ class MetricsDetail(BaseModel):
     input_power_kw: float=0.0
     output_power_kw:float=0.0
     co_em_factor: float=0.0
+    total_rack:Optional[int]=None
+    total_vendor:Optional[int]=None
+
     co2_em_kg:float=0.0
     co2_em_tons:float=0.0
     cost_factor:float=0.0

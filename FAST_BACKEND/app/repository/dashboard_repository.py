@@ -1,5 +1,7 @@
 from contextlib import AbstractContextManager
 from typing import Callable, List, Optional
+
+from dns.reversename import to_address
 from fastapi import HTTPException, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
@@ -87,7 +89,10 @@ class DashboardRepository(object):
                     DeviceInventory.total_interface,
                     DeviceInventory.up_link,
                     DeviceInventory.down_link,
+                    DeviceInventory.vendor_id,
                     DeviceInventory.stack,
+                    Devices.rack_id,
+                    Devices.vendor_id,
                     DeviceInventory.active_psu,
                     DeviceInventory.non_active_psu,
                 )
@@ -137,9 +142,15 @@ class DashboardRepository(object):
             logger.info(f"Fetching devices for site ID: {payload.site_id}")
             results = self.get_devices_by_site_id(payload.site_id)
             device_ips = [result.ip_address for result in results if result.ip_address]
+            distinct_rack_ids = set([row.rack_id for row in results])
+            rack_count = len(distinct_rack_ids)
+            distinct_vendor_ids = set([row.vendor_id for row in results])
+            vendor_count = len(distinct_vendor_ids)
 
             # Calculate totals
             total_devices = len({result.device_id for result in results})
+            total_rack=rack_count
+            total_vendor=vendor_count
             total_up_links = sum(result.up_link for result in results if result.up_link)
             total_down_links = sum(result.down_link for result in results if result.down_link)
             total_interfaces = total_up_links+total_down_links
@@ -188,6 +199,8 @@ class DashboardRepository(object):
                     up_link_percentage=round((total_up_links/total_interfaces) * 100,2),
                     down_link_percentage=round((total_down_links/total_interfaces) * 100,2),
                     duration=payload.duration,
+                    total_rack=total_rack,
+                    total_vendor=total_vendor,
                     pue=aggregated_data.get('pue', 0.0),
                     eer_per=aggregated_data.get('eer', 0.0),
                     input_power_kw=aggregated_data.get('input_kw', 0.0),
