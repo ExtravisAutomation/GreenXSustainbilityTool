@@ -165,6 +165,8 @@ class DashboardRepository(object):
                 metrics_data = self.dataquery_repository.get_cumulative_power_traffic_data(
                     device_ips, payload.duration
                 )
+
+
                 if not metrics_data:
                     logger.warning("No metrics data returned from repository")
                     raise HTTPException(
@@ -223,7 +225,10 @@ class DashboardRepository(object):
                     power_usage_percentage=aggregated_data.get('power_usage_percentage', 0.0),
                     stack_stats=stack_data,
                     psu_stats=psu_stats,
-                    interface_stats=interface_stats
+                    interface_stats=interface_stats,
+                    cost_analysis=aggregated_data.get('cost_analysis',{}),
+                    c02_emmision_analysis=aggregated_data.get('c02_emmision_analysis',{}),
+
                 )
                 logger.info("Successfully generated Metrics Response")
                 return response
@@ -255,6 +260,9 @@ class DashboardRepository(object):
         # Calculate equivalents
         flights_avoided = round(carbon_emission_kg / 700 ,4) # NYC-Dubai flight equivalent
         car_trip_km = round(carbon_emission_kg / 0.25 ,4) # Petrol car km equivalent
+        cost_analysis,c02_emmision_analysis=self.get_cost_co2_analysis(metrics.get('day_count'), input_kw, output_kw)
+        print(type(c02_emmision_analysis))
+        print(type(cost_analysis))
         return {
             'input_kw': input_kw,
             'output_kw': output_kw,
@@ -274,9 +282,47 @@ class DashboardRepository(object):
             'default_cost': self.default_cost,
             'default_emission': self.default_emission,
             'co2_flights_avoided':flights_avoided,
-            'co2_car_trip_km':car_trip_km
-
+            'co2_car_trip_km':car_trip_km,
+            'cost_analysis':cost_analysis,
+            'c02_emmision_analysis':c02_emmision_analysis,
         }
+    def get_cost_co2_analysis(self,days_count,input_kw,output_kw):
+        daily_input_value = input_kw / days_count
+        daily_output_value = output_kw / days_count
+        cost_estimation_daily = self.calculate_cost_estimation(daily_input_value, self.default_cost)
+        cost_estimation_monthly = self.calculate_cost_estimation(daily_input_value*30, self.default_cost)
+        cost_estimation_yearly = self.calculate_cost_estimation(daily_input_value *365, self.default_cost)
+        cost_estimation_five_year = self.calculate_cost_estimation(daily_input_value * 365*5, self.default_cost)
+
+        co2_estimation_daily_kg = self.calculate_emmision_kg(daily_output_value, self.default_emission)
+        co2_estimation_monthly_kg = self.calculate_emmision_kg(daily_output_value * 30, self.default_emission)
+        co2_estimation_yearly_kg = self.calculate_emmision_kg(daily_output_value * 365, self.default_emission)
+        co2_estimation_five_year_kg = self.calculate_emmision_kg(daily_output_value * 365*5, self.default_emission)
+
+        cost_analysis={
+            "cost_estimation_daily": cost_estimation_daily,
+            "cost_estimation_monthly": cost_estimation_monthly,
+            "cost_estimation_yearly":cost_estimation_yearly,
+            "cost_estimation_five_year":cost_estimation_five_year
+        }
+        c02emmision_analysis={
+            "co2_kgs":
+                {"co2_estimation_daily_kg": co2_estimation_daily_kg,
+            "co2_estimation_monthly_kg": co2_estimation_monthly_kg,
+            "co2_estimation_yearly_kg": co2_estimation_yearly_kg,
+            "co2_estimation_five_year_kg":co2_estimation_five_year_kg
+                 },
+            "co2_tons":{
+            "co2_estimation_daily_tons": co2_estimation_daily_kg/1000,
+            "co2_estimation_monthly_tons": co2_estimation_monthly_kg/1000,
+            "co2_estimation_yearly_tons": co2_estimation_yearly_kg/1000,
+            "co2_estimation_five_year_tons": co2_estimation_five_year_kg/1000,}
+        }
+        print(cost_analysis,c02emmision_analysis)
+        print(type(c02emmision_analysis))
+        print(type(cost_analysis))
+        return cost_analysis,c02emmision_analysis
+
 
     def get_energy_traffic_data_timeline(self,payload):
         try:

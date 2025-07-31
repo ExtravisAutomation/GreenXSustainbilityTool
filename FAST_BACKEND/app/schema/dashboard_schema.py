@@ -38,7 +38,6 @@ class MetricsDetail(BaseModel):
     co_em_factor: float=0.0
     total_rack:Optional[int]=None
     total_vendor:Optional[int]=None
-
     co2_em_kg:float=0.0
     co2_em_tons:float=0.0
     cost_factor:float=0.0
@@ -57,6 +56,9 @@ class MetricsDetail(BaseModel):
     stack_stats:dict=None
     psu_stats:dict=None
     interface_stats:dict=None
+    cost_analysis:dict=None
+    c02_emmision_analysis:dict=None
+
 
 
 
