@@ -30,27 +30,59 @@ class DashboardRepository(object):
         self.default_cost = 0.32
         self.default_emission = 0.4041
         self.default_cost_unit = "AED"
-    # def get_devices_by_ip_address(self, ip_address: str) -> List[Devices]:
-    #     with self.session_factory() as session:
-    #         query = (
-    #             session.query(
-    #                 Devices.id.label('device_id'),
-    #                 Devices.ip_address,
-    #                 Devices.device_name,
-    #             )
-    #             .filter(Devices.ip_address == ip_address)
-    #
-    #         )
-    #
-    #         # Execute the query
-    #         results = query.first()
-    #         if not results:
-    #             logger.info(f"Fetching devices for IP Address: {ip_address}")
-    #             raise HTTPException(
-    #                 status_code=status.HTTP_404_NOT_FOUND,
-    #                 detail=f"No devices found for IP Address  {ip_address}"
-    #             )
-    #         return results
+
+
+
+    def get_devices_inventory(
+            self,
+            site_id: Optional[int] = None,
+            rack_id: Optional[int] = None,
+            device_id: Optional[int] = None,
+            ip_address: Optional[str] = None
+    ) -> List[dict]:
+        with self.session_factory() as session:
+            query = (
+                session.query(
+                    Devices.id.label('device_id'),
+                    Devices.ip_address,
+                    Devices.device_name,
+                    Devices.rack_id,
+                    Devices.vendor_id,
+                    Site.site_name,
+                    Rack.rack_name,
+                    DeviceInventory.pn_code
+                )
+                .join(DeviceInventory, DeviceInventory.device_id == Devices.id)
+                .join(Site, DeviceInventory.site_id == Site.id)
+                .join(Rack, DeviceInventory.rack_id == Rack.id)
+                .filter(Devices.OnBoardingStatus == True)
+                .filter(Devices.collection_status == True)
+                .filter(DeviceInventory.pn_code.notlike('%IE%'))
+            )
+            # Optional filters
+            if site_id is not None:
+                query = query.filter(DeviceInventory.site_id == site_id)
+            if rack_id is not None:
+                query = query.filter(DeviceInventory.rack_id == rack_id)
+            if device_id is not None:
+                query = query.filter(Devices.id == device_id)
+            if ip_address is not None:
+                query = query.filter(Devices.ip_address == ip_address)
+
+            results = query.first()
+            print(results,"wefkjkfdddddddddddddddddddddddddddddddddddddddddd")
+
+            if not results:
+                logger.info(
+                    f"No devices found for given filters: site_id={site_id}, rack_id={rack_id}, device_id={device_id}, ip_address={ip_address}")
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="No devices found for given filter(s)"
+                )
+
+            # Return as list of dicts
+            return results
+
     def get_device(self,ip_address: Optional[str] = None,device_id: Optional[int] = None) ->Devices:
         print("tell here Everything is fine")
         if not ip_address and not device_id:
@@ -63,6 +95,8 @@ class DashboardRepository(object):
                 Devices.id,
                 Devices.ip_address,
                 Devices.device_name,
+                Devices.rack_id,
+                Devices.site_id,
             )
             if ip_address:
                 query = query.filter(Devices.ip_address == ip_address)
@@ -84,6 +118,7 @@ class DashboardRepository(object):
                 session.query(
                     Devices.id.label('device_id'),
                     Devices.ip_address,
+                    Devices.device_name,
                     DeviceInventory.total_interface,
                     DeviceInventory.up_link,
                     DeviceInventory.down_link,
@@ -355,48 +390,45 @@ class DashboardRepository(object):
             logger.error(f"Error in get_metrics_info found: {str(e)}", exc_info=True)
             return {"error": "An unexpected error occurred while processing metrics"}
 
+    def compute_metrics(self,metrics):
+        input_kw = metrics.get("total_PIn_kw", 0)
+        output_kw = metrics.get("total_POut_kw", 0)
+        # Fixed value or replace with metrics.get("traffic_allocated_mb", 0) / 1024 if dynamic
+        traffic_allocated_gb = 10
+        total_input_bytes_gb = metrics.get("total_input_bytes", 0) / (1024 ** 3)
+        total_output_bytes_gb = metrics.get("total_output_bytes", 0) / (1024 ** 3)
+        traffic_consumed_gb = total_input_bytes_gb + total_output_bytes_gb
 
+        eer = self.calculate_eer(output_kw, input_kw)
+        pue = self.calculate_pue(input_kw, output_kw)
+        pcr = self.calculate_pcr(input_kw, traffic_consumed_gb)
+        throughput = self.calculate_traffic_throughput(traffic_consumed_gb, input_kw)
+        cost_estimation = self.calculate_cost_estimation(input_kw, self.default_cost)
+        carbon_emission_kg = self.calculate_emmision_kg(output_kw, self.default_emission)
+        carbon_emission_tons = round(carbon_emission_kg / 1000, 2) if carbon_emission_kg else 0
+        data_utilization = self.calculate_utilization(traffic_consumed_gb, traffic_allocated_gb)
+
+        return {
+            'time': metrics.get('time'),
+            'input_kw': input_kw,
+            'output_kw': output_kw,
+            'traffic_consumed_gb': round(traffic_consumed_gb, 4),
+            'traffic_allocated_gb': round(traffic_allocated_gb, 2),
+            'eer': round(eer, 4),
+            'pue': round(pue, 4),
+            'pcr': round(pcr, 4),
+            'throughput': round(throughput, 4),
+            'cost_estimation': round(cost_estimation, 2),
+            'carbon_emission_kg': round(carbon_emission_kg, 2),
+            'carbon_emission_tons': round(carbon_emission_tons, 4),
+            'data_utilization': round(data_utilization, 6),
+        }
 
     def get_time_wise_metrics(self, metrics_list):
-        def compute_metrics(metrics):
-            input_kw = metrics.get("total_PIn_kw", 0)
-            output_kw = metrics.get("total_POut_kw", 0)
-            # Fixed value or replace with metrics.get("traffic_allocated_mb", 0) / 1024 if dynamic
-            traffic_allocated_gb = 10
-            total_input_bytes_gb = metrics.get("total_input_bytes", 0) / (1024 ** 3)
-            total_output_bytes_gb = metrics.get("total_output_bytes", 0) / (1024 ** 3)
-            traffic_consumed_gb = total_input_bytes_gb + total_output_bytes_gb
-
-
-            eer = self.calculate_eer(output_kw, input_kw)
-            pue = self.calculate_pue(input_kw, output_kw)
-            pcr = self.calculate_pcr(input_kw, traffic_consumed_gb)
-            throughput = self.calculate_traffic_throughput(traffic_consumed_gb, input_kw)
-            cost_estimation = self.calculate_cost_estimation(input_kw, self.default_cost)
-            carbon_emission_kg = self.calculate_emmision_kg(output_kw, self.default_emission)
-            carbon_emission_tons = round(carbon_emission_kg / 1000, 2) if carbon_emission_kg else 0
-            data_utilization = self.calculate_utilization(traffic_consumed_gb, traffic_allocated_gb)
-
-            return {
-                'time': metrics.get('time'),
-                'input_kw': input_kw,
-                'output_kw': output_kw,
-                'traffic_consumed_gb': round(traffic_consumed_gb, 4),
-                'traffic_allocated_gb': round(traffic_allocated_gb, 2),
-                'eer': round(eer, 4),
-                'pue': round(pue, 4),
-                'pcr': round(pcr, 4),
-                'throughput': round(throughput, 4),
-                'cost_estimation': round(cost_estimation, 2),
-                'carbon_emission_kg': round(carbon_emission_kg, 2),
-                'carbon_emission_tons': round(carbon_emission_tons, 4),
-                'data_utilization': round(data_utilization, 6),
-            }
-
 
         results = []
         with ThreadPoolExecutor(max_workers=8) as executor:
-            futures = [executor.submit(compute_metrics, m) for m in metrics_list]
+            futures = [executor.submit(self.compute_metrics, m) for m in metrics_list]
             for future in as_completed(futures):
                 results.append(future.result())
 
@@ -647,6 +679,77 @@ class DashboardRepository(object):
         }
         return response
 
+    def get_metric_details(self, payload):
+        try:
+            if not payload.site_id:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Site ID is required."
+                )
+            logger.info(f"Fetching devices for site ID: {payload.site_id}")
+            results = self.get_devices_by_site_id(payload.site_id)
+            device_ips = [result.ip_address for result in results if result.ip_address]
+            logger.info(f"Fetching device_ips: {device_ips}")
+            if payload.duration:
+                logger.info(f"Fetching power and traffic data for duration: {payload.duration}")
+                metrics_data = self.dataquery_repository.get_device_energy_traffic_details(
+                    device_ips, payload.duration
+                )
+                print(metrics_data)
+                print("Metrics data:")
+                if not metrics_data:
+                    logger.warning("No metrics data returned from repository")
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"No metrics data available for the given parameters"
+                    )
+                metrics_data = self.get_detail_time_wise_metrics(metrics_data)
+                return metrics_data
+
+        except Exception as e:
+            logger.error(f"Error in get_metrics_info found: {str(e)}", exc_info=True)
+            return {"error": "An unexpected error occurred while processing metrics"}
+
+    def get_detail_time_wise_metrics(self, metrics_list: List[dict]) -> List[dict]:
+        results = []
+
+        # Step 1: Build a device info map {ip: device_metadata_dict}
+        unique_ips = list(set([m['ip'] for m in metrics_list if m.get('ip')]))
+        device_info_map = {}
+
+        for ip in unique_ips:
+            try:
+                device_data = self.get_devices_inventory(ip_address=ip)
+                print(device_data.site_name)
+                print(device_data.rack_name)
+                print(device_data.pn_code)
 
 
+                device_info_map[ip] = {
+                    "device_name": device_data.device_name,
+                    "device_id": device_data.device_id,
+                    "site_name": device_data.site_name,
+                    "pn_code": device_data.pn_code,
+                    "rack_name": device_data.rack_name
+                }
+            except Exception as e:
+                logger.warning(f"Could not fetch device info for IP {ip}: {str(e)}")
+                device_info_map[ip] = {}
 
+        # Step 2: Compute metrics with enrichment using pre-fetched data
+        def wrap_with_enrichment(metrics):
+            result = self.compute_metrics(metrics)
+            ip = metrics.get("ip")
+
+            enrichment = device_info_map.get(ip, {})
+            print("enrichment:", enrichment)
+            result["ip_address"] = ip
+            result.update(enrichment)
+            return result
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            futures = [executor.submit(wrap_with_enrichment, m) for m in metrics_list]
+            for future in as_completed(futures):
+                results.append(future.result())
+
+        results.sort(key=lambda x: x['time'])
+        return results

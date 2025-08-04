@@ -913,6 +913,24 @@ def get_excel_df(ip_addresses):
 #
 
 from typing import List
+def start_end_date(start_date, end_date):
+    if start_date and end_date:
+        start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+        end_dt = datetime.strptime(end_date, "%Y-%m-%d")
+        delta_days = (end_dt - start_dt).days
+        if delta_days <= 1:
+            window_every = "1h"
+            date_format = "%Y-%m-%d %H:00"
+        elif delta_days <= 31:
+            window_every = "1d"
+            date_format = "%Y-%m-%d"
+        else:
+            window_every = "1mo"
+            date_format = "%Y-%m"
+        return window_every, date_format, delta_days
+
+    else:
+        raise ValueError("Provide either duration_str or both start_date and end_date.")
 
 
 def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
@@ -929,6 +947,7 @@ def get_24hDevice_dataTraffic(apic_ip: str) -> List[dict]:
     total_output_packets = 0.0
 
     start_range = "-1h"
+
     query = f'''
         from(bucket: "Dcs_db")
         |> range(start:{start_range})

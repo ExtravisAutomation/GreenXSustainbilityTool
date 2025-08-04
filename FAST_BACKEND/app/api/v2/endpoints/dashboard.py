@@ -47,8 +47,6 @@ def get_metrics(filter_data: MetricesPayload,
         status_code=status.HTTP_200_OK
     )
 
-
-
 @router.post("/peak_low_devices", response_model=CustomResponse)
 @inject
 def get_peak_low_devices(filter_data: MetricesPayload,
@@ -68,6 +66,19 @@ def devices_co2emmision_pcr(filter_data: DevicePayload,
     dashboard_service: DashboardService = Depends(Provide[Container.dashboard_services])):
 
     data=dashboard_service.get_devices_co2emmision_pcr(payload=filter_data)
+    return CustomResponse(
+        message="Emission and PCR Retrieved Successfully*",
+        data=data,
+        status_code=status.HTTP_200_OK
+    )
+
+@router.post("/get_metric_detail", response_model=CustomResponse)
+@inject
+def get_metric_detail(filter_data: MetricesPayload,
+    # current_user: User = Depends(get_current_active_user),
+    dashboard_service: DashboardService = Depends(Provide[Container.dashboard_services])):
+
+    data=dashboard_service.get_metric_details(payload=filter_data)
     return CustomResponse(
         message="Emission and PCR Retrieved Successfully*",
         data=data,

@@ -228,7 +228,7 @@ class DataQueryRepository:
                 |> range(start: {start_time}, stop: {end_time})
                 |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
                 |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
-                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: true)
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             '''
             traffic_query = f'''
@@ -317,6 +317,7 @@ class DataQueryRepository:
 
         return result
 
+
     def get_device_wise_power_traffic_data(self, device_ips: List[str], duration_str: str):
         if not device_ips:
             return []
@@ -349,3 +350,100 @@ class DataQueryRepository:
             })
 
         return device_data
+
+    def get_device_energy_traffic_details(self, device_ips: List[str], duration_str: str) -> List[dict]:
+        start_date, end_date, _ = self.calculate_start_end_dates(duration_str)
+        start_time = start_date.isoformat() + 'Z'
+        end_time = end_date.isoformat() + 'Z'
+        aggregate_window, time_format = self.aggregate_window(duration_str)
+
+        all_power_frames = []
+        all_traffic_frames = []
+
+        def fetch_device_data(ip):
+            power_query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_PIn" or r["_field"] == "total_POut")
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: true)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+
+            traffic_query = f'''
+                from(bucket: "{configs.INFLUXDB_BUCKET}")
+                |> range(start: {start_time}, stop: {end_time})
+                |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic" and r["ApicController_IP"] == "{ip}")
+                |> filter(fn: (r) => r["_field"] == "total_input_bytes" or r["_field"] == "total_output_bytes" or r["_field"] == "bandwidth")
+                |> aggregateWindow(every: {aggregate_window}, fn: sum, createEmpty: false)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+
+            power_df = self.query_api.query_data_frame(power_query)
+            traffic_df = self.query_api.query_data_frame(traffic_query)
+
+            if not power_df.empty:
+                power_df['_time'] = pd.to_datetime(power_df['_time'])
+                power_df['_formatted_time'] = power_df['_time'].dt.strftime(time_format)
+                power_df['ip'] = ip
+
+            if not traffic_df.empty:
+                traffic_df['_time'] = pd.to_datetime(traffic_df['_time'])
+                traffic_df['_formatted_time'] = traffic_df['_time'].dt.strftime(time_format)
+                traffic_df['ip'] = ip
+
+            return power_df, traffic_df
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = {executor.submit(fetch_device_data, ip): ip for ip in device_ips}
+            for future in as_completed(futures):
+                power_df, traffic_df = future.result()
+                if not power_df.empty:
+                    all_power_frames.append(power_df)
+                if not traffic_df.empty:
+                    all_traffic_frames.append(traffic_df)
+
+        if not all_power_frames and not all_traffic_frames:
+            return []
+
+        power_df = pd.concat(all_power_frames, ignore_index=True) if all_power_frames else pd.DataFrame()
+        traffic_df = pd.concat(all_traffic_frames, ignore_index=True) if all_traffic_frames else pd.DataFrame()
+
+        for col in ['total_PIn', 'total_POut']:
+            if col not in power_df.columns:
+                power_df[col] = 0
+
+        for col in ['total_input_bytes', 'total_output_bytes', 'bandwidth']:
+            if col not in traffic_df.columns:
+                traffic_df[col] = 0
+
+        power_grouped = power_df.groupby(['ip', '_formatted_time'])[['total_PIn', 'total_POut']].sum().reset_index()
+        traffic_grouped = traffic_df.groupby(['ip', '_formatted_time'])[
+            ['total_input_bytes', 'total_output_bytes', 'bandwidth']].sum().reset_index()
+
+        combined = pd.merge(power_grouped, traffic_grouped, how='outer', on=['ip', '_formatted_time']).fillna(0)
+
+        result = []
+        for _, row in combined.iterrows():
+            pin = row.get('total_PIn', 0.0)
+            pout = row.get('total_POut', 0.0)
+            input_bytes = row.get('total_input_bytes', 0.0)
+            output_bytes = row.get('total_output_bytes', 0.0)
+            bandwidth_kbps = row.get('bandwidth', 0.0)
+
+            traffic_consumed_mb = (input_bytes + output_bytes) * 8 / 1e6
+            traffic_allocated_mb = bandwidth_kbps / 1000
+
+            result.append({
+                "ip": row['ip'],
+                "time": row['_formatted_time'],
+                "total_PIn_kw": round(pin / 1000, 4),
+                "total_POut_kw": round(pout / 1000, 4),
+                "total_input_bytes": round(input_bytes, 2),
+                "total_output_bytes": round(output_bytes, 2),
+                "traffic_consumed_gb": round(traffic_consumed_mb, 2),
+                "traffic_allocated_mb": round(traffic_allocated_mb, 2)
+            })
+
+        return result
+
