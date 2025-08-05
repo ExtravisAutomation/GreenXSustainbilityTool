@@ -93,12 +93,9 @@ class modelCreate(BaseModel):
 class site_filter(BaseModel):
     site_id : Optional[int]
 
-#
-
-import datetime
-
 class FilterSchema(BaseModel):
     page:Optional[int]
+    duration: Optional[str] = "24 hours"
     ip_address: Optional[str]
     device_name: Optional[str]
     serial_no: Optional[str]  # Serial numbers can be alphanumeric

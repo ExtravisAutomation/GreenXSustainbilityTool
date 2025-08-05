@@ -822,7 +822,6 @@ class DeviceInventoryRepository(BaseRepository):
                         future_power = executor.submit(get_24hDevice_power, ip)
                         print(future_power)
                         future_datatraffic = executor.submit(get_24hDevice_dataTraffic, ip)
-
                         for future in as_completed([future_power, future_datatraffic]):
                             if future == future_power:
                                 power = future.result()
@@ -1085,7 +1084,6 @@ class DeviceInventoryRepository(BaseRepository):
         print("Getting all devices")
         page_size = 10  # Number of devices per page
 
-        file_path = "device_report.xlsx"
         page = filter_data.page
         site_id = filter_data.site_id
         rack_id = filter_data.rack_id

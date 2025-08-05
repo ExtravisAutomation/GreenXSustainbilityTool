@@ -972,19 +972,18 @@ class SiteRepository(BaseRepository):
 
 
     def get_devices_data(self,device_data):
-        print("devociedata at ai end",device_data.device_id)
-
-        with self.session_factory() as session:
-            # print(device_data.device_id)
-            try:
-                existing_device = session.query(APICControllers).filter(
-                    APICControllers.id == device_data.device_id).filter(APICControllers.site_id == device_data.site_id).first()
-                print("Found existing",existing_device)
-                return existing_device
-                if not existing_device:
-                    existing_device.messages = f"Device with this id  doesnot exists."
-            except Exception as e:
-                raise ValueError(f"Error checking device existence: {str(e)}")
+        if device_data.site_id:
+            with self.session_factory() as session:
+                # print(device_data.device_id)
+                try:
+                    existing_device = session.query(APICControllers).filter(
+                        APICControllers.id == device_data.device_id).filter(APICControllers.site_id == device_data.site_id).first()
+                    print("Found existing",existing_device)
+                    return existing_device
+                    if not existing_device:
+                        existing_device.messages = f"Device with this id  doesnot exists."
+                except Exception as e:
+                    raise ValueError(f"Error checking device existence: {str(e)}")
 
     def create_device_from_excel(self, device_data: dict):
         with self.session_factory() as session:

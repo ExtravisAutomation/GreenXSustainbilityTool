@@ -57,6 +57,8 @@ class DeviceInventory(BaseModel):
     up_Link_interfaces = Column(String(1000), nullable=True)
     interfaces_types = Column(String(1000), nullable=True)
 
+
+
 class DeviceSNTC(BaseModel):
     __tablename__ = 'devices_sntc'
     __table_args__ = {'extend_existing': True}  # This line prevents redefinition errors

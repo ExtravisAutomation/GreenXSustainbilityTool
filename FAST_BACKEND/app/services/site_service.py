@@ -475,7 +475,6 @@ class SiteService:
     def calculate_start_end_dates(self, duration_str: str) -> (datetime, datetime):
         today = datetime.today()
         year=today.year
-
         if duration_str == "First Quarter":
             start_date = datetime(year, 1, 1)
             end_date = datetime(year, 3, 31)
