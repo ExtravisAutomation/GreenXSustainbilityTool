@@ -1,9 +1,7 @@
-version: "3.8"
-
 services:
-  GreenX_db:
+  greenx_db:
     image: mysql:8.0
-    container_name: app-mysql
+    container_name: greenx-mysql
     restart: unless-stopped
     env_file: .env
     environment:
@@ -11,83 +9,69 @@ services:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      TZ: Asia/Karachi
+      TZ: ${TZ:-Asia/Karachi}
     ports:
-      - "${DB_PORT}:3306"
+      - "${DB_PORT:-3306}:3306"
     volumes:
-      - GreenX-db-volume:/var/lib/mysql
+      - greenx-db-volume:/var/lib/mysql
       - ./db/initdb:/docker-entrypoint-initdb.d:ro
     command:
       - "--default-authentication-plugin=mysql_native_password"
       - "--character-set-server=utf8mb4"
       - "--collation-server=utf8mb4_unicode_ci"
     healthcheck:
-      # use the container env for the password; $$ escapes the $ for docker-compose
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD"]
       interval: 10s
       timeout: 5s
       retries: 10
 
-  GreenX_backend:
-    container_name: GreenX_test_container_Backend
-    image: backend_image_dev:latest
-    build: ./FAST_BACKEND
+  influxdb_greenx:
+    image: influxdb:2
+    container_name: greenx-influxdb
     restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USERNAME:-admin}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:-admin123}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUXDB_ORG:-greenx}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_BUCKET:-actual_power}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-changeme}
+      TZ: ${TZ:-Asia/Karachi}
+    volumes:
+      - influx-data:/var/lib/influxdb2
+
+  greenx_backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: greenx_backend:dev
+    container_name: greenx-backend
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      - greenx_db
+      - influxdb_greenx
     ports:
       - "8000:8000"
     volumes:
-      - ./FAST_BACKEND:/app
-    environment:
-      WATCHFILES_FORCE_POLLING: "true"
-      TZ: Asia/Karachi
-      # Optional DB envs for your backend to connect inside the docker network:
-      DB_HOST: GreenX_db
-      DB_PORT: "3306"
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${MYSQL_USER}
-      DB_PASSWORD: ${MYSQL_PASSWORD}
-    depends_on:
-      - GreenX_db
+      - ./backend:/app  # optional for live dev
 
-  GreenX_frontend_dev:
-    container_name: React_Container-GreenX-dev
+  greenx_frontend:
     build:
       context: ./frontend
-    image: greenx_frontend_image:dev
+      dockerfile: Dockerfile
+    image: greenx_frontend:dev
+    container_name: greenx-frontend
     restart: unless-stopped
-    ports:
-      - "3015:3000"
-    environment:
-      TZ: Asia/Karachi
-      REACT_APP_API_BASE: "http://localhost:8000"
-    volumes:
-      - ./frontend:/frontend-app         # bind-mount for live editing
-      - /frontend-app/node_modules       # anonymous volume to keep container deps
     depends_on:
-      - GreenX_backend
-
-
-  influxdb_GreenX:
-    image: influxdb:2
-    container_name: GreenX_test_container_Influxdb
-    restart: unless-stopped
+      - greenx_backend
     ports:
-      - "8088:8086"   # external:internal
-    volumes:
-      - myInfluxVolume:/var/lib/influxdb2
-      - myInfluxConfig:/etc/influxdb2
+      - "3000:3000"
     environment:
-      TZ: Asia/Karachi
-      # Proper v2 setup vars:
-      DOCKER_INFLUXDB_INIT_MODE: setup
-      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USERNAME}
-      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD}
-      DOCKER_INFLUXDB_INIT_ORG: ${INFLUXDB_ORG}
-      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_BUCKET}
-      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN}
+      VITE_API_BASE_URL: "http://localhost:8000"
 
 volumes:
-  GreenX-db-volume:
-  node_modules_dev:
-  myInfluxVolume:
-  myInfluxConfig:
+  greenx-db-volume:
+  influx-data:
