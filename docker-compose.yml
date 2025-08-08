@@ -44,7 +44,7 @@ services:
 
   greenx_backend:
     build:
-      context: ./backend
+      context: ./FAST_BACKEND
       dockerfile: Dockerfile
     image: greenx_backend:dev
     container_name: greenx-backend
@@ -56,7 +56,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app  # optional for live dev
+      - ./FAST_BACKEND:/app  # optional for live dev
 
   greenx_frontend:
     build:

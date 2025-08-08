@@ -25,6 +25,15 @@ It enables you to:
 
 With these features, GreenX Sustainability Tool not only monitors your infrastructure but also helps you optimize operations, reduce energy waste, and achieve sustainability goals.
 
+![Dashboard Screenshot](assets/dashboard.jpeg)
+![Onboarding Devices Screenshot](assets/onboarding.png)
+![Inventory Dashboard Screenshot](assets/inventory.png)
+![PUE Screenshot](assets/pue.png)
+![AI Screenshot](assets/ai.png)
+![Reporting Screenshot](assets/report.png)
+
+
+
 # 1. Get the code
 
         # Clone the repo
@@ -225,3 +234,5 @@ Looking for advanced features, priority updates, and premium support?
 Our premium version offers extended data analytics, enhanced scheduling options, and custom integrations tailored to your infrastructure.
 
 📩 Email us at [Support@extravis.co]() to get access today.
+
+
