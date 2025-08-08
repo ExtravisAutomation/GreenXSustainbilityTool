@@ -33,7 +33,6 @@ With these features, GreenX Sustainability Tool not only monitors your infrastru
 ![Reporting Screenshot](assets/report.png)
 
 
-
 # 1. Get the code
 
         # Clone the repo
