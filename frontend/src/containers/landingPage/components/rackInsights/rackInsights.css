@@ -1,0 +1,103 @@
+.rack-insights-container {
+  padding: 40px 95px;
+}
+
+.content-wrapper {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 25px 0;
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+
+.rack-insight-item {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  width: 80%;
+  max-width: 600px;
+}
+
+.rack-insight-icon {
+  width: 60px;
+  height: 60px;
+  margin-right: 20px;
+}
+
+.rack-insight-item p {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 180%;
+  color: #222222;
+  margin: 0;
+  flex: 1;
+  text-align: left;
+}
+
+.heat-map-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #fff;
+  align-items: flex-start;
+  margin-top: 110px;
+  padding: 30px 50px;
+  border-radius: 16px;
+}
+.heat-map-section .section-header{
+  margin-bottom: 30px;
+  margin-left: 20px;
+}
+
+.heat-map-container {
+  width: 100%;
+  display: flex;
+  gap: 40px;
+  align-items: center;
+}
+
+.heat-map-image {
+  border-radius: 5px;
+  object-position: -20px center;
+  width: 60%;
+}
+
+.heat-map-legend {
+  width: 35%;
+  padding-left: 20px;
+  align-self: stretch;
+  margin-top: 50px;
+}
+
+.heat-map-legend h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.heat-map-legend p {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+.heat-map-legend ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.heat-map-legend li {
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  position: relative;
+  padding-left: 20px;
+}
+
+.heat-map-legend li:before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #1b8540;
+}

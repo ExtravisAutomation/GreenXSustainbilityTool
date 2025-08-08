@@ -16,7 +16,7 @@ class SiteBase(BaseModel):
     latitude: str
     longitude: str
     status: str
-    total_devices: Optional[str] = None
+
 
 class SiteDetails(SiteBase):
     id: int
@@ -304,7 +304,7 @@ class PasswordGroupUpdate(BaseModel):
     password: str = None
 
 
-class APICControllersCreate(BaseModel):
+class DevicesCreate(BaseModel):
     ip_address: str
     device_type: Optional[str]
     device_name: Optional[str]
@@ -314,7 +314,7 @@ class APICControllersCreate(BaseModel):
     password_group_id: Optional[int]
 
 
-class APICControllersUpdate(BaseModel):
+class DevicesUpdate(BaseModel):
     ip_address: Optional[str]
     device_type: Optional[str]
     device_name: Optional[str]
@@ -324,7 +324,7 @@ class APICControllersUpdate(BaseModel):
     password_group_id: Optional[int]
 
 
-class APICControllersResponse(BaseModel):
+class DevicesResponse(BaseModel):
     id: int
     device_ip: str
     device_type: Optional[str]

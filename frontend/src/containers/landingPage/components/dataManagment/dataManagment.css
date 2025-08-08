@@ -1,0 +1,13 @@
+.data-management-container {
+  padding: 40px 95px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 50px;
+}
+
+.data-image {
+  width: 60%;
+  margin: auto;
+}

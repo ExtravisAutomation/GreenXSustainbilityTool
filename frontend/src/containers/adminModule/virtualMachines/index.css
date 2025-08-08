@@ -1,0 +1,29 @@
+/* 
+:where(.css-dev-only-do-not-override-1adbn6x).ant-collapse {
+  border: unset !important;
+}
+.custom-collapse {
+  background-color: #16212a !important;
+  border-radius: 0px !important;
+}
+
+.custom-collapse .ant-collapse-item {
+  border: 1px solid #36424e !important;
+  background-color: #16212a !important;
+  border-radius: 0px !important;
+}
+
+.custom-collapse .ant-collapse-header {
+  border-radius: 0px !important;
+  border: 1px solid #36424e !important;
+
+  color: white !important;
+  background-color: #16212a !important;
+}
+
+.custom-collapse .ant-collapse-content-box {
+  padding: 0px 10px 0px 0px !important;
+  color: white !important;
+  background-color: #16212a !important;
+  margin: 0px !important;
+} */

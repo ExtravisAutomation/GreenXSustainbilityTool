@@ -1,0 +1,24 @@
+Value Mode (redundant|non-redundant)
+Value OperationalRedundancy (\S+\(\d\+\d\))
+Value TOTAL_POWER_INPUT (\d+\.\d+)
+Value TOTAL_POWER_OUTPUT (\d+\.\d+)
+Value AvailablePower (\d+\.\d+)
+Value PowerCapacity (\d+\.\d+)
+Value PowerUsed (\d+\.\d+)
+Value PowerAvailable (\d+\.\d+)
+Value FanAllocated (\d+\.\d+)
+Value PowerConverterAllocated (\d+\.\d+)
+
+Start
+  ^system\ power\ redundancy\ mode\ =\s+${Mode}
+  ^system\ power\ redundancy\ operationally\ =\s+${OperationalRedundancy}
+  ^system\ power\ total\ =\s+${TOTAL_POWER_INPUT}\ Watts
+  ^system\ power\ used\ =\s+${TOTAL_POWER_OUTPUT}\ Watts
+  ^system\ power\ available\ =\s+${AvailablePower}\ Watts
+  ^\s+Power-Capacity\s+PS-Fan\s+Output\s+Oper
+  ^PS\s+Type\s+Watts\s+A@52V\s+Status\s+Status\s+State
+  ^[0-9]+\s+\S+\s+${PowerCapacity}\s+\d+\.\d+\s+OK\s+OK\s+on
+  ^Fan\s+Type\s+Watts\s+A@52V\s+State
+  ^[0-9]+\s+\S+\s+${FanAllocated}\s+\d+\.\d+\s+OK
+  ^PwrCon\s+Type\s+Watts\s+A@52V\s+State
+  ^[0-9]+\s+\S+\s+${PowerConverterAllocated}\s+\d+\.\d+\s+OK

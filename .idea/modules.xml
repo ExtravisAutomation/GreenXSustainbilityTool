@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/DCS_Backend.iml" filepath="$PROJECT_DIR$/.idea/DCS_Backend.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/GreenXSustainabilityPlatform.iml" filepath="$PROJECT_DIR$/.idea/GreenXSustainabilityPlatform.iml" />
     </modules>
   </component>
 </project>

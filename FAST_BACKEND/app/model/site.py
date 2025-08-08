@@ -16,11 +16,8 @@ class Site(BaseModel):
     status = Column(String(255), nullable=True)
     total_devices = Column(String(255), nullable=True)
     racks = relationship("Rack", back_populates="site")
-    devices = relationship("APICControllers", back_populates="site")
+    devices = relationship("Devices", back_populates="site")
     #racks = relationship("Rack", order_by="Rack.id", back_populates="site")
-    
-    # Relationship
-    reports = relationship("Reports", back_populates="site")
 
 
 
@@ -30,4 +27,4 @@ class PasswordGroup(BaseModel):
     password_group_type = Column(String, index=True, nullable=True)
     username = Column(String, nullable=True)
     password = Column(String, nullable=True)
-    devices = relationship("APICControllers", back_populates="password_group")
+    devices = relationship("Devices", back_populates="password_group")

@@ -17,7 +17,7 @@ from app.schema.admin_schema import RoleDetails,DashboardModuleDetails,UserUpdat
 
 from app.repository.influxdb_repository import InfluxDBRepository
 
-from app.schema.ai_schema import *
+
 import logging
 
 # Configure logging

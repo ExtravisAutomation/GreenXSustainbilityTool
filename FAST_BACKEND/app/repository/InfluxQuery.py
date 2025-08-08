@@ -15,10 +15,102 @@ token = os.getenv("INFLUXDB_TOKEN")
 url = os.getenv("INFLUXDB_URL")
 
 client = InfluxDBClient(url=url, token=token, org=org)
-write_api = client.write_api(write_options=SYNCHRONOUS)
-
 
 query_api = client.query_api()
+
+
+def get_24hrack_power(ips, rack_id) -> List[dict]:
+    ip_list = [ip[0] for ip in ips if ip[0]]
+    print(ip_list)
+    if not ip_list:
+        return []
+
+    start_range = "-24h"
+    rack_data = []
+    total_power_output, total_power_input = 0, 0
+
+    for ip_address in ip_list:
+        print(ip_address)
+        query = f'''from(bucket: "Dcs_db")
+              |> range(start: {start_range})
+              |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
+              |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
+              |> sum()
+              |> yield(name: "total_sum")'''
+        try:
+            result = query_api.query(query)
+
+            power_output, power_input = None, None
+
+            for table in result:
+                for record in table.records:
+                    if record.get_field() == "total_POut":
+                        power_output = record.get_value()
+                    elif record.get_field() == "total_PIn":
+                        power_input = record.get_value()
+
+                    if power_output is not None and power_input is not None:
+                        total_power_output += power_output
+                        total_power_input += power_input
+
+            energy_effieciency = None
+            pue = None
+            if total_power_input > 0:
+                energy_effieciency = (total_power_output / total_power_input)
+            if total_power_output > 0:
+                pue = ((total_power_input / total_power_output))
+            rack_data.append({
+                "rack_id": rack_id,
+                "energy_effieciency": round(energy_effieciency, 2) if energy_effieciency is not None else 0,
+                "power_input": total_power_input,
+                "pue": round(pue, 2) if pue is not None else 0,
+
+            })
+
+        except Exception as e:
+            print(f"Error querying InfluxDB for {ip_address}: {e}")
+
+    return rack_data
+
+
+def get_24h_rack_datatraffic(apic_ips, rack_id) -> List[dict]:
+    apic_ip_list = [ip[0] for ip in apic_ips if ip[0]]
+    print(apic_ip_list)
+    if not apic_ip_list:
+        return []
+
+    start_range = "-24h"
+    Traffic_rack_data = []
+    total_byterate = 0
+
+    for apic_ip in apic_ip_list:
+        print(apic_ip)
+        query = f'''from(bucket: "Dcs_db")
+              |> range(start: {start_range})
+              |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic")
+              |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
+              |> sum()
+              |> yield(name: "total_sum")'''
+        try:
+            result = query_api.query(query)
+            byterate = None
+
+            for table in result:
+                for record in table.records:
+                    if record.get_field() == "total_bytesRateLast":
+                        byterate = record.get_value()
+                    else:
+                        byterate = 0
+                    total_byterate += byterate
+            print(total_byterate, "total_bytesRateLast")
+            Traffic_rack_data.append({
+                "rack_id": rack_id,
+                "traffic_through": total_byterate})
+        except Exception as e:
+            print(f"Error querying InfluxDB for {apic_ip}: {e}")
+
+    return Traffic_rack_data
+
 
 def get_power_data_per_day(self, apic_ip):
     query = f'''
@@ -385,97 +477,6 @@ def get_rack_power(apic_ips, rack_id) -> List[dict]:
             
 
     return rack_data
-def get_24hrack_power(ips, rack_id) -> List[dict]:
-    ip_list = [ip[0] for ip in ips if ip[0]]
-    print(ip_list)
-    if not ip_list:
-        return []
-
-    start_range = "-24h"
-    rack_data = []
-    total_power_output, total_power_input = 0, 0
-
-    for ip_address in ip_list:
-        print(ip_address)
-        query = f'''from(bucket: "Dcs_db")
-              |> range(start: {start_range})
-              |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
-              |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
-              |> sum()
-              |> yield(name: "total_sum")'''
-        try:
-            result = query_api.query(query)
-
-            power_output,power_input = None, None
-
-            for table in result:
-                for record in table.records:
-                    if record.get_field() == "total_POut":
-                        power_output = record.get_value()
-                    elif record.get_field() == "total_PIn":
-                        power_input = record.get_value()
-
-                    if power_output is not None and power_input is not None:
-                        total_power_output += power_output
-                        total_power_input += power_input
-
-            energy_effieciency = None
-            pue = None
-            if total_power_input > 0:
-                energy_effieciency = (total_power_output / total_power_input)
-            if total_power_output > 0:
-                pue = ((total_power_input / total_power_output))
-            rack_data.append({
-                "rack_id": rack_id,
-                "energy_effieciency": round(energy_effieciency, 2) if energy_effieciency is not None else 0,
-                "power_input":total_power_input,
-                "pue":round(pue,2) if pue is not None else 0,
-
-            })
-
-        except Exception as e:
-            print(f"Error querying InfluxDB for {ip_address}: {e}")
-            
-
-    return rack_data
-def get_24h_rack_datatraffic(apic_ips, rack_id) -> List[dict]:
-    apic_ip_list = [ip[0] for ip in apic_ips if ip[0]]
-    print(apic_ip_list)
-    if not apic_ip_list:
-        return []
-
-    start_range = "-24h"
-    Traffic_rack_data = []
-    total_byterate=0
-
-    for apic_ip in apic_ip_list:
-        print(apic_ip)
-        query = f'''from(bucket: "Dcs_db")
-              |> range(start: {start_range})
-              |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic")
-              |> filter(fn: (r) => r["ApicController_IP"] == "{apic_ip}")
-              |> sum()
-              |> yield(name: "total_sum")'''
-        try:
-            result = query_api.query(query)
-            byterate= None
-
-            for table in result:
-                for record in table.records:
-                    if record.get_field() == "total_bytesRateLast":
-                        byterate = record.get_value()
-                    else:
-                        byterate=0
-                    total_byterate += byterate
-            print(total_byterate, "total_bytesRateLast")
-            Traffic_rack_data.append({
-                "rack_id": rack_id,
-                "traffic_through": total_byterate  })
-        except Exception as e:
-            print(f"Error querying InfluxDB for {apic_ip}: {e}")
-            
-
-    return Traffic_rack_data
 
 
 def get_24hDevice_power(apic_ip: str) -> List[dict]:

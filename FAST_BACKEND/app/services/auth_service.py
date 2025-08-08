@@ -24,6 +24,7 @@ from app.schema.auth_schema import SignInNew
 class AuthService(BaseService):
     def __init__(self, user_repository: UserRepository, blacklisted_token_repository: BlacklistedTokenRepository):
         self.user_repository = user_repository
+        print("finre")
         super().__init__(user_repository)
         self.blacklisted_token_repository = blacklisted_token_repository
 
@@ -97,6 +98,7 @@ class AuthService(BaseService):
         )
         print("USERRRRRR", user)
         user.password = get_password_hash(user_info.password)
+        print("PASS")
 
         created_user = self.user_repository.create(user)
 

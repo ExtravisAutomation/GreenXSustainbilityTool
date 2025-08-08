@@ -29,7 +29,244 @@ class InfluxDBRepository:
         self.org = org
         self.token = token
         self.query_api1 = self.client.query_api()
+    def build_query(self, ip, field, range_start):
+        return f'''
+            from(bucket: "Dcs_db")
+            |> range(start: {range_start})
+            |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+            |> filter(fn: (r) => r["_field"] == "{field}")
+            |> sort(columns: ["_time"], desc: true)
+            |> last()
+        '''
 
+
+    def get_24hsite_power(self, ips: List[str], site_id: int) -> List[dict]:
+        if not ips:
+            return []
+
+        start_range = "-24h"
+        site_data = []
+        for ip_address in ips:
+            query = f'''
+                from(bucket: "Dcs_db")
+                |> range(start: {start_range})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
+                |> sum()
+                |> yield(name: "total_sum") 
+            '''
+            try:
+                result = self.query_api1.query(query)
+                print(f"Debug: Results for {ip_address} - {result}")
+
+                eer = None
+                pue = None
+                total_power_in = 0
+                total_power_out= 0
+                power_out, power_in = None, None
+
+                for table in result:
+                    for record in table.records:
+                        print(
+                            f"Debug: Record - {record.get_field()}={record.get_value()}")  # More detailed debug output
+                        if record.get_field() == "total_POut":
+                            power_out = record.get_value()
+                        elif record.get_field() == "total_PIn":
+                            power_in = record.get_value()
+                        if power_out is not None and power_in is not None:
+                            total_power_out += power_out
+                            total_power_in += power_in
+
+                if total_power_in > 0:
+                    eer = (total_power_out / total_power_in) * 100
+                if total_power_out > 0:
+                    pue = ((total_power_in / total_power_out) - 1) * 100
+
+                site_data.append({
+                    "site_id": site_id,
+                    "energy_efficiency": round(eer, 2) if eer is not None else 0,
+                    "power_input": round(total_power_in, 2) if total_power_in != 0 else None,
+                    "power_output": round(total_power_out, 2) if total_power_out != 0 else None,
+                    "pue": round(pue, 2) if pue is not None else 0,
+
+
+                })
+
+            except Exception as e:
+                print(f"Error querying InfluxDB for {ip_address}: {e}")
+        print(site_data)
+
+        return site_data
+
+    def get_24hsite_datatraffic(self, ips: List[str], site_id: int) -> List[dict]:
+        if not ips:
+            return []
+
+        start_range = "-24h"
+        site_data = []
+        for ip_address in ips:
+            query = f'''
+                from(bucket: "Dcs_db")
+                |> range(start: {start_range})
+                |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic")
+                |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
+                |> sum()
+                |> yield(name: "total_sum")
+            '''
+            try:
+                result = self.query_api1.query(query)
+                total_byterate = 0
+
+                for table in result:
+                    for record in table.records:
+                        if record.get_field() == "total_bytesRateLast":
+                            total_byterate = record.get_value()
+                        else:
+                            total_byterate = 0
+                            total_byterate+= total_byterate
+
+                site_data.append({
+                    "site_id": site_id,
+                    "traffic_through": total_byterate
+                })
+            except Exception as e:
+                print(f"Error querying InfluxDB for {ip_address}: {e}")
+
+        return site_data
+
+    def get_eer_metrics(self, device_ips: List[str], site_id: int) -> List[dict]:
+        if not device_ips:
+            return []
+        start_range = "-24h"
+        hourly_data = []
+
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "Dcs_db")
+                |> range(start: {start_range})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
+            result = self.query_api1.query(query)
+
+            for table in result:
+                for record in table.records:
+                    hour = record.get_time().strftime('%Y-%m-%d %H:00')
+                    drawnAvg = record.values.get('total_POut', None)
+                    suppliedAvg = record.values.get('total_PIn', None)
+                    energy_efficieny = None
+                    if drawnAvg is not None and suppliedAvg is not None and suppliedAvg > 0:
+                        energy_efficieny = (drawnAvg / suppliedAvg) * 100
+                    hourly_data.append({
+                        "site_id": site_id,
+                        "ip_address": ip,
+                        "hour": hour,
+                        "energy_efficieny": round(energy_efficieny, 2) if energy_efficieny is not None else 0
+                    })
+
+        # Aggregating data as per hour
+        aggregated_data = {}
+        now = datetime.utcnow()
+
+        for i in range(24):
+            hour = (now - timedelta(hours=i)).strftime('%Y-%m-%d %H:00')
+            aggregated_data[hour] = {
+                "total_energy_efficieny": 0,
+                "count": 0
+            }
+
+        # Aggregate power utilization for each hour as provided in hourly_data
+        for data in hourly_data:
+            hour = data["hour"]
+            energy_efficieny = data["energy_efficieny"]
+
+            if energy_efficieny is not None:
+                aggregated_data[hour]["total_energy_efficieny"] += energy_efficieny
+                aggregated_data[hour]["count"] += 1
+
+        # Calculate average power utilization for each hour
+        final_data = []
+        for hour, values in aggregated_data.items():
+            if values["count"] > 0:
+                avg_energy_efficieny = values["total_energy_efficieny"] / values["count"]
+            else:
+                # Assign random value if no data exists for the hour
+                avg_power_utilization = round(random.uniform(86, 261), 2)
+
+            final_data.append({
+                "Site_id": site_id,
+                "hour": hour,
+                "energy_efficieny": round(avg_energy_efficieny, 2)
+            })
+
+        # Ensure the final data is sorted by hour in descending order
+        final_data.sort(key=lambda x: x["hour"], reverse=True)
+
+        return final_data
+
+    def get_energy_efficiency(self, device_ips: List[str], site_id: int) -> List[dict]:
+        energy_efficiency_data = []
+        start_range ="-2h"
+        for ip in device_ips:
+            query = f'''
+                from(bucket: "Dcs_db")
+                |> range(start: {start_range})
+                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
+                |> sort(columns: ["_time"], desc: true)
+                |> last()
+                |> yield(name: "last_result")
+                '''
+            result = self.query_api1.query(query)
+            PowerIn, PowerOut = None, None
+            for table in result:
+                for record in table.records:
+                    if record.get_field() == "total_PIn":
+                        PowerIn = record.get_value()
+                    elif record.get_field() == "total_POut":
+                        PowerOut = record.get_value()
+
+                    if PowerIn and PowerOut and PowerIn > 0:
+                        power_efficiency = (PowerOut / PowerIn) * 100
+                        energy_efficiency_data.append({
+                            "site_id": site_id,
+                            "ip_address": ip,
+                            "PowerInput": PowerIn,
+                            "PowerOutput": PowerOut,
+                            "energy_efficiency": round(power_efficiency, 2)
+                        })
+
+        return energy_efficiency_data
+
+    def get_power_required(self, device_ips: List[str], site_id: int) -> List[dict]:
+        power_required_data = []
+        start_range = "-1h"
+        for ip in device_ips:
+            # Query for Power Input and Output
+            power_in_query = self.build_query(ip, "total_PIn", start_range)
+
+            power_out_query = self.build_query(ip, "total_POut", start_range)
+            total_power_query = self.build_query(ip, "total_PIn", start_range)
+
+            PowerIn = self.query_last_value(power_in_query) or 0
+            PowerOut = self.query_last_value(power_out_query) or 0
+            TotalPower = self.query_last_value(total_power_query) or 0
+
+            try:
+                powerper = round((PowerIn / TotalPower) * 100, 2) if TotalPower else 0
+            except (TypeError, ZeroDivisionError):
+                powerper = 0
+
+            power_required_data.append({
+                "site_id": site_id,
+                "ip_address": ip,
+                "power_input": PowerIn,
+                "power_output":PowerOut,
+                "total_power": TotalPower if TotalPower else 0,
+                "power_in_per": round(powerper, 2)
+            })
+
+        return power_required_data
 
     def get_energy_efficiency_metrics_with_filter(self, device_ips: List[str], start_date: datetime,
                                                    end_date: datetime, duration_str: str) -> List[dict]:
@@ -206,38 +443,6 @@ class InfluxDBRepository:
             print(f"Error writing data to InfluxDB: {e}", file=sys.stderr)
 
 
-    def get_energy_efficiency(self, device_ips: List[str], site_id: int) -> List[dict]:
-        energy_efficiency_data = []
-        start_range ="-2h"
-        for ip in device_ips:
-            query = f'''
-                from(bucket: "Dcs_db")
-                |> range(start: {start_range})
-                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                |> sort(columns: ["_time"], desc: true)
-                |> last()
-                |> yield(name: "last_result")
-                '''
-            result = self.query_api1.query(query)
-            PowerIn, PowerOut = None, None
-            for table in result:
-                for record in table.records:
-                    if record.get_field() == "total_PIn":
-                        PowerIn = record.get_value()
-                    elif record.get_field() == "total_POut":
-                        PowerOut = record.get_value()
-
-                    if PowerIn and PowerOut and PowerIn > 0:
-                        power_efficiency = (PowerOut / PowerIn) * 100
-                        energy_efficiency_data.append({
-                            "site_id": site_id,
-                            "ip_address": ip,
-                            "PowerInput": PowerIn,
-                            "PowerOutput": PowerOut,
-                            "energy_efficiency": round(power_efficiency, 2)
-                        })
-
-        return energy_efficiency_data
 
     async def get_last_records(self, ip: str, limit: int = 10) -> list:
         query = f'from(bucket: "{self.bucket}") |> range(start: -1h) |> filter(fn: (r) => r["device"] == "{ip}") |> limit(n:{limit})'
@@ -615,7 +820,7 @@ class InfluxDBRepository:
 
     from datetime import datetime, timedelta
     from typing import List
-    import pandas as pd
+
 
 
     def get_energy_consumption_metrics_with_filter_tes(self, device_ips: List[str], start_date: datetime,
@@ -2455,219 +2660,13 @@ class InfluxDBRepository:
 
         return site_data
 
-    def get_24hsite_power(self, ips: List[str], site_id: int) -> List[dict]:
-        if not ips:
-            return []
-
-        start_range = "-24h"
-        site_data = []
-        for ip_address in ips:
-            query = f'''
-                from(bucket: "Dcs_db")
-                |> range(start: {start_range})
-                |> filter(fn: (r) => r["_measurement"] == "DevicePSU")
-                |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
-                |> sum()
-                |> yield(name: "total_sum") 
-            '''
-            try:
-                result = self.query_api1.query(query)
-                print(f"Debug: Results for {ip_address} - {result}")
-
-                eer = None
-                pue = None
-                total_power_in = 0
-                total_power_out= 0
-                power_out, power_in = None, None
-
-                for table in result:
-                    for record in table.records:
-                        print(
-                            f"Debug: Record - {record.get_field()}={record.get_value()}")  # More detailed debug output
-                        if record.get_field() == "total_POut":
-                            power_out = record.get_value()
-                        elif record.get_field() == "total_PIn":
-                            power_in = record.get_value()
-                        if power_out is not None and power_in is not None:
-                            total_power_out += power_out
-                            total_power_in += power_in
-
-                if total_power_in > 0:
-                    eer = (total_power_out / total_power_in) * 100
-                if total_power_out > 0:
-                    pue = ((total_power_in / total_power_out) - 1) * 100
-
-                site_data.append({
-                    "site_id": site_id,
-                    "energy_efficiency": round(eer, 2) if eer is not None else 0,
-                    "power_input": round(total_power_in, 2) if total_power_in != 0 else None,
-                    "power_output": round(total_power_out, 2) if total_power_out != 0 else None,
-                    "pue": round(pue, 2) if pue is not None else 0,
 
 
-                })
-
-            except Exception as e:
-                print(f"Error querying InfluxDB for {ip_address}: {e}")
-        print(site_data)
-
-        return site_data
-
-    def get_24hsite_datatraffic(self, ips: List[str], site_id: int) -> List[dict]:
-        if not ips:
-            return []
-
-        start_range = "-24h"
-        site_data = []
-        for ip_address in ips:
-            query = f'''
-                from(bucket: "Dcs_db")
-                |> range(start: {start_range})
-                |> filter(fn: (r) => r["_measurement"] == "DeviceEngreeTraffic")
-                |> filter(fn: (r) => r["ApicController_IP"] == "{ip_address}")
-                |> sum()
-                |> yield(name: "total_sum")
-            '''
-            try:
-                result = self.query_api1.query(query)
-                total_byterate = 0
-
-                for table in result:
-                    for record in table.records:
-                        if record.get_field() == "total_bytesRateLast":
-                            total_byterate = record.get_value()
-                        else:
-                            total_byterate = 0
-                            total_byterate+= total_byterate
-
-                site_data.append({
-                    "site_id": site_id,
-                    "traffic_through": total_byterate
-                })
-            except Exception as e:
-                print(f"Error querying InfluxDB for {ip_address}: {e}")
-
-        return site_data
-
-    def get_eer_metrics(self, device_ips: List[str], site_id: int) -> List[dict]:
-        if not device_ips:
-            return []
-        start_range = "-24h"
-        hourly_data = []
-
-        for ip in device_ips:
-            query = f'''
-                from(bucket: "Dcs_db")
-                |> range(start: {start_range})
-                |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-                |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
-                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-            '''
-            result = self.query_api1.query(query)
-
-            for table in result:
-                for record in table.records:
-                    hour = record.get_time().strftime('%Y-%m-%d %H:00')
-                    drawnAvg = record.values.get('total_POut', None)
-                    suppliedAvg = record.values.get('total_PIn', None)
-                    energy_efficieny = None
-                    if drawnAvg is not None and suppliedAvg is not None and suppliedAvg > 0:
-                        energy_efficieny = (drawnAvg / suppliedAvg) * 100
-                    hourly_data.append({
-                        "site_id": site_id,
-                        "ip_address": ip,
-                        "hour": hour,
-                        "energy_efficieny": round(energy_efficieny, 2) if energy_efficieny is not None else 0
-                    })
-
-        # Aggregating data as per hour
-        aggregated_data = {}
-        now = datetime.utcnow()
-
-        for i in range(24):
-            hour = (now - timedelta(hours=i)).strftime('%Y-%m-%d %H:00')
-            aggregated_data[hour] = {
-                "total_energy_efficieny": 0,
-                "count": 0
-            }
-
-        # Aggregate power utilization for each hour as provided in hourly_data
-        for data in hourly_data:
-            hour = data["hour"]
-            energy_efficieny = data["energy_efficieny"]
-
-            if energy_efficieny is not None:
-                aggregated_data[hour]["total_energy_efficieny"] += energy_efficieny
-                aggregated_data[hour]["count"] += 1
-
-        # Calculate average power utilization for each hour
-        final_data = []
-        for hour, values in aggregated_data.items():
-            if values["count"] > 0:
-                avg_energy_efficieny = values["total_energy_efficieny"] / values["count"]
-            else:
-                # Assign random value if no data exists for the hour
-                avg_power_utilization = round(random.uniform(86, 261), 2)
-
-            final_data.append({
-                "Site_id": site_id,
-                "hour": hour,
-                "energy_efficieny": round(avg_energy_efficieny, 2)
-            })
-
-        # Ensure the final data is sorted by hour in descending order
-        final_data.sort(key=lambda x: x["hour"], reverse=True)
-
-        return final_data
 
 
-    def get_power_required(self, device_ips: List[str], site_id: int) -> List[dict]:
-        power_required_data = []
-        start_range = "-1h"
-        for ip in device_ips:
-            # Query for Power Input and Output
-            power_in_query = self.build_query(ip, "total_PIn", start_range)
 
-            power_out_query = self.build_query(ip, "total_POut", start_range)
-            total_power_query = self.build_query(ip, "total_PIn", start_range)
 
-            # PowerIn = self.query_last_value(power_in_query)
-            # PowerOut = self.query_last_value(power_out_query)
-            # TotalPower = self.query_last_value(total_power_query)
-            #
-            # if TotalPower is not None and TotalPower != 0:
-            #     powerper = (PowerIn / TotalPower) * 100
-            # else:
-            #     powerper = 0
-            PowerIn = self.query_last_value(power_in_query) or 0
-            PowerOut = self.query_last_value(power_out_query) or 0
-            TotalPower = self.query_last_value(total_power_query) or 0
 
-            try:
-                powerper = round((PowerIn / TotalPower) * 100, 2) if TotalPower else 0
-            except (TypeError, ZeroDivisionError):
-                powerper = 0
-
-            power_required_data.append({
-                "site_id": site_id,
-                "ip_address": ip,
-                "power_input": PowerIn,
-                "power_output":PowerOut,
-                "total_power": TotalPower if TotalPower else 0,
-                "power_in_per": round(powerper, 2)
-            })
-
-        return power_required_data
-
-    def build_query(self, ip, field, range_start):
-        return f'''
-            from(bucket: "Dcs_db")
-            |> range(start: {range_start})
-            |> filter(fn: (r) => r["_measurement"] == "DevicePSU" and r["ApicController_IP"] == "{ip}")
-            |> filter(fn: (r) => r["_field"] == "{field}")
-            |> sort(columns: ["_time"], desc: true)
-            |> last()
-        '''
 
     def query_last_value(self, query):
         result = self.query_api1.query(query)

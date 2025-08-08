@@ -25,6 +25,7 @@ async def sign_in(user_info: SignInNew, service: AuthService = Depends(Provide[C
 @router.post("/sign-up", response_model=UserSchema)
 @inject
 async def sign_up(user_info: SignUp, service: AuthService = Depends(Provide[Container.auth_service])):
+    print("here we are")
     return service.sign_up(user_info)
 
 

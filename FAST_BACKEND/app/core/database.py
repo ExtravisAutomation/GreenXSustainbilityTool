@@ -20,6 +20,7 @@ class BaseModel:
 
 class Database:
     def __init__(self, db_url: str) -> None:
+        print(db_url,"database")
         self._engine = create_engine(db_url, echo=True,
                                      poolclass=QueuePool,  # Use QueuePool for efficient pooling
                                      pool_size=10,  # Adjust based on load
@@ -27,7 +28,6 @@ class Database:
                                      pool_timeout=30,  # Wait time for a new connection if pool is full
                                      pool_recycle=1800,
                                      )
-
         self._session_factory = orm.scoped_session(
             orm.sessionmaker(
                 autocommit=False,
@@ -35,12 +35,12 @@ class Database:
                 bind=self._engine,
             ),
         )
-
     def create_database(self) -> None:
         BaseModel.metadata.create_all(self._engine)
 
     @contextmanager
     def session(self) -> Callable[..., AbstractContextManager[Session]]:
+        print()
         session: Session = self._session_factory()
         try:
             yield session

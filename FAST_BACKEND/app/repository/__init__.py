@@ -3,13 +3,7 @@ from app.repository.site_repository import SiteRepository
 from app.repository.rack_repository import RackRepository
 from app.repository.blacklisted_token_repository import BlacklistedTokenRepository
 from app.repository.influxdb_repository import InfluxDBRepository
-from app.repository.apic_repository import APICRepository
 from app.repository.device_inventory_repository import DeviceInventoryRepository
-from app.repository.report_repository import ReportRepository
-from app.repository.vcenter_repository import VcenterRepository
-from app.repository.perhr_repository import PerhrRepository
-from app.repository.ai_repository import AIRepository
 from app.repository.admin_repository import AdminPanelRepository
 from app.repository.dataquery_repository import DataQueryRepository
-from app.repository.comparison_repository import ComparisonRepository
 from app.repository.dashboard_repository import DashboardRepository

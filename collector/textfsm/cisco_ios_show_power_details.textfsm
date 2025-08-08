@@ -1,0 +1,10 @@
+Value Required TOTAL_POWER_INPUT (\d+)
+Value Required TOTAL_POWER_OUTPUT (\d+)
+
+Start
+  ^Power Summary.*Maximum
+  ^-------------  ------  ---------
+  ^System Power   \d+     \d+
+  ^POE Power      \d+     \d+
+  ^-------------  ------  ---------
+  ^Total          ${TOTAL_POWER_OUTPUT}     ${TOTAL_POWER_INPUT} -> Record

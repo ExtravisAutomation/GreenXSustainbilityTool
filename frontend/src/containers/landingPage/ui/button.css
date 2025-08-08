@@ -1,0 +1,26 @@
+.button {
+  display: inline-block;
+  background-color: #A3DC2F;
+  color: black;
+  border: none;
+  border-radius: 9999px; /* Full rounded corners */
+  padding: 10px 28px;
+  font-weight: 600;
+  font-size: 0.8rem; /* Equivalent to text-lg */
+  line-height: 185%;
+  cursor: pointer;
+  text-align: center;
+}
+
+.button:hover {
+  background-color: #8FCF1A;
+}
+
+.button:active {
+  background-color: #7ABF15;
+}
+
+.button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(163, 220, 47, 0.5); /* Equivalent to ring-3 ring-[#A3DC2F]/50 */
+}

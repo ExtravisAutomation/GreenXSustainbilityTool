@@ -1,0 +1,13 @@
+Value INTERFACE (\S+)
+Value IHQ (\d+)
+Value IQD (\d+)
+Value OHQ (\d+)
+Value OQD (\d+)
+Value RXBS (\d+)
+Value RXPS (\d+)
+Value TXBS (\d+)
+Value TXPS (\d+)
+Value TRTL (\d+)
+
+Start
+  ^[* ]\s+${INTERFACE}\s+${IHQ}\s+${IQD}\s+${OHQ}\s+${OQD}\s+${RXBS}\s+${RXPS}\s+${TXBS}\s+${TXPS}\s+${TRTL} -> Record

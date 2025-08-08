@@ -1,0 +1,46 @@
+Value Required Voltage (\d+ Volts)
+Value Required PS_Num (\d+)
+Value Required PS_Model (\S+)
+Value Required PS_InputType (\S+)
+Value Required PS_InputPower (\d+\.\d+)
+Value Required PS_Current (\d+\.\d+)
+Value Required PS_Status (\S+)
+Value Required Mod_Num (\d+)
+Value Required Mod_Model (\S+)
+Value Required Mod_PowerRequested (\d+\.\d+)
+Value Required Mod_CurrentRequested (\d+\.\d+)
+Value Required Mod_PowerAllocated (\d+\.\d+)
+Value Required Mod_CurrentAllocated (\d+\.\d+)
+Value Required Mod_Status (\S+)
+Value Required RedundancyMode (\S+)
+Value Required RedundancyOperationalMode (\S+)
+Value Required TOTAL_POWER_INPUT (\d+\.\d+ W)
+Value Required PowerReserved (\d+\.\d+ W)
+Value Required PowerUsedByModules (\d+\.\d+ W)
+Value Required TotalPowerAvailable (\d+\.\d+ W)
+
+Start
+  ^Power Supply:\s*$$
+  ^Voltage: ${Voltage}\s*$$
+  ^-+\s*$$
+  ^PS\s+Model\s+Input Power\s+Current\s+Status\s*$$
+  ^\s+Type\s+\(Watts\)\s+\(Amps\)\s*$$
+  ^-+\s*$$
+  ^${PS_Num}\s+${PS_Model}\s+${PS_InputType}\s+${PS_InputPower}\s+${PS_Current}\s+${PS_Status}\s*$$
+  ^-+\s*$$
+  ^Mod\s+Model\s+Power\s+Current\s+Power\s+Current\s+Status\s*$$
+  ^Requested\s+Requested\s+Allocated\s+Allocated\s*$$
+  ^\(Watts\)\s+\(Amps\)\s+\(Watts\)\s+\(Amps\)\s*$$
+  ^-+\s*$$
+  ^${Mod_Num}\s+${Mod_Model}\s+${Mod_PowerRequested}\s+${Mod_CurrentRequested}\s+${Mod_PowerAllocated}\s+${Mod_CurrentAllocated}\s+${Mod_Status}\s*$$
+  ^-+\s*$$
+  ^Power Usage Summary:\s*$$
+  ^-+\s*$$
+  ^Power Supply redundancy mode:\s+${RedundancyMode}\s*$$
+  ^Power Supply redundancy operational mode:\s+${RedundancyOperationalMode}\s*$$
+  ^Total Power Capacity\s+${TOTAL_POWER_INPUT}\s*$$
+  ^Power reserved for Supervisor\(s\)\s+${PowerReserved}\s*$$
+  ^Power currently used by Modules\s+${PowerUsedByModules}\s*$$
+  ^-+\s*$$
+  ^Total Power Available\s+${TotalPowerAvailable}\s*$$
+  ^-+\s*$$

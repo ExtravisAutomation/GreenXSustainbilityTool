@@ -19,6 +19,99 @@ router = APIRouter(prefix="/device_inventory", tags=["Device Inventory"])
 
 
 
+@router.post("/devicetype_count", response_model=CustomResponse)
+@inject
+def device_type(
+        model_data:modelCreate,
+        current_user: User = Depends(get_current_active_user),
+        device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    devices = device_inventory_service.get_device_types(model_data)
+
+    return CustomResponse(
+        message="Fetched devices type count successfully",
+        data=devices,
+        status_code=200
+    )
+
+@router.post("/get_device_nature", response_model=CustomResponse)
+@inject
+def get_count(
+        device_nature: modelCreate,
+        current_user: User = Depends(get_current_active_user),
+        device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    models = device_inventory_service.get_device_nature_data(device_nature)
+
+    return CustomResponse(
+        message="Fetched model data successfully",
+        data=models,
+        status_code=200
+    )
+
+@router.get("/get_count", response_model=CustomResponse)
+@inject
+def get_count(
+        current_user: User = Depends(get_current_active_user),
+        device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    models = device_inventory_service.get_inventory_counts_data()
+
+    return CustomResponse(
+        message="Fetched model data successfully",
+        data=models,
+        status_code=200
+    )
+
+
+@router.get("/get_vendors", response_model=CustomResponse)
+@inject
+def get_vendors(
+        site_id: Optional[int] = None,
+        rack_id: Optional[int]=None,
+        current_user: User = Depends(get_current_active_user),
+        device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    vendors = device_inventory_service.get_all_vendors(site_id,rack_id)
+
+    return CustomResponse(
+        message="Fetched vendors data successfully",
+        data=vendors,
+        status_code=200
+    )
+
+
+@router.get("/get_vendor_count", response_model=CustomResponse)
+@inject
+def get_vendor_count(
+
+        current_user: User = Depends(get_current_active_user),
+        device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    models = device_inventory_service.get_vendor_counts_data()
+
+    return CustomResponse(
+        message="Fetched vendor data successfully",
+        data=models,
+        status_code=200
+    )
+
+@router.post("/get_model_Count", response_model=CustomResponse)
+@inject
+def get_model_names(
+        model_data:modelCreate,
+        current_user: User = Depends(get_current_active_user),
+        device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
+):
+    models = device_inventory_service.get_devices_models(model_data)
+
+    return CustomResponse(
+        message="Fetched model data successfully",
+        data=models,
+        status_code=200
+    )
+
+
 @router.post("/get_all_device_inventory", response_model=Custom_Response_Inventory[List[DeviceInventoryInDB]])
 @inject
 def get_all_devices(page:int=None,
@@ -234,78 +327,6 @@ def get_spcific_devices(
     )
 
 
-@router.post("/get_model_Count", response_model=CustomResponse)
-@inject
-def get_model_names(
-        model_data:modelCreate,
-        current_user: User = Depends(get_current_active_user),
-        device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
-):
-    models = device_inventory_service.get_models(model_data)
-
-    return CustomResponse(
-        message="Fetched model data successfully",
-        data=models,
-        status_code=200
-    )
-
-
-@router.post("/devicetype_count", response_model=CustomResponse)
-@inject
-def device_type(
-        model_data:modelCreate,
-        current_user: User = Depends(get_current_active_user),
-        device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
-):
-    devices = device_inventory_service.get_device_type(model_data)
-
-    return CustomResponse(
-        message="Fetched devices type count successfully",
-        data=devices,
-        status_code=200
-    )
-@router.get("/get_vendors", response_model=CustomResponse)
-@inject
-def get_vendors(
-        site_id: Optional[int] = None,
-        rack_id: Optional[int]=None,
-        current_user: User = Depends(get_current_active_user),
-        device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
-):
-    vendors = device_inventory_service.get_vendor(site_id,rack_id)
-
-    return CustomResponse(
-        message="Fetched vendors data successfully",
-        data=vendors,
-        status_code=200
-    )
-@router.get("/get_count", response_model=CustomResponse)
-@inject
-def get_count(
-        current_user: User = Depends(get_current_active_user),
-        device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
-):
-    models = device_inventory_service.get_count()
-
-    return CustomResponse(
-        message="Fetched model data successfully",
-        data=models,
-        status_code=200
-    )
-@router.post("/get_device_nature", response_model=CustomResponse)
-@inject
-def get_count(
-        device_nature: modelCreate,
-        current_user: User = Depends(get_current_active_user),
-        device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
-):
-    models = device_inventory_service.get_device_nature(device_nature)
-
-    return CustomResponse(
-        message="Fetched model data successfully",
-        data=models,
-        status_code=200
-    )
 @router.post("/get_device_type", response_model=CustomResponse)
 @inject
 def get_count(
@@ -352,20 +373,6 @@ def get_expiry(site: site_filter,
     )
 
 
-@router.get("/get_vendor_count", response_model=CustomResponse)
-@inject
-def get_count(
-
-        current_user: User = Depends(get_current_active_user),
-        device_inventory_service: DeviceInventoryService = Depends(Provide[Container.device_inventory_service])
-):
-    models = device_inventory_service.get_vendor_count()
-
-    return CustomResponse(
-        message="Fetched vendor data successfully",
-        data=models,
-        status_code=200
-    )
 
 @router.post("/generate_excel")
 @inject

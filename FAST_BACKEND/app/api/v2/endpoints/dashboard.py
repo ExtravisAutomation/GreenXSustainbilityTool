@@ -33,7 +33,6 @@ def get_metrics(filter_data: MetricesPayload,
         status_code=status.HTTP_200_OK
     )
 
-
 @router.post("/energy-traffic-trends", response_model=CustomResponse)
 @inject
 def get_metrics(filter_data: MetricesPayload,

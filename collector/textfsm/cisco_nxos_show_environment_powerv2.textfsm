@@ -1,0 +1,18 @@
+Value REDUNDANCY_MODE (\S+)
+Value REDUNDANCY_OP_MODE (\S+)
+Value TOTAL_POWER_CAPACITY (\d+\s\w+)
+Value TOTAL_POWER_ALL_INPUT (\d+\s\w+)
+Value TOTAL_POWER_OUTPUT (\d+\s\w+)
+Value TOTAL_POWER_INPUT (\d+\s\w+)
+Value TOTAL_POWER_AVAIL (\d+\s\w+)
+
+Start
+  ^Power Usage Summary:\s*
+  ^\s*--------------------
+  ^Power Supply redundancy mode \(configured\)\s+${REDUNDANCY_MODE}
+  ^Power Supply redundancy mode \(operational\)\s+${REDUNDANCY_OP_MODE}
+  ^Total Power Capacity \(based on configured mode\)\s+${TOTAL_POWER_CAPACITY}
+  ^Total Power of all Inputs \(cumulative\)\s+${TOTAL_POWER_ALL_INPUT}
+  ^Total Power Output \(actual draw\)\s+${TOTAL_POWER_OUTPUT}
+  ^Total Power Allocated \(budget\)\s+${TOTAL_POWER_INPUT}
+  ^Total Power Available for additional modules\s+${TOTAL_POWER_AVAIL}

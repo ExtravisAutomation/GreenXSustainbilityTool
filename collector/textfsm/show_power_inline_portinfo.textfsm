@@ -1,0 +1,14 @@
+Value INTERFACE (\S+)
+Value ADMIN_STATUS (\S+)
+Value OPER_STATUS (\S+)
+Value POWER (\S+)
+Value DEVICE (\S+)
+Value CLASS (\S+)
+Value MAX_POWER (\S+)
+
+Start
+  ^Interface\s+Admin\s+Oper\s+Power\s+Device -> Interfaces
+
+Interfaces
+  ^${INTERFACE}\s+${ADMIN_STATUS}\s+${OPER_STATUS}\s+${POWER}\s+${DEVICE}\s+${CLASS}\s+${MAX_POWER} -> Record
+  ^\s*$$

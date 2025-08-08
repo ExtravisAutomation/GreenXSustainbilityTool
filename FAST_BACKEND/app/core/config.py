@@ -20,7 +20,7 @@ class Configs(BaseSettings):
     ENV_DATABASE_MAPPER: dict = {
         "prod": "fca",
         "stage": "stage-fca",
-        "dev": "DCS_DB",
+        "dev": "GreenX",
 
         # "dev": "dcs_db", # for local development ahmed laptop
         "test": "test-fca",
@@ -50,7 +50,7 @@ class Configs(BaseSettings):
     DB_USER: str = os.getenv("DB_USER")
     DB_PASSWORD: str = os.getenv("DB_PASSWORD")
     DB_HOST: str = os.getenv("DB_HOST")
-    DB_PORT: str = os.getenv("DB_PORT", "3306")
+    DB_PORT: str = os.getenv("DB_PORT", "3307")
     DB_ENGINE: str = DB_ENGINE_MAPPER.get(DB, "mysql+pymysql")
 
     # influxdb
@@ -59,8 +59,7 @@ class Configs(BaseSettings):
     INFLUXDB_ORG: str = os.getenv("INFLUXDB_ORG")
     INFLUXDB_BUCKET: str = os.getenv("INFLUXDB_BUCKET")
 
-    # openai
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
+
 
     DATABASE_URI_FORMAT: str = "{db_engine}://{user}:{password}@{host}:{port}/{database}"
 

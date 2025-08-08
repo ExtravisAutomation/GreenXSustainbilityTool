@@ -1,0 +1,16 @@
+Value Filldown Module (\d+)
+Value ava_power ([\d.]+)
+Value used_power ([\d.]+)
+Value Remaining ([\d.]+)
+Value List INTERFACE (\S+)
+Value List ADMIN (\S+)
+Value List OPER (\S+)
+Value List POWER ([\d.]+)
+Value List DEVICE ([\S\s]+?)
+Value List CLASS (\S+)
+Value List MAX ([\d.]+)
+
+Start
+  ^\s*${Module}\s+${ava_power}\s+${used_power}\s+${Remaining} -> Record
+  ^\s*(\S+)\s+${ADMIN}\s+${OPER}\s+${POWER}\s+${DEVICE}\s+${CLASS}\s+${MAX} -> Record
+  ^\s*Totals:.* -> Record

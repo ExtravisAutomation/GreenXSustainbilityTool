@@ -1,0 +1,38 @@
+.co2-main-container{
+    padding: 40px 95px;
+}
+
+.co2-overview-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: #fff;
+    align-items: flex-start;
+    margin-top: 40px;
+    padding: 30px 50px;
+    border-radius: 16px;
+  }
+
+  .co2-overview-section .section-header{
+    margin-bottom: 30px;
+    margin-left: 20px;
+  }
+
+  .co2-container {
+    width: 100%;
+    display: flex;
+    gap: 40px;
+    align-items: center;
+  }
+
+  .co2-legend {
+    width: 35%;
+    padding-left: 20px;
+    align-self: stretch;
+    margin-top: 50px;
+  }
+  
+  .co2-emission-image {
+    border-radius: 5px;
+    width: 60%;
+  }

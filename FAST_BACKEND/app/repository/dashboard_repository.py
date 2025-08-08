@@ -9,7 +9,7 @@ from app.repository.site_repository import SiteRepository
 from sqlalchemy.exc import IntegrityError
 from app.util.hash import get_rand_hash
 import logging
-from app.model.APIC_controllers import APICControllers as Devices
+from app.model.devices import   Devices
 from app.model.device_inventory import DeviceInventory
 from app.model.rack import Rack
 from app.model.site import Site
@@ -53,17 +53,17 @@ class DashboardRepository(object):
                     DeviceInventory.pn_code
                 )
                 .join(DeviceInventory, DeviceInventory.device_id == Devices.id)
-                .join(Site, DeviceInventory.site_id == Site.id)
-                .join(Rack, DeviceInventory.rack_id == Rack.id)
+                .join(Site, Devices.site_id == Site.id)
+                .join(Rack, Devices.rack_id == Rack.id)
                 .filter(Devices.OnBoardingStatus == True)
                 .filter(Devices.collection_status == True)
                 .filter(DeviceInventory.pn_code.notlike('%IE%'))
             )
             # Optional filters
             if site_id is not None:
-                query = query.filter(DeviceInventory.site_id == site_id)
+                query = query.filter(Devices.site_id == site_id)
             if rack_id is not None:
-                query = query.filter(DeviceInventory.rack_id == rack_id)
+                query = query.filter(Devices.rack_id == rack_id)
             if device_id is not None:
                 query = query.filter(Devices.id == device_id)
             if ip_address is not None:
@@ -129,12 +129,12 @@ class DashboardRepository(object):
                     DeviceInventory.non_active_psu,
                 )
                 .join(DeviceInventory, DeviceInventory.device_id == Devices.id)
-                .join(Site, DeviceInventory.site_id == Site.id)
-                .join(Rack, DeviceInventory.rack_id == Rack.id)
+                .join(Site, Devices.site_id == Site.id)
+                .join(Rack, Devices.rack_id == Rack.id)
                 .filter(Devices.OnBoardingStatus == True)
                 .filter(Devices.collection_status == True)
                 .filter(DeviceInventory.pn_code.notlike('%IE%'))
-                .filter(DeviceInventory.site_id == site_id)
+                .filter(Devices.site_id == site_id)
             )
             # Execute the query
             results = query.all()

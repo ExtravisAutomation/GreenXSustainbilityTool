@@ -34,7 +34,7 @@ class Rack(BaseModel):
     status = Column(String(255), nullable=True)
     #total_devices = Column(Integer, nullable=True)
     site = relationship("Site", back_populates="racks")
-    devices = relationship("APICControllers", back_populates="rack")
+    devices = relationship("Devices", back_populates="rack")
     buildings = relationship("Building", secondary=rack_building_association, back_populates="racks")
 
 

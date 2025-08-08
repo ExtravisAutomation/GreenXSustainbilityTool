@@ -1,0 +1,105 @@
+.newsletter-section{
+  padding: 40px 95px;
+
+}
+
+.newsletter-container {
+  display: flex;
+  align-items: center;
+  background-color: #282828;
+  padding: 50px 90px;
+  border-radius: 8px;
+}
+
+.newsletter-content {
+  flex: 1;
+  color: #fff;
+  max-width: 55%;
+}
+
+.newsletter-content h2 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 2.25rem; /* 36px */
+  line-height: 121.02%; /* 43.57px */
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+
+.newsletter-content p {
+  font-weight: 400;
+  font-size: 1rem; /* 16px */
+  line-height: 140%; /* 22.4px */
+  margin-bottom: 20px;
+}
+
+.newsletter-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.newsletter-content li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 18px;
+  font-weight: 500;
+  font-size: 1rem; /* 16px */
+  line-height: 150%; /* 24px */
+  letter-spacing: 0.00625rem; /* 0.1px */
+}
+
+.newsletter-content li::before {
+  content: url('../../assets/newsletter-icon.svg');
+  margin-right: 16px;
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+  /* background: linear-gradient(to right, #1B8540, #8BC43F);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-right: 10px; */
+  /* border: 2px solid transparent;
+  border-radius: 80%;
+  border-image: linear-gradient(to right, #1B8540, #8BC43F);
+  border-image-slice: 1; */
+/* } */
+
+.newsletter-input-container {
+  display: flex;
+  margin-top: 35px;
+  background-color: #fff;
+  overflow: hidden;
+  border-radius: 20px;
+  max-width: 450px;
+  
+}
+
+.newsletter-input {
+  flex: 1;
+  padding: 18px 15px;
+  border-radius: 4px 0 0 4px;
+  border: 1px solid #ccc;
+}
+
+.newsletter-button {
+  padding: 10px 20px;
+  margin: 1px;
+  /* background-color: #28a745; */
+  background: linear-gradient(180deg, #1B8540 0%, #8BC43F 100%);
+
+  color: #fff;
+  border: none;
+  border-radius: 0 20px 20px 0;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.225rem; /* 19.6px */
+}
+
+.newsletter-image {
+  width: auto;
+  margin-left: auto;
+}

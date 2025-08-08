@@ -2,7 +2,6 @@ import sys
 from contextlib import AbstractContextManager
 from datetime import datetime
 from typing import Callable, Dict, List, Optional, Any, Tuple
-
 from sqlalchemy import func
 from sqlalchemy.engine import Row
 from sqlalchemy.orm import Session, joinedload, aliased
@@ -10,56 +9,269 @@ from fastapi import HTTPException, status
 from app.model.site import Site
 from app.repository.base_repository import BaseRepository
 from sqlmodel import select, delete
-
 from app.schema.site_schema import GetSitesResponse, SiteUpdate
-
 from app.schema.site_schema import SiteCreate
-
-from app.model.APIC_controllers import APICControllers,Vendor,DeviceType
-
+from app.model.devices import Devices,Vendor,DeviceType
 from app.model.device_inventory import DeviceInventory
-
 from app.model.rack import Rack
-
-from app.model.apic_controller import APICController
 from app.model.DevicesSntc import DevicesSntc
-
 from app.model.site import PasswordGroup
 from app.schema.site_schema import PasswordGroupCreate
-
-from app.schema.site_schema import APICControllersCreate, APICControllersUpdate
-
+from app.schema.site_schema import DevicesCreate, DevicesUpdate
 from app.schema.site_schema import PasswordGroupUpdate
-
 from app.schema.site_schema import DeviceCreateRequest
-
-from app.model.APIC_controllers import APICControllers as Devices
-
-from app.model.cspc_devices import CSPCDevices
-from app.schema.site_schema import CSPCDevicesWithSntcResponse
-from app.repository.ai_repository import AIRepository
-import openai
+from app.model.devices import Devices as Devices
 from app.core.config import configs
+
+
 class SiteRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
         self.session_factory = session_factory
         super().__init__(session_factory, Site)
-        openai.api_key = configs.OPENAI_API_KEY
 
-    def get_devices_by_site_id(self, site_id: int) -> List[APICControllers]:
+    def get_all_devices_data(self) -> List[Devices]:
         with self.session_factory() as session:
-            devices = (
-                session.query(APICControllers)
-                .filter(APICControllers.site_id == site_id)
-                .filter(APICControllers.OnBoardingStatus==True)
-                .filter(APICControllers.collection_status==True)
+            subquery = session.query(DeviceInventory.device_id).filter(
+                DeviceInventory.role.in_(["leaf", "spine"])
+            ).subquery()
+
+            devices = session.query(
+                Devices,
+                PasswordGroup.password_group_name,
+            DeviceType.device_type,  # Fetch device type
+            Vendor.vendor_name  # Fetch vendor name
+            ).outerjoin(PasswordGroup, Devices.password_group_id == PasswordGroup.id) \
+                .outerjoin(DeviceType, Devices.device_type_id == DeviceType.id) \
+                .outerjoin(Vendor, Devices.vendor_id == Vendor.id) \
+                .outerjoin(DeviceInventory, Devices.id == DeviceInventory.device_id) \
+                .filter(~Devices.id.in_(subquery)) \
+                .options(joinedload(Devices.site), joinedload(Devices.rack)) \
+                .order_by(Devices.created_at.desc()) \
                 .all()
-            )
-            return devices
+
+            result = []
+            for device, password_group_name,device_type, vendor_name  in devices:
+                device_data = device.__dict__
+                device_data["password_group_name"] = password_group_name
+                device_data["site_name"] = device.site.site_name if device.site else None
+                device_data["rack_name"] = device.rack.rack_name if device.rack else None
+                device_data["rack_unit"] = device.rack_unit
+                device_data["OnBoardingStatus"] = device.OnBoardingStatus
+                device_data["messages"] = device.messages if device.messages else None
+                device_data["site_id"] = device.site_id
+                device_data["device_ip"] = device.ip_address
+                device_data["collection_status"] = device.collection_status
+                device_data["device_type"] = device_type  # Added Device Type
+                device_data["vendor_name"] = vendor_name  # Added Vendor Name
+                result.append(device_data)
+            print("result", result)
+            print("************************************")
+
+            return result
+    def get_all_password_groups_data(self) -> List[PasswordGroup]:
+        with self.session_factory() as session:
+            return session.query(PasswordGroup).all()
+    def add_password_group(self, password_group: PasswordGroupCreate) -> PasswordGroup:
+        with self.session_factory() as session:
+            db_password_group = PasswordGroup(**password_group.dict())
+            session.add(db_password_group)
+            session.commit()
+            session.refresh(db_password_group)
+            return db_password_group
+    def update_password_group_by_id(self, group_id: int, password_group: PasswordGroupUpdate) -> PasswordGroup:
+        with self.session_factory() as session:
+            db_password_group = session.query(PasswordGroup).filter(PasswordGroup.id == group_id).first()
+            if not db_password_group:
+                raise HTTPException(status_code=404, detail="Password group not found")
+
+            for key, value in password_group.dict().items():
+                if value is not None and value != '' and value != 'string':
+                    setattr(db_password_group, key, value)
+
+            session.commit()
+            session.refresh(db_password_group)
+            return db_password_group
+    def delete_password_groups_by_ids(self, password_group_ids: List[int]):
+        with self.session_factory() as session:
+            dependent_records = session.query(Devices).filter(Devices.password_group_id.in_(password_group_ids)).count()
+
+            if dependent_records > 0:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Cannot delete password groups. {dependent_records} dependent records exist"
+                )
+            password_groups = session.query(PasswordGroup).filter(PasswordGroup.id.in_(password_group_ids)).all()
+
+            if password_groups:
+                session.query(PasswordGroup).filter(PasswordGroup.id.in_(password_group_ids)).delete(
+                    synchronize_session='fetch')
+                session.commit()
+            return password_groups
+
+    def add_device_from_excel(self, device_data: dict):
+        with self.session_factory() as session:
+            try:
+
+                existing_device = session.query(Devices).filter_by(ip_address=device_data["ip_address"]).first()
+                if existing_device:
+                    existing_device.messages = f"Device with IP {device_data['ip_address']} already exists."
+                    session.commit()
+                    return {"message": existing_device.messages, "status": "error"}
+            except Exception as e:
+                raise ValueError(f"Error checking device existence: {str(e)}")
+            try:
+                site = session.query(Site).filter_by(site_name=device_data["site_name"]).first()
+                if not site:
+                    raise ValueError(f"Site with name {device_data['site_name']} does not exist.")
+            except Exception as e:
+                raise ValueError(f"Error fetching site: {str(e)}")
+            try:
+                rack = session.query(Rack).filter_by(rack_name=device_data["rack_name"], site_id=site.id).first()
+                if not rack:
+                    raise ValueError(
+                        f"Rack with name {device_data['rack_name']} in site {site.site_name} does not exist.")
+            except Exception as e:
+                raise ValueError(f"Error fetching rack: {str(e)}")
+
+            try:
+                password_group = session.query(PasswordGroup).filter_by(
+                    password_group_name=device_data["password_group_name"]).first()
+                if not password_group:
+                    raise ValueError(f"Password Group with name {device_data['password_group_name']} does not exist.")
+            except Exception as e:
+                raise ValueError(f"Error fetching password group: {str(e)}")
+
+            try:
+
+                new_device = Devices(
+                    ip_address=device_data["ip_address"],
+                    device_name=device_data["device_name"],
+                    site_id=site.id,
+                    rack_id=rack.id,
+                    password_group_id=password_group.id,
+                    device_type=device_data["device_type"],
+                    OnBoardingStatus=False,
+                    messages="Device uploaded successfully."
+                )
+                session.add(new_device)
+                session.commit()
+                session.refresh(new_device)
+
+                return {
+                    "ip_address": new_device.ip_address,
+                    "device_name": new_device.device_name,
+                    "site_name": site.site_name,
+                    "rack_name": rack.rack_name,
+                    "password_group_name": password_group.password_group_name,
+                    "device_type": new_device.device_type,
+                    "messages": new_device.messages
+                }
+            except Exception as e:
+                session.rollback()
+
+                new_device = Devices(
+                    ip_address=device_data["ip_address"],
+                    device_name=device_data["device_name"],
+                    site_id=site.id if site else None,
+                    rack_id=rack.id if rack else None,
+                    password_group_id=password_group.id if password_group else None,
+                    device_type=device_data.get("device_type", "devices"),
+                    OnBoardingStatus=False,
+                    messages=f"Error creating device: {str(e)}"
+                )
+                session.add(new_device)
+                session.commit()
+                session.refresh(new_device)
+                raise ValueError(f"Error creating device: {str(e)}")
+
+    def add_device_onboarding(self, device_data: DeviceCreateRequest) -> Devices:
+        with self.session_factory() as session:
+            with self.session_factory() as session:
+                db_device = Devices(
+                    ip_address=device_data.ip_address,
+                    device_name=device_data.device_name,
+                    site_id=device_data.site_id,
+                    rack_id=device_data.rack_id,
+                    vendor_id=device_data.vendor_id,
+                    password_group_id=device_data.password_group_id,
+                    device_type_id=device_data.device_type_id,  # Fixed field name
+                    OnBoardingStatus=False
+
+                )
+                session.add(db_device)
+                session.commit()
+                session.refresh(db_device)
+
+                # Load related data after creation
+                db_device = session.query(Devices).options(
+                    joinedload(Devices.password_group),
+                    joinedload(Devices.site),
+                    joinedload(Devices.rack),
+                    joinedload(Devices.vendor),  # Ensure vendor is loaded
+                    joinedload(Devices.device_type_rel)
+                ).filter(Devices.id == db_device.id).first()
+
+                return db_device
 
     def get_all_sites(self) -> list[Site]:
         with self.session_factory() as session:
             return session.query(Site).all()
+    def get_site_names(self):
+        with self.session_factory() as session:
+            sites = session.query(Site).all()
+            return sites
+
+    def get_device_inventory_by_site_id(self, site_id: int) -> List[Dict[str, any]]:
+        with self.session_factory() as session:
+            device_inventory_data = (
+                session.query(
+                    DeviceInventory.id,
+                    Devices.device_name,
+                    Devices.ip_address.label('ip_address'),
+                    Site.site_name,
+                    DeviceInventory.hardware_version,
+                    DeviceInventory.manufacturer,
+                    DeviceInventory.pn_code,
+                    DeviceInventory.serial_number,
+                    DeviceInventory.software_version,
+                    DeviceInventory.status
+                )
+                .join(Devices,
+                      DeviceInventory.device_id == Devices.id)
+                .join(Site, DeviceInventory.site_id == Site.id)
+                .filter(DeviceInventory.site_id == site_id)
+                .filter(Devices.collection_status==True)
+                .filter(Devices.OnBoardingStatus==True)
+                .all()
+            )
+
+            device_inventory_dicts = []
+            for data in device_inventory_data:
+                device_info = {
+                    "id": data.id,
+                    "device_name": data.device_name,
+                    "ip_address": data.ip_address,
+                    "site_name": data.site_name,
+                    "hardware_version": data.hardware_version,
+                    "manufacturer": data.manufacturer,
+                    "pn_code": data.pn_code,
+                    "serial_number": data.serial_number,
+                    "software_version": data.software_version,
+                    "status": data.status,
+                }
+                device_inventory_dicts.append(device_info)
+
+            return device_inventory_dicts
+
+    def get_rack_and_device_counts(self, site_id: int) -> dict:
+        with self.session_factory() as session:
+            num_racks = session.query(func.count(Rack.id)).filter(Rack.site_id == site_id).scalar()
+            num_devices = session.query(func.count(Devices.id)).filter(Devices.site_id == site_id).filter(Devices.OnBoardingStatus==True
+                                                           ).filter(Devices.collection_status==True).scalar()
+            return {
+                "num_racks": num_racks or 0,
+                "num_devices": num_devices or 0
+            }
 
     def add_site(self, site_data: SiteCreate) -> Site:
         with self.session_factory() as session:
@@ -95,31 +307,48 @@ class SiteRepository(BaseRepository):
 
     def delete_sites(self, site_ids: List[int]):
         with self.session_factory() as session:
-            
-            
-            
+
             successful_deletes = []
             failed_deletes = []
             for site_id in site_ids:
                 try:
                     site = session.query(Site).filter(Site.id == site_id).first()
                     if site:
-                        site_name = site.site_name  
-                        
+                        site_name = site.site_name
+
                         session.query(Site).filter(Site.id == site_id).delete(synchronize_session='fetch')
                         session.commit()
-                        successful_deletes.append({'id': site_id, 'name': site_name})  
+                        successful_deletes.append({'id': site_id, 'name': site_name})
                     else:
-                        failed_deletes.append({'id': site_id, 'name': None})  
+                        failed_deletes.append({'id': site_id, 'name': None})
                 except Exception as e:
                     session.rollback()
-                    if site:  
+                    if site:
                         failed_deletes.append({'id': site_id, 'name': site.site_name})
                     else:
-                        failed_deletes.append({'id': site_id, 'name': None})  
+                        failed_deletes.append({'id': site_id, 'name': None})
 
             return successful_deletes, failed_deletes
 
+    def get_devices_by_site_id(self, site_id: int) -> List[Devices]:
+        with self.session_factory() as session:
+            devices = (
+                session.query(Devices)
+                .filter(Devices.site_id == site_id)
+                .filter(Devices.OnBoardingStatus==True)
+                .filter(Devices.collection_status==True)
+                .all()
+            )
+            return devices
+
+    def get_device_names(self, sorted_power_required: list):
+        with self.session_factory() as session:
+            for data in sorted_power_required:
+                result = session.query(Devices.device_name).filter(Devices.ip_address == data['ip_address']).first()
+
+                data['device_name'] = result[0] if result else None
+
+            return sorted_power_required
 
     def get_all_devices_data(self) -> List[Devices]:
         with self.session_factory() as session:
@@ -163,22 +392,13 @@ class SiteRepository(BaseRepository):
 
 
 
-        
-    def get_device_names(self, sorted_power_required: list):
-        with self.session_factory() as session:
-            for data in sorted_power_required:
-                result=session.query(Devices.device_name).filter(Devices.ip_address== data['ip_address']).first()
-                
-                
-                data['device_name'] = result[0] if result else None
-                
-            return sorted_power_required
+
 
     def get_apic_controller_ips_by_site_id(self, site_id: int) -> List[str]:
         with self.session_factory() as session:
             apic_ips = (
-                session.query(APICControllers.ip_address)
-                .join(DeviceInventory, DeviceInventory.apic_controller_id == APICControllers.id)
+                session.query(Devices.ip_address)
+                .join(DeviceInventory, DeviceInventory.apic_controller_id == Devices.id)
                 .filter(DeviceInventory.site_id == site_id)
                 .all()
             )
@@ -191,10 +411,10 @@ class SiteRepository(BaseRepository):
         with self.session_factory() as session:
             result = (
                 session.query(
-                    APICControllers.ip_address,
+                    Devices.ip_address,
                     DeviceInventory.device_name
                 )
-                .join(DeviceInventory, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(DeviceInventory, DeviceInventory.apic_controller_id == Devices.id)
                 .filter(DeviceInventory.site_id == site_id)
                 .all()
             )
@@ -203,53 +423,13 @@ class SiteRepository(BaseRepository):
             return devices_info
 
 
-    def get_device_inventory_by_site_id(self, site_id: int) -> List[Dict[str, any]]:
-        with self.session_factory() as session:
-            device_inventory_data = (
-                session.query(
-                    DeviceInventory.id,
-                    DeviceInventory.device_name,
-                    APICControllers.ip_address.label('ip_address'),  
-                    Site.site_name,
-                    DeviceInventory.hardware_version,
-                    DeviceInventory.manufacturer,
-                    DeviceInventory.pn_code,
-                    DeviceInventory.serial_number,
-                    DeviceInventory.software_version,
-                    DeviceInventory.status
-                )
-                .join(APICControllers,
-                      DeviceInventory.device_id == APICControllers.id)
-                .join(Site, DeviceInventory.site_id == Site.id)
-                .filter(DeviceInventory.site_id == site_id)
-                .filter(APICControllers.collection_status==True)
-                .filter(APICControllers.OnBoardingStatus==True)
-                .all()
-            )
 
-            device_inventory_dicts = []
-            for data in device_inventory_data:
-                device_info = {
-                    "id": data.id,
-                    "device_name": data.device_name,
-                    "ip_address": data.ip_address,  
-                    "site_name": data.site_name,
-                    "hardware_version": data.hardware_version,
-                    "manufacturer": data.manufacturer,
-                    "pn_code": data.pn_code,
-                    "serial_number": data.serial_number,
-                    "software_version": data.software_version,
-                    "status": data.status,
-                }
-                device_inventory_dicts.append(device_info)
-
-            return device_inventory_dicts
 
     def get_device_inventory_with_apic_ips_by_site_id(self, site_id: int) -> List[Dict[str, any]]:
         with self.session_factory() as session:
             device_inventory_data = (
-                session.query(DeviceInventory, APICControllers, Site.site_name)
-                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                session.query(DeviceInventory, Devices, Site.site_name)
+                .join(Devices, DeviceInventory.apic_controller_id == Devices.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id)
                 .all()
@@ -269,10 +449,10 @@ class SiteRepository(BaseRepository):
             device_ips_and_details = (
                 session.query(
                     DeviceInventory.device_name,
-                    APICControllers.ip_address,
+                    Devices.ip_address,
                     Site.site_name
                 )
-                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Devices, DeviceInventory.apic_controller_id == Devices.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name.in_(device_names))
                 .all()
@@ -309,9 +489,9 @@ class SiteRepository(BaseRepository):
 
     def get_eol_eos_counts(self, site_id: int) -> dict:
         with self.session_factory() as session:
-            num_devices = session.query(func.count(APICControllers.id)).filter(
-                (APICControllers.site_id == site_id) &
-                (APICControllers.OnBoardingStatus == True)
+            num_devices = session.query(func.count(Devices.id)).filter(
+                (Devices.site_id == site_id) &
+                (Devices.OnBoardingStatus == True)
             ).scalar()
 
             current_date = datetime.now()
@@ -400,8 +580,8 @@ class SiteRepository(BaseRepository):
     def get_device_ip_by_name(self, site_id: int, device_name: str) -> str:
         with self.session_factory() as session:
             device = (
-                session.query(APICControllers.ip_address)
-                .join(DeviceInventory, DeviceInventory.apic_controller_id == APICControllers.id)
+                session.query(Devices.ip_address)
+                .join(DeviceInventory, DeviceInventory.apic_controller_id == Devices.id)
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name == device_name)
                 .first()
             )
@@ -410,8 +590,8 @@ class SiteRepository(BaseRepository):
     def get_device_ip_by_device_name_and_site_id(self, site_id: int, device_name: str) -> dict[str, Any]:
         with self.session_factory() as session:
             device_ip_and_site_name = (
-                session.query(APICControllers.ip_address, Site.site_name)
-                .join(DeviceInventory, DeviceInventory.apic_controller_id == APICControllers.id)
+                session.query(Devices.ip_address, Site.site_name)
+                .join(DeviceInventory, DeviceInventory.apic_controller_id == Devices.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name == device_name)
                 .first()
@@ -439,8 +619,8 @@ class SiteRepository(BaseRepository):
     def get_device_names_by_site_id2(self, site_id: int) -> List[dict[str, str]]:
         with self.session_factory() as session:
             device_names = (
-                session.query(APICControllers.id, APICControllers.device_name)
-                .filter((APICControllers.site_id == site_id) &(APICControllers.OnBoardingStatus==True) & (APICControllers.collection_status==True))
+                session.query(Devices.id, Devices.device_name)
+                .filter((Devices.site_id == site_id) &(Devices.OnBoardingStatus==True) & (Devices.collection_status==True))
                 .distinct()
                 .all()
             )
@@ -472,11 +652,11 @@ class SiteRepository(BaseRepository):
         with self.session_factory() as session:
             
             device = (
-                session.query(DeviceInventory, APICControllers, Site, Rack)
-                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
-                .join(Site, APICControllers.site_id == Site.id)
-                .join(Rack, APICControllers.rack_id == Rack.id)
-                .filter(APICControllers.site_id == site_id, APICControllers.rack_id == rack_id)
+                session.query(DeviceInventory, Devices, Site, Rack)
+                .join(Devices, DeviceInventory.apic_controller_id == Devices.id)
+                .join(Site, Devices.site_id == Site.id)
+                .join(Rack, Devices.rack_id == Rack.id)
+                .filter(Devices.site_id == site_id, Devices.rack_id == rack_id)
                 .first()
             )
             if device:
@@ -511,10 +691,10 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.serial_number,
                     DeviceInventory.software_version,
                     DeviceInventory.status,
-                    APICControllers.ip_address,
+                    Devices.ip_address,
                     Site.site_name
                 )
-                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Devices, DeviceInventory.apic_controller_id == Devices.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name == device_name)
                 .first()
@@ -560,10 +740,10 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.serial_number,
                     DeviceInventory.software_version,
                     DeviceInventory.status,
-                    APICControllers.ip_address,
+                    Devices.ip_address,
                     Site.site_name
                 )
-                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Devices, DeviceInventory.apic_controller_id == Devices.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name == device_name)
                 .first()
@@ -591,8 +771,8 @@ class SiteRepository(BaseRepository):
         with self.session_factory() as session:
             
             result = (
-                session.query(APICControllers.ip_address, DeviceInventory.device_name)
-                .join(DeviceInventory, APICControllers.id == DeviceInventory.apic_controller_id)
+                session.query(Devices.ip_address, DeviceInventory.device_name)
+                .join(DeviceInventory, Devices.id == DeviceInventory.apic_controller_id)
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.id == device_id)
                 .first()
             )
@@ -602,21 +782,13 @@ class SiteRepository(BaseRepository):
             else:
                 return None
 
-    def get_rack_and_device_counts(self, site_id: int) -> dict:
-        with self.session_factory() as session:
-            num_racks = session.query(func.count(Rack.id)).filter(Rack.site_id == site_id).scalar()
-            num_devices = session.query(func.count(APICControllers.id)).filter(APICControllers.site_id == site_id).filter(APICControllers.OnBoardingStatus==True
-                                                           ).filter(APICControllers.collection_status==True).scalar()
-            return {
-                "num_racks": num_racks or 0,
-                "num_devices": num_devices or 0
-            }
+
 
     def get_site_location(self, site_id: int) -> Tuple[float, float]:
         with self.session_factory() as session:
             site = session.query(Site).filter(Site.id == site_id).one_or_none()
-            num_devices = session.query(func.count(APICControllers.id)).filter(
-                APICControllers.site_id == site_id).scalar()
+            num_devices = session.query(func.count(Devices.id)).filter(
+                Devices.site_id == site_id).scalar()
             if site:
                 print("SITE LATITUDE AND LONGITUDE:", site.latitude, site.longitude, file=sys.stderr)
                 return site.latitude, site.longitude, site.site_name, num_devices, site.region
@@ -647,7 +819,7 @@ class SiteRepository(BaseRepository):
 
     def delete_password_groups12(self, password_group_ids: List[int]):
         with self.session_factory() as session:
-            dependent_records = session.query(APICControllers).filter(APICControllers.password_group_id.in_(password_group_ids)).count()
+            dependent_records = session.query(Devices).filter(Devices.password_group_id.in_(password_group_ids)).count()
 
             if dependent_records > 0:
                 raise HTTPException(
@@ -675,20 +847,20 @@ class SiteRepository(BaseRepository):
     
     
     
-    def create_device2(self, device_data: APICControllersCreate) -> APICControllers:
+    def create_device2(self, device_data: DevicesCreate) -> Devices:
         with self.session_factory() as session:
-            db_device = APICControllers(**device_data.dict())
+            db_device = Devices(**device_data.dict())
             session.add(db_device)
             session.commit()
             session.refresh(db_device)
 
             
             if db_device.password_group_id or db_device.site_id or db_device.rack_id:
-                db_device = session.query(APICControllers).options(
-                    joinedload(APICControllers.password_group),
-                    joinedload(APICControllers.site),
-                    joinedload(APICControllers.rack)
-                ).filter(APICControllers.id == db_device.id).first()
+                db_device = session.query(Devices).options(
+                    joinedload(Devices.password_group),
+                    joinedload(Devices.site),
+                    joinedload(Devices.rack)
+                ).filter(Devices.id == db_device.id).first()
 
             return db_device
 
@@ -737,7 +909,7 @@ class SiteRepository(BaseRepository):
 
     def get_all_device_types1(self) -> List[str]:
         with self.session_factory() as session:
-            device_types = session.query(APICControllers.device_type).distinct().all()
+            device_types = session.query(Devices.device_type).distinct().all()
             
             return [device_type[0] for device_type in device_types if device_type[0] is not None]
 
@@ -765,9 +937,9 @@ class SiteRepository(BaseRepository):
     
     
 
-    def update_device2(self, device_id: int, device_data: APICControllersUpdate) -> APICControllers:
+    def update_device2(self, device_id: int, device_data: DevicesUpdate) -> Devices:
         with self.session_factory() as session:
-            db_device = session.query(APICControllers).filter(APICControllers.id == device_id).first()
+            db_device = session.query(Devices).filter(Devices.id == device_id).first()
             for key, value in device_data.dict().items():
                 if value is not None and value != '' and value != 'string' and value != 0:
                     setattr(db_device, key, value)
@@ -776,17 +948,17 @@ class SiteRepository(BaseRepository):
 
             
             if db_device.password_group_id or db_device.site_id or db_device.rack_id:
-                db_device = session.query(APICControllers).options(
-                    joinedload(APICControllers.password_group),
-                    joinedload(APICControllers.site),
-                    joinedload(APICControllers.rack)
-                ).filter(APICControllers.id == db_device.id).first()
+                db_device = session.query(Devices).options(
+                    joinedload(Devices.password_group),
+                    joinedload(Devices.site),
+                    joinedload(Devices.rack)
+                ).filter(Devices.id == db_device.id).first()
 
             return db_device
 
     def delete_devices2(self, device_ids: List[int]) -> None:
         with self.session_factory() as session:
-            session.query(APICControllers).filter(APICControllers.id.in_(device_ids)).delete(synchronize_session=False)
+            session.query(Devices).filter(Devices.id.in_(device_ids)).delete(synchronize_session=False)
             session.commit()
 
     def get_device_by_site_id_and_device_id(self, site_id: int, device_id: int) -> Optional[dict]:
@@ -796,7 +968,7 @@ class SiteRepository(BaseRepository):
                 session.query(
                     DeviceInventory.id,
                     DeviceInventory.device_name,
-                    APICControllers.ip_address,
+                    Devices.ip_address,
                     Site.site_name,
                     DeviceInventory.hardware_version,
                     DeviceInventory.manufacturer,
@@ -805,7 +977,7 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.software_version,
                     DeviceInventory.status
                 )
-                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Devices, DeviceInventory.apic_controller_id == Devices.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.apic_controller_id == device_id)
                 .first()
@@ -832,35 +1004,7 @@ class SiteRepository(BaseRepository):
         with self.session_factory() as session:
             return session.query(Rack).filter(Rack.site_id == site_id).all()
 
-    def create_device_onbrd(self, device_data: DeviceCreateRequest) -> APICControllers:
-        with self.session_factory() as session:
-            with self.session_factory() as session:
-                db_device = APICControllers(
-                    ip_address=device_data.ip_address,
-                    device_name=device_data.device_name,
-                    site_id=device_data.site_id,
-                    rack_id=device_data.rack_id,
-                    vendor_id=device_data.vendor_id,
-                    password_group_id=device_data.password_group_id,
-                    device_type_id=device_data.device_type_id,  # Fixed field name
-                    OnBoardingStatus=False
 
-                )
-                session.add(db_device)
-                session.commit()
-                session.refresh(db_device)
-
-                # Load related data after creation
-                db_device = session.query(APICControllers).options(
-                    joinedload(APICControllers.password_group),
-                    joinedload(APICControllers.site),
-                    joinedload(APICControllers.rack),
-                    joinedload(APICControllers.vendor),  # Ensure vendor is loaded
-                    joinedload(APICControllers.device_type_rel)
-                ).filter(APICControllers.id == db_device.id).first()
-
-                return db_device
-        
         
     def co2_emission(self, apic_ips: List[str], site_id: int) -> List[Dict[str, any]]:
         apic_ip_list = [ip[0] for ip in apic_ips if ip[0]]
@@ -927,28 +1071,25 @@ class SiteRepository(BaseRepository):
             # return response
         
         
-    def get_site_names(self):
-        with self.session_factory() as session:
-            sites = session.query(Site).all()
-            return sites
+
 
     def get_device_inventory(self, site_id):
         with self.session_factory() as session:
             # Fetch all devices for the given site ID
-            onboarded_devices = session.query(APICControllers).filter(
-                (APICControllers.site_id == site_id) &
-                (APICControllers.OnBoardingStatus == True)
+            onboarded_devices = session.query(Devices).filter(
+                (Devices.site_id == site_id) &
+                (Devices.OnBoardingStatus == True)
             ).all()
-            devices = session.query(APICControllers).filter(
-                (APICControllers.site_id == site_id)
+            devices = session.query(Devices).filter(
+                (Devices.site_id == site_id)
             ).all()
 
             # Count distinct vendors for the given site ID
             total_vendors = (
-                session.query(func.count(APICControllers.vendor_id.distinct()))
+                session.query(func.count(Devices.vendor_id.distinct()))
                 .filter(
-                    (APICControllers.site_id == site_id) &
-                    (APICControllers.OnBoardingStatus == True)
+                    (Devices.site_id == site_id) &
+                    (Devices.OnBoardingStatus == True)
                 )
                 .scalar()
             )
@@ -967,7 +1108,7 @@ class SiteRepository(BaseRepository):
             }
     def check_site(self, site_id):
         with self.session_factory() as session:
-            devices = session.query(APICControllers).filter(APICControllers.site_id == site_id).all()
+            devices = session.query(Devices).filter(Devices.site_id == site_id).all()
             return True
 
 
@@ -976,8 +1117,8 @@ class SiteRepository(BaseRepository):
             with self.session_factory() as session:
                 # print(device_data.device_id)
                 try:
-                    existing_device = session.query(APICControllers).filter(
-                        APICControllers.id == device_data.device_id).filter(APICControllers.site_id == device_data.site_id).first()
+                    existing_device = session.query(Devices).filter(
+                        Devices.id == device_data.device_id).filter(Devices.site_id == device_data.site_id).first()
                     print("Found existing",existing_device)
                     return existing_device
                     if not existing_device:
@@ -985,104 +1126,7 @@ class SiteRepository(BaseRepository):
                 except Exception as e:
                     raise ValueError(f"Error checking device existence: {str(e)}")
 
-    def create_device_from_excel(self, device_data: dict):
-        with self.session_factory() as session:
-            try:
-                
-                existing_device = session.query(APICControllers).filter_by(ip_address=device_data["ip_address"]).first()
-                if existing_device:
-                    existing_device.messages = f"Device with IP {device_data['ip_address']} already exists."
-                    session.commit()
-                    return {"message": existing_device.messages, "status": "error"}
-            except Exception as e:
-                raise ValueError(f"Error checking device existence: {str(e)}")
-            try:
-                site = session.query(Site).filter_by(site_name=device_data["site_name"]).first()
-                if not site:
-                    raise ValueError(f"Site with name {device_data['site_name']} does not exist.")
-            except Exception as e:
-                raise ValueError(f"Error fetching site: {str(e)}")
-            try:
-                rack = session.query(Rack).filter_by(rack_name=device_data["rack_name"], site_id=site.id).first()
-                if not rack:
-                    raise ValueError(
-                        f"Rack with name {device_data['rack_name']} in site {site.site_name} does not exist.")
-            except Exception as e:
-                raise ValueError(f"Error fetching rack: {str(e)}")
 
-            try:
-                password_group = session.query(PasswordGroup).filter_by(
-                    password_group_name=device_data["password_group_name"]).first()
-                if not password_group:
-                    raise ValueError(f"Password Group with name {device_data['password_group_name']} does not exist.")
-            except Exception as e:
-                raise ValueError(f"Error fetching password group: {str(e)}")
-
-            try:
-                
-                new_device = APICControllers(
-                    ip_address=device_data["ip_address"],
-                    device_name=device_data["device_name"],
-                    site_id=site.id,
-                    rack_id=rack.id,
-                    password_group_id=password_group.id,
-                    device_type=device_data["device_type"],
-                    OnBoardingStatus=False,  
-                    messages="Device uploaded successfully."  
-                )
-                session.add(new_device)
-                session.commit()
-                session.refresh(new_device)
-
-                
-                return {
-                    "ip_address": new_device.ip_address,
-                    "device_name": new_device.device_name,
-                    "site_name": site.site_name,
-                    "rack_name": rack.rack_name,
-                    "password_group_name": password_group.password_group_name,
-                    "device_type": new_device.device_type,
-                    "messages": new_device.messages
-                }
-            except Exception as e:
-                session.rollback()
-                
-                new_device = APICControllers(
-                    ip_address=device_data["ip_address"],
-                    device_name=device_data["device_name"],
-                    site_id=site.id if site else None,
-                    rack_id=rack.id if rack else None,
-                    password_group_id=password_group.id if password_group else None,
-                    device_type=device_data.get("device_type", "devices"),
-                    OnBoardingStatus=False,
-                    messages=f"Error creating device: {str(e)}"
-                )
-                session.add(new_device)
-                session.commit()
-                session.refresh(new_device)
-                raise ValueError(f"Error creating device: {str(e)}")
-
-    def get_cspc_devices_with_sntc(self) -> List[CSPCDevicesWithSntcResponse]:
-        with self.session_factory() as session:
-            
-            devices = session.query(
-                CSPCDevices, DevicesSntc
-            ).outerjoin(
-                DevicesSntc, CSPCDevices.model_name == DevicesSntc.model_name
-            ).all()
-
-            result = []
-            for device, sntc in devices:
-                device_data = device.__dict__
-
-                
-                if sntc:
-                    sntc_data = sntc.__dict__
-                    device_data.update(sntc_data)
-
-                result.append(device_data)
-
-            return result
 
     def get_device_by_site_id_and_device_id_pue(self, site_id: int, device_id: int):
         with self.session_factory() as session:
@@ -1090,7 +1134,7 @@ class SiteRepository(BaseRepository):
                 session.query(
                     DeviceInventory.id,
                     DeviceInventory.device_name,
-                    APICControllers.ip_address,
+                    Devices.ip_address,
                     Site.site_name,
                     DeviceInventory.hardware_version,
                     DeviceInventory.manufacturer,
@@ -1099,7 +1143,7 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.software_version,
                     DeviceInventory.status
                 )
-                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Devices, DeviceInventory.apic_controller_id == Devices.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.id == device_id)
                 .first()
@@ -1147,7 +1191,7 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.device_name,
                     DeviceInventory.apic_controller_id,  
                     DeviceInventory.pn_code,
-                    APICControllers.ip_address,
+                    Devices.ip_address,
                     Site.site_name,
                     DeviceInventory.hardware_version,
                     DeviceInventory.manufacturer,
@@ -1155,7 +1199,7 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.software_version,
                     DeviceInventory.status
                 )
-                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Devices, DeviceInventory.apic_controller_id == Devices.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.pn_code == model_no)
             )
@@ -1209,7 +1253,7 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.device_name,
                     DeviceInventory.apic_controller_id,
                     DeviceInventory.pn_code,
-                    APICControllers.ip_address,
+                    Devices.ip_address,
                     Site.site_name,
                     DeviceInventory.hardware_version,
                     DeviceInventory.manufacturer,
@@ -1217,7 +1261,7 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.software_version,
                     DeviceInventory.status
                 )
-                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Devices, DeviceInventory.apic_controller_id == Devices.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
             )
 
@@ -1229,7 +1273,7 @@ class SiteRepository(BaseRepository):
             if model_no:
                 query = query.filter(DeviceInventory.pn_code == model_no)
             if vendor_name:
-                query = query.join(Vendor, APICControllers.vendor_id == Vendor.id).filter(
+                query = query.join(Vendor, Devices.vendor_id == Vendor.id).filter(
                     Vendor.vendor_name == vendor_name)
 
             devices = query.all()
@@ -1266,8 +1310,8 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.device_name,
                     DeviceInventory.apic_controller_id,
                     DeviceInventory.pn_code,
-                    APICControllers.ip_address,
-                    APICControllers.vendor_id,
+                    Devices.ip_address,
+                    Devices.vendor_id,
                     Site.site_name,
                     DeviceInventory.hardware_version,
                     DeviceInventory.manufacturer,
@@ -1276,11 +1320,11 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.status,
                     Rack.rack_name,
                 )
-                .join(APICControllers, DeviceInventory.device_id == APICControllers.id)
+                .join(Devices, DeviceInventory.device_id == Devices.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .join(Rack, DeviceInventory.rack_id == Rack.id)
-                .filter(APICControllers.OnBoardingStatus==True)
-                .filter(APICControllers.collection_status==True)
+                .filter(Devices.OnBoardingStatus==True)
+                .filter(Devices.collection_status==True)
                 .filter(
                     DeviceInventory.pn_code.notlike('%IE%'))
             )
@@ -1290,7 +1334,7 @@ class SiteRepository(BaseRepository):
             if rack_id:
                 query = query.filter(DeviceInventory.rack_id == rack_id)
             if vendor_id:
-                query = query.join(Vendor, APICControllers.vendor_id == Vendor.id)
+                query = query.join(Vendor, Devices.vendor_id == Vendor.id)
             if limit:
                 query = query.limit(limit)
             devices = query.all()
@@ -1323,10 +1367,10 @@ class SiteRepository(BaseRepository):
             query = (
                 session.query(
                     DeviceInventory.device_name,
-                    APICControllers.ip_address,
+                    Devices.ip_address,
                     Site.site_name
                 )
-                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
+                .join(Devices, DeviceInventory.apic_controller_id == Devices.id)
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_name.in_(device_names))
             )
@@ -1348,8 +1392,8 @@ class SiteRepository(BaseRepository):
                 session.query(
                     DeviceInventory.id,
                     DeviceInventory.device_name,
-                    APICControllers.ip_address,
-                    APICControllers.device_type,  # Added device_type
+                    Devices.ip_address,
+                    Devices.device_type,  # Added device_type
                     Vendor.vendor_name,  # Added vendor_name
                     Site.site_name,
                     DeviceInventory.hardware_version,
@@ -1359,8 +1403,8 @@ class SiteRepository(BaseRepository):
                     DeviceInventory.software_version,
                     DeviceInventory.status
                 )
-                .join(APICControllers, DeviceInventory.apic_controller_id == APICControllers.id)
-                .join(Vendor, APICControllers.vendor_id == Vendor.id)  # Join with Vendor table
+                .join(Devices, DeviceInventory.apic_controller_id == Devices.id)
+                .join(Vendor, Devices.vendor_id == Vendor.id)  # Join with Vendor table
                 .join(Site, DeviceInventory.site_id == Site.id)
                 .filter(DeviceInventory.site_id == site_id, DeviceInventory.device_id == device_id)
                 .first()

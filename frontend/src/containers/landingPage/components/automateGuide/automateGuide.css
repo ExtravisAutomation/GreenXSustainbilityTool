@@ -1,0 +1,16 @@
+.automate-guide-container {
+    padding: 40px 95px;
+}
+
+.main-content {
+  text-align: center;
+  margin-top: 90px;
+}
+
+.automate-guide-image {
+  width: 100%;
+  /* max-width: 600px; */
+  height: auto;
+  border-radius: 10px;
+}
+

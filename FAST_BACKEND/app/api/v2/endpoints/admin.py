@@ -14,10 +14,8 @@ from app.model.user import User
 from logging import getLogger
 from starlette.responses import JSONResponse
 
-from app.services.ai_service import AIService
 router = APIRouter(prefix="/admin", tags=["Admin Panel"])
 logger = getLogger(__name__)
-
 
 
 @router.post("/addrole", response_model=CustomResponse)

@@ -4,9 +4,8 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from typing import Callable, List, Optional
-from app.model.apic_controller import APICController
 from app.model.device_inventory import DeviceInventory
-from app.model.APIC_controllers import APICControllers as Devices
+from app.model.devices import  Devices
 from app.repository.InfluxQuery import get_24h_rack_datatraffic, get_24hrack_power, get_rack_power, get_site_power_data_per_hour
 from app.model.rack import Rack
 from app.model.site import Site

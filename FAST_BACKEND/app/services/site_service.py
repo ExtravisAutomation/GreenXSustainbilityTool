@@ -13,183 +13,334 @@ from sqlalchemy.engine import Row
 from sqlalchemy.orm import Session
 from app.repository.site_repository import SiteRepository
 from app.schema.site_schema import SiteCreate, SiteUpdate, GetSitesResponse, SiteDetails,DevicesResponse
-import traceback
-import traceback
 from app.repository.influxdb_repository import InfluxDBRepository
-from app.repository.ai_repository import AIRepository
 from app.schema.site_schema import SiteDetails1
-
 from app.schema.site_schema import DeviceEnergyMetric, HourlyEnergyMetricsResponse
-
 from app.schema.site_schema import HourlyDevicePowerMetricsResponse, DevicePowerMetric
-
 from app.schema.site_schema import TopDevicesPowerResponse, DevicePowerConsumption
-
 from app.schema.site_schema import DeviceTrafficThroughputMetric1, TrafficThroughputMetricsResponse
-
-from app.schema.site_schema import DevicePowerComparisonPercentage
-
-from app.schema.site_schema import ComparisonDeviceMetricsDetails
-
 from app.schema.site_schema import SiteDetails_get
 import math
 
 from app.model.site import PasswordGroup
 from app.schema.site_schema import PasswordGroupCreate
-
-from app.model.APIC_controllers import APICControllers
-from app.schema.site_schema import APICControllersCreate, APICControllersUpdate
-
-from app.schema.site_schema import APICControllersResponse
-
-from app.schema.site_schema import PasswordGroupUpdate
-
-from app.schema.site_schema import RackResponse
-
-from app.schema.site_schema import DeviceEnergyDetailResponse123
-
-from app.schema.site_schema import DeviceCreateRequest
-
+from app.model.devices import Devices
+from app.schema.site_schema import DevicesCreate, DevicesUpdate,DevicesResponse,PasswordGroupUpdate,RackResponse,DeviceCreateRequest,DeviceEnergyDetailResponse123
 import pandas as pd
 from io import BytesIO
-
-from app.schema.site_schema import CSPCDevicesWithSntcResponse
-
 import time
 import logging
 
-# from FAST_BACKEND.app.schema.site_schema import co2emmisionDetails
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-DUMMY_DATA_FIRST_QUARTER = [
-    {
-        "time": "2024-01",
-        "energy_efficiency": 0,
-        "total_POut": 200,
-        "total_PIn": 235,
-        "average_energy_consumed": None,
-        "power_efficiency": 21.23
-    },
-    {
-        "time": "2024-02",
-        "energy_efficiency": 0,
-        "total_POut": 190,
-        "total_PIn": 230,
-        "average_energy_consumed": None,
-        "power_efficiency": 21.74
-    },
-    {
-        "time": "2024-03",
-        "energy_efficiency": 0,
-        "total_POut": 185,
-        "total_PIn": 225,
-        "average_energy_consumed": None,
-        "power_efficiency": 22.22
-    }
-]
-
-DUMMY_DATA_SECOND_QUARTER = [
-    {
-        "time": "2024-04",
-        "energy_efficiency": 0,
-        "total_POut": 200,
-        "total_PIn": 235,
-        "average_energy_consumed": None,
-        "power_efficiency": 21.23
-    },
-    {
-        "time": "2024-05",
-        "energy_efficiency": 0,
-        "total_POut": 190,
-        "total_PIn": 230,
-        "average_energy_consumed": None,
-        "power_efficiency": 21.74
-    },
-    {
-        "time": "2024-06",
-        "energy_efficiency": 1.4,
-        "total_POut": 185,
-        "total_PIn": 225,
-        "average_energy_consumed": None,
-        "power_efficiency": 22.22
-    }
-
-]
-
-DUMMY_DATA_THIRD_QUARTER = [
-    {
-        "time": "2024-07",
-        "energy_efficiency": 1.3,
-        "total_POut": 200,
-        "total_PIn": 235,
-        "average_energy_consumed": None,
-        "power_efficiency": 21.23
-    },
-    {
-        "time": "2024-08",
-        "energy_efficiency": 1.2,
-        "total_POut": 190,
-        "total_PIn": 230,
-        "average_energy_consumed": None,
-        "power_efficiency": 21.74
-    },
-    {
-        "time": "2024-09",
-        "energy_efficiency": 1.4,
-        "total_POut": 0,
-        "total_PIn": 0,
-        "average_energy_consumed": None,
-        "power_efficiency": 0
-    }
-]
-
-PUE_DUMMY_DATA_FIRST_QUARTER = {
-    "message": "Energy consumption metrics retrieved successfully.",
-    "data": {
-        "time": "2024-01-01 00:00:00 - 2024-03-31 23:59:59",
-        "energy_consumption": 88.56,
-        "total_POut": 177.12,
-        "total_PIn": 200.56,
-        "power_efficiency": 0.5
-    },
-    "status_code": 200
-}
-
-PUE_DUMMY_DATA_SECOND_QUARTER = {
-    "message": "Energy consumption metrics retrieved successfully.",
-    "data": {
-        "time": "2024-04-01 00:00:00 - 2024-06-31 23:59:59",
-        "energy_consumption": 170.24,
-        "total_POut": 340.48,
-        "total_PIn": 380.24,
-        "power_efficiency": 0.6
-    },
-    "status_code": 200
-}
-
-PUE_DUMMY_DATA_THIRD_QUARTER = {
-    "message": "Energy consumption metrics retrieved successfully.",
-    "data": {
-        "time": "2023-07-01 00:00:00 - 2024-09-31 23:59:59",
-        "energy_consumption": 252.75,
-        "total_POut": 505.50,
-        "total_PIn": 564.89,
-        "power_efficiency": 0.4
-    },
-    "status_code": 200
-}
-
-
 class SiteService:
-    def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository,ai_repository):
+    def __init__(self, site_repository: SiteRepository, influxdb_repository: InfluxDBRepository):
         self.site_repository = site_repository
         self.influxdb_repository = influxdb_repository
-        self.ai_repository = ai_repository
+
+    def get_all_devices_data(self) -> List[Devices]:
+        return self.site_repository.get_all_devices_data()
+
+    def add_password_group(self, password_group: PasswordGroupCreate) -> PasswordGroup:
+        return self.site_repository.add_password_group(password_group)
+
+    def get_all_password_groups_data(self) -> List[PasswordGroup]:
+        return self.site_repository.get_all_password_groups_data()
+
+    def update_password_group_by_id(self, group_id: int, password_group: PasswordGroupUpdate) -> PasswordGroup:
+        return self.site_repository.update_password_group_by_id(group_id, password_group)
+    def delete_password_groups_by_ids(self, password_group_ids: List[int]):
+        return self.site_repository.delete_password_groups_by_ids(password_group_ids)
+
+    def upload_devices_from_excel(self, file: UploadFile):
+        try:
+
+            contents = file.file.read()
+            df = pd.read_excel(BytesIO(contents))
+
+            required_columns = ["ip_address", "vendor", "device_type", "site_name", "rack_name", "password_group_name"]
+            if not all(col in df.columns for col in required_columns):
+                raise HTTPException(status_code=400, detail="Excel file is missing required columns.")
+
+            response_data = []
+            exceptions = []
+
+            for index, row in df.iterrows():
+
+                device_type = row["device_type"] if pd.notnull(row["device_type"]) else ""
+
+                device_data = {
+                    "ip_address": row["ip_address"],
+                    "device_name": row["vendor"],
+                    "site_name": row["site_name"],
+                    "rack_name": row["rack_name"],
+                    "password_group_name": row["password_group_name"],
+                    "device_type": device_type
+                }
+
+                try:
+                    result = self.site_repository.add_device_from_excel(device_data)
+                    if result:
+                        response_data.append(result)
+                except Exception as e:
+                    exceptions.append({"row_index": index, "error": str(e), "data": device_data})
+
+            return response_data, exceptions
+
+        except pd.errors.EmptyDataError:
+            raise HTTPException(status_code=400, detail="Excel file is empty.")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An error occurred while processing the Excel file: {str(e)}")
+        finally:
+            file.file.close()
+
+    def add_device_onboarding(self, device_data: DeviceCreateRequest) -> DevicesResponse:
+        print("starting here")
+
+        device = self.site_repository.add_device_onboarding(device_data)
+
+        password_group_name = device.password_group.password_group_name if device.password_group else None
+        site_name = device.site.site_name if device.site else None
+        rack_name = device.rack.rack_name if device.rack else None
+        vendor_name = device.vendor.vendor_name if device.vendor else None
+        device_type = device.device_type_rel.device_type if device.device_type_rel else None  # Use the relationship
+
+        response_data = DevicesResponse.from_orm(device)
+        response_data.password_group_name = password_group_name
+        response_data.site_name = site_name
+        response_data.rack_name = rack_name
+        response_data.rack_unit = device.rack_unit
+        response_data.vendor_name = vendor_name
+        response_data.device_type = device_type
+
+        return response_data
+
+    def get_site_names(self):
+        return self.site_repository.get_site_names()
+
+    def get_sites_data(self) -> List[SiteDetails_get]:
+
+        start_time = time.time()
+        logger.debug("Starting get_extended_sites execution")
+
+        sites_start_time = time.time()
+        sites = self.site_repository.get_all_sites()
+        sites_end_time = time.time()
+        logger.debug(f"Time taken to fetch all sites: {sites_end_time - sites_start_time:.2f} seconds")
+
+        for site in sites:
+            site_start_time = time.time()
+
+            device_inventory_start_time = time.time()
+            device_inventory = self.site_repository.get_device_inventory_by_site_id(site.id)
+            device_inventory_end_time = time.time()
+            logger.debug(
+                f"Time taken to fetch device inventory for site {site.id}: {device_inventory_end_time - device_inventory_start_time:.2f} seconds")
+
+            ips = [device['ip_address'] for device in device_inventory if device['ip_address']]
+
+            counts_start_time = time.time()
+            counts = self.site_repository.get_rack_and_device_counts(site.id)
+            counts_end_time = time.time()
+            logger.debug(
+                f"Time taken to fetch rack and device counts for site {site.id}: {counts_end_time - counts_start_time:.2f} seconds")
+
+            site.num_racks = counts['num_racks']
+            site.num_devices = counts['num_devices']
+
+            power_data_start_time = time.time()
+            site.power_data = self.influxdb_repository.get_24hsite_power(ips, site.id)
+            power_data_end_time = time.time()
+            logger.debug(
+                f"Time taken to fetch power data for site {site.id}: {power_data_end_time - power_data_start_time:.2f} seconds")
+
+            traffic_data_start_time = time.time()
+            site.traffic_data = self.influxdb_repository.get_24hsite_datatraffic(ips, site.id)
+            print(site.traffic_data)
+            # site.traffic_data=0
+            traffic_data_end_time = time.time()
+            logger.debug(
+                f"Time taken to fetch traffic data for site {site.id}: {traffic_data_end_time - traffic_data_start_time:.2f} seconds")
+
+            power_agg_start_time = time.time()
+            if site.power_data:
+                eer_values = [data['energy_efficiency'] for data in site.power_data if
+                              data['energy_efficiency'] is not None]
+                power_input_values = [data['power_input'] for data in site.power_data if
+                                      data['power_input'] is not None]
+                power_output_values = [data['power_output'] for data in site.power_data if
+                                       data['power_output'] is not None]
+                pue_values = [data['pue'] for data in site.power_data if data['pue'] is not None]
+                total_power_util = sum(eer_values) if eer_values else 0
+                average_power_util = total_power_util / len(eer_values) if eer_values else 0
+                site.energy_efficiency = round(average_power_util, 2)
+
+                total_pue = sum(pue_values) if pue_values else 0
+                average_pue = total_pue / len(pue_values) if pue_values else 0
+                site.pue = round(average_pue, 2)
+
+                total_power_input = sum(power_input_values) if power_input_values else 0
+                site.power_input = round(total_power_input / 1000, 2)
+
+                total_power_output = sum(power_output_values) if power_output_values else 0
+                site.power_output = round(total_power_output / 1000, 2)
+
+                co2emmision_kg = round((site.power_input * 0.0401), 2)
+                unit, co2emmision = self.get_unit(co2emmision_kg)
+                site.co2emmision = f"{co2emmision} {unit}"
+                print(type(site.co2emmision))
+                site.site_cost = round(site.power_input * 0.32, 2)
+
+                print(site.co2emmision)
+
+            power_agg_end_time = time.time()
+            logger.debug(
+                f"Time taken for power data aggregation for site {site.id}: {power_agg_end_time - power_agg_start_time:.2f} seconds")
+
+            traffic_agg_start_time = time.time()
+            if site.traffic_data:
+                print("Traffic data")
+                traffic_throughput_values = [data['traffic_through'] for data in site.traffic_data if
+                                             data['traffic_through'] is not None]
+                total_traffic_throughput = sum(traffic_throughput_values)
+                print("********************************************")
+                print("Total traffic throughput:", total_traffic_throughput)
+                site.datatraffic = round(total_traffic_throughput / (1024 ** 3), 2)
+            else:
+                site.datatraffic = 0
+            traffic_agg_end_time = time.time()
+            logger.debug(
+                f"Time taken for traffic data aggregation for site {site.id}: {traffic_agg_end_time - traffic_agg_start_time:.2f} seconds")
+
+            site_end_time = time.time()
+            logger.debug(f"Total time for processing site {site.id}: {site_end_time - site_start_time:.2f} seconds")
+
+        end_time = time.time()
+        logger.debug(f"Total time for get_extended_sites: {end_time - start_time:.2f} seconds")
+        site.pcr = round(total_power_input / site.datatraffic, 4) if site.datatraffic else 0
+
+        return [SiteDetails_get(**site.__dict__) for site in sites]
+
+    def get_unit(self,carbon_emission_KG):
+         if carbon_emission_KG < 1000:
+             return "kg",round(carbon_emission_KG,4)
+         else:
+             carbon_emission=round((carbon_emission_KG / 1000), 4)
+             return "ton",carbon_emission
+
+    def get_sites(self) -> List[SiteDetails]:
+        sites = self.site_repository.get_all_sites()
+        return [SiteDetails(**site.__dict__) for site in sites]
+
+    def add_site(self, site_data: SiteCreate) -> SiteDetails:
+        site = self.site_repository.add_site(site_data)
+        return SiteDetails(**site.__dict__)
+
+    def update_site(self, id: int, site_data: SiteUpdate) -> SiteDetails1:
+        updated_site = self.site_repository.update_site(id, site_data)
+        return SiteDetails1(
+            id=updated_site.id,
+            site_name=updated_site.site_name,
+            site_type=updated_site.site_type,
+            region=updated_site.region,
+            city=updated_site.city,
+            latitude=updated_site.latitude,
+            longitude=updated_site.longitude,
+            status=updated_site.status,
+            total_devices=updated_site.total_devices
+        )
+
+    def delete_site(self, site_id: int) -> str:
+        self.site_repository.delete_site(site_id)
+        return {"message": "Site deleted successfully"}
+
+    def delete_sites(self, site_ids: List[int]) -> list:
+        try:
+
+            successful_deletes, failed_deletes = self.site_repository.delete_sites(site_ids)
+            response_content = {
+                "successful_deletes": successful_deletes,
+                "failed_deletes": failed_deletes
+            }
+
+            if failed_deletes:
+                response_content["message"] = "Some sites could not be deleted."
+                status_code = status.HTTP_400_BAD_REQUEST
+            else:
+                response_content["message"] = "All sites deleted successfully."
+                status_code = status.HTTP_200_OK
+
+            return JSONResponse(status_code=status_code, content=response_content)
+
+        except HTTPException as e:
+            return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
+
+    def site_hourly_eer_by_id(self, site_id: int) -> List[dict]:
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        if not device_ips:
+            return []
+
+        return self.influxdb_repository.get_eer_metrics(device_ips, site_id)
+
+    def calculate_energy_efficiency_by_id(self, site_id: int) -> List[dict]:
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+        ip_to_name = {device.ip_address: device.device_name for device in devices if device.ip_address}
+
+        if not device_ips:
+            return []
+        power_efficiency = self.influxdb_repository.get_energy_efficiency(device_ips, site_id)
+
+        sorted_efficiency = sorted(power_efficiency, key=lambda x: x['energy_efficiency'], reverse=True)[:4]
+        for entry in sorted_efficiency:
+            entry['device_name'] = ip_to_name.get(entry['ip_address'], "Unknown")
+
+        return sorted_efficiency
+
+    def calculate_power_requirement_by_id(self, site_id: int) -> List[dict]:
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+
+        if not device_ips:
+            return []
+
+        power_required_data = self.influxdb_repository.get_power_required(device_ips, site_id)
+
+        sorted_power_required = sorted(power_required_data,
+                                       key=lambda x: x['total_power'] if x['total_power'] is not None else float(
+                                           '-inf'),
+                                       reverse=True)
+
+        response = self.site_repository.get_device_names(sorted_power_required[:4])
+
+        return response
+
+    def site_power_co2emmission(self, site_id: int):
+        devices = self.site_repository.get_devices_by_site_id(site_id)
+        device_ips = [device.ip_address for device in devices if device.ip_address]
+        ip_to_name = {device.ip_address: device.device_name for device in devices if device.ip_address}
+
+        if not device_ips:
+            return []
+        power_efficiency = self.influxdb_repository.get_energy_efficiency(device_ips, site_id)
+        sorted_efficiency = sorted(power_efficiency, key=lambda x: x['PowerInput'], reverse=True)[:4]
+        for entry in sorted_efficiency:
+            entry['site_id'] = site_id
+            entry['device_name'] = ip_to_name.get(entry['ip_address'], "Unknown")
+            entry['co2_emission'] = round(((entry['PowerInput']/1000) * 0.4041), 2)
+
+        return sorted_efficiency
+        # return site_power
+
+
 
     def get_energy_efficiency_by_site_id(self, site_id: int, duration_str: str) -> List[dict]:
+
 
         start_date, end_date = self.calculate_start_end_dates(duration_str)
         devices = self.site_repository.get_devices_by_site_id(site_id)
@@ -314,85 +465,9 @@ class SiteService:
             "metrics": aggregated_metrics
         }
 
-    def get_sites(self) -> List[SiteDetails]:
-        sites = self.site_repository.get_all_sites()
-        return [SiteDetails(**site.__dict__) for site in sites]
 
-    def create_site(self, site_data: SiteCreate) -> SiteDetails:
-        site = self.site_repository.add_site(site_data)
-        return SiteDetails(**site.__dict__)
 
-    def update_site(self, id: int, site_data: SiteUpdate) -> SiteDetails1:
-        updated_site = self.site_repository.update_site(id, site_data)
-        return SiteDetails1(
-            id=updated_site.id,
-            site_name=updated_site.site_name,
-            site_type=updated_site.site_type,
-            region=updated_site.region,
-            city=updated_site.city,
-            latitude=updated_site.latitude,
-            longitude=updated_site.longitude,
-            status=updated_site.status,
-            total_devices=updated_site.total_devices
-        )
 
-    def delete_site(self, site_id: int) -> str:
-        self.site_repository.delete_site(site_id)
-        return {"message": "Site deleted successfully"}
-
-    def delete_sites(self, site_ids: List[int]) -> list:
-        try:
-            
-            
-            successful_deletes, failed_deletes = self.site_repository.delete_sites(site_ids)
-            response_content = {
-                "successful_deletes": successful_deletes,
-                "failed_deletes": failed_deletes
-            }
-
-            if failed_deletes:
-                response_content["message"] = "Some sites could not be deleted."
-                status_code = status.HTTP_400_BAD_REQUEST
-            else:
-                response_content["message"] = "All sites deleted successfully."
-                status_code = status.HTTP_200_OK
-
-            return JSONResponse(status_code=status_code, content=response_content)
-
-        except HTTPException as e:
-            return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
-
-    def calculate_energy_efficiency_by_id(self, site_id: int) -> List[dict]:
-        devices = self.site_repository.get_devices_by_site_id(site_id)
-        device_ips = [device.ip_address for device in devices if device.ip_address]
-        ip_to_name = {device.ip_address: device.device_name for device in devices if device.ip_address}
-
-        if not device_ips:
-            return []
-        power_efficiency = self.influxdb_repository.get_energy_efficiency(device_ips, site_id)
-
-        sorted_efficiency = sorted(power_efficiency, key=lambda x: x['energy_efficiency'], reverse=True)[:4]
-        for entry in sorted_efficiency:
-            entry['device_name'] = ip_to_name.get(entry['ip_address'], "Unknown")
-
-        return sorted_efficiency
-
-    def site_power_co2emmission(self, site_id: int):
-        devices = self.site_repository.get_devices_by_site_id(site_id)
-        device_ips = [device.ip_address for device in devices if device.ip_address]
-        ip_to_name = {device.ip_address: device.device_name for device in devices if device.ip_address}
-
-        if not device_ips:
-            return []
-        power_efficiency = self.influxdb_repository.get_energy_efficiency(device_ips, site_id)
-        sorted_efficiency = sorted(power_efficiency, key=lambda x: x['PowerInput'], reverse=True)[:4]
-        for entry in sorted_efficiency:
-            entry['site_id'] = site_id
-            entry['device_name'] = ip_to_name.get(entry['ip_address'], "Unknown")
-            entry['co2_emission'] = round(((entry['PowerInput']/1000) * 0.4041), 2)
-
-        return sorted_efficiency
-        # return site_power
 
     def get_site_power_consumption(self, site_name: str) -> Dict[str, float]:
         devices = self.site_repository.get_devices_by_site_name(site_name)
@@ -634,8 +709,6 @@ class SiteService:
         metrics_list = []
 
         device_inventory_data = self.site_repository.get_device_inventory_by_site_id(site_id)
-        print("DATAAAAAAAAAAAAAAAAAAAAAa", device_inventory_data)
-        print("Keys in device_inventory_data:")
         for item in device_inventory_data:
             print(item.keys(), file=sys.stderr)
 
@@ -1146,9 +1219,7 @@ class SiteService:
 
         return dummy_metrics
 
-    
-    
-    
+
     
     
     
@@ -1191,150 +1262,13 @@ class SiteService:
     
     
 
-    def get_extended_sites(self) -> List[SiteDetails_get]:
-        
-        start_time = time.time()
-        logger.debug("Starting get_extended_sites execution")
 
-        
-        sites_start_time = time.time()
-        sites = self.site_repository.get_all_sites()
-        sites_end_time = time.time()
-        logger.debug(f"Time taken to fetch all sites: {sites_end_time - sites_start_time:.2f} seconds")
-
-        for site in sites:
-            site_start_time = time.time()
-
-            
-            device_inventory_start_time = time.time()
-            device_inventory = self.site_repository.get_device_inventory_by_site_id(site.id)
-            device_inventory_end_time = time.time()
-            logger.debug(
-                f"Time taken to fetch device inventory for site {site.id}: {device_inventory_end_time - device_inventory_start_time:.2f} seconds")
-
-            ips = [device['ip_address'] for device in device_inventory if device['ip_address']]
-
-            
-            counts_start_time = time.time()
-            counts = self.site_repository.get_rack_and_device_counts(site.id)
-            counts_end_time = time.time()
-            logger.debug(
-                f"Time taken to fetch rack and device counts for site {site.id}: {counts_end_time - counts_start_time:.2f} seconds")
-
-            site.num_racks = counts['num_racks']
-            site.num_devices = counts['num_devices']
-
-            
-            power_data_start_time = time.time()
-            site.power_data = self.influxdb_repository.get_24hsite_power(ips, site.id)
-            power_data_end_time = time.time()
-            logger.debug(
-                f"Time taken to fetch power data for site {site.id}: {power_data_end_time - power_data_start_time:.2f} seconds")
-
-            
-            traffic_data_start_time = time.time()
-            site.traffic_data = self.influxdb_repository.get_24hsite_datatraffic(ips, site.id)
-            print(site.traffic_data)
-            # site.traffic_data=0
-            traffic_data_end_time = time.time()
-            logger.debug(
-                f"Time taken to fetch traffic data for site {site.id}: {traffic_data_end_time - traffic_data_start_time:.2f} seconds")
-
-            
-            power_agg_start_time = time.time()
-            if site.power_data:
-                eer_values = [data['energy_efficiency'] for data in site.power_data if
-                                            data['energy_efficiency'] is not None]
-                power_input_values = [data['power_input'] for data in site.power_data if
-                                      data['power_input'] is not None]
-                power_output_values = [data['power_output'] for data in site.power_data if
-                                      data['power_output'] is not None]
-                pue_values = [data['pue'] for data in site.power_data if data['pue'] is not None]
-                total_power_util = sum(eer_values) if eer_values else 0
-                average_power_util = total_power_util / len(eer_values) if eer_values else 0
-                site.energy_efficiency = round(average_power_util, 2)
-
-                total_pue = sum(pue_values) if pue_values else 0
-                average_pue = total_pue / len(pue_values) if pue_values else 0
-                site.pue = round(average_pue, 2)
-
-                total_power_input = sum(power_input_values) if power_input_values else 0
-                site.power_input = round(total_power_input / 1000, 2)
-
-                total_power_output = sum(power_output_values) if power_output_values else 0
-                site.power_output = round(total_power_output / 1000, 2)
-
-                co2emmision_kg= round((site.power_input  *0.0401),2)
-                unit,co2emmision=self.get_unit(co2emmision_kg)
-                site.co2emmision=f"{co2emmision} {unit}"
-                print(type(site.co2emmision))
-                site.site_cost=round(site.power_input * 0.32,2)
-
-                print(site.co2emmision)
-
-
-            power_agg_end_time = time.time()
-            logger.debug(
-                f"Time taken for power data aggregation for site {site.id}: {power_agg_end_time - power_agg_start_time:.2f} seconds")
-
-            
-            traffic_agg_start_time = time.time()
-            if site.traffic_data:
-                print("Traffic data")
-                traffic_throughput_values = [data['traffic_through'] for data in site.traffic_data if
-                                             data['traffic_through'] is not None]
-                total_traffic_throughput = sum(traffic_throughput_values)
-                print("********************************************")
-                print("Total traffic throughput:", total_traffic_throughput)
-                site.datatraffic = round(total_traffic_throughput / (1024 ** 3), 2)
-            else:
-                site.datatraffic = 0
-            traffic_agg_end_time = time.time()
-            logger.debug(
-                f"Time taken for traffic data aggregation for site {site.id}: {traffic_agg_end_time - traffic_agg_start_time:.2f} seconds")
-
-            site_end_time = time.time()
-            logger.debug(f"Total time for processing site {site.id}: {site_end_time - site_start_time:.2f} seconds")
-
-        
-        end_time = time.time()
-        logger.debug(f"Total time for get_extended_sites: {end_time - start_time:.2f} seconds")
-        site.pcr = round(total_power_input /site.datatraffic, 4) if site.datatraffic else 0
-
-        return [SiteDetails_get(**site.__dict__) for site in sites]
 
     def calculate_average(self, values):
         return round(sum(values) / len(values), 2) if values else 0
 
-    def calculate_eer_by_id(self, site_id: int) -> List[dict]:
-        devices = self.site_repository.get_devices_by_site_id(site_id)
-        device_ips = [device.ip_address for device in devices if device.ip_address]
-
-        if not device_ips:
-            return []
-
-        return self.influxdb_repository.get_eer_metrics(device_ips, site_id)
 
 
-    def calculate_power_requirement_by_id(self, site_id: int) -> List[dict]:
-        devices = self.site_repository.get_devices_by_site_id(site_id)
-        device_ips = [device.ip_address for device in devices if device.ip_address]
-
-        if not device_ips:
-            return []
-
-        power_required_data = self.influxdb_repository.get_power_required(device_ips, site_id)
-        
-        sorted_power_required = sorted(power_required_data,
-                                       key=lambda x: x['total_power'] if x['total_power'] is not None else float('-inf'),
-                                       reverse=True)
-        
-
-        
-        response = self.site_repository.get_device_names(sorted_power_required[:4])
-
-        
-        return response
 
     def calculate_co2_emission_by_id(self, site_id: int) -> List[dict]:
         devices = self.site_repository.get_devices_by_site_id(site_id)
@@ -1390,12 +1324,7 @@ class SiteService:
         carbon_solution = self.calculate_carbon_solution(carbon_emission_KG)
 
         return round(float(total_pin_value_KW),2), carbon_emission_KG, carbon_car, carbon_flight, carbon_solution
-    def get_unit(self,carbon_emission_KG):
-         if carbon_emission_KG < 1000:
-             return "kg",round(carbon_emission_KG,4)
-         else:
-             carbon_emission=round((carbon_emission_KG / 1000), 4)
-             return "ton",carbon_emission
+
     def calculate_carbon_car(self, carbon_emission_KG):
 
         # car_trips = carbon_emission_KG * 1.39
@@ -1505,7 +1434,7 @@ class SiteService:
     def delete_password_groups1(self, password_group_ids: List[int]):
         return self.site_repository.delete_password_groups12(password_group_ids)
 
-    def create_device1(self, device_data: APICControllersCreate) -> APICControllersResponse:
+    def create_device1(self, device_data: DevicesCreate) -> DevicesResponse:
         device = self.site_repository.create_device2(device_data)
 
         password_group_name = None
@@ -1520,19 +1449,19 @@ class SiteService:
         if device.rack_id:
             if device.rack:
                 rack_name = device.rack.rack_name
-        response_data = APICControllersResponse.from_orm(device)
+        response_data = DevicesResponse.from_orm(device)
         response_data.password_group_name = password_group_name
         response_data.site_name = site_name
         response_data.rack_name = rack_name
         response_data.rack_unit = device.rack_unit  
         return response_data
 
-    def get_all_devices_data(self) -> List[APICControllers]:
+    def get_all_devices_data(self) -> List[Devices]:
         return self.site_repository.get_all_devices_data()
 
     
     
-    def update_device1(self, device_id: int, device_data: APICControllersUpdate) -> APICControllersResponse:
+    def update_device1(self, device_id: int, device_data: DevicesUpdate) -> DevicesResponse:
         device = self.site_repository.update_device2(device_id, device_data)
 
         password_group_name = None
@@ -1547,7 +1476,7 @@ class SiteService:
         if device.rack_id:
             if device.rack:
                 rack_name = device.rack.rack_name
-        response_data = APICControllersResponse.from_orm(device)
+        response_data = DevicesResponse.from_orm(device)
         response_data.password_group_name = password_group_name
         response_data.site_name = site_name
         response_data.rack_name = rack_name
@@ -2045,26 +1974,6 @@ class SiteService:
 
         return pcr_metrics
 
-    def create_onboard_device(self, device_data: DeviceCreateRequest) -> APICControllersResponse:
-        print("starting here")
-
-        device = self.site_repository.create_device_onbrd(device_data)
-
-        password_group_name = device.password_group.password_group_name if device.password_group else None
-        site_name = device.site.site_name if device.site else None
-        rack_name = device.rack.rack_name if device.rack else None
-        vendor_name = device.vendor.vendor_name if device.vendor else None
-        device_type = device.device_type_rel.device_type if device.device_type_rel else None  # Use the relationship
-
-        response_data = DevicesResponse.from_orm(device)
-        response_data.password_group_name = password_group_name
-        response_data.site_name = site_name
-        response_data.rack_name = rack_name
-        response_data.rack_unit = device.rack_unit
-        response_data.vendor_name = vendor_name
-        response_data.device_type = device_type
-
-        return response_data
 
     def get_last_7_days_energy_metrics(self, site_id: int) -> List[dict]:
         duration_str = "7 Days"
@@ -2131,8 +2040,6 @@ class SiteService:
 
 
 
-    def get_site_names(self):
-        return self.site_repository.get_site_names()
 
     def get_inventory_count(self,site_id):
         return self.site_repository.get_device_inventory(site_id)
@@ -2253,179 +2160,11 @@ class SiteService:
 
     # data=self.influxdb_repository.()
 
-    def upload_devices_from_excel(self, file: UploadFile):
-        try:
-            
-            contents = file.file.read()
-            df = pd.read_excel(BytesIO(contents))
-
-            
-            required_columns = ["ip_address", "vendor", "device_type", "site_name", "rack_name", "password_group_name"]
-            if not all(col in df.columns for col in required_columns):
-                raise HTTPException(status_code=400, detail="Excel file is missing required columns.")
-
-            response_data = []
-            exceptions = []
-
-            
-            for index, row in df.iterrows():
-                
-                device_type = row["device_type"] if pd.notnull(row["device_type"]) else ""
-
-                
-                device_data = {
-                    "ip_address": row["ip_address"],
-                    "device_name": row["vendor"],  
-                    "site_name": row["site_name"],
-                    "rack_name": row["rack_name"],
-                    "password_group_name": row["password_group_name"],
-                    "device_type": device_type  
-                }
-
-                
-                try:
-                    result = self.site_repository.create_device_from_excel(device_data)
-                    if result:
-                        response_data.append(result)
-                except Exception as e:
-                    exceptions.append({"row_index": index, "error": str(e), "data": device_data})
-
-            return response_data, exceptions
-
-        except pd.errors.EmptyDataError:
-            raise HTTPException(status_code=400, detail="Excel file is empty.")
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"An error occurred while processing the Excel file: {str(e)}")
-        finally:
-            file.file.close()
-
-    def get_cspc_devices_with_sntc(self) -> List[CSPCDevicesWithSntcResponse]:
-        
-        devices = self.site_repository.get_cspc_devices_with_sntc()
-
-        
-        return [CSPCDevicesWithSntcResponse(**device) for device in devices]
 
 
 
 
-    def ask_openai_question(self, question: str) -> str:
-        return self.site_repository.get_openai_answer(question)
 
-    def analyze_csv_and_ask_openai(self, question: str) -> str:
-        csv_file_path = "/path/to/your/csvfile.csv" 
-        try:
-            df = pd.read_csv(csv_file_path)
-        except FileNotFoundError:
-            raise HTTPException(status_code=500, detail="CSV file not found.")
-
-        csv_data = df.to_dict(orient="records")
-
-        prompt = (
-            f"You are an expert in analyzing Cisco device data. Based on the following data from the CSV file, "
-            f"answer the question: '{question}'.\n\nData:\n{csv_data}\n\nAnswer concisely."
-        )
-
-        return self.site_repository.get_openai_answer(prompt)
-
-
-
-    def calculate_energy_consumption_by_model_no_with_filter(self, model_no: str, duration_str: str,
-                                                             site_id: Optional[int]) -> List[dict]:
-        start_date, end_date = self.calculate_start_end_dates(duration_str)
-
-        
-        device = self.site_repository.get_device_by_model_no(model_no, site_id)
-        print("DEVICE DATAAAAAAAAAAAAAAAA", device, file=sys.stderr)
-
-        if not device or not device["ip_address"]:
-            print("No device found for model_no:", model_no, " and site_id:", site_id, file=sys.stderr)
-            return []
-
-        energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter123(
-            [device["ip_address"]], start_date, end_date, duration_str
-        )
-        print("RETURNNNN METRIX FROM INFLUX", energy_metrics, file=sys.stderr)
-        return energy_metrics
-
-    def calculate_energy_consumption_with_filters(self, site_id: Optional[int], rack_id: Optional[int],
-                                                  model_no: Optional[str], vendor_name: Optional[str],
-                                                  duration_str: str) -> List[dict]:
-        start_date, end_date = self.calculate_start_end_dates(duration_str)
-
-        
-        devices = self.site_repository.get_devices_with_filters(site_id, rack_id, model_no, vendor_name)
-        print("DEVICE DATAAAAAAAAAAAAAAAA", devices, file=sys.stderr)
-
-        if not devices:
-            print("No devices found with the given filters.", file=sys.stderr)
-            return []
-
-        device_ips = [device["ip_address"] for device in devices if device["ip_address"]]
-        if not device_ips:
-            print("No valid IP addresses found for the devices.", file=sys.stderr)
-            return []
-
-        energy_metrics = self.influxdb_repository.get_energy_consumption_metrics_with_filter123(
-            device_ips, start_date, end_date, duration_str
-        )
-        print("RETURNNNN METRIX FROM INFLUX", energy_metrics, file=sys.stderr)
-        return energy_metrics
-
-    # Final tuning to ensure moderate performance is correctly classified
-    # def classify_performance(self,avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr,
-    #                                      avg_co2_emissions):
-    #     score = 0
-    #
-    #     # **Energy Efficiency Score (Higher is better)**
-    #     if avg_energy_efficiency >= 0.90:
-    #         score += 4  # Good
-    #     elif 0.80 <= avg_energy_efficiency < 0.90:
-    #         score += 2  # Moderate
-    #     else:
-    #         score += 1  # Low
-    #
-    #     # # **Power Efficiency Score (Lower is better, closer to 1 is ideal)**
-    #     # if avg_power_efficiency <= 1.10:
-    #     #     score += 2  # Good
-    #     # elif 1.11 <= avg_power_efficiency <= 1.20:
-    #     #     score += 1  # Moderate
-    #     # else:
-    #     #     score += 0  # Low
-    #
-    #     # **Data Traffic Score (Higher is better)**
-    #     if avg_data_traffic >= 2500:
-    #         score += 2  # Good
-    #     elif 1500 <= avg_data_traffic < 2500:
-    #         score += 1  # Moderate
-    #     else:
-    #         score += 0  # Low
-    #
-    #     # **Power Consumption Ratio (PCR) Score (Lower is better)**
-    #     if avg_pcr <= 1.5:
-    #         score += 2  # Good
-    #     elif 1.6 <= avg_pcr <= 2.5:
-    #         score += 1  # Moderate
-    #     else:
-    #         score += 0  # Low
-    #
-    #     # **CO₂ Emissions Score (Lower is better)**
-    #     if avg_co2_emissions <= 2.0:
-    #         score += 2  # Good
-    #     elif 2.01 <= avg_co2_emissions <= 3.0:
-    #         score += 1  # Now giving moderate cases some score
-    #     else:
-    #         score -= 1  # Minor penalty for CO₂ > 3.0 to prevent downgrading too much
-    #
-    #     # **Final Classification**
-    #     if score >= 8:
-    #         return score,"This model is highly efficient, demonstrating optimal power usage, low CO₂ emissions, and strong data performance."
-    #     elif 5 <= score < 8:
-    #         return score,"This model offers moderate efficiency, performing well in key areas but with some potential for optimization."
-    #     else:
-    #         return score,"This model has a lower efficiency and may require optimization to improve performance and resource utilization."
-
-    # Rerun test cases with final tuned logic
     def classify_performance(
             self,
             avg_energy_efficiency: float,
@@ -2544,83 +2283,6 @@ class SiteService:
             })
 
         return results
-
-        # model_metrics = {}
-        #
-        # for device in devices:
-        #     ip_address = device["ip_address"]
-        #     model = device["pn_code"]
-        #
-        #     if model not in model_metrics:
-        #         model_metrics[model] = {
-        #             "total_power_in": 0,
-        #             "total_power_out": 0,
-        #             "total_data_traffic": 0,
-        #             "total_co2_emissions": 0,
-        #             "total_count": 0,
-        #             "vendor_name": device["vendor_name"],
-        #             "site_name": device["site_name"],
-        #             "rack_name": device["rack_name"]
-        #         }
-        #
-        #
-        #     energy_metrics = self.influxdb_repository.model_wise_info(
-        #         [ip_address], start_date, end_date, duration_str
-        #     )
-        #
-        #     if energy_metrics:
-        #         model_metrics[model]["total_count"] += 1
-        #
-        #         for metric in energy_metrics:
-        #             model_metrics[model]["total_power_in"] += metric["total_PIn"]
-        #             model_metrics[model]["total_power_out"] += metric["total_POut"]
-        #             model_metrics[model]["total_data_traffic"] += metric.get("data_traffic", 0)
-        #             model_metrics[model]["total_co2_emissions"] += metric["co2_kgs"]
-        #
-        #
-        #
-        #
-        #
-        # avg_metrics = []
-        # for model, metrics in model_metrics.items():
-        #     total_count = metrics["total_count"]
-        #     if total_count != 0:
-        #
-        #         avg_total_PIn = round(metrics["total_power_in"] / total_count, 2) if total_count else 0
-        #         avg_data_traffic = round(metrics["total_data_traffic"] / total_count, 2) if total_count else 0
-        #         avg_pcr = round((avg_total_PIn * 1000) / avg_data_traffic,
-        #                         4) if avg_data_traffic > 0 else 0  # Convert kW to W
-        #
-        #         score,performance_label = self.classify_performance(
-        #             avg_energy_efficiency=round(metrics["total_power_out"] / metrics["total_power_in"], 2) if metrics[
-        #                                                                                                           "total_power_in"] > 0 else 0,
-        #             avg_power_efficiency=round(metrics["total_power_in"] / metrics["total_power_out"], 2) if metrics[
-        #                                                                                                          "total_power_out"] > 0 else 0,
-        #             avg_data_traffic=avg_data_traffic,
-        #             avg_pcr=avg_pcr,
-        #             avg_co2_emissions=round(metrics["total_co2_emissions"] / total_count, 2) if total_count else 0
-        #         )
-        #         avg_metrics.append({
-        #             "model_no": model,
-        #             "site_name": metrics["site_name"],
-        #             "rack_name": metrics["rack_name"],
-        #             "model_count": total_count,
-        #             "vendor_name": metrics["vendor_name"],
-        #             "avg_total_PIn": round(metrics["total_power_in"] / total_count, 2) if total_count else 0,
-        #             "avg_energy_efficiency": round(metrics["total_power_out"] / metrics["total_power_in"], 2) if metrics["total_power_in"] > 0 else 0,
-        #             "avg_power_efficiency": round(metrics["total_power_in"] / metrics["total_power_out"], 2) if metrics["total_power_out"] > 0 else 0,
-        #             "avg_total_POut": round(metrics["total_power_out"] / total_count, 2) if total_count else 0,
-        #             "avg_data_traffic": avg_data_traffic,
-        #             "avg_co2_emissions": round(metrics["total_co2_emissions"] / total_count, 2) if total_count else 0,
-        #             "avg_pcr": avg_pcr,
-        #             "score":score,
-        #             "message": performance_label
-        #
-        #         })
-        #     else:
-        #         continue
-        #
-        # return avg_metrics
 
     def calculate_power_for_ip(self, question: str) -> str:
         try:

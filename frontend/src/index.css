@@ -1,0 +1,373 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@font-face {
+  font-family: 'inter';
+  src:
+    url('./resources/fonts/Inter-4.0/web/Inter-Regular.woff2') format('woff2'),
+    url('./resources/fonts/Inter-4.0/web/Inter-Regular.woff2') format('woff');
+  /* Add additional font formats if necessary */
+}
+/* * {
+  font-family: "inter" !important;
+} */
+body {
+  margin: 0;
+  font-family: 'inter' !important;
+  /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale; */
+}
+
+code {
+  /* font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace; */
+  font-family: 'inter' !important;
+}
+.login_container {
+  background-image: url('../src/resources/images/login_bg.png') !important;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.ant-input-suffix .anticon {
+  color: white !important;
+}
+.login :where(.css-dev-only-do-not-override-1adbn6x).ant-input {
+  background-color: transparent !important;
+  color: white !important;
+}
+
+/* .rowClassName {
+  background-color: red !important;
+} */
+
+/* .ant-checkbox-checked:not(.ant-checkbox-disabled) .ant-checkbox-inner { */
+/* background-color: #0490e7 !important; */
+/* border-color: #0490e7 !important; */
+/* } */
+:where(.css-dev-only-do-not-override-1adbn6x).ant-checkbox-wrapper:not(
+    .ant-checkbox-wrapper-disabled
+  ):hover {
+  border-color: #0490e7 !important;
+}
+.css-1k2u9zb-MuiChartsAxis-root {
+  stroke: #e5e5e5;
+  shape-rendering: crispEdges;
+  stroke-width: 1;
+}
+.MuiChartsAxis-line {
+  stroke: #e5e5e5;
+  shape-rendering: crispEdges;
+  stroke-width: 1;
+}
+.css-wn5hww-MuiLineElement-root {
+  stroke-width: 6px !important;
+  stroke: #2b8fca !important;
+}
+.css-a8rcf6-MuiLineElement-root {
+  stroke-width: 6px !important;
+  stroke: #40b553 !important;
+}
+.css-bfv7z6-MuiMarkElement-root {
+  stroke-width: 0 !important;
+}
+.css-p94pjm-MuiMarkElement-root {
+  stroke-width: 0 !important;
+}
+.css-1nj9716-MuiMarkElement-root {
+  stroke-width: 0 !important;
+}
+.css-1r7dp5y-MuiMarkElement-root {
+  fill: #40b553 !important;
+  stroke-width: 1px !important;
+}
+.percentage-bar.cost {
+  background-color: #40b553 !important;
+}
+.percentage-bar.power {
+  background-color: #40b553 !important;
+}
+/* .profile_item {
+  background-color: transparent !important;
+  transition: all 0.2s !important;
+}
+.ant-dropdown-menu-item:hover,
+.ant-dropdown-menu-item:hover .profile_item {
+  color: rgb(32, 154, 195) !important;
+} */
+/* .ant-modal {
+  border-radius: 10px !important;
+}
+.ant-modal-header {
+  background-color: transparent !important;
+}
+.tour_modal .ant-modal-content {
+  background-color: rgba(43, 48, 57, 0.4) !important;
+  backdrop-filter: blur(10.4px) !important;
+  -webkit-backdrop-filter: blur(10.4px) !important;
+  border-radius: 10px !important;
+}
+.ant-modal-content {
+  background-color: #16212a !important;
+  border-radius: 10px !important;
+}
+.pdf_file_modal .ant-modal-content {
+  background-color: white !important;
+  border-radius: 10px !important;
+  padding: 50px !important;
+} */
+
+.anticon-search {
+  color: #acacac !important;
+}
+
+.custom-label-color {
+  color: white !important;
+  width: 100% !important;
+}
+/* .form_list {
+  background-color: yellow !important;
+  width: 100% !important;
+  margin-top: 100px;
+} */
+
+/* .ant-table-column-sorter {
+  color: gray !important;
+} */
+.required_power {
+  background-image: linear-gradient(
+    to right,
+    #f5bf00 0%,
+    #f5bf00 33.33%,
+    #b57234 33.33%,
+    #b57234 66.66%,
+    #ffffff 66.66%,
+    #ffffff 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 23px !important;
+  font-weight: 700;
+  margin-top: 5px !important;
+}
+/* .react-vis-area {
+  fill: none !important;
+} */
+
+.ant-progress-inner {
+  border-radius: 10px !important;
+}
+.ant-progress-bg {
+  border-radius: 10px !important;
+}
+
+.nsewdrag {
+  fill: #0d131c !important;
+}
+/* .drag {
+  fill: transparent !important;
+} */
+/* ====================== */
+/*  */
+
+/* .custom-swal-container .swal2-popup {
+  top: -20% !important;
+  width: 350px !important;
+  height: 230px !important;
+  background-color: #0d131c !important; 
+  border: unset !important; 
+  border-radius: 10px !important; 
+  box-shadow:
+    0px 4px 8px rgba(255, 255, 255, 0.1),
+    0px 0px 12px rgba(255, 255, 255, 0.1); 
+  outline: 2px solid rgba(255, 255, 255, 0.1);
+  color: white !important;
+  font-size: 12px !important;
+} */
+.custom-swal-container .swal2-popup {
+  top: -20% !important;
+  width: 350px !important;
+  height: 230px !important;
+  background-color: #f6f6f6 !important;
+  border: unset !important;
+  border-radius: 10px !important;
+  /* box-shadow:
+    0px 4px 8px rgba(255, 255, 255, 0.1),
+    0px 0px 12px rgba(255, 255, 255, 0.1); 
+  outline: 2px solid rgba(255, 255, 255, 0.1); */
+  color: black !important;
+  font-size: 12px !important;
+}
+.custom-swal-container-dark .swal2-popup {
+  top: -20% !important;
+  width: 350px !important;
+  height: 230px !important;
+  background-color: #0d131c !important;
+  border: unset !important;
+  border-radius: 10px !important;
+  /* box-shadow:
+    0px 4px 8px rgba(255, 255, 255, 0.1),
+    0px 0px 12px rgba(255, 255, 255, 0.1); 
+  outline: 2px solid rgba(255, 255, 255, 0.1); */
+  color: white !important;
+  font-size: 12px !important;
+}
+/* .swal_alert_dark .swal2-popup{
+  top: -20% !important;
+  width: 350px !important;
+  height: 230px !important;
+  background-color: #0d131c !important; 
+  border: unset !important;
+  border-radius: 10px !important; 
+  box-shadow:
+    0px 4px 8px rgba(255, 255, 255, 0.1),
+    0px 0px 12px rgba(255, 255, 255, 0.1);
+  outline: 2px solid rgba(255, 255, 255, 0.1);
+  color: white !important;
+  font-size: 12px !important;
+}
+.swal_alert_light .swal2-popup{
+  top: -20% !important;
+  width: 350px !important;
+  height: 230px !important;
+  background-color: #f6f6f6 !important; 
+  border: unset !important;
+  border-radius: 10px !important; 
+  box-shadow:
+    0px 4px 8px rgba(255, 255, 255, 0.1),
+    0px 0px 12px rgba(255, 255, 255, 0.1);
+  outline: 2px solid rgba(255, 255, 255, 0.1);
+  color: white !important;
+  font-size: 12px !important;
+} */
+/* .custom-swal-container .custom-swal-button {
+  background-color: #0490e7 !important;
+  border: unset !important;
+  box-shadow: unset !important;
+  width: 55px !important;
+} */
+.custom-swal-button-blue {
+  background-color: #0490e7 !important;
+  border: unset !important;
+  box-shadow: unset !important;
+  width: 55px !important;
+}
+.custom-swal-button-green {
+  background-color: #48a345 !important;
+  border: unset !important;
+  box-shadow: unset !important;
+  width: 55px !important;
+}
+.custom-swal-button-purple {
+  background-color: #9619b5 !important;
+  border: unset !important;
+  box-shadow: unset !important;
+  width: 55px !important;
+}
+
+.custom-swal-container-sites .swal2-popup {
+  top: -20% !important;
+  width: 400px !important;
+  height: 300px !important;
+  /* Apply background color only to the white box */
+  background-color: #0d131c !important; /* Replace with your desired background color */
+  border: unset !important; /* Add a border for better visibility */
+  border-radius: 10px !important; /* Optional: Add border radius for rounded corners */
+  box-shadow:
+    0px 4px 8px rgba(255, 255, 255, 0.1),
+    0px 0px 12px rgba(255, 255, 255, 0.1); /* Use a lighter shade for the glow */
+  outline: 2px solid rgba(255, 255, 255, 0.1);
+  color: white !important;
+  font-size: 12px !important;
+}
+
+.new_report_input {
+  /* width: 49.3% !important; */
+  background-color: #16212a !important;
+  border-color: #16212a !important;
+  border-radius: 7px !important;
+  color: #acacac !important;
+  padding: 8px !important;
+}
+
+.back_btn:hover {
+  cursor: pointer;
+  color: #0478c0 !important;
+}
+/* .filter_input {
+} */
+.filter_input::placeholder {
+  color: #b9b9b9; /* Change this to your desired placeholder color */
+  font-size: 14px; /* Optional: adjust size */
+  opacity: 1; /* Optional: ensures full opacity */
+}
+.filter_input_light::placeholder {
+  color: #b9b9b9; /* Change this to your desired placeholder color */
+  font-size: 14px; /* Optional: adjust size */
+  opacity: 1; /* Optional: ensures full opacity */
+}
+/* =================== */
+@keyframes attention {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ==========tour style ============ */
+/* custom.css */
+.ant-tour {
+  width: 70%;
+  /* overflow: scroll !important; */
+}
+
+#eeAll {
+  cursor: default !important;
+}
+/* dropdown */
+/* .custom-dropdown-menu .ant-dropdown-menu {
+  background-color: #36424e !important;
+  color: white !important;
+}
+.custom-dropdown-menu .ant-dropdown-menu .ant-dropdown-menu-item {
+  color: white !important;
+} */
+
+.labeledSelector {
+  display: flex;
+  align-items: center;
+  gap: 10px !important;
+  box-sizing: border-box !important;
+}
+.labeledSelector > p {
+  padding-top: 10px !important;
+  /* margin: 0px !important; */
+  font-size: 14px;
+  color: red;
+}
+
+.blurred-content {
+  filter: blur(4px);
+  pointer-events: none;
+  user-select: none;
+  position: relative;
+}
+
+/* ========= tour style end ============= */
+@media screen and (max-width: 500px) {
+  .inventory_detail_container {
+    width: 82% !important;
+  }
+  .inventory_detail_container .columns {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+  }
+}

@@ -12,6 +12,23 @@ class DeviceInventoryService:
     def to_datetime(self, value):
         
         return datetime.combine(value, datetime.min.time()) if value else None
+    def get_device_types(self, model_data):
+        return self.device_inventory_repository.get_device_types(model_data)
+    def get_device_nature_data(self,model_data):
+        return self.device_inventory_repository.get_device_nature_data(model_data)
+    def get_vendor_counts_data(self):
+        return self.device_inventory_repository.get_vendor_device_count()
+
+    def get_notifications(self,site):
+        return self.device_inventory_repository.get_notifications(site)
+
+    def get_devices_models(self,model_data):
+        return self.device_inventory_repository.get_devices_model_data(model_data)
+
+    def get_all_vendors(self,site_id,rack_id):
+        return self.device_inventory_repository.get_all_vendors(site_id,rack_id)
+    def get_inventory_counts_data(self):
+        return self.device_inventory_repository.get_inventory_counts_data()
 
     # def get_all_devices(self) -> List[dict]:
     #
@@ -186,23 +203,7 @@ class DeviceInventoryService:
     def get_spcific_devices(self, device_ip: str):
         return self.device_inventory_repository.get_spcific_devices(device_ip)
 
-    def get_models(self,model_data):
-        return self.device_inventory_repository.get_models_data(model_data)
 
-    def get_device_type(self, model_data):
-        return self.device_inventory_repository.get_device_type(model_data)
-
-    def get_vendor(self,site_id,rack_id):
-        return self.device_inventory_repository.get_vendors(site_id,rack_id)
-    def get_count(self):
-        return self.device_inventory_repository.get_count()
-    def get_device_nature(self,model_data):
-        return self.device_inventory_repository.get_device_natures(model_data)
-    def get_vendor_count(self):
-        return self.device_inventory_repository.get_vendor_device_count()
-
-    def get_notifications(self,site):
-        return self.device_inventory_repository.get_notifications(site)
 
     # def classify_performance(self,avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr, avg_co2_emissions):
     #     score = 0

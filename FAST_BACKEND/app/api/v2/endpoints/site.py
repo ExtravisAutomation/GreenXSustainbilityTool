@@ -29,7 +29,7 @@ from app.core.container import Container
 from dependency_injector.wiring import Provide, inject
 from starlette.responses import JSONResponse
 from app.schema.site_schema import (HourlyDevicePowerMetricsResponse,HourlyEnergyMetricsResponse,SiteDetails1,SitePowerConsumptionResponse,EnergyConsumptionMetricsDetails,TopDevicesPowerResponse,TrafficThroughputMetricsDetails,
-                                    TrafficThroughputMetricsResponse,PasswordGroupResponse, PasswordGroupCreate,APICControllersResponse, APICControllersUpdate, APICControllersCreate)
+                                    TrafficThroughputMetricsResponse,PasswordGroupResponse, PasswordGroupCreate,DevicesResponse, DevicesUpdate, DevicesCreate)
 import subprocess
 import logging
 import os
@@ -48,6 +48,300 @@ import time
 
 class DeleteRequest(BaseModel):
     site_ids: List[int]
+
+
+@router.get("/sites/get_all_devices", response_model=CustomResponse[List[DevicesResponse]])
+@inject
+def get_all_devices(
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        devices = site_service.get_all_devices_data()
+        return CustomResponse(
+            message="Devices fetched successfully.",
+            data=devices,
+            status_code=200
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/sites/get_all_password_groups/", response_model=CustomResponse[List[PasswordGroupResponse]])
+@inject
+def get_all_password_groups(
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    dta = site_service.get_all_password_groups_data()
+    return CustomResponse(
+        message="Password groups fetched successfully.",
+        data=dta,
+        status_code=200
+    )
+
+@router.post("/sites/create_password_groups", response_model=CustomResponse[PasswordGroupResponse])
+@inject
+def create_password_group(
+        password_group: PasswordGroupCreate,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        dt = site_service.add_password_group(password_group)
+        return CustomResponse(
+            message="Password group created successfully.",
+            data=dt,
+            status_code=200
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/sites/update_password_groups/{group_id}", response_model=CustomResponse[PasswordGroupResponse])
+@inject
+def update_password_group(
+        group_id: int,
+        password_group: PasswordGroupUpdate,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        dt = site_service.update_password_group_by_id(group_id, password_group)
+        return CustomResponse(
+            message="Password group updated successfully.",
+            data=dt,
+            status_code=200
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/sites/delete_password_groups_by_ids/", response_model=CustomResponse[None])
+@inject
+def delete_password_groups(
+        password_group_ids: List[int],
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    delete = site_service.delete_password_groups_by_ids(password_group_ids)
+    return CustomResponse(
+        message="Password groups deleted successfully.",
+        data=None,
+        status_code=200
+    )
+
+
+
+@router.post("/sites/onboard_devices", response_model=CustomResponse[str])
+def onboard_devices(
+        onboarding_data: OnboardingRequest,
+        current_user: User = Depends(get_current_active_user)
+):
+    try:
+        print(f"Onboarding Devices: {onboarding_data.device_ids}", file=sys.stderr)
+
+        processor = DeviceProcessor()
+        processor.get_devices_by_ids(onboarding_data.device_ids)
+
+        return CustomResponse(
+            message="Onboarding Process Completed.",
+            data="Success",
+            status_code=200
+        )
+
+    except ValueError as ve:
+        logger.error(f"Validation error during device onboarding: {str(ve)}")
+        raise HTTPException(status_code=400, detail="Devices onboarding failed due to validation errors.")
+
+    except Exception as e:
+        logger.error(f"Unexpected error during device onboarding: {str(e)}")
+        raise HTTPException(status_code=500, detail="Devices onboarding failed due to an unexpected error.")
+
+
+
+@router.post("/sites/upload_devices", response_model=CustomResponse[dict])
+@inject
+def upload_devices_data(
+        file: UploadFile = File(...),
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+
+        response_data, exceptions = site_service.upload_devices_from_excel(file)
+        return CustomResponse(
+            message="Devices processed successfully from Excel with exceptions." if exceptions else "Devices processed successfully from Excel.",
+            data={"processed_devices": response_data, "exceptions": exceptions},
+            status_code=201
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Failed to process the file.")
+
+
+@router.post("/sites/create_onboard_devices", response_model=CustomResponse[dict])
+@inject
+def create_device(
+        device_data: DeviceCreateRequest,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        response_data = site_service.add_device_onboarding(device_data)
+        return CustomResponse(
+            message="Device created successfully.",
+            data=response_data,
+            status_code=201
+        )
+    except Exception as e:
+        logger.error(f"Exception: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/get_site_names", response_model=CustomResponse)
+@inject
+def get_site_names(
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    sites = site_service.get_site_names()
+    return CustomResponse(
+        message="Fetched all sites successfully",
+        data=sites,
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.get("/getallsites", response_model=CustomResponse1[GetSitesResponse])
+@inject
+def get_all_sites(
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    api_start_time = time.time()
+
+    logger.debug("Starting get_sites API execution")
+
+    service_start_time = time.time()
+    sites = site_service.get_sites_data()
+    service_end_time = time.time()
+    logger.debug(
+        f"Time taken by site_service.get_extended_sites(): {service_end_time - service_start_time:.2f} seconds")
+
+    api_end_time = time.time()
+    logger.debug(f"Total time for get_sites API: {api_end_time - api_start_time:.2f} seconds")
+
+    return CustomResponse(
+        message="Fetched all sites successfully",
+        data=sites,
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.post("/addsite", response_model=CustomResponse[SiteDetails])
+@inject
+def add_site(
+        site_data: SiteCreate,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    site = site_service.add_site(site_data)
+    return CustomResponse(
+        message="Site created successfully",
+        data=site,
+        status_code=status.HTTP_200_OK
+    )
+
+
+@router.post("/updatesite/{id}", response_model=CustomResponse[SiteDetails1])
+@inject
+def update_site(
+        id: int,
+        site_data: SiteUpdate,
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        site = site_service.update_site(id, site_data)
+        return CustomResponse(
+            message="Site updated successfully",
+            data=site,
+            status_code=status.HTTP_200_OK
+        )
+    except HTTPException as e:
+        return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
+
+
+@router.post("/deletesite", response_model=List)
+@inject
+def delete_sites(
+        # request: DeleteRequest,
+        request: List[int],
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    # site_service.delete_sites(request.site_ids)
+    return site_service.delete_sites(request)
+
+
+@router.post("/site_hourly_eer/{site_id}")
+@inject
+def site_energy_efficiency(site_id: int,
+                           current_user: User = Depends(get_current_active_user),
+                           site_service: SiteService = Depends(Provide[Container.site_service])):
+    try:
+        power_metrix = site_service.site_hourly_eer_by_id(site_id)
+        return power_metrix
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+@router.post("/siteEnergyEfficiency/{site_id}")
+@inject
+def site_energy_efficiency(
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        efficiency_data = site_service.calculate_energy_efficiency_by_id(site_id)
+        return efficiency_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@router.post("/siteRequiredPower/{site_id}")
+@inject
+def site_power_required(
+        site_id: int,
+        current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    try:
+        power_required = site_service.calculate_power_requirement_by_id(site_id)
+        return power_required
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@router.post("/site_Co2emmission", response_model=List)
+@inject
+def site_power_co2emmission(
+        site_id: int,
+        # current_user: User = Depends(get_current_active_user),
+        site_service: SiteService = Depends(Provide[Container.site_service])
+):
+    return site_service.site_power_co2emmission(site_id)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -130,74 +424,6 @@ def get_eer_details(
         data=filtered_metrics,
         status_code=status.HTTP_200_OK
     )
-
-@router.post("/addsite", response_model=CustomResponse[SiteDetails])
-@inject
-def add_site(
-        site_data: SiteCreate,
-        # current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    site = site_service.create_site(site_data)
-    return CustomResponse(
-        message="Site created successfully",
-        data=site,
-        status_code=status.HTTP_200_OK
-    )
-
-@router.post("/updatesite/{id}", response_model=CustomResponse[SiteDetails1])
-@inject
-def update_site(
-        id: int,
-        site_data: SiteUpdate,
-        # current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    try:
-        site = site_service.update_site(id, site_data)
-        return CustomResponse(
-            message="Site updated successfully",
-            data=site,
-            status_code=status.HTTP_200_OK
-        )
-    except HTTPException as e:
-        return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
-
-
-@router.post("/deletesite", response_model=List)
-@inject
-def delete_sites(
-        # request: DeleteRequest,
-        request: List[int],
-        # current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    # site_service.delete_sites(request.site_ids)
-    return site_service.delete_sites(request)
-
-
-@router.post("/siteEnergyEfficiency/{site_id}")
-@inject
-def site_energy_efficiency(
-        site_id: int,
-        current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    try:
-        efficiency_data = site_service.calculate_energy_efficiency_by_id(site_id)
-        return efficiency_data
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/site_Co2emmission", response_model=List)
-@inject
-def site_power_co2emmission(
-        site_id: int,
-        # current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    return site_service.site_power_co2emmission(site_id)
 
 
 @router.get("/sites/power_summary_metrics/{site_id}", response_model=CustomResponse[SitePowerConsumptionResponse])
@@ -639,57 +865,6 @@ def parse_time12(time_str: str):
     raise HTTPException(status_code=400, detail="Timestamp format not recognized")
 
 
-@router.get("/getallsites", response_model=CustomResponse1[GetSitesResponse])
-@inject
-def get_sites(
-        # current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    api_start_time = time.time()
-
-    logger.debug("Starting get_sites API execution")
-
-    service_start_time = time.time()
-    sites = site_service.get_extended_sites()
-    service_end_time = time.time()
-    logger.debug(
-        f"Time taken by site_service.get_extended_sites(): {service_end_time - service_start_time:.2f} seconds")
-
-    api_end_time = time.time()
-    logger.debug(f"Total time for get_sites API: {api_end_time - api_start_time:.2f} seconds")
-
-    return CustomResponse(
-        message="Fetched all sites successfully",
-        data=sites,
-        status_code=status.HTTP_200_OK
-    )
-
-
-@router.post("/site_hourly_eer/{site_id}")
-@inject
-def site_energy_efficiency(site_id: int,
-                           current_user: User = Depends(get_current_active_user),
-                           site_service: SiteService = Depends(Provide[Container.site_service])):
-    try:
-        power_metrix = site_service.calculate_eer_by_id(site_id)
-        return power_metrix
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/siteRequiredPower/{site_id}")
-@inject
-def site_power_required(
-        site_id: int,
-        current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    try:
-        power_required = site_service.calculate_power_requirement_by_id(site_id)
-        return power_required
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.post("/site_Co2emmission/{site_id}")
 @inject
@@ -828,10 +1003,10 @@ def delete_password_groups(
     )
 
 
-@router.post("/sites/create_devices", response_model=CustomResponse[APICControllersResponse])
+@router.post("/sites/create_devices", response_model=CustomResponse[DevicesResponse])
 @inject
 def create_device(
-        device_data: APICControllersCreate,
+        device_data: DevicesCreate,
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
@@ -857,7 +1032,7 @@ def create_device(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/sites/get_all_devices", response_model=CustomResponse[List[APICControllersResponse]])
+@router.get("/sites/get_all_devices", response_model=CustomResponse[List[DevicesResponse]])
 @inject
 def get_all_devices(
         current_user: User = Depends(get_current_active_user),
@@ -874,11 +1049,11 @@ def get_all_devices(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/sites/update_device/{device_id}", response_model=CustomResponse[APICControllersResponse])
+@router.post("/sites/update_device/{device_id}", response_model=CustomResponse[DevicesResponse])
 @inject
 def update_device(
         device_id: int,
-        device_data: APICControllersUpdate,
+        device_data: DevicesUpdate,
         current_user: User = Depends(get_current_active_user),
         site_service: SiteService = Depends(Provide[Container.site_service])
 ):
@@ -1158,25 +1333,6 @@ def get_device_pcr_metrics(
     )
 
 
-@router.post("/sites/create_onboard_devices", response_model=CustomResponse[dict])
-@inject
-def create_device(
-        device_data: DeviceCreateRequest,
-        current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    try:
-        response_data = site_service.create_onboard_device(device_data)
-        return CustomResponse(
-            message="Device created successfully.",
-            data=response_data,
-            status_code=201
-        )
-    except Exception as e:
-        logger.error(f"Exception: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
-
-
 @router.post("/sites/onboard_devices", response_model=CustomResponse[str])
 def onboard_devices(
         onboarding_data: OnboardingRequest,
@@ -1440,20 +1596,6 @@ def get_power_comparison_and_prediction(
     )
 
 
-@router.get("/get_site_names", response_model=CustomResponse)
-@inject
-def get_site_names(
-        current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    sites = site_service.get_site_names()
-    return CustomResponse(
-        message="Fetched all sites successfully",
-        data=sites,
-        status_code=status.HTTP_200_OK
-    )
-
-
 # @router.post("/Co2emmission", response_model=List)
 # @inject
 # def site_power_co2emmission(
@@ -1548,25 +1690,6 @@ def ask_openai(
         data={"answer": answer},
         status_code=200
     )
-
-
-@router.post("/sites/upload_devices", response_model=CustomResponse[dict])
-@inject
-def upload_devices1(
-        file: UploadFile = File(...),
-        current_user: User = Depends(get_current_active_user),
-        site_service: SiteService = Depends(Provide[Container.site_service])
-):
-    try:
-
-        response_data, exceptions = site_service.upload_devices_from_excel(file)
-        return CustomResponse(
-            message="Devices processed successfully from Excel with exceptions." if exceptions else "Devices processed successfully from Excel.",
-            data={"processed_devices": response_data, "exceptions": exceptions},
-            status_code=201
-        )
-    except Exception as e:
-        raise HTTPException(status_code=400, detail="Failed to process the file.")
 
 
 class EnergyConsumptionRequest(BaseModel):
@@ -1943,15 +2066,3 @@ def site_power_co2emmission(
     }
 
 
-@router.post("/get_forcastddta", response_model=CustomResponse)
-@inject
-def get_ai_res(device_data: DeviceRequest,
-               # current_user: User = Depends(get_current_active_user),
-               site_service: SiteService = Depends(Provide[Container.site_service])
-               ):
-    data = site_service.get_device_aidata(device_data)
-    return {
-        "message": "Device collection status updated successfully.",
-        "data": data,
-        "status_code": status.HTTP_200_OK
-    }

@@ -1,0 +1,5 @@
+Value Required TOTAL_POWER_INPUT (\d+)
+Value Required TOTAL_POWER_OUTPUT (\d+)
+
+Start
+  ^\d+\s+\S+\s+\d+\s+\S+\s+${TOTAL_POWER_INPUT}\s+${TOTAL_POWER_OUTPUT} -> Record

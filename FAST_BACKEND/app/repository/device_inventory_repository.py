@@ -15,7 +15,7 @@ from app.model.DevicesSntc import DevicesSntc as DeviceSNTC
 from app.repository.InfluxQuery import get_24hDevice_dataTraffic, get_24hDevice_power, get_device_power,get_excel_df
 from app.model.device_inventory import ChassisFan, ChassisModule, ChassisPowerSupply, DeviceInventory, ChassisDevice
 
-from app.model.APIC_controllers import  APICControllers as Devices, Vendor, DeviceType
+from app.model.devices import   Devices, Vendor, DeviceType
 
 from app.repository.base_repository import BaseRepository
 from sqlalchemy import func, desc, and_
@@ -27,6 +27,246 @@ class DeviceInventoryRepository(BaseRepository):
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]], influxdb_repository):
         super().__init__(session_factory, DeviceInventory)
         self.influxdb_repository = influxdb_repository
+
+    def get_device_types(self, model_data):
+        with self.session_factory() as session:
+            try:
+                site_id = model_data.site_id
+                rack_id = model_data.rack_id
+                vendor_id = model_data.vendor_id
+                apic_alias = aliased(Devices)
+                device_inv_alias = aliased(DeviceInventory)
+
+                # Query to count devices based on device_type_id
+                query = session.query(
+                    DeviceType.id.label("device_type_id"),
+                    DeviceType.device_type,
+                    func.count(func.distinct(device_inv_alias.id)).label("device_count")  # Ensure distinct count
+                )
+
+                query = query.join(apic_alias, apic_alias.device_type_id == DeviceType.id, isouter=True) \
+                    .join(device_inv_alias, apic_alias.id == device_inv_alias.device_id, isouter=True)
+
+                # Apply filters before grouping
+                if site_id or rack_id or vendor_id:
+                    conditions = []
+                    if site_id:
+                        conditions.append(device_inv_alias.site_id == site_id)
+                    if rack_id:
+                        conditions.append(device_inv_alias.rack_id == rack_id)
+                    if vendor_id:
+                        conditions.append(DeviceType.vendor_id == vendor_id)
+                    query = query.filter(and_(*conditions))
+
+                query = query.group_by(DeviceType.id, DeviceType.device_type)
+
+                device_type_count = query.order_by(desc("device_count")).all()
+
+                total_count = sum(record[2] for record in device_type_count)  # Sum actual counts
+                data = [
+                    {"id": idx, "device_type_id": record[0], "device_type": record[1], "count": record[2]}
+                    for idx, record in enumerate(device_type_count, start=1)
+                ]
+                result = {
+                    "device_type_count": data,
+                    "count": total_count
+                }
+                return result
+            except Exception as e:
+                raise ValueError(f"Error fetching device type data: {str(e)}")
+
+    def get_all_vendors(self, site_id, rack_id):
+        with self.session_factory() as session:
+
+            query = session.query(Vendor).outerjoin(Devices, Vendor.id == Devices.vendor_id)
+
+            # Apply filters dynamically
+            if site_id is not None:
+                query = query.filter(Devices.site_id == site_id)
+            if rack_id is not None:
+                query = query.filter(Devices.rack_id == rack_id)
+
+            vendors = query.distinct().all()  # Fetch distinct vendors
+            return vendors
+
+    def get_device_nature_data(self, model_data):
+        with self.session_factory() as session:
+            site_id = model_data.site_id
+            rack_id = model_data.rack_id
+            vendor_id = model_data.vendor_id
+            query = session.query(
+                Devices.device_nature,  # Group by device_type
+                func.count(DeviceInventory.id).label("device_count"),
+            )
+
+            query = query.join(Devices, Devices.id == DeviceInventory.apic_controller_id)
+            conditions = []
+            if site_id:
+                conditions.append(DeviceInventory.site_id == site_id)
+            if rack_id:
+                conditions.append(DeviceInventory.rack_id == rack_id)
+            if vendor_id:
+                conditions.append(Devices.vendor_id == vendor_id)
+            if conditions:
+                query = query.filter(and_(*conditions))
+            device_type_count = (
+                query.group_by(Devices.device_nature)
+                .order_by(desc("device_count"))  # Order by count of devices per type
+                .all()
+            )
+            data = []
+            total_count = 0
+
+            for a in device_type_count:
+                data.append({
+                    "device_nature": a[0],  # device type or nature
+                    "count": a[1],  # count of devices
+                })
+                total_count += a[1]  # Accumulate the count
+
+            print(f"Total Records: {len(device_type_count)}")
+            print("Processed Data:", data)
+
+            result = {
+                "device_nature_count": data,
+                "total_count": total_count
+            }
+
+            return result
+
+    def get_vendor_counts_data(self):
+        with self.session_factory() as session:
+            result = session.query(
+                Vendor.vendor_name,
+                func.count(Devices.id).label('device_count')
+            ).join(Devices, Devices.vendor_id == Vendor.id) \
+                .group_by(Vendor.vendor_name) \
+                .all()
+
+            data = []
+            total_count = 0
+
+            for vendor_name, device_count in result:
+                data.append({
+                    "vendor_name": vendor_name,
+                    "count": device_count,
+                })
+                total_count += device_count
+
+            vendor_data = {
+                "vendor_data": data,
+                "total_count": total_count
+            }
+
+            return vendor_data
+
+    def get_notifications(self, site):
+        site_id = site.site_id
+        current_date = datetime.today().date()
+        one_month_ahead = current_date + timedelta(days=30)
+
+        with self.session_factory() as session:
+            join_query = session.query(Devices, DeviceInventory, DevicesSntc).join(
+                Devices, DeviceInventory.device_id == Devices.id
+            ).join(
+                DevicesSntc, DeviceInventory.pn_code == DevicesSntc.model_name
+            ).filter(
+                Devices.OnBoardingStatus == True,
+                Devices.collection_status == True
+            )
+            if site_id:
+                join_query = join_query.filter(DeviceInventory.site_id == site_id)
+
+            records = join_query.all()
+
+            result = []
+            for controller, inventory, sntc in records:
+                device_name = controller.device_name
+                ip_address = controller.ip_address
+
+                date_checks = [
+                    ("end of sale", sntc.hw_eos),
+                    ("end of support", sntc.hw_ldos),
+                    ("end of life", sntc.hw_eol_ad)
+                ]
+
+                for label, date_value in date_checks:
+                    if date_value and current_date <= date_value <= one_month_ahead:
+                        days_left = (date_value - current_date).days
+                        formatted_date = date_value.strftime('%Y-%m-%d')
+                        result.append({
+                            "ip_address": ip_address,
+                            "name": device_name,
+                            "dated": formatted_date,
+                            "text": f"{label} is in {days_left} days"
+                        })
+        return result
+
+    def get_inventory_counts_data(self):
+        with self.session_factory() as session:
+            vendor_count = session.query(Vendor).count()
+            site_count = session.query(Site).count()
+            rack_count = session.query(Rack).count()
+            device_count = session.query(Devices).count()
+
+            data = [
+
+                {"name": "Sites", "count": site_count},
+                {"name": "Racks", "count": rack_count},
+                {"name": "Devices", "count": device_count},
+                {"name": "Vendors", "count": vendor_count},
+            ]
+            return data
+
+    def get_devices_model_data(self, model_data):
+        with self.session_factory() as session:
+            site_id = model_data.site_id
+            rack_id = model_data.rack_id
+            vendor_id = model_data.vendor_id
+            query = session.query(
+                DeviceInventory.pn_code,
+                func.count(DeviceInventory.id).label("count"),
+            )
+
+            query = query.join(Devices, Devices.id == DeviceInventory.apic_controller_id)
+            conditions = []
+            if site_id:
+                conditions.append(DeviceInventory.site_id == site_id)
+            if rack_id:
+                conditions.append(DeviceInventory.rack_id == rack_id)
+            if vendor_id:
+                conditions.append(Devices.vendor_id == vendor_id)
+            if conditions:
+                query = query.filter(and_(*conditions))
+
+            apic = (
+                query.group_by(DeviceInventory.pn_code)
+                .order_by(desc("count"))
+                .all()
+            )
+            print("daat", apic)
+            data = [
+                {
+                    "model_name": a[0],  # pn_code
+                    "count": a[1],  # count
+                }
+                for a in apic
+            ]
+
+            print(f"Total Records: {len(apic)}")  # Debugging info
+            print("Processed Data:", data)  # Debugging info
+
+        return data
+
+
+
+
+
+
+
+
+
+
 
     def get_device_type_by_ip(self, session, apic_controller_ip: str) -> str:
         if apic_controller_ip:
@@ -430,239 +670,9 @@ class DeviceInventoryRepository(BaseRepository):
 
             return device
 
-    def get_models_data(self, model_data):
-        with self.session_factory() as session:
-            site_id = model_data.site_id
-            rack_id = model_data.rack_id
-            vendor_id = model_data.vendor_id
-            query = session.query(
-                DeviceInventory.pn_code,
-                func.count(DeviceInventory.id).label("count"),
-            )
-
-            query = query.join(Devices, Devices.id == DeviceInventory.apic_controller_id)
-            conditions = []
-            if site_id:
-                conditions.append(DeviceInventory.site_id == site_id)
-            if rack_id:
-                conditions.append(DeviceInventory.rack_id == rack_id)
-            if vendor_id:
-                conditions.append(Devices.vendor_id == vendor_id)
-            if conditions:
-                query = query.filter(and_(*conditions))
-
-            apic = (
-                query.group_by(DeviceInventory.pn_code)
-                .order_by(desc("count"))
-                .all()
-            )
-            print("daat", apic)
-            data = [
-                {
-                    "model_name": a[0],  # pn_code
-                    "count": a[1],  # count
-                }
-                for a in apic
-            ]
-
-            print(f"Total Records: {len(apic)}")  # Debugging info
-            print("Processed Data:", data)  # Debugging info
-
-        return data
 
 
-    def get_device_type(self, model_data):
-        with self.session_factory() as session:
-            try:
-                site_id = model_data.site_id
-                rack_id = model_data.rack_id
-                vendor_id = model_data.vendor_id
-                apic_alias = aliased(Devices)
-                device_inv_alias = aliased(DeviceInventory)
 
-                # Query to count devices based on device_type_id
-                query = session.query(
-                    DeviceType.id.label("device_type_id"),
-                    DeviceType.device_type,
-                    func.count(func.distinct(device_inv_alias.id)).label("device_count")  # Ensure distinct count
-                )
-
-                query = query.join(apic_alias, apic_alias.device_type_id == DeviceType.id, isouter=True) \
-                    .join(device_inv_alias, apic_alias.id == device_inv_alias.device_id, isouter=True)
-
-                # Apply filters before grouping
-                if site_id or rack_id or vendor_id:
-                    conditions = []
-                    if site_id:
-                        conditions.append(device_inv_alias.site_id == site_id)
-                    if rack_id:
-                        conditions.append(device_inv_alias.rack_id == rack_id)
-                    if vendor_id:
-                        conditions.append(DeviceType.vendor_id == vendor_id)
-                    query = query.filter(and_(*conditions))
-
-                query = query.group_by(DeviceType.id, DeviceType.device_type)
-
-                device_type_count = query.order_by(desc("device_count")).all()
-
-                total_count = sum(record[2] for record in device_type_count)  # Sum actual counts
-                data = [
-                    {"id": idx, "device_type_id": record[0], "device_type": record[1], "count": record[2]}
-                    for idx, record in enumerate(device_type_count, start=1)
-                ]
-                result = {
-                    "device_type_count": data,
-                    "count": total_count
-                }
-                return result
-            except Exception as e:
-                raise ValueError(f"Error fetching device type data: {str(e)}")
-
-    def get_vendors(self, site_id, rack_id):
-        with self.session_factory() as session:
-
-            query = session.query(Vendor).outerjoin(Devices, Vendor.id == Devices.vendor_id)
-
-            # Apply filters dynamically
-            if site_id is not None:
-                query = query.filter(Devices.site_id == site_id)
-            if rack_id is not None:
-                query = query.filter(Devices.rack_id == rack_id)
-
-            vendors = query.distinct().all()  # Fetch distinct vendors
-            return vendors
-
-    def get_count(self):
-        with self.session_factory() as session:
-            vendor_count = session.query(Vendor).count()
-            site_count = session.query(Site).count()
-            rack_count = session.query(Rack).count()
-            device_count = session.query(Devices).count()
-
-            data = [
-
-                {"name": "Sites", "count": site_count},
-                {"name": "Racks", "count": rack_count},
-                {"name": "Devices", "count": device_count},
-                {"name": "Vendors", "count": vendor_count},
-            ]
-            return data
-
-    def get_device_natures(self, model_data):
-        with self.session_factory() as session:
-            site_id = model_data.site_id
-            rack_id = model_data.rack_id
-            vendor_id = model_data.vendor_id
-            query = session.query(
-                Devices.device_nature,  # Group by device_type
-                func.count(DeviceInventory.id).label("device_count"),
-            )
-
-            query = query.join(Devices, Devices.id == DeviceInventory.apic_controller_id)
-            conditions = []
-            if site_id:
-                conditions.append(DeviceInventory.site_id == site_id)
-            if rack_id:
-                conditions.append(DeviceInventory.rack_id == rack_id)
-            if vendor_id:
-                conditions.append(Devices.vendor_id == vendor_id)
-            if conditions:
-                query = query.filter(and_(*conditions))
-            device_type_count = (
-                query.group_by(Devices.device_nature)
-                .order_by(desc("device_count"))  # Order by count of devices per type
-                .all()
-            )
-            data = []
-            total_count = 0
-
-            for a in device_type_count:
-                data.append({
-                    "device_nature": a[0],  # device type or nature
-                    "count": a[1],  # count of devices
-                })
-                total_count += a[1]  # Accumulate the count
-
-            print(f"Total Records: {len(device_type_count)}")
-            print("Processed Data:", data)
-
-            result = {
-                "device_nature_count": data,
-                "total_count": total_count
-            }
-
-            return result
-
-    def get_vendor_device_count(self):
-        with self.session_factory() as session:
-            result = session.query(
-                Vendor.vendor_name,
-                func.count(Devices.id).label('device_count')
-            ).join(Devices, Devices.vendor_id == Vendor.id) \
-                .group_by(Vendor.vendor_name) \
-                .all()
-
-            data = []
-            total_count = 0
-
-            for vendor_name, device_count in result:
-                data.append({
-                    "vendor_name": vendor_name,
-                    "count": device_count,
-                })
-                total_count += device_count
-
-            vendor_data = {
-                "vendor_data": data,
-                "total_count": total_count
-            }
-
-            return vendor_data
-
-
-    def get_notifications(self, site):
-        site_id = site.site_id
-        current_date = datetime.today().date()
-        one_month_ahead = current_date + timedelta(days=30)
-
-        with self.session_factory() as session:
-            join_query = session.query(Devices, DeviceInventory, DevicesSntc).join(
-                Devices, DeviceInventory.device_id == Devices.id
-            ).join(
-                DevicesSntc, DeviceInventory.pn_code == DevicesSntc.model_name
-            ).filter(
-                Devices.OnBoardingStatus == True,
-                Devices.collection_status == True
-            )
-            if site_id:
-                join_query = join_query.filter(DeviceInventory.site_id == site_id)
-
-            records = join_query.all()
-
-            result = []
-            for controller, inventory, sntc in records:
-                device_name = controller.device_name
-                ip_address = controller.ip_address
-
-                date_checks = [
-                    ("end of sale", sntc.hw_eos),
-                    ("end of support", sntc.hw_ldos),
-                    ("end of life", sntc.hw_eol_ad)
-                ]
-
-                for label, date_value in date_checks:
-                    if date_value and current_date <= date_value <= one_month_ahead:
-                        days_left = (date_value - current_date).days
-                        formatted_date = date_value.strftime('%Y-%m-%d')
-                        result.append({
-                            "ip_address": ip_address,
-                            "name": device_name,
-                            "dated": formatted_date,
-                            "text": f"{label} is in {days_left} days"
-                        })
-        return result
-
-   
     def classify_performance(self, avg_energy_efficiency, avg_power_efficiency, avg_data_traffic, avg_pcr,
                              avg_co2_emissions):
         # Collect all values in a dictionary

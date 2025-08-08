@@ -38,15 +38,6 @@ class RackService:
 
     def delete_racks(self, rack_ids: List[int]) -> None:
         self.rack_repository.delete_racks(rack_ids)
-        
-        
-    def get_rack_last_power_utilization(self, rack_id: int):
-        rack = self.rack_repository.get_rack_last_power_utilization(rack_id)
-        return rack
-    
-    def get_rack_power_utilization(self, rack_id: int):
-        rack = self.rack_repository.get_rack_power_utilization(rack_id)
-        return rack
 
     def create_building(self, building_data: BuildingCreate) -> BuildingDetails:
         return BuildingDetails.from_orm(self.rack_repository.create_building(building_data))
@@ -68,3 +59,12 @@ class RackService:
 
     def delete_multiple_buildings(self, building_ids: List[int]) -> List[int]:
         return self.rack_repository.delete_multiple_buildings(building_ids)
+        
+    def get_rack_last_power_utilization(self, rack_id: int):
+        rack = self.rack_repository.get_rack_last_power_utilization(rack_id)
+        return rack
+    
+    def get_rack_power_utilization(self, rack_id: int):
+        rack = self.rack_repository.get_rack_power_utilization(rack_id)
+        return rack
+

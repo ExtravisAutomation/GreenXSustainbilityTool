@@ -1,0 +1,51 @@
+:root {
+  --logo-offset: 28px;
+}
+
+.navbar {
+  --padding-horizontal: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: transparent; /* Matches Ant Design's dark theme */
+  padding: 10px var(--padding-horizontal);
+  top: 30px;
+  position: absolute;
+  width: calc(98vw - (2 * var(--padding-horizontal)));
+  z-index: 1000;
+}
+
+.navbar-left,
+.navbar-center,
+.navbar-right {
+  display: flex;
+  align-items: center;
+}
+
+
+.navbar-logo {
+  height: 55px;
+}
+
+.navbar-menu {
+  list-style: none;
+  display: flex;
+  padding: 0;
+  margin: 0;
+}
+
+.navbar-menu-item {
+  margin: 0 15px;
+  font-size: 0.9rem;
+
+}
+
+.navbar-menu-item a {
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.navbar-menu-item a:hover {
+  color: #1890ff; /* Ant Design primary color */
+}

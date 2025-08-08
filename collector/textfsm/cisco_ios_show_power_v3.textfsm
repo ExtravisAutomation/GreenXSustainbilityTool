@@ -1,0 +1,24 @@
+Value SYS_USED_WATTS (\d+)
+Value SYS_AVAIL_WATTS (\d+)
+Value INLINE_USED_WATTS (\d+)
+Value INLINE_AVAIL_WATTS (\d+)
+Value BACKPLANE_USED_WATTS (\d+)
+Value BACKPLANE_AVAIL_WATTS (\d+)
+Value TOTAL_POWER_INPUT (\d+)
+Value MAX_AVAIL_WATTS (\d+)
+Value TOTAL_POWER_OUTPUT (\d+)
+
+Start
+  ^Power.*Maximum -> SUMMARY
+  # Capture time-stamp if vty line has command time-stamping turned on
+  ^Load\s+for\s+
+  ^Time\s+source\s+is
+
+SUMMARY
+  ^System Power \(12V\)\s+${SYS_USED_WATTS}\s+${SYS_AVAIL_WATTS} -> Continue
+  ^Inline Power \(-50V\)\s+${INLINE_USED_WATTS}\s+${INLINE_AVAIL_WATTS} -> Continue
+  ^Backplane Power \(3.3V\)\s+${BACKPLANE_USED_WATTS}\s+${BACKPLANE_AVAIL_WATTS} -> Continue
+  ^Total\s+${TOTAL_POWER_INPUT}.*Available\s=\s${MAX_AVAIL_WATTS} -> Continue
+  # Capture total input power value (making it more flexible)
+  ^(Total|Input)\s+(Power|Input Power)\s+${TOTAL_POWER_OUTPUT}
+  ^Total\s+${TOTAL_POWER_INPUT}\s+${MAX_AVAIL_WATTS}

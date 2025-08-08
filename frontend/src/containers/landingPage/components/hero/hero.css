@@ -1,0 +1,131 @@
+.hero-section {
+  --radius: 50px;
+  background-image: url('../../assets/images/image.png');
+  background-size: cover;
+  background-position: 0 -65px;
+  background-repeat: no-repeat;
+  padding: 200px 0;
+  color: #fff;
+  background-color: #fff;
+  text-align: center;
+  height: 600px;
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}
+
+.hero-content {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.hero-content > h1 {
+  font-size: 5rem;
+  font-weight: 700;
+  line-height: 106%;
+  margin: 32px 0;
+  animation: fadeIn 2s ease-in-out;
+}
+.hero-content > p {
+  font-size: 1rem;
+  line-height: 156.25%;
+  font-weight: 400;
+  opacity: 0;
+  animation: fadeIn 2s ease-in-out 1s forwards;
+}
+
+.hero-button:hover {
+  background-color: #40a9ff;
+}
+
+.fade-in {
+  animation: fadeIn 2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Start Generation Here */
+.email-input-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  border-radius: 9999px;
+  padding: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  margin: 0 auto;
+  margin-top: 35px;
+}
+
+.email-input {
+  border: none;
+  border-radius: 9999px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  flex: 1;
+  outline: none;
+}
+
+.email-input::placeholder {
+  color: #7c7c7c;
+}
+
+.button {
+  margin-left: 10px;
+}
+/* End Generation Here */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 20.5% 10% auto 10% 20.5%;
+  grid-template-rows: 20% auto 20%;
+  margin-top: -320px;
+  margin-bottom: 180px;
+  padding: 0 100px;
+}
+
+.left {
+  grid-column: 1 / 3;
+  object-position: 0 0;
+  animation: fadeIn 2s ease-in-out 2s forwards;
+  opacity: 0;
+}
+
+.center {
+  grid-row: 1 / 4;
+  grid-column: 2 / 5;
+  z-index: 500;
+  box-shadow: 0 70px 68px rgba(68, 175, 73, 0.2);
+  opacity: 0;
+  animation: fadeIn 1.5s ease-in-out 3.5s forwards;
+}
+
+.right {
+  grid-column: 4 / 6;
+  object-position: 100% 0;
+  animation: fadeIn 2s ease-in-out 2s forwards;
+  opacity: 0;
+}
+
+.left,
+.right {
+  grid-row: 2;
+  object-fit: cover;
+}
+
+.grid-item {
+  --radius: 40px;
+  background-color: transparent;
+  height: 100%;
+  width: 100%;
+  overflow: visible;
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}

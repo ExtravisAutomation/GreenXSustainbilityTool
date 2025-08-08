@@ -1,0 +1,7 @@
+Value Required PORT (\S+)
+Value IFMIB (\S+)
+Value IFINDEX_HEX (\d+)
+
+Start
+  # Match and extract the PORT and IFINDEX values
+  ^${PORT}(:?\s*Ifindex\s*=\s*${IFINDEX_HEX})\s*$$

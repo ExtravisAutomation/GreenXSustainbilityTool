@@ -1,0 +1,6 @@
+Value TOTAL_POWER_INPUT (\d+)
+Value TOTAL_POWER_OUTPUT (\d+)
+
+Start
+  ^System Power Total \(AC\) +${TOTAL_POWER_INPUT} Watts -> Continue
+  ^System Power Used \(AC\) +${TOTAL_POWER_OUTPUT} Watts -> Record
