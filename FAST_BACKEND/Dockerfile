@@ -23,8 +23,7 @@ WORKDIR /app
 COPY requirements.txt ./
 
 # Upgrade build tools then install Python deps
-RUN python -m pip install --upgrade pip setuptools wheel \
- && pip install --no-cache-dir -r requirements.txt
+RUN  pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the app
 COPY . .
