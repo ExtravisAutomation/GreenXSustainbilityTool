@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-
 # GreenX Sustainability Tool
 
 The GreenX Sustainability Tool is an integrated platform that collects and processes network power usage, PSU health, and data traffic metrics from Cisco and other supported devices.
@@ -235,7 +233,3 @@ Our premium version offers extended data analytics, enhanced scheduling options,
 
 📩 Email us at [Support@extravis.co]() to get access today.
 
-
-=======
-# GreenXSustainbilityTool
->>>>>>> c3edffc2ecce99d28e672d6511eed09901014013
