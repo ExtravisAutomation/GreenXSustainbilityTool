@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./assets/GreenX_black@4x-8.png" alt="GreenX Logo" width="200" />
+  <img src="./assets/GreenX_white@4x-8.png" alt="GreenX Logo" width="200" />
 </div>
 
 
