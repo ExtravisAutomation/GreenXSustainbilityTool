@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./assets/logo.png" alt="GreenX Logo" width="200" />
+  <img src="./assets/GreenX_black@4x-8.png" alt="GreenX Logo" width="200" />
 </div>
 
 # GreenX Sustainability Tool
@@ -243,9 +243,17 @@ Our premium version offers extended data analytics, enhanced scheduling options,
 
 # 10. 📅 GreenX Roadmap
 
-| Quarter | Status | Key Features                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-|---------|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Q1'25** | ✅ **Completed** | - Real-Time Energy Optimization<br>- CO₂ Emissions Tracking & Reporting<br>- Dynamic Cooling Efficiency Metrics<br>- Integration with BMS & DCIM Tools<br>- Interactive Dashboard for PUE & EER Metrics                                                                                                                                                                                                                                                                                                                        |
-| **Q2'25** | ✅ **Completed** | - Rack Power Heat Maps<br>- Environmental Monitoring<br>- Customizable Dashboards<br>- Role-Based Access Control<br>- Notifications & Alerts<br>- Comprehensive Reporting<br>- Automated Device Onboarding<br>- AI Models for Anomaly Detection<br>- Advanced AI Predictive Analytics<br>- Energy Efficiency Recommendations<br>- What-If Analysis<br>- VMware Integration<br>- Integration with Additional Third-Party Tools<br>- Goal Compliance Automation<br>- Interactive Visual Analytics for Traffic & Power Correlation |
-| **Q3'25** | ⏳ **In Progress** | - Enhanced Reporting (weekly/monthly reports, AI insights)<br>- PUE Calculator (simulate CO₂ impact, compare data)<br>- Water & Cooling Efficiency (WUE monitoring, AI optimization)                                                                                                                                                                                                                                                                                                                                           |
-| **Q4'25** | ⏳ **Planned** | - Dynamic Thermal Management (AI-based cooling)<br>- Workload Placement & Power Capping<br>- Renewable Energy Integration (solar, wind)                                                                                                                                                                                                                                                                                                                                                                                        |
+
+| Quarter | Status | Key Features |
+|---------|--------|--------------|
+| **Q1'25** | ✅ **Completed** | - Real-Time Energy Optimization<br>- CO₂ Emissions Tracking & Reporting<br>- Dynamic Cooling Efficiency Metrics<br>- Integration with BMS & DCIM Tools<br>- Interactive Dashboard for PUE & EER Metrics |
+| **Q2'25** | ✅ **Completed** | - Rack Power Heat Maps<br>- Environmental Monitoring<br>- Customizable Dashboards<br>- Role-Based Access Control<br>- Notifications & Alerts<br>- Comprehensive Reporting<br>- Automated Device Onboarding<br>- AI Models for Anomaly Detection<br>- Advanced AI Predictive Analytics<br>- Energy Efficiency Recommendations<br>- What-If Analysis<br>- VMware & 3rd-party Integrations<br>- Goal Compliance Automation<br>- Visual Analytics for Traffic-Power Correlation |
+| **Q3'25** | ⏳ **In Progress** | - Enhanced Reporting (weekly/monthly, forecasts, PPT export)<br>- PUE Calculator (simulate CO₂/energy cost, compare assumed vs actual)<br>- Water & Cooling Efficiency (WUE, HVAC/chiller KPIs, AI suggestions) |
+| **Q4'25** | ⏳ **Planned** | - Dynamic Thermal Management (AI-based cooling)<br>- Workload Placement & Power Capping<br>- Renewable Energy Integration (solar/wind) |
+| **Q1'26** | ⏳ **Planned** | **AI-Based Predictive Maintenance** for network & power equipment (degradation detection, failure forecasting, proactive scheduling) |
+| **Q2'26** | ⏳**Planned** | **Carbon Credit Tracking & Offset Recommendations** (CO₂e → credit equivalence, offset marketplace/ESG integrations) |
+| **Q3'26** | ⏳ **Planned** | **AI-Driven Energy Storage Optimization** (charge/discharge planning from demand/renewables/tariffs; LP/RL optimization) |
+
+---
+
+
