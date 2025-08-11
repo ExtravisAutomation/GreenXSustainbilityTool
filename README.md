@@ -2,6 +2,7 @@
   <img src="./assets/GreenX_black@4x-8.png" alt="GreenX Logo" width="200" />
 </div>
 
+
 # GreenX Sustainability Tool
 
 The GreenX Sustainability Tool is an integrated platform that collects and processes network power usage, PSU health, and data traffic metrics from Cisco and other supported devices.
