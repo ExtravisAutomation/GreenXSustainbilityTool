@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-
 # GreenX Sustainability Tool
 
 The GreenX Sustainability Tool is an integrated platform that collects and processes network power usage, PSU health, and data traffic metrics from Cisco and other supported devices.
@@ -236,6 +234,13 @@ Our premium version offers extended data analytics, enhanced scheduling options,
 📩 Email us at [Support@extravis.co]() to get access today.
 
 
-====
-# GreenXSustainbilityTool
->>>>>>> c3edffc2ecce99d28e672d6511eed09901014013
+
+
+# 10. 📅 GreenX Roadmap
+
+| Quarter | Status | Key Features                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+|---------|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Q1'25** | ✅ **Completed** | - Real-Time Energy Optimization<br>- CO₂ Emissions Tracking & Reporting<br>- Dynamic Cooling Efficiency Metrics<br>- Integration with BMS & DCIM Tools<br>- Interactive Dashboard for PUE & EER Metrics                                                                                                                                                                                                                                                                                                                        |
+| **Q2'25** | ✅ **Completed** | - Rack Power Heat Maps<br>- Environmental Monitoring<br>- Customizable Dashboards<br>- Role-Based Access Control<br>- Notifications & Alerts<br>- Comprehensive Reporting<br>- Automated Device Onboarding<br>- AI Models for Anomaly Detection<br>- Advanced AI Predictive Analytics<br>- Energy Efficiency Recommendations<br>- What-If Analysis<br>- VMware Integration<br>- Integration with Additional Third-Party Tools<br>- Goal Compliance Automation<br>- Interactive Visual Analytics for Traffic & Power Correlation |
+| **Q3'25** | ⏳ **In Progress** | - Enhanced Reporting (weekly/monthly reports, AI insights)<br>- PUE Calculator (simulate CO₂ impact, compare data)<br>- Water & Cooling Efficiency (WUE monitoring, AI optimization)                                                                                                                                                                                                                                                                                                                                           |
+| **Q4'25** | ⏳ **Planned** | - Dynamic Thermal Management (AI-based cooling)<br>- Workload Placement & Power Capping<br>- Renewable Energy Integration (solar, wind)                                                                                                                                                                                                                                                                                                                                                                                        |
