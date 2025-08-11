@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="./assets/logo.png" alt="GreenX Logo" width="200" />
+</div>
+
 # GreenX Sustainability Tool
 
 The GreenX Sustainability Tool is an integrated platform that collects and processes network power usage, PSU health, and data traffic metrics from Cisco and other supported devices.
@@ -30,6 +34,7 @@ With these features, GreenX Sustainability Tool not only monitors your infrastru
 ![PUE Screenshot](assets/pue.png)
 ![AI Screenshot](assets/ai.png)
 ![Reporting Screenshot](assets/report.png)
+
 
 
 # 1. Get the code
@@ -232,7 +237,7 @@ Looking for advanced features, priority updates, and premium support?
 Our premium version offers extended data analytics, enhanced scheduling options, and custom integrations tailored to your infrastructure.
 
 📩 Email us at [Support@extravis.co]() to get access today.
-
+![pue access Screenshot](assets/pue-access.png)
 
 
 
